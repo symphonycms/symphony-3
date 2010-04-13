@@ -79,15 +79,15 @@
 			
 			if(is_array($attributes) && !empty($attributes)){
 				foreach($attributes as $key => $val)
-					$form->setAttribute($key, $val);	
+					$fieldset->setAttribute($key, $val);	
 			}			
 			
-			if($title){
+			if(!is_null($title)){
 				$fieldset->appendChild(
 					new XMLElement('h3',$title)
 				);
 			}
-			if($help){
+			if(!is_null($help)){
 				$fieldset->appendChild(
 					new XMLElement('p', $help, array(
 						'class' => 'help'
