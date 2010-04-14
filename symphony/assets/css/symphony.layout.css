@@ -119,54 +119,61 @@
 		.layout-widget > .columns > li > fieldset > .fields > li:hover .name {
 			border: 1px solid hsla(0, 0%, 100%, 0.2);
 		}
-		.layout-widget > .columns > li > fieldset > .fields > li.controls .name {
-			padding: 0 20px 0 45px;
-		}
-		.layout-widget > .columns > li > fieldset > .fields > li .menu {
-			background: hsla(0, 0%, 100%, 0.05);
-			border-right: 1px solid hsla(0, 0%, 100%, 0.05);
-			-moz-border-radius-topleft: 3px;
-			-moz-border-radius-bottomleft: 3px;
-			bottom: 0;
-			color: #ffffff;
-			font-size: 7pt;
-			left: 0;
-			line-height: 25px;
-			position: absolute;
-			text-align: center;
-			text-decoration: none;
-			text-transform: uppercase;
-			top: 0;
-			width: 45px;
-		}
-		.layout-widget > .columns > li > fieldset > .fields > li .menu:hover {
-			background: hsla(0, 0%, 100%, 0.1);
-			border-color: hsla(0, 0%, 100%, 0.1);
-		}
-		.layout-widget > .columns > li > fieldset > .fields > li.controls .menu {
-			border-right: 1px solid hsla(0, 0%, 100%, 0.025);
-		}
+		
+		.layout-widget > .columns > li > fieldset > .fields > li .menu,
 		.layout-widget > .columns > li > fieldset > .fields > li .remove {
 			background: hsla(0, 0%, 100%, 0.05);
-			border-left: 1px solid hsla(0, 0%, 100%, 0.05);
-			-moz-border-radius-topright: 3px;
-			-moz-border-radius-bottomright: 3px;
 			bottom: 0;
 			color: #ffffff;
 			line-height: 25px;
 			position: absolute;
-			right: 0;
 			text-align: center;
 			text-decoration: none;
 			top: 0;
 			width: 25px;
 		}
+		.layout-widget > .columns > li > fieldset > .fields > li .menu {
+			border-right: 1px solid hsla(0, 0%, 100%, 0.05);
+			-moz-border-radius-topleft: 3px;
+			-moz-border-radius-bottomleft: 3px;
+			font-size: 7pt;
+			left: 0;
+			text-transform: uppercase;
+			width: 45px;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li .remove {
+			border-left: 1px solid hsla(0, 0%, 100%, 0.05);
+			-moz-border-radius-topright: 3px;
+			-moz-border-radius-bottomright: 3px;
+			right: 0;
+		}
+		
+		.layout-widget > .columns > li > fieldset > .fields > li .menu:hover,
 		.layout-widget > .columns > li > fieldset > .fields > li .remove:hover {
 			background: hsla(0, 0%, 100%, 0.1);
 			border-color: hsla(0, 0%, 100%, 0.1);
 		}
+		
+		.layout-widget > .columns > li > fieldset > .fields > li.controls {
+			width: 69px;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li.controls .name {
+			padding: 0;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li.controls .menu,
 		.layout-widget > .columns > li > fieldset > .fields > li.controls .remove {
-			border-left: 1px solid hsla(0, 0%, 100%, 0.025);
+			border-color: hsla(0, 0%, 100%, 0.025);
+		}
+		
+		.layout-widget > .columns > li > fieldset > .fields > li.controls.add-only {
+			padding: 1px;
+			width: 45px;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li.controls.add-only .menu {
+			border-left: none;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li.controls.add-only .remove {
+			display: none;
 		}
 		
 	/* @end */

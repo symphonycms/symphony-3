@@ -222,9 +222,11 @@
 			
 			object.find('*').live('fieldset-remove', function() {
 				var fieldset = jQuery(this);
+				var siblings = fieldset.siblings('fieldset');
 				
-				if (fieldset.siblings('fieldset').length) {
+				if (siblings.length) {
 					fieldset.remove();
+					siblings.trigger('fieldset-refresh');
 				}
 			});
 			
@@ -239,7 +241,18 @@
 			});
 			
 			object.find('*').live('fieldset-controls-show', function() {
-				jQuery(this).find('> .fields > .controls').show();
+				var fieldset = jQuery(this);
+				var controls = fieldset.find('> .fields > .controls');
+				
+				if (fieldset.siblings('fieldset').length) {
+					controls.removeClass('add-only');
+				}
+				
+				else {
+					controls.addClass('add-only');
+				}
+				
+				controls.show();
 			});
 			
 		/*-------------------------------------------------------------------*/
@@ -271,10 +284,11 @@
 			
 			object.find('*').live('field-remove', function() {
 				var field = jQuery(this);
-				var fieldset = field.parents('fieldset');
+				var fieldsets = field.parents('.column')
+					.find('fieldset');
 				
 				field.remove();
-				fieldset.trigger('fieldset-refresh');
+				fieldsets.trigger('fieldset-refresh');
 			});
 			
 		/*-------------------------------------------------------------------*/
