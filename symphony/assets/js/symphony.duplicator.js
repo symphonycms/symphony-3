@@ -5,8 +5,8 @@
 	jQuery.fn.symphonyDuplicatorNew = function(custom_settings) {
 		var objects = this;
 		var settings = {
-			instances:			'> .instances > *',
-			tabs:				'> .tabs > *',
+			instances:			'> .content > .instances > *',
+			tabs:				'> .content > .tabs > *',
 			add:				'> .controls > .add',
 			remove:				'> .controls > .remove'
 		};
@@ -16,7 +16,7 @@
 	-------------------------------------------------------------------------*/
 		
 		objects = objects.symphonyOrderable({
-			items:			'> .tabs > *',
+			items:			settings.tabs,
 			handles:		''
 		});
 		
@@ -24,6 +24,7 @@
 		
 		objects = objects.map(function() {
 			var object = this;
+			var templates = object.find('> .templates');
 			
 			var get_add = function(filter) {
 				var data = object.find(settings.add);
@@ -131,6 +132,16 @@
 			
 		/*-------------------------------------------------------------------*/
 			
+			object.find('*').live('templates-hide', function() {
+				templates.hide();
+			})
+			
+			object.find('*').live('templates-show', function() {
+				templates.show();
+			})
+			
+		/*-------------------------------------------------------------------*/
+			
 			// Initialize tabs:
 			get_tabs()
 				.trigger('duplicator-tab-refresh')
@@ -160,6 +171,21 @@
 					.filter(':first')
 					.trigger('duplicator-tab-select');
 				object.trigger('duplicator-refresh');
+			});
+			
+			// Toggle template selector:
+			templates.trigger('templates-hide');
+			
+			get_add().bind('click', function() {
+				if (templates.is(':visible')) {
+					templates.trigger('templates-hide');
+					jQuery(this).removeClass('visible');
+				}
+				
+				else {
+					templates.trigger('templates-show');
+					jQuery(this).addClass('visible');
+				}
 			});
 		});
 	};

@@ -11,18 +11,26 @@
 	}
 	.layout-widget .size-small {
 		-moz-box-flex: 1;
+		-webkit-box-flex: 1;
 	}
 	.layout-widget .size-medium {
 		-moz-box-flex: 2;
+		-webkit-box-flex: 2;
 	}
 	.layout-widget .size-large {
 		-moz-box-flex: 4;
+		-webkit-box-flex: 4;
 	}
 	
 	/* @group Controls */
 		
 		.layout-widget > .controls {
 			background: -moz-linear-gradient(top, hsl(0, 0%, 77%), hsl(0, 0%, 72%));
+			background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(hsl(0, 0%, 77%)),
+				to(hsl(0, 0%, 72%))
+			);
 			border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 			border-top: 1px solid hsl(0, 0%, 85%);
 			-moz-border-radius-topleft: 5px;
@@ -30,7 +38,6 @@
 			height: 35px;
 			line-height: 33px;
 			position: relative;
-			z-index: 4;
 		}
 		.layout-widget > .controls a {
 			bottom: 0;
@@ -38,7 +45,6 @@
 			cursor: pointer;
 			position: absolute;
 			top: 0;
-			z-index: 3;
 			text-decoration: none;
 		}
 		.layout-widget > .controls a:hover {
@@ -68,6 +74,7 @@
 		
 		.layout-widget > .columns {
 			display: -moz-box;
+			display: -webkit-box;
 			list-style: none;
 			width: 100%;
 		}
@@ -78,8 +85,15 @@
 			list-style: none;
 		}
 		.layout-widget > .columns > li > fieldset > .fields > li {
+			background: #333333;
 			background: -moz-linear-gradient(#444444, #333333);
+			background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(#444444),
+				to(#333333)
+			);
 			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
 			display: block;
 			line-height: 23px;
 			margin: 10px 0 0 0;
@@ -91,8 +105,9 @@
 			float: left;
 		}
 		.layout-widget > .columns > li > fieldset > .fields > li .name {
-			border: 1px solid hsla(0, 0%, 100%, 0.3);
+			border: 1px solid hsla(0, 0%, 100%, 0.1);
 			-moz-border-radius: 3px;
+			-webkit-border-radius: 3px;
 			color: white;
 			display: block;
 			height: 25px;
@@ -103,7 +118,7 @@
 		}
 		.layout-widget > .columns > li > fieldset > .fields > li .menu {
 			background: hsla(0, 0%, 100%, 0.1);
-			border-right: 1px solid hsla(0, 0%, 100%, 0.1);
+			border-right: 1px solid hsla(0, 0%, 100%, 0.05);
 			-moz-border-radius-topleft: 3px;
 			-moz-border-radius-bottomleft: 3px;
 			bottom: 1px;
@@ -117,9 +132,12 @@
 			top: 1px;
 			width: 45px;
 		}
+		.layout-widget > .columns > li > fieldset > .fields > li.empty .menu {
+			border-right: 1px solid hsla(0, 0%, 100%, 0.025);
+		}
 		.layout-widget > .columns > li > fieldset > .fields > li .remove {
 			background: hsla(0, 0%, 100%, 0.1);
-			border-left: 1px solid hsla(0, 0%, 100%, 0.1);
+			border-left: 1px solid hsla(0, 0%, 100%, 0.05);
 			-moz-border-radius-topright: 3px;
 			-moz-border-radius-bottomright: 3px;
 			bottom: 1px;
@@ -131,6 +149,9 @@
 			top: 1px;
 			width: 25px;
 		}
+		.layout-widget > .columns > li > fieldset > .fields > li.empty .remove {
+			border-left: 1px solid hsla(0, 0%, 100%, 0.025);
+		}
 		
 	/* @end */
 	
@@ -138,7 +159,14 @@
 		
 		.layout-widget > .layouts {
 			background: #888888;
-			background: -moz-linear-gradient(#666666, #777777 4%, #888888, #777777 96%, #666666);
+			background: -moz-linear-gradient(#666666, #777777 4%, #888888, #777777 96%, #666666);background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(#666666),
+				to(#666666),
+				color-stop(0.04, #777777),
+				color-stop(0.5, #888888),
+				color-stop(0.96, #777777)
+			);
 			border: 1px solid #666666;
 			border-bottom-color: #555555;
 			border-top-color: #555555;
@@ -155,16 +183,21 @@
 		.layout-widget > .layouts li.active {
 			background: hsla(0, 0%, 0%, 0.1);
 			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
 		}
 		.layout-widget > .layouts li:hover {
 			background: hsla(0, 0%, 0%, 0.2);
 			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
 		}
 		.layout-widget > .layouts li > div {
 			cursor: pointer;
 			display: -moz-box;
+			display: -webkit-box;
 			-moz-box-orient: horizontal;
+			-webkit-box-orient: horizontal;
 			-moz-box-pack: justify;
+			-webkit-box-pack: justify;
 			height: 50px;
 			width: 110px;
 		}
@@ -173,9 +206,17 @@
 			padding: 5px !important;
 		}
 		.layout-widget > .layouts li > div > * > * {
-			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0.9));
-			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
+			background: #eeeeee;
+			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.9), hsla(0, 0%, 100%, 0.7));
+			background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(hsla(0, 0%, 100%, 0.9)),
+				to(hsla(0, 0%, 100%, 0.7))
+			);
 			-moz-border-radius: 2px;
+			-webkit-border-radius: 2px;
+			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
+			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
 			color: #aaaaaa;
 			cursor: pointer;
 			display: block;
@@ -188,8 +229,15 @@
 		}
 		.layout-widget > .layouts li:hover > div > * > *,
 		.layout-widget > .layouts li.active > div > * > * {
-			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.9), hsla(0, 0%, 100%, 1));
+			background: #ffffff;
+			background: -moz-linear-gradient(hsla(0, 0%, 100%, 1), hsla(0, 0%, 100%, 0.9));
+			background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(hsla(0, 0%, 100%, 1)),
+				to(hsla(0, 0%, 100%, 0.9))
+			);
 			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
+			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
 		}
 		
 	/* @end */

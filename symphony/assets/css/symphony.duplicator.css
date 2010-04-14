@@ -3,67 +3,84 @@
 -----------------------------------------------------------------------------*/
 	
 	.duplicator-widget {
-		background: -moz-linear-gradient(left, #cccccc 195px, #bbbbbb 200px, #bbbbbb 201px, #eeeeee 202px);
+		background: #eeeeee;
 		border: 1px solid #bbbbbb;
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
 		margin: 20px 0;
 		min-height: 100px;
-		overflow: hidden;
 		position: relative;
 	}
 	
-	.duplicator-widget > .tabs {
-		float: left;
-		list-style: none;
-		margin: 0 -200px 0 0;
-		position: relative;
-		width: 200px;
-		z-index: 1;
+	.duplicator-widget > .content {
+		display: table;
+		table-layout: fixed;
+		vertical-align: top;
+		width: 100%;
 	}
-	.duplicator-widget > .tabs > * {
+	.duplicator-widget > .content > * {
+		display: table-cell;
+		vertical-align: top;
+	}
+
+	.duplicator-widget > .content > .tabs {
+		background: #cccccc;
+		background: -moz-linear-gradient(left, #cccccc 195px, #bbbbbb);
+		background: -webkit-gradient(
+			linear, left top, right top,
+			from(#cccccc),
+			to(#bbbbbb),
+			color-stop(0.97, #cccccc)
+		);
+		-moz-border-radius-bottomleft: 4px;
+		-webkit-border-bottom-left-radius: 4px;
+		list-style: none;
+		width: 200px;
+	}
+	.duplicator-widget > .content > .tabs > * {
 		border-bottom: 1px solid hsla(0, 0%, 0%, 0.1);
 		color: #444444;
+		display: block;
 		line-height: 35px;
 		padding: 0 20px;
-		position: relative;
 	}
-	.duplicator-widget > .tabs > :last-child {
-		-moz-border-radius-bottomleft: 5px;
+	.duplicator-widget > .content > .tabs > :last-child {
 		margin-bottom: -1px;
 	}
-	.duplicator-widget > .tabs > :hover {
+	.duplicator-widget > .content > .tabs > :hover {
 		background: hsla(0, 0%, 100%, 0.2);
 	}
-	.duplicator-widget > .tabs > .active {
+	.duplicator-widget > .content > .tabs > .active {
 		background: #eeeeee;
-		border-bottom: 1px solid hsla(0, 0%, 0%, 0.25);
-		-moz-box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.15);
+		border-bottom: 1px solid #aaaaaa;
 		color: #000000;
+		position: relative;
 		width: 201px;
 	}
 	
-	.duplicator-widget > .instances {
+	.duplicator-widget > .content > .instances {
 		background: #eeeeee;
-		-moz-border-radius-topright: 4px;
+		border-left: 1px solid #aaaaaa;
+		-moz-border-radius-bottomright: 4px;
+		-webkit-border-bottom-right-radius: 4px;
 		list-style: none;
-		margin: 0 0 -1000em 201px;
-		position: relative;
-		padding: 0 0 1000em 0;
-		z-index: 2;
 	}
-	.duplicator-widget > .instances > * {
+	.duplicator-widget > .content > .instances > * {
 		display: none;
 		padding: 20px;
-		float: right;
 		width: 100%;
 	}
-	.duplicator-widget > .instances > .active {
+	.duplicator-widget > .content > .instances > .active {
 		display: block;
 	}
 	
 	.duplicator-widget > .controls {
 		background: -moz-linear-gradient(top, hsl(0, 0%, 77%), hsl(0, 0%, 72%));
+		background: -webkit-gradient(
+			linear, left top, left bottom,
+			from(hsl(0, 0%, 77%)),
+			to(hsl(0, 0%, 72%))
+		);
 		border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 		border-top: 1px solid hsl(0, 0%, 85%);
 		-moz-border-radius-topleft: 5px;
@@ -71,7 +88,6 @@
 		height: 35px;
 		line-height: 33px;
 		position: relative;
-		z-index: 4;
 	}
 	.duplicator-widget > .controls a {
 		bottom: 0;
@@ -79,7 +95,6 @@
 		cursor: pointer;
 		position: absolute;
 		top: 0;
-		z-index: 3;
 		text-decoration: none;
 	}
 	.duplicator-widget > .controls a:hover {
@@ -92,6 +107,13 @@
 	.duplicator-widget > .controls .add {
 		left: 20px;
 	}
+	.duplicator-widget > .controls .add:after {
+		content: '+';
+		margin: 0 0 0 10px;
+	}
+	.duplicator-widget > .controls .add.visible:after {
+		content: '-';
+	}
 	.duplicator-widget > .controls .remove {
 		right: 20px;
 	}
@@ -100,7 +122,14 @@
 		
 		.duplicator-widget > .templates {
 			background: #888888;
-			background: -moz-linear-gradient(#666666, #777777 4%, #888888, #777777 96%, #666666);
+			background: -moz-linear-gradient(#666666, #777777 4%, #888888, #777777 96%, #666666);background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(#666666),
+				to(#666666),
+				color-stop(0.04, #777777),
+				color-stop(0.5, #888888),
+				color-stop(0.96, #777777)
+			);
 			border: 1px solid #666666;
 			border-bottom-color: #555555;
 			border-top-color: #555555;
@@ -119,19 +148,35 @@
 		.duplicator-widget > .templates > li:hover {
 			background: hsla(0, 0%, 0%, 0.2);
 			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
 		}
 		.duplicator-widget > .templates > li > .name {
-			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0.9));
-			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
+			background: #eeeeee;
+			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.9), hsla(0, 0%, 100%, 0.7));
+			background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(hsla(0, 0%, 100%, 0.9)),
+				to(hsla(0, 0%, 100%, 0.7))
+			);
 			-moz-border-radius: 2px;
+			-webkit-border-radius: 2px;
+			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
+			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
 			cursor: pointer;
 			display: block;
 			line-height: 25px;
 			padding: 0 10px;
 		}
 		.duplicator-widget > .templates > li:hover > .name {
-			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.9), hsla(0, 0%, 100%, 1));
+			background: #ffffff;
+			background: -moz-linear-gradient(hsla(0, 0%, 100%, 1), hsla(0, 0%, 100%, 0.9));
+			background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(hsla(0, 0%, 100%, 1)),
+				to(hsla(0, 0%, 100%, 0.9))
+			);
 			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
+			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
 		}
 		
 	/* @end */
