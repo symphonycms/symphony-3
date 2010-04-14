@@ -161,7 +161,7 @@
 		}*/
 
 		public function appendField($type, array $data=NULL){
-
+			
 			$field = fieldManager::instance()->create($type);
 
 			if(!is_null($data)){
@@ -194,14 +194,13 @@
 		}
 
 		public static function load($path){
-
 			$section = new self;
 
 			$section->handle = preg_replace('/\.xml$/', NULL, basename($path));
 			$section->path = dirname($path);
 
 			if(!file_exists($path)){
-				throw new SectionException(__('Section, %s, could not be found.', array($path)), self::ERROR_SECTION_NOT_FOUND);
+				throw new SectionException(__('Section `%s` could not be found.', array(basename($path))), self::ERROR_SECTION_NOT_FOUND);
 			}
 
 			$doc = @simplexml_load_file($path);
@@ -217,7 +216,14 @@
 						foreach($field as $property_name => $property_value){
 							$data[(string)$property_name] = (string)$property_value;
 						}
-						$section->appendField($data['type'], $data);
+						try{
+							$section->appendField($data['type'], $data);
+						}
+						catch(Exception $e){
+							// Couldnt find the field. Ignore it for now
+							// TO DO: Might need to more than just ignore it
+						}
+							
 					}
 				}
 
@@ -279,32 +285,9 @@
 			return $obj;*/
 		}
 
-		/*public static function loadFromHandle($handle){
-
-			$classname = NULL;
-
-			if(is_array(self::$_sections) && !empty(self::$_sections)){
-				foreach(self::$_sections as $s){
-					if($s['handle'] == $handle) $classname = $s['classname'];
-				}
-			}
-
-			if(is_null($classname)){
-				foreach(new SectionIterator as $section){
-					if($section->handle == $handle) return $section;
-				}
-			}
-
-			if(is_null($classname)){
-				throw new SectionException("Could not locate section with handle '{$handle}'.");
-			}
-
-			$obj = new $classname;
-
-			$obj->initialise();
-
-			return $obj;
-		}*/
+		public function loadFromHandle($handle){
+			return self::load(SECTIONS . '/' . $handle . '.xml');
+		}
 
 		public function synchroniseDataTables(){
 			if(is_array($this->fields) && !empty($this->fields)){
