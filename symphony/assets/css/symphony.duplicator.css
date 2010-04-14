@@ -25,7 +25,7 @@
 
 	.duplicator-widget > .content > .tabs {
 		background: #cccccc;
-		background: -moz-linear-gradient(left, #cccccc 195px, #bbbbbb);
+		background: -moz-linear-gradient(left, #cccccc 97%, #bbbbbb);
 		background: -webkit-gradient(
 			linear, left top, right top,
 			from(#cccccc),
@@ -35,14 +35,16 @@
 		-moz-border-radius-bottomleft: 4px;
 		-webkit-border-bottom-left-radius: 4px;
 		list-style: none;
-		width: 200px;
+		min-width: 130px;
+		width: 20%;
 	}
 	.duplicator-widget > .content > .tabs > * {
 		border-bottom: 1px solid hsla(0, 0%, 0%, 0.1);
 		color: #444444;
 		display: block;
 		line-height: 35px;
-		padding: 0 20px;
+		text-indent: 20px;
+		position: relative;
 	}
 	.duplicator-widget > .content > .tabs > :last-child {
 		margin-bottom: -1px;
@@ -53,9 +55,13 @@
 	.duplicator-widget > .content > .tabs > .active {
 		background: #eeeeee;
 		border-bottom: 1px solid #aaaaaa;
+		box-sizing: content-box;
+		-moz-box-sizing: content-box;
+		-webkit-box-sizing: content-box;
 		color: #000000;
-		position: relative;
-		width: 201px;
+		padding: 0 1px 0 0;
+		text-indent: 20px;
+		width: 100%;
 	}
 	
 	.duplicator-widget > .content > .instances {
