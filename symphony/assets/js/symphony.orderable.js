@@ -22,7 +22,7 @@
 			
 			var start = function() {
 				state = {
-					item:		jQuery(this).parents(settings.items),
+					item:		jQuery(this).data('item'),
 					min:		null,
 					max:		null,
 					delta:		0
@@ -51,11 +51,11 @@
 				}
 				
 				if (top < state.min) {
-					target = item.prev(settings.items);
+					target = item.prev();
 					
 					while (true) {
 						state.delta--;
-						next = target.prev(settings.items);
+						next = target.prev();
 						
 						if (next.length === 0 || top >= (state.min -= next.height())) {
 							item.insertBefore(target); break;
@@ -66,11 +66,11 @@
 				}
 				
 				else if (top > state.max) {
-					target = item.next(settings.items);
+					target = item.next();
 					
 					while (true) {
 						state.delta++;
-						next = target.next(settings.items);
+						next = target.next();
 						
 						if (next.length === 0 || top <= (state.max += next.height())) {
 							item.insertAfter(target); break;
@@ -124,8 +124,13 @@
 					object.addClass('orderable');
 					object.find(settings.items).each(function() {
 						var item = jQuery(this);
-						var handle = item.find(settings.handles);
+						var handle = item;
 						
+						if (settings.handles) {
+							handle = item.find(settings.handles);
+						}
+						
+						handle.data('item', item);
 						handle.unbind('mousedown', start);
 						handle.bind('mousedown', start);
 					});

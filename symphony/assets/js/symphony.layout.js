@@ -1,11 +1,15 @@
 /*---------------------------------------------------------------------------*/
 	
+	
+	
+/*---------------------------------------------------------------------------*/
 /**
  * Get the current coordinates of the first element in the set of matched
  * elements, relative to the closest positioned ancestor element that
  * matches the selector.
  * @param {Object} selector
  */
+ /*
 jQuery.fn.positionAncestor = function(selector) {
     var left = 0;
     var top = 0;
@@ -31,7 +35,6 @@ jQuery.fn.positionAncestor = function(selector) {
         top:    top
     }
 };
-
 	
 	jQuery(document).ready(function() {
 		var $ = jQuery;
@@ -43,7 +46,7 @@ jQuery.fn.positionAncestor = function(selector) {
 	/*----------------------------------------------------------------------------
 		Fieldset events
 	----------------------------------------------------------------------------*/
-		
+		/*
 		// Initialize fieldset:
 		layout.find('*').live('fieldset-initialize', function() {
 			var fieldset = $(this).addClass('fieldset');
@@ -105,11 +108,11 @@ jQuery.fn.positionAncestor = function(selector) {
 			
 			return false;
 		});
-		
+		*/
 	/*----------------------------------------------------------------------------
 		Line events
 	----------------------------------------------------------------------------*/
-		
+		/*
 		// Initialize lines:
 		layout.find('*').live('line-initialize', function() {
 			var line = $(this).addClass('line');
@@ -169,7 +172,7 @@ jQuery.fn.positionAncestor = function(selector) {
 			
 			if (hide) line.children('.control.remove').hide();
 			else line.children('.control.remove').show();
-			
+			*/
 		/*---------------------------------------------------------------------------
 			
 			TODO: Change input names just like the duplicator does,
@@ -184,7 +187,7 @@ jQuery.fn.positionAncestor = function(selector) {
 			Remember that the .selected field is a special case.
 			
 		---------------------------------------------------------------------------*/
-			
+			/*
 			return false;
 		});
 		
@@ -294,11 +297,11 @@ jQuery.fn.positionAncestor = function(selector) {
 			
 			return false;
 		});
-		
+		*/
 	/*----------------------------------------------------------------------------
 		Field events
 	----------------------------------------------------------------------------*/
-		
+		/*
 		// Initialize field:
 		layout.find('*').live('field-initialize', function() {
 			var field = $(this).addClass('field');
@@ -397,11 +400,11 @@ jQuery.fn.positionAncestor = function(selector) {
 			
 			return false;
 		});
-		
+		*/
 	/*----------------------------------------------------------------------------
 		Triggers
 	----------------------------------------------------------------------------*/
-		
+		/*
 		// Ignore mouse clicks:
 		layout.find('> .content > .fieldset .line').live('mousedown', function() {
 			return false;
@@ -442,20 +445,20 @@ jQuery.fn.positionAncestor = function(selector) {
 			
 			return false;
 		});
-		
+		*/
 	/*----------------------------------------------------------------------------
 		Initialize
 	----------------------------------------------------------------------------*/
-		
+		/*
 		layout.find('> .content > *')
 			.trigger('fieldset-initialize');
 		layout.find('> .content > .fieldset > .line > .field:first')
 			.trigger('field-edit-start');
-		
+		*/
 	/*----------------------------------------------------------------------------
 		Listen to form event
 	----------------------------------------------------------------------------*/
-		
+		/*
 		layout.live('prepare-submit', function() {
 			var expression = /^fieldset\[[0-9]+\]\[rows\]\[[0-9]+\]\[fields\]\[[0-9]+\]\[(.*)]$/;
 			
@@ -555,5 +558,5 @@ jQuery.fn.positionAncestor = function(selector) {
 			return passed;
 		});
 	});
-	
+	*/
 /*---------------------------------------------------------------------------*/

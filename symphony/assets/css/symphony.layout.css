@@ -2,6 +2,95 @@
 	
 	.layout {
 		background: #eeeeee;
+		border: 1px solid #bbbbbb;
+		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
+		margin: 20px 0;
+		padding: 0;
+		position: relative;
+	}
+	.layout .size-small {
+		-moz-box-flex: 1;
+	}
+	.layout .size-medium {
+		-moz-box-flex: 2;
+	}
+	.layout .size-large {
+		-moz-box-flex: 4;
+	}
+	
+	/* @group Columns */
+		
+		.layout > .columns {
+			background: red;
+			display: -moz-box;
+			list-style: none;
+			width: 100%;
+		}
+		.layout > .columns > li {
+			padding: 20px;
+		}
+		
+	/* @end */
+	
+	/* @group Layouts */
+		
+		.layout > .layouts {
+			background: #888888;
+			background: -moz-linear-gradient(#888888, #999999 5px);
+			border: 1px solid #666666;
+			list-style: none;
+			margin: 0 -1px -1px -1px;
+			overflow: hidden;
+			padding: 1px 0 0 1px;
+		}
+		.layout > .layouts li {
+			border: 1px solid hsl(0, 0%, 65%);
+			float: left;
+			margin: -1px 0 0 -1px;
+			padding: 5px;
+		}
+		.layout > .layouts li:hover {
+			background: hsla(0, 0%, 0%, 0.2);
+			border: 1px solid hsl(0, 0%, 75%);
+			position: relative;
+		}
+		.layout > .layouts li > div {
+			display: -moz-box;
+			-moz-box-orient: horizontal;
+			-moz-box-pack: justify;
+			height: 50px;
+			width: 110px;
+		}
+		.layout > .layouts li > div > * {
+			padding: 5px;
+		}
+		.layout > .layouts li > div > * > * {
+			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0.9));
+			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
+			-moz-border-radius: 2px;
+			color: #aaaaaa;
+			display: block;
+			font-size: 5pt;
+			height: 40px;
+			line-height: 40px;
+			text-align: center;
+			text-transform: uppercase;
+			width: 100%;
+		}
+		.layout > .layouts li:hover > div > * > * {
+			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.9), hsla(0, 0%, 100%, 1));
+			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
+		}
+		
+	/* @end */
+	
+/* @end */
+
+/* @group Layout */
+	/*
+	.layout {
+		background: #eeeeee;
 		border: 1px solid #cccccc;
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
@@ -29,9 +118,9 @@
 		-webkit-box-flex: 1;
 		min-width: 300px;
 	}
-	
+	*/
 	/* @group Menu */
-		
+		/*
 		.layout > .menu {
 			background: hsla(0, 0%, 20%, 0.95);
 			-moz-border-radius: 5px;
@@ -78,11 +167,11 @@
 		.layout > .menu .settings {
 			display: none;
 		}
-		
+		*/
 	/* @end */
 	
 	/* @group Fieldsets */
-		
+		/*
 		.layout {
 			cursor: default;
 		}
@@ -148,9 +237,9 @@
 			position: absolute;
 			top: 0;
 		}
-		
+		*/
 		/* @group Title */
-			
+			/*
 			.layout > .content > .fieldset .line li .title {
 				border: 1px solid hsla(0, 0%, 100%, 0.1);
 				-moz-border-radius: 5px;
@@ -173,11 +262,11 @@
 				-moz-box-shadow: 1px 1px 4px hsla(0, 0%, 50%, 0.5);
 				-webkit-box-shadow: 1px 1px 4px hsla(0, 0%, 50%, 0.5);
 			}
-			
+			*/
 		/* @end */
 		
 		/* @group Remove */
-			
+			/*
 			.layout > .content > .fieldset .line li .remove-field {
 				background: hsla(0, 0%, 100%, 0.05);
 				border-left: 1px solid hsla(0, 0%, 100%, 0.05);
@@ -190,11 +279,11 @@
 			.layout > .content > .fieldset .line li .remove-field:hover {
 				background: hsla(0, 0%, 100%, 0.15);
 			}
-			
+			*/
 		/* @end */
 		
 		/* @ Sorting */
-			
+			/*
 			.layout > .content > .fieldset .line.ui-sortable-highlight {
 				background: hsla(0, 0%, 0%, 0.06);
 				background: -moz-linear-gradient(hsla(210, 0%, 0%, 0.09), hsla(210, 0%, 0%, 0.04));
@@ -225,7 +314,7 @@
 				-moz-box-shadow: 1px 1px 4px hsla(0, 0%, 0%, 0.5);
 				-webkit-box-shadow: 1px 1px 4px hsla(0, 0%, 0%, 0.5);
 			}
-			
+			*/
 		/* @end */
 		
 	/* @end */

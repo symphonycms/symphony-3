@@ -6,53 +6,161 @@
 		var objects = this;
 		var settings = {
 			instances:			'> .instances > *',
-			tabs:				'> .tabs > *'
+			tabs:				'> .tabs > *',
+			add:				'> .controls > .add > a',
+			remove:				'> .controls > .remove > a'
 		};
+		
+	/*-------------------------------------------------------------------------
+		Orderable
+	-------------------------------------------------------------------------*/
+		
+		objects = objects.symphonyOrderable({
+			items:			'> .tabs > *',
+			handles:		''
+		});
+		
+	/*-----------------------------------------------------------------------*/
 		
 		objects = objects.map(function() {
 			var object = this;
+			
+			var get_add = function(filter) {
+				var data = object.find(settings.add);
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
+			var get_instances = function(filter) {
+				var data = object.find(settings.instances);
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
+			var get_remove = function(filter) {
+				var data = object.find(settings.remove);
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
+			var get_tabs = function(filter) {
+				var data = object.find(settings.tabs);
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
+			
+		/*-------------------------------------------------------------------*/
 			
 			if (object instanceof jQuery === false) {
 				object = jQuery(object);
 			}
 			
+			object.bind('duplicator-refresh', function() {
+				if (get_instances('.active').length == 0) {
+					get_remove().addClass('disabled');
+				}
+				
+				else {
+					get_remove().removeClass('disabled');
+				}
+			});
+					
 		/*-------------------------------------------------------------------*/
 			
-			object.find('*').live('tab-initialize', function() {
+			object.find('*').live('duplicator-tab-refresh', function() {
 				var tab = jQuery(this);
 				var index = tab.prevAll().length;
 				
 				tab.data('index', index);
 			});
 			
-			object.find('*').live('tab-select', function() {
+			object.find('*').live('duplicator-tab-select', function() {
 				var tab = jQuery(this);
 				var index = tab.data('index');
 				
-				object.find(settings.tabs)
+				get_tabs()
 					.removeClass('active')
 					.filter(':eq(' + index + ')')
 					.addClass('active');
 				
-				object.find(settings.instances)
+				get_instances()
 					.removeClass('active')
 					.filter(':eq(' + index + ')')
 					.addClass('active');
 			});
 			
-		/*-------------------------------------------------------------------*/
-			
-			object.find(settings.tabs)
-				.trigger('tab-initialize')
-				.filter(':first')
-				.trigger('tab-select');
+			object.find('*').live('duplicator-tab-reorder', function() {
+				var tab = jQuery(this);
+				var new_index = tab.prevAll().length;
+				var old_index = tab.data('index');
 				
-			object.find(settings.tabs)
-				.bind('click', function() {
-					jQuery(this).trigger('tab-select');
+				// Nothing to do:
+				if (new_index == old_index) return;
+				
+				var items = get_instances();
+				var parent = items.parent();
+				var places = [];
+				
+				items.not(items[old_index]).each(function(index) {
+					if (index == new_index) {
+						places.push(null);
+					}
+					
+					places.push(this);
 				});
 				
-			object.find(settings.instances).filter(':first').addClass('active');
+				places[new_index] = items[old_index];
+				
+				parent.empty().append(places);
+			});
+			
+		/*-------------------------------------------------------------------*/
+			
+			object.find('*').live('duplicator-instance-remove', function() {
+				var instance = jQuery(this);
+				var index = instance.prevAll().length;
+				var tab = get_tabs(':eq(' + index + ')');
+				
+				tab.remove(); instance.remove();
+			});
+			
+		/*-------------------------------------------------------------------*/
+			
+			// Initialize tabs:
+			get_tabs()
+				.trigger('duplicator-tab-refresh')
+				.filter(':first')
+				.trigger('duplicator-tab-select');
+			
+			// Tabs have been reordered:
+			object.bind('orderstop', function(event, target) {
+				target.trigger('duplicator-tab-reorder');
+				get_tabs().trigger('duplicator-tab-refresh');
+			});
+			
+			// Change tab selection:
+			get_tabs().bind('mousedown', function() {
+				jQuery(this).trigger('duplicator-tab-select');
+			});
+			
+			// Initlialize instances:
+			get_instances(':first').addClass('active');
+			
+			// Remove selected item:
+			object.find('.controls .remove a').bind('click', function() {
+				get_instances('.active:first')
+					.trigger('duplicator-instance-remove');
+				get_tabs()
+					.trigger('duplicator-tab-refresh')
+					.filter(':first')
+					.trigger('duplicator-tab-select');
+				object.trigger('duplicator-refresh');
+			});
 		});
 	};
 	
