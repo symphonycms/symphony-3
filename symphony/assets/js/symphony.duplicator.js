@@ -7,8 +7,8 @@
 		var settings = {
 			instances:			'> .instances > *',
 			tabs:				'> .tabs > *',
-			add:				'> .controls > .add > a',
-			remove:				'> .controls > .remove > a'
+			add:				'> .controls > .add',
+			remove:				'> .controls > .remove'
 		};
 		
 	/*-------------------------------------------------------------------------
@@ -165,7 +165,7 @@
 	};
 	
 	jQuery(document).ready(function() {
-		jQuery('.duplicator').symphonyDuplicatorNew();
+		jQuery('.duplicator-widget').symphonyDuplicatorNew();
 	});
 	
 	jQuery.fn.symphonyDuplicator = function(custom_settings) {

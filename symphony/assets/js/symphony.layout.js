@@ -1,6 +1,204 @@
 /*---------------------------------------------------------------------------*/
 	
+	jQuery.fn.symphonyLayout = function(custom_settings) {
+		var objects = this;
+		var settings = {
+		};
+		
+	/*-----------------------------------------------------------------------*/
+		
+		objects = objects.map(function() {
+			var object = this;
+			
+			var get_columns = function(filter) {
+				var data = object.find('> .columns > *');
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
+			var get_layout_id = function(element) {
+				var layout_id = '';
+				
+				element.children().each(function(index) {
+					var column = jQuery(this);
+					
+					if (index) layout_id += '|';
+					
+					if (column.is('.size-small')) {
+						layout_id += 'small';
+					}
+					
+					else if (column.is('.size-medium')) {
+						layout_id += 'medium';
+					}
+					
+					else if (column.is('.size-large')) {
+						layout_id += 'large';
+					}
+				});
+				
+				return layout_id;
+			};
+			var get_layouts = function(filter) {
+				var data = object.find('> .layouts > *');
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
+			var get_fieldsets = function(filter) {
+				var data = object.find('> .columns > * > fieldset');
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
+			var get_fields = function(filter) {
+				var data = object.find('> .columns > * > fieldset > .fields > li');
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
+			
+		/*-------------------------------------------------------------------*/
+			
+			if (object instanceof jQuery === false) {
+				object = jQuery(object);
+			}
+			
+			object.bind('refresh', function() {
+				
+			});
+			
+		/*-------------------------------------------------------------------*/
+			
+			object.find('*').live('layout-initialize', function() {
+				var layout = jQuery(this);
+				
+				if (!layout.data('layout-id')) {
+					layout.data('layout-id', get_layout_id(layout.children()));
+				}
+				
+				if (layout.data('layout-id') == active_layout_id) {
+					layout.addClass('active');
+				}
+				
+				else {
+					layout.removeClass('active');
+				}
+			});
+			
+			object.find('*').live('layouts-hide', function() {
+				object.find('> .layouts').hide();
+			})
+			
+			object.find('*').live('layouts-show', function() {
+				object.find('> .layouts').show();
+			})
+			
+			object.find('*').live('layout-select', function() {
+				var layout = jQuery(this);
+				var old_columns = get_columns();
+				var new_columns = layout.find('> div > *').clone();
+				var parent = old_columns.parents('.columns');
+				
+				// Remove old columns:
+				parent.empty();
+				
+				// Remove placeholder text:
+				new_columns.find('span').remove();
+				
+				// Insert new columns:
+				new_columns.each(function(index) {
+					jQuery('<li />')
+						.addClass(this.className)
+						.appendTo(parent);
+				});
+				
+				new_columns = get_columns();
+				
+				// Insert fieldsets:
+				old_columns.filter(':lt(' + new_columns.length + ')').each(function(index) {
+					jQuery(this).children(':not(.unchanged)').appendTo(new_columns[index]);
+				});
+				
+				old_columns.filter(':gt(' + (new_columns.length - 1) + ')').each(function() {
+					jQuery(this).children(':not(.unchanged)').each(function(index) {
+						jQuery(this).appendTo(new_columns[index % new_columns.length]);
+					});
+				});
+				
+				active_layout_id = layout.data('layout-id');
+			})
+			
+		/*-------------------------------------------------------------------*/
+			
+			object.find('*').live('column-initialize', function() {
+				var column = jQuery(this);
+				
+				// Insert default fieldset:
+				if (column.children().length == 0) {
+					var fieldset = jQuery('<fieldset />')
+						.addClass('unchanged')
+						.append('<h3><input name="name" value="Untitled" />')
+						.appendTo(column);
+				}
+			});
+			
+		/*-------------------------------------------------------------------*/
+			
+			object.find('*').live('fieldset-initialize', function() {
+				var fieldset = jQuery(this);
+				
+			});
+			
+		/*-------------------------------------------------------------------*/
+			
+			var controls = object.find('> .controls');
+			var columns = object.find('> .columns');
+			var layouts = object.find('> .layouts');
+			var active_layout_id = get_layout_id(columns);
+			
+			// Ignore mouse clicks:
+			controls.bind('mousedown', function() {
+				return false;
+			});
+			
+			// Initialize fieldsets:
+			get_layouts().trigger('layout-initialize');
+			get_columns().trigger('column-initialize');
+			get_fieldsets().trigger('fieldset-initialize');
+			
+			// Change layout:
+			get_layouts().bind('click', function() {
+				jQuery(this).trigger('layout-select');
+				get_layouts().trigger('layout-initialize');
+				get_columns().trigger('column-initialize');
+				get_fieldsets().trigger('fieldset-initialize');
+			});
+			
+			// Toggle layout selector:
+			layouts.trigger('layouts-hide');
+			
+			object.find('> .controls > .choose').bind('click', function() {
+				if (layouts.is(':visible')) {
+					layouts.trigger('layouts-hide');
+					jQuery(this).removeClass('visible');
+				}
+				
+				else {
+					layouts.trigger('layouts-show');
+					jQuery(this).addClass('visible');
+				}
+			});
+		});
+	};
 	
+	jQuery(document).ready(function() {
+		jQuery('.layout-widget').symphonyLayout();
+	});
 	
 /*---------------------------------------------------------------------------*/
 /**

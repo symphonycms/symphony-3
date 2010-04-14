@@ -1,6 +1,6 @@
 /* @group Layout */
 	
-	.layout {
+	.layout-widget {
 		background: #eeeeee;
 		border: 1px solid #bbbbbb;
 		-moz-border-radius: 5px;
@@ -9,67 +9,175 @@
 		padding: 0;
 		position: relative;
 	}
-	.layout .size-small {
+	.layout-widget .size-small {
 		-moz-box-flex: 1;
 	}
-	.layout .size-medium {
+	.layout-widget .size-medium {
 		-moz-box-flex: 2;
 	}
-	.layout .size-large {
+	.layout-widget .size-large {
 		-moz-box-flex: 4;
 	}
 	
+	/* @group Controls */
+		
+		.layout-widget > .controls {
+			background: -moz-linear-gradient(top, hsl(0, 0%, 77%), hsl(0, 0%, 72%));
+			border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+			border-top: 1px solid hsl(0, 0%, 85%);
+			-moz-border-radius-topleft: 5px;
+			-moz-border-radius-topright: 5px;
+			height: 35px;
+			line-height: 33px;
+			position: relative;
+			z-index: 4;
+		}
+		.layout-widget > .controls a {
+			bottom: 0;
+			color: #444444;
+			cursor: pointer;
+			position: absolute;
+			top: 0;
+			z-index: 3;
+			text-decoration: none;
+		}
+		.layout-widget > .controls a:hover {
+			color: #000000;
+		}
+		.layout-widget > .controls a.disabled {
+			color: #888888;
+			cursor: default;
+		}
+		.layout-widget > .controls .choose {
+			left: 20px;
+		}
+		.layout-widget > .controls .choose:after {
+			content: '+';
+			margin: 0 0 0 10px;
+		}
+		.layout-widget > .controls .choose.visible:after {
+			content: '-';
+		}
+		.layout-widget > .controls .clear {
+			right: 20px;
+		}
+		
+	/* @end */
+	
 	/* @group Columns */
 		
-		.layout > .columns {
-			background: red;
+		.layout-widget > .columns {
 			display: -moz-box;
 			list-style: none;
 			width: 100%;
 		}
-		.layout > .columns > li {
-			padding: 20px;
+		.layout-widget > .columns > li {
+			padding: 20px 20px 0 20px !important;
+		}
+		.layout-widget > .columns > li > fieldset > .fields {
+			list-style: none;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li {
+			background: -moz-linear-gradient(#444444, #333333);
+			-moz-border-radius: 5px;
+			display: block;
+			line-height: 23px;
+			margin: 10px 0 0 0;
+			padding: 1px;
+			position: relative;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li.empty {
+			margin: 0;
+			float: left;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li .name {
+			border: 1px solid hsla(0, 0%, 100%, 0.3);
+			-moz-border-radius: 3px;
+			color: white;
+			display: block;
+			height: 25px;
+			padding: 0 35px 0 55px;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li.empty .name {
+			padding: 0 22px 0 45px;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li .menu {
+			background: hsla(0, 0%, 100%, 0.1);
+			border-right: 1px solid hsla(0, 0%, 100%, 0.1);
+			-moz-border-radius-topleft: 3px;
+			-moz-border-radius-bottomleft: 3px;
+			bottom: 1px;
+			color: #ffffff;
+			font-size: 7pt;
+			left: 1px;
+			position: absolute;
+			text-align: center;
+			text-decoration: none;
+			text-transform: uppercase;
+			top: 1px;
+			width: 45px;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > li .remove {
+			background: hsla(0, 0%, 100%, 0.1);
+			border-left: 1px solid hsla(0, 0%, 100%, 0.1);
+			-moz-border-radius-topright: 3px;
+			-moz-border-radius-bottomright: 3px;
+			bottom: 1px;
+			color: #ffffff;
+			position: absolute;
+			right: 1px;
+			text-align: center;
+			text-decoration: none;
+			top: 1px;
+			width: 25px;
 		}
 		
 	/* @end */
 	
 	/* @group Layouts */
 		
-		.layout > .layouts {
+		.layout-widget > .layouts {
 			background: #888888;
-			background: -moz-linear-gradient(#888888, #999999 5px);
+			background: -moz-linear-gradient(#666666, #777777 4%, #888888, #777777 96%, #666666);
 			border: 1px solid #666666;
+			border-bottom-color: #555555;
+			border-top-color: #555555;
 			list-style: none;
-			margin: 0 -1px -1px -1px;
+			margin: 0 -1px;
 			overflow: hidden;
-			padding: 1px 0 0 1px;
+			padding: 10px;
 		}
-		.layout > .layouts li {
-			border: 1px solid hsl(0, 0%, 65%);
+		.layout-widget > .layouts li {
+			cursor: pointer;
 			float: left;
-			margin: -1px 0 0 -1px;
 			padding: 5px;
 		}
-		.layout > .layouts li:hover {
-			background: hsla(0, 0%, 0%, 0.2);
-			border: 1px solid hsl(0, 0%, 75%);
-			position: relative;
+		.layout-widget > .layouts li.active {
+			background: hsla(0, 0%, 0%, 0.1);
+			-moz-border-radius: 5px;
 		}
-		.layout > .layouts li > div {
+		.layout-widget > .layouts li:hover {
+			background: hsla(0, 0%, 0%, 0.2);
+			-moz-border-radius: 5px;
+		}
+		.layout-widget > .layouts li > div {
+			cursor: pointer;
 			display: -moz-box;
 			-moz-box-orient: horizontal;
 			-moz-box-pack: justify;
 			height: 50px;
 			width: 110px;
 		}
-		.layout > .layouts li > div > * {
-			padding: 5px;
+		.layout-widget > .layouts li > div > * {
+			cursor: pointer;
+			padding: 5px !important;
 		}
-		.layout > .layouts li > div > * > * {
+		.layout-widget > .layouts li > div > * > * {
 			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0.9));
 			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
 			-moz-border-radius: 2px;
 			color: #aaaaaa;
+			cursor: pointer;
 			display: block;
 			font-size: 5pt;
 			height: 40px;
@@ -78,7 +186,8 @@
 			text-transform: uppercase;
 			width: 100%;
 		}
-		.layout > .layouts li:hover > div > * > * {
+		.layout-widget > .layouts li:hover > div > * > *,
+		.layout-widget > .layouts li.active > div > * > * {
 			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.9), hsla(0, 0%, 100%, 1));
 			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
 		}
