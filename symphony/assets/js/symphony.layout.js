@@ -62,15 +62,14 @@
 				return data;
 			};
 			
-		/*-------------------------------------------------------------------*/
-			
 			if (object instanceof jQuery === false) {
 				object = jQuery(object);
 			}
 			
-			object.bind('refresh', function() {
-				
-			});
+			var controls = object.find('> .controls');
+			var columns = object.find('> .columns');
+			var layouts = object.find('> .layouts');
+			var active_layout_id = get_layout_id(columns);
 			
 		/*-------------------------------------------------------------------*/
 			
@@ -140,11 +139,10 @@
 				
 				// Insert default fieldset:
 				if (column.children().length == 0) {
-					var fieldset = jQuery('<fieldset />')
-						.addClass('unchanged')
-						.append('<h3><input name="name" value="Untitled" />')
-						.appendTo(column);
+					jQuery('<fieldset />').appendTo(column);
 				}
+				
+				column.find('> fieldset').trigger('fieldset-initialize');
 			});
 			
 		/*-------------------------------------------------------------------*/
@@ -152,14 +150,134 @@
 			object.find('*').live('fieldset-initialize', function() {
 				var fieldset = jQuery(this);
 				
+				// Fill with default content:
+				if (fieldset.is(':empty')) {
+					fieldset.addClass('unchanged');
+					
+					// Add header:
+					jQuery('<input />')
+						.attr('name', 'name')
+						.attr('value', 'Untitled')
+						.appendTo(
+							jQuery('<h3 />').appendTo(fieldset)
+						);
+						
+					// Keep track of name changes
+					fieldset.find('> h3 > input').bind('change', function() {
+						fieldset.trigger('fieldset-change');
+					});
+				}
+				
+				// Fields are missing?
+				if (fieldset.find('> .fields').length == 0) {
+					jQuery('<ol />')
+						.addClass('fields')
+						.appendTo(fieldset);
+				}
+				
+				// Controls are missing?
+				if (fieldset.find('> .fields > .controls').length == 0) {
+					var controls = jQuery('<li />')
+						.addClass('controls')
+						.appendTo(fieldset.find('> .fields'));
+					
+					jQuery('<span />')
+						.addClass('name')
+						.appendTo(controls);
+					
+					jQuery('<a />')
+						.addClass('menu')
+						.text('Add ▼')
+						.appendTo(controls);
+					
+					jQuery('<a />')
+						.addClass('remove')
+						.text('×')
+						.appendTo(controls);
+				}
+				
+				fieldset.find('> .fields > .field')
+					.trigger('field-initialize');
+				
+				fieldset.trigger('fieldset-refresh');
+			});
+			
+			object.find('*').live('fieldset-refresh', function() {
+				var fieldset = jQuery(this);
+				
+				// The fieldset contains fields:
+				if (fieldset.find('> .fields > .field').length > 0) {
+					fieldset.trigger('fieldset-controls-hide');
+				}
+				
+				// The fieldset is last in its column:
+				//else if (fieldset.siblings('fieldset').length == 0) {
+				//	fieldset.trigger('fieldset-controls-hide');
+				//}
+				
+				else {
+					fieldset.trigger('fieldset-controls-show');
+				}
+			});
+			
+			object.find('*').live('fieldset-remove', function() {
+				var fieldset = jQuery(this);
+				
+				if (fieldset.siblings('fieldset').length) {
+					fieldset.remove();
+				}
+			});
+			
+			object.find('*').live('fieldset-change', function() {
+				var fieldset = jQuery(this);
+				
+				fieldset.removeClass('unchanged');
+			});
+			
+			object.find('*').live('fieldset-controls-hide', function() {
+				jQuery(this).find('> .fields > .controls').hide();
+			});
+			
+			object.find('*').live('fieldset-controls-show', function() {
+				jQuery(this).find('> .fields > .controls').show();
 			});
 			
 		/*-------------------------------------------------------------------*/
 			
-			var controls = object.find('> .controls');
-			var columns = object.find('> .columns');
-			var layouts = object.find('> .layouts');
-			var active_layout_id = get_layout_id(columns);
+			object.find('*').live('field-initialize', function() {
+				var field = jQuery(this);
+				
+				// Controls are missing?
+				if (field.find('> a').length == 0) {
+					jQuery('<a />')
+						.addClass('menu')
+						.text('Add ▼')
+						.appendTo(field);
+					
+					jQuery('<a />')
+						.addClass('remove')
+						.text('×')
+						.appendTo(field);
+				}
+				
+				field.trigger('field-refresh')
+			});
+			
+			object.find('*').live('field-refresh', function() {
+				var field = jQuery(this);
+				
+				
+			});
+			
+			object.find('*').live('field-remove', function() {
+				var field = jQuery(this);
+				var fieldset = field.parents('fieldset');
+				
+				field.remove();
+				fieldset.trigger('fieldset-refresh');
+			});
+			
+		/*-------------------------------------------------------------------*/
 			
 			// Ignore mouse clicks:
 			controls.bind('mousedown', function() {
@@ -169,14 +287,12 @@
 			// Initialize fieldsets:
 			get_layouts().trigger('layout-initialize');
 			get_columns().trigger('column-initialize');
-			get_fieldsets().trigger('fieldset-initialize');
 			
 			// Change layout:
 			get_layouts().bind('click', function() {
 				jQuery(this).trigger('layout-select');
 				get_layouts().trigger('layout-initialize');
 				get_columns().trigger('column-initialize');
-				get_fieldsets().trigger('fieldset-initialize');
 			});
 			
 			// Toggle layout selector:
@@ -192,6 +308,22 @@
 					layouts.trigger('layouts-show');
 					jQuery(this).addClass('visible');
 				}
+			});
+			
+			// Remove fieldsets and fields:
+			object.find('fieldset .remove').live('click', function() {
+				var self = jQuery(this);
+				
+				// Remove field:
+				if (self.parents('.field').length != 0) {
+					self.parents('.field').trigger('field-remove');
+				}
+				
+				else {
+					self.parents('fieldset').trigger('fieldset-remove');
+				}
+				
+				return false;
 			});
 		});
 	};
