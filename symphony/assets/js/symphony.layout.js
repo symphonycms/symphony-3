@@ -61,6 +61,13 @@
 				
 				return data;
 			};
+			var get_templates = function(filter) {
+				var data = object.find('> .templates > li');
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
 			
 			if (object instanceof jQuery === false) {
 				object = jQuery(object);
@@ -231,10 +238,78 @@
 				fieldset.removeClass('unchanged');
 			});
 			
+			object.find('*').live('fieldset-menu-show', function() {
+				var button = jQuery(this);
+				var fieldset = button.parents('fieldset:first');
+				var position = button.position();
+				var offset = button.offsetParent().position();
+				var menu = jQuery('<div />')
+					.addClass('menu');
+				var fields = jQuery('<ol />');
+				var other = jQuery('<ol />');
+				var templates = get_templates().remove();
+				var remove = function() {
+					fieldset.trigger('fieldset-menu-hide');
+					jQuery(window).unbind('mousedown', remove);
+				};
+				var add_fieldset = function() {
+					jQuery('<fieldset />')
+						.insertAfter(fieldset)
+						.trigger('fieldset-initialize');
+				};
+				var add_field = function() {
+					jQuery(this).appendTo(fieldset.find('.fields'))
+						.unbind('mousedown', add_field)
+						.trigger('field-initialize');
+				};
+				
+				// Append fields:
+				if (templates.length) {
+					var items = templates.get();
+					
+					items.sort(function(a, b) {
+						var text_a = Symphony.Language.createHandle(jQuery(a).text());
+						var text_b = Symphony.Language.createHandle(jQuery(b).text());
+						
+						return (text_a < text_b) ? -1 : (text_a > text_b) ? 1 : 0;
+					});
+					
+					items = jQuery(items)
+						.bind('mousedown', add_field);
+					
+					fields
+						.append(items)
+						.appendTo(menu);
+				}
+				
+				jQuery('<li />')
+					.text('Fieldset')
+					.bind('mousedown', add_fieldset)
+					.appendTo(other);
+				
+				other.appendTo(menu);
+				menu
+					.css('left', (position.left + offset.left + 10) + 'px')
+					.css('top', (position.top + offset.top) + 'px')
+					.prependTo(object);
+				
+				jQuery(window).bind('mousedown', remove);
+			});
+			
+			object.find('*').live('fieldset-menu-hide', function() {
+				var fieldset = jQuery(this);
+				var menu = object.find('> .menu');
+				var templates = menu.find('ol:first > li');
+				
+				templates.appendTo(object.find('> .templates'));
+				
+				menu.remove();
+			});
+			
 		/*-------------------------------------------------------------------*/
 			
 			object.find('*').live('field-initialize', function() {
-				var field = jQuery(this);
+				var field = jQuery(this).addClass('field');
 				
 				// Controls are missing?
 				if (field.find('> .remove').length == 0) {
@@ -248,22 +323,18 @@
 				field.bind('mousedown', function() {
 					return false;
 				});
-				
-				field.trigger('field-refresh')
-			});
-			
-			object.find('*').live('field-refresh', function() {
-				var field = jQuery(this);
-				
-				
 			});
 			
 			object.find('*').live('field-remove', function() {
 				var field = jQuery(this);
 				var fieldsets = field.parents('.column')
 					.find('fieldset');
+				var templates = object.find('> .templates');
 				
-				field.remove();
+				// Remove controls:
+				field.find('.remove').remove();
+				
+				templates.prepend(field);
 				fieldsets.trigger('fieldset-refresh');
 			});
 			
@@ -288,7 +359,7 @@
 			// Toggle layout selector:
 			layouts.trigger('layouts-hide');
 			
-			object.find('> .controls > .choose').bind('click', function() {
+			object.find('.controls .choose').bind('click', function() {
 				if (layouts.is(':visible')) {
 					layouts.trigger('layouts-hide');
 					jQuery(this).removeClass('visible');
@@ -300,8 +371,17 @@
 				}
 			});
 			
+			// Show fieldset menu:
+			object.find('.columns .column fieldset .controls .menu').live('click', function() {
+				if (object.find('> .menu').length != 0) {
+					jQuery(this).trigger('fieldset-menu-hide');
+				}
+				
+				jQuery(this).trigger('fieldset-menu-show');
+			});
+			
 			// Remove fieldsets and fields:
-			object.find('fieldset .remove').live('click', function() {
+			object.find('.columns .column fieldset .remove').live('click', function() {
 				var self = jQuery(this);
 				
 				// Remove field:

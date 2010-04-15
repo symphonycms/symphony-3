@@ -21,6 +21,9 @@
 		-moz-box-flex: 4;
 		-webkit-box-flex: 4;
 	}
+	.layout-widget > .templates {
+		display: none;
+	}
 	
 	/* @group Controls */
 		
@@ -66,6 +69,57 @@
 		}
 		.layout-widget > .controls .clear {
 			right: 20px;
+		}
+		
+	/* @end */
+	
+	/* @group Menu */
+		
+		.layout-widget > .menu {
+			background: hsl(0, 0%, 20%);
+			background: -moz-linear-gradient(hsl(0, 0%, 25%), hsl(0, 0%, 15%));
+			background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(hsl(0, 0%, 25%)),
+				to(hsl(0, 0%, 15%))
+			);
+			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
+			-moz-box-shadow: 1px 1px 6px hsla(0, 0%, 0%, 0.2);
+			-webkit-box-shadow: 1px 1px 6px hsla(0, 0%, 0%, 0.2);
+			color: #ffffff;
+			position: absolute;
+			padding: 1px;
+			z-index: 1;
+			
+			top: 139px;
+			left: 194px;
+		}
+		.layout-widget > .menu ol {
+			border: 1px solid hsla(0, 0%, 100%, 0.2);
+			list-style: none;
+		}
+		.layout-widget > .menu ol + ol {
+			border-top: none;
+		}
+		.layout-widget > .menu ol:first-child {
+			-moz-border-radius-topleft: 4px;
+			-moz-border-radius-topright: 4px;
+			-webkit-border-top-left-radius: 4px;
+			-webkit-border-top-right-radius: 4px;
+		}
+		.layout-widget > .menu ol:last-child {
+			-moz-border-radius-bottomleft: 4px;
+			-moz-border-radius-bottomright: 4px;
+			-webkit-border-bottom-left-radius: 4px;
+			-webkit-border-bottom-right-radius: 4px;
+		}
+		.layout-widget > .menu ol li {
+			line-height: 23px;
+			padding: 0 30px 0 10px;
+		}
+		.layout-widget > .menu ol li:hover {
+			background: hsla(0, 0%, 100%, 0.1);
 		}
 		
 	/* @end */

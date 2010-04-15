@@ -63,6 +63,9 @@
 		text-indent: 20px;
 		width: 100%;
 	}
+	.duplicator-widget > .content > .tabs > .ordering {
+		font-weight: bold;
+	}
 	
 	.duplicator-widget > .content > .instances {
 		background: #eeeeee;
