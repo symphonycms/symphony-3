@@ -35,6 +35,7 @@
 		-moz-border-radius-bottomleft: 4px;
 		-webkit-border-bottom-left-radius: 4px;
 		list-style: none;
+		padding: 20px 0;
 		min-width: 130px;
 		width: 20%;
 	}
@@ -46,15 +47,15 @@
 		text-indent: 20px;
 		position: relative;
 	}
-	.duplicator-widget > .content > .tabs > :last-child {
-		margin-bottom: -1px;
+	.duplicator-widget > .content > .tabs > :first-child {
+		border-top: 1px solid hsla(0, 0%, 0%, 0.1);
 	}
 	.duplicator-widget > .content > .tabs > :hover {
 		background: hsla(0, 0%, 100%, 0.2);
 	}
 	.duplicator-widget > .content > .tabs > .active {
 		background: #eeeeee;
-		border-bottom: 1px solid #aaaaaa;
+		border-color: #aaaaaa;
 		box-sizing: content-box;
 		-moz-box-sizing: content-box;
 		-webkit-box-sizing: content-box;
