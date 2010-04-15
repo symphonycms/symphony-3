@@ -58,13 +58,14 @@
 				var template = jQuery(this);
 				
 				jQuery('<li />')
-					.text(template.find('input:first').val())
-					.appendTo(object.find('> .content > .tabs'))
-					.trigger('tab-initialize');
-				
-				jQuery('<li />')
 					.append(template.find('fieldset > *').clone())
 					.appendTo(object.find('> .content > .instances'));
+				
+				jQuery('<li />')
+					.text(template.find('input:first').val())
+					.appendTo(object.find('> .content > .tabs'))
+					.trigger('tab-initialize')
+					.trigger('tab-select');
 				
 				object.find('.content > .tabs')
 					.trigger('tabs-refresh');
