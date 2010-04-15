@@ -10,6 +10,10 @@
 		objects = objects.map(function() {
 			var object = this;
 			
+			if (object instanceof jQuery === false) {
+				object = jQuery(object);
+			}
+			
 			var get_columns = function(filter) {
 				var data = object.find('> .columns > *');
 				
@@ -68,10 +72,6 @@
 				
 				return data;
 			};
-			
-			if (object instanceof jQuery === false) {
-				object = jQuery(object);
-			}
 			
 			var controls = object.find('> .controls');
 			var columns = object.find('> .columns');

@@ -11,20 +11,14 @@
 			remove:				'> .controls > .remove'
 		};
 		
-	/*-------------------------------------------------------------------------
-		Orderable
-	-------------------------------------------------------------------------*/
-		
-		objects = objects.symphonyOrderable({
-			items:			settings.tabs,
-			handles:		''
-		});
-		
 	/*-----------------------------------------------------------------------*/
 		
 		objects = objects.map(function() {
 			var object = this;
-			var templates = object.find('> .templates');
+			
+			if (object instanceof jQuery === false) {
+				object = jQuery(object);
+			}
 			
 			var get_add = function(filter) {
 				var data = object.find(settings.add);
@@ -40,13 +34,6 @@
 				
 				return data;
 			};
-			var get_remove = function(filter) {
-				var data = object.find(settings.remove);
-				
-				if (filter) return data.filter(filter);
-				
-				return data;
-			};
 			var get_tabs = function(filter) {
 				var data = object.find(settings.tabs);
 				
@@ -54,12 +41,15 @@
 				
 				return data;
 			};
+			var get_templates = function(filter) {
+				var data = object.find('> .templates > *');
+				
+				if (filter) return data.filter(filter);
+				
+				return data;
+			};
 			
 		/*-------------------------------------------------------------------*/
-			
-			if (object instanceof jQuery === false) {
-				object = jQuery(object);
-			}
 			
 			object.bind('duplicator-refresh', function() {
 				if (get_instances('.active').length == 0) {
@@ -142,26 +132,32 @@
 			
 		/*-------------------------------------------------------------------*/
 			
+			var templates = object.find('> .templates');
+			
 			// Wrap contents:
 			object.find('> :not(.templates)')
 				.wrapAll('<div class="content" />');
 				
 			// Build tabs:
-			var tabs = jQuery('<ol />')
+			jQuery('<ol />')
 				.addClass('tabs')
 				.prependTo(object.find('> .content'));
 			
 			get_instances().each(function() {
-				var text = jQuery(this).find('input:first').val();
-				
 				jQuery('<li />')
-					.text(text)
-					.appendTo(tabs)
+					.text(jQuery(this).find('input:first').val())
+					.appendTo(object.find('> .content > .tabs'))
 					.trigger('duplicator-tab-refresh');
 			});
 			
 			// Select first tab:
 			get_tabs(':first').trigger('duplicator-tab-select');
+			
+			// Make tabs orderable:
+			object.symphonyOrderable({
+				items:			'> .content > .tabs > li',
+				handles:		''
+			});
 			
 			// Tabs have been reordered:
 			object.bind('orderstop', function(event, target) {
