@@ -33,6 +33,12 @@
 		}
 		
 		public function generate(){
+			###
+			# Delegate: LayoutPreGenerate
+			# Description: Allows developers to access the layout content
+			#			   before it is appended to the page.
+			ExtensionManager::instance()->notifyMembers('LayoutPreGenerate', '/backend/', &$this->content);
+
 			foreach($this->content['columns'] as $col){
 				$this->content['container']->appendChild($col);
 			}
