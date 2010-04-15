@@ -1,38 +1,41 @@
 <?php
 
 	Class Layout{
-		protected $_columns;
-		protected $_proportions;
-		public $div;
+		protected $properties;
+		protected $content;
 		
-		public function __construct($cols=NULL, $proportions=NULL){
-			$this->div = new XMLElement('div');
-			$this->div->setAttribute('id', 'layout');
-			$this->div->setAttribute('class', 'cols-' . $cols);
+		public function __construct($col1=NULL, $col2=NULL, $col3=NULL, $col4=NULL){
+			$arguments = func_get_args();
 			
-			$this->_columns = array();
-			$this->_proportions = explode(':', $proportions);
+			$this->properties = array(
+				'cols'				=> count($arguments),
+				'proportions'		=> $arguments
+			);
+			$this->content = array(
+				'container'	=> new XMLElement('div', NULL, array('id' => 'layout'))
+			);
 			
-			$i = 1;
-			
-			while($i <= $cols){
-				$this->_columns[$i] = new XMLElement('div', NULL, array (
-					'class' => 'column span-' . $this->_proportions[$i - 1]
-				));
-				$i++;
+			foreach($this->properties['proportions'] as $key => $val){
+				$this->content['columns'][$key + 1] = new XMLElement(
+					'div',
+					NULL,
+					array (
+						'class' => 'column ' . $val
+					)
+				);
 			}
 		}
 		
 		public function appendToCol(XMLElement $element, $col){
-			if($this->_columns[$col]){
-				$this->_columns[$col]->appendChild($element);
+			if($this->content['columns'][$col]){
+				$this->content['columns'][$col]->appendChild($element);
 			}
 		}
 		
 		public function generate(){
-			foreach($this->_columns as $col){
-				$this->div->appendChild($col);
+			foreach($this->content['columns'] as $col){
+				$this->content['container']->appendChild($col);
 			}
-			return $this->div;
+			return $this->content['container'];
 		}
 	}

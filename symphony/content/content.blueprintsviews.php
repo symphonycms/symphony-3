@@ -169,7 +169,7 @@
 
 			$view = View::loadFromPath($view_pathname);
 
-			$this->setPageType('form');
+			## DEPRECATED? $this->setPageType('form');
 			$this->Form->setAttribute('action', ADMIN_URL . '/blueprints/views/template/' . $view->path . '/');
 
 			$filename = $view->handle . '.xsl';
@@ -211,18 +211,14 @@
 			);
 
 			$this->appendViewOptions($viewoptions);
+			
+			$layout = new Layout('medium', 'small');
 
 			if(!empty($_POST)){
 				$view->template = $_POST['fields']['template'];
 			}
 
-			$fieldset = new XMLElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-
-			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
-
-			$div = new XMLElement('div');
+			$fieldset = Widget::Fieldset();
 
 			$label = Widget::Label(__('Template'));
 			$label->appendChild(Widget::Textarea(
@@ -236,21 +232,13 @@
 				$label = $this->wrapFormElementWithError($label, $this->_errors->template);
 			}
 
-			$div->appendChild($label);
-			$group->appendChild($div);
-			$fieldset->appendChild($group);
-
-			$this->Form->appendChild($fieldset);
+			$fieldset->appendChild($label);
+			$layout->appendToCol($fieldset, 1);
 
 			$utilities = new UtilityIterator;
 
 			if($utilities->length() > 0){
-				$div = new XMLElement('div');
-				$div->setAttribute('class', 'small');
-
-				$h3 = new XMLElement('h3', __('Utilities'));
-				$h3->setAttribute('class', 'label');
-				$div->appendChild($h3);
+				$fieldset = Widget::Fieldset(__('Utilities'));
 
 				$ul = new XMLElement('ul');
 				$ul->setAttribute('id', 'utilities');
@@ -263,9 +251,11 @@
 					$ul->appendChild($li);
 				}
 
-				$div->appendChild($ul);
-				$group->appendChild($div);
+				$fieldset->appendChild($ul);
+				$layout->appendToCol($fieldset, 2);
 			}
+			
+			$this->Form->appendChild($layout->generate());
 
 			$div = new XMLElement('div');
 			$div->setAttribute('class', 'actions');
@@ -354,7 +344,7 @@
 		}
 
 		public function __form() {
-			$layout = new Layout(3, '1:1:1');
+			$layout = new Layout(small, small, small);
 
 			$fields = array();
 

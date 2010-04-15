@@ -40,7 +40,7 @@
 		    }
 		
 		// SETUP PAGE
-			$layout = new Layout(3, '2:1:1');
+			$layout = new Layout('medium', 'small', 'small');
 		
 		// SITE SETUP
 			$helptext = 'Symphony version: ' . Symphony::Configuration()->get('version', 'symphony');

@@ -81,7 +81,7 @@
 		
 		public function __viewEdit() {
 			## DEPRECATED? $this->setPageType('form');
-			$layout = new Layout('2', '2:1');
+			$layout = new Layout('medium', 'small');
 			
 			$this->_existing_file = (isset($this->_context[1]) ? $this->_context[1] . '.xsl' : NULL);
 			

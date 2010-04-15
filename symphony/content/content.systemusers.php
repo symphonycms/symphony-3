@@ -128,7 +128,7 @@
 		}
 		
 		private function __form(){
-			$layout = new Layout(3, '1:1:1');
+			$layout = new Layout('small', 'medium', 'small');
 			
 			require_once(TOOLKIT . '/class.field.php');	
 			

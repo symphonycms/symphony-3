@@ -333,21 +333,17 @@
 				}
 			}
 
-			$this->setPageType('form');
+			$layout = new Layout('small', 'large');
+			## DEPRECATED? $this->setPageType('form');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
 
-			$fieldset = new XMLElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(new XMLElement('h3', __('Essentials')));
-
-			$div = new XMLElement('div', NULL, array('class' => 'group'));
-			$namediv = new XMLElement('div', NULL);
+			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			$label = Widget::Label('Name');
 			$label->appendChild(Widget::Input('essentials[name]', $this->section->name));
 
-			$namediv->appendChild((
+			$fieldset->appendChild((
 				isset($this->errors->name)
 					? Widget::wrapFormElementWithError($label, $this->errors->name)
 					: $label
@@ -356,15 +352,12 @@
 			$label = Widget::Label();
 			$input = Widget::Input('essentials[hidden-from-publish-menu]', 'yes', 'checkbox', ($this->section->{'hidden-from-publish-menu'} == 'yes' ? array('checked' => 'checked') : NULL));
 			$label->setValue(__('%s Hide this section from the Publish menu', array($input->generate(false))));
-			$namediv->appendChild($label);
-			$div->appendChild($namediv);
-
-			$navgroupdiv = new XMLElement('div', NULL);
+			$fieldset->appendChild($label);
 
 			$label = Widget::Label('Navigation Group <i>Created if does not exist</i>');
 			$label->appendChild(Widget::Input('essentials[navigation-group]', $this->section->{"navigation-group"}));
 
-			$navgroupdiv->appendChild((
+			$fieldset->appendChild((
 				isset($this->errors->{'navigation-group'})
 					? Widget::wrapFormElementWithError($label, $this->errors->{'navigation-group'})
 					: $label
@@ -376,23 +369,19 @@
 				foreach($navigation_groups as $g){
 					$ul->appendChild(new XMLElement('li', $g));
 				}
-				$navgroupdiv->appendChild($ul);
+				$fieldset->appendChild($ul);
 			}
 
-			$div->appendChild($navgroupdiv);
+			$layout->appendToCol($fieldset, 1);
 
-			$fieldset->appendChild($div);
-			$this->Form->appendChild($fieldset);
 
 			// Fields
 
 
-			$fieldset = new XMLElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(new XMLElement('h3', __('Fields')));
+			$fieldset = Widget::Fieldset(__('Fields'));
 
-			$layout = new XMLElement('div');
-			$layout->setAttribute('class', 'layout');
+			$fields_div = new XMLElement('div');
+			$fields_div->setAttribute('class', 'layout');
 
 			$templates = new XMLElement('ol');
 			$templates->setAttribute('class', 'templates');
@@ -449,7 +438,7 @@
 			}
 
 
-			$layout->appendChild($templates);
+			$fields_div->appendChild($templates);
 
 
 			// Existing Fields
@@ -560,11 +549,13 @@
 				}
 			}
 
-			$layout->appendChild($content);
+			$fields_div->appendChild($content);
 
-			$fieldset->appendChild($layout);
+			$fieldset->appendChild($fields_div);
 
-			$this->Form->appendChild($fieldset);
+			$layout->appendToCol($fieldset, 2);
+			
+			$this->Form->appendChild($layout->generate());
 
 			/*
 				<h3>Fields</h3>
