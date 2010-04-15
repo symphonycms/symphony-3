@@ -65,7 +65,7 @@
 					.text(template.find('input:first').val())
 					.appendTo(object.find('> .content > .tabs'))
 					.trigger('tab-initialize')
-					.trigger('tab-select');
+					.trigger('tab-select-only');
 				
 				object.find('.content > .tabs')
 					.trigger('tabs-refresh');
@@ -84,7 +84,7 @@
 				
 				// Tabs have been reordered:
 				tabs.bind('orderstart', function(event, target) {
-					get_tabs('.ordering').trigger('tab-select');
+					get_tabs('.ordering').trigger('tab-select-only');
 				});
 				
 				tabs.bind('orderstop', function(event, target) {
@@ -111,7 +111,7 @@
 				tab.data('index', index);
 			});
 			
-			object.find('*').live('tab-select', function() {
+			object.find('*').live('tab-select-only', function() {
 				var tab = jQuery(this);
 				var index = tab.data('index');
 				
@@ -124,6 +124,32 @@
 					.removeClass('active')
 					.filter(':eq(' + index + ')')
 					.addClass('active');
+			});
+			
+			object.find('*').live('tab-select', function() {
+				var tab = jQuery(this);
+				var index = tab.data('index');
+				
+				get_tabs()
+					.filter(':eq(' + index + ')')
+					.addClass('active');
+				
+				get_instances()
+					.filter(':eq(' + index + ')')
+					.addClass('active');
+			});
+			
+			object.find('*').live('tab-deselect', function() {
+				var tab = jQuery(this);
+				var index = tab.data('index');
+				
+				get_tabs()
+					.filter(':eq(' + index + ')')
+					.removeClass('active');
+				
+				get_instances()
+					.filter(':eq(' + index + ')')
+					.removeClass('active');
 			});
 			
 			object.find('*').live('tab-reorder', function() {
@@ -190,7 +216,7 @@
 			});
 			
 			// Select first tab:
-			get_tabs(':first').trigger('tab-select');
+			get_tabs(':first').trigger('tab-select-only');
 			
 			object.find('.content > .tabs')
 				.trigger('tabs-refresh');
@@ -203,8 +229,22 @@
 				.prependTo(object);
 			
 			// Change tab selection:
-			object.find('.content > .tabs > li').live('click', function() {
-				jQuery(this).trigger('tab-select');
+			object.find('.content > .tabs > li').live('click', function(event) {
+				var tab = jQuery(this);
+				
+				if (event.shiftKey == true) {
+					if (tab.is('.active') && get_tabs('.active').length > 1) {
+						tab.trigger('tab-deselect');
+					}
+					
+					else {
+						tab.trigger('tab-select');
+					}
+				}
+				
+				else {
+					tab.trigger('tab-select-only');
+				}
 			});
 			
 			// Initlialize instances:
@@ -216,7 +256,7 @@
 				get_tabs()
 					.trigger('tab-refresh')
 					.filter(':first')
-					.trigger('tab-select');
+					.trigger('tab-select-only');
 				
 				return false;
 			});

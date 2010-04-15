@@ -64,6 +64,11 @@
 		text-indent: 20px;
 		width: 100%;
 	}
+	.duplicator-widget > .content > .tabs > .active + .active {
+		border-top: 1px solid #cccccc;
+		margin-top: -1px;
+		position: relative;
+	}
 	.duplicator-widget > .content > .tabs > .ordering {
 		font-weight: bold;
 	}
@@ -109,6 +114,9 @@
 	}
 	.duplicator-widget > .content > .instances > .active {
 		display: block;
+	}
+	.duplicator-widget > .content > .instances > .active + .active {
+		border-top: 1px solid #cccccc;
 	}
 	
 	.duplicator-widget > .controls {
