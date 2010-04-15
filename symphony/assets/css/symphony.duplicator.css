@@ -148,6 +148,9 @@
 			padding: 10px;
 		}
 		.duplicator-widget > .templates > li {
+			background: hsla(0, 0%, 0%, 0.1);
+			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
 			cursor: pointer;
 			display: block;
 			float: left;
@@ -157,8 +160,6 @@
 		}
 		.duplicator-widget > .templates > li:hover {
 			background: hsla(0, 0%, 0%, 0.2);
-			-moz-border-radius: 5px;
-			-webkit-border-radius: 5px;
 		}
 		.duplicator-widget > .templates > li > .name {
 			background: #eeeeee;

@@ -94,6 +94,10 @@
 				else {
 					layout.removeClass('active');
 				}
+				
+				layout.bind('mousedown', function() {
+					return false;
+				});
 			});
 			
 			object.find('*').live('layouts-hide', function() {
@@ -202,6 +206,21 @@
 						return false;
 					});
 				}
+				
+				fieldset.find('.fields').sortable({
+					connectWith:	'.fields',
+					containment:	columns,
+					cursorAt:		{ top: 15, left: 30 },
+					distance:		10,
+					items:			'li',
+					placeholder:	'ui-sortable-highlight',
+					tolerance:		'pointer',
+					zindex:			1000,
+					
+					sort:			function() {
+						jQuery('.ui-sortable-helper').css('height', 'auto');
+					}
+				});
 				
 				fieldset.find('> .fields > .field')
 					.trigger('field-initialize');
@@ -326,7 +345,7 @@
 				
 				// Ignore mouse clicks:
 				field.bind('mousedown', function() {
-					return false;
+				//	return false;
 				});
 			});
 			
@@ -345,10 +364,12 @@
 			
 		/*-------------------------------------------------------------------*/
 			
-			// Ignore mouse clicks:
-			controls.bind('mousedown', function() {
-				return false;
-			});
+			// Add controls:
+			jQuery('<div />')
+				.addClass('controls')
+				.append('<a class="choose">Choose Layout</a>')
+				.bind('mousedown', function() { return false; })
+				.prependTo(object);
 			
 			// Initialize fieldsets:
 			get_layouts().trigger('layout-initialize');

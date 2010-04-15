@@ -142,17 +142,39 @@
 			
 		/*-------------------------------------------------------------------*/
 			
-			// Initialize tabs:
-			get_tabs()
-				.trigger('duplicator-tab-refresh')
-				.filter(':first')
-				.trigger('duplicator-tab-select');
+			// Wrap contents:
+			object.find('> :not(.templates)')
+				.wrapAll('<div class="content" />');
+				
+			// Build tabs:
+			var tabs = jQuery('<ol />')
+				.addClass('tabs')
+				.prependTo(object.find('> .content'));
+			
+			get_instances().each(function() {
+				var text = jQuery(this).find('input:first').val();
+				
+				jQuery('<li />')
+					.text(text)
+					.appendTo(tabs)
+					.trigger('duplicator-tab-refresh');
+			});
+			
+			// Select first tab:
+			get_tabs(':first').trigger('duplicator-tab-select');
 			
 			// Tabs have been reordered:
 			object.bind('orderstop', function(event, target) {
 				target.trigger('duplicator-tab-reorder');
 				get_tabs().trigger('duplicator-tab-refresh');
 			});
+				
+			// Add controls:
+			jQuery('<div />')
+				.addClass('controls')
+				.append('<a class="add">Add Items</a>')
+				.bind('mousedown', function() { return false; })
+				.prependTo(object);
 			
 			// Change tab selection:
 			get_tabs().bind('mousedown', function() {
@@ -191,7 +213,7 @@
 	};
 	
 	jQuery(document).ready(function() {
-		jQuery('.duplicator-widget').symphonyDuplicatorNew();
+		jQuery('#section-duplicator').symphonyDuplicatorNew();
 	});
 	
 	jQuery.fn.symphonyDuplicator = function(custom_settings) {
