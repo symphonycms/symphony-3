@@ -256,11 +256,16 @@
 					jQuery('<fieldset />')
 						.insertAfter(fieldset)
 						.trigger('fieldset-initialize');
+					
+					fieldset.siblings().add(fieldset)
+						.trigger('fieldset-refresh');
 				};
 				var add_field = function() {
 					jQuery(this).appendTo(fieldset.find('.fields'))
 						.unbind('mousedown', add_field)
 						.trigger('field-initialize');
+					
+					fieldset.trigger('fieldset-change');
 				};
 				
 				// Append fields:
