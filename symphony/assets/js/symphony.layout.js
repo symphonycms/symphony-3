@@ -313,8 +313,8 @@
 				
 				other.appendTo(menu);
 				menu
-					.css('left', (position.left + offset.left + 10) + 'px')
-					.css('top', (position.top + offset.top) + 'px')
+					.css('left', (position.left + offset.left) + 'px')
+					.css('top', (position.top + offset.top + 10) + 'px')
 					.prependTo(object);
 				
 				jQuery(window).bind('mousedown', remove);
