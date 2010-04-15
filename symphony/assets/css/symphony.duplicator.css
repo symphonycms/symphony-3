@@ -115,7 +115,8 @@
 	.duplicator-widget > .content > .instances > .active {
 		display: block;
 	}
-	.duplicator-widget > .content > .instances > .active + .active {
+	.duplicator-widget > .content > .instances > .active + .active,
+	.duplicator-widget > .content > .instances > .active ~ .active {
 		border-top: 1px solid #cccccc;
 	}
 	
