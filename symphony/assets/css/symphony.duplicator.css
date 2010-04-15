@@ -70,10 +70,12 @@
 	.duplicator-widget > .content > .tabs > * > .remove {
 		background: hsla(0, 0%, 0%, 0.3);
 		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
 		color: #ffffff;
 		display: block;
 		font-weight: bold;
-		line-height: 15px;
+		height: 15px;
+		line-height: 14px;
 		position: absolute;
 		right: 10px;
 		text-align: center;
