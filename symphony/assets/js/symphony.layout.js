@@ -176,24 +176,24 @@
 				}
 				
 				// Controls are missing?
-				if (fieldset.find('> .fields > .controls').length == 0) {
-					var controls = jQuery('<li />')
+				if (fieldset.find('> .controls').length == 0) {
+					var controls = jQuery('<ol />')
 						.addClass('controls')
-						.appendTo(fieldset.find('> .fields'));
+						.appendTo(fieldset);
 					
-					jQuery('<span />')
-						.addClass('name')
-						.appendTo(controls);
-					
-					jQuery('<a />')
+					jQuery('<li />')
 						.addClass('menu')
-						.text('Add ▼')
+						.html('<span>Add Item ▼</span>')
 						.appendTo(controls);
 					
-					jQuery('<a />')
+					jQuery('<li />')
 						.addClass('remove')
-						.text('×')
+						.html('<span>×</span>')
 						.appendTo(controls);
+					
+					controls.children().bind('mousedown', function() {
+						return false;
+					});
 				}
 				
 				fieldset.find('> .fields > .field')
@@ -204,19 +204,14 @@
 			
 			object.find('*').live('fieldset-refresh', function() {
 				var fieldset = jQuery(this);
+				var remove = fieldset.find('> .controls > .remove');
 				
-				// The fieldset contains fields:
-				if (fieldset.find('> .fields > .field').length > 0) {
-					fieldset.trigger('fieldset-controls-hide');
+				if (fieldset.siblings('fieldset').length) {
+					remove.removeClass('disabled');
 				}
 				
-				// The fieldset is last in its column:
-				//else if (fieldset.siblings('fieldset').length == 0) {
-				//	fieldset.trigger('fieldset-controls-hide');
-				//}
-				
 				else {
-					fieldset.trigger('fieldset-controls-show');
+					remove.addClass('disabled');
 				}
 			});
 			
@@ -236,42 +231,23 @@
 				fieldset.removeClass('unchanged');
 			});
 			
-			object.find('*').live('fieldset-controls-hide', function() {
-				jQuery(this).find('> .fields > .controls').hide();
-			});
-			
-			object.find('*').live('fieldset-controls-show', function() {
-				var fieldset = jQuery(this);
-				var controls = fieldset.find('> .fields > .controls');
-				
-				if (fieldset.siblings('fieldset').length) {
-					controls.removeClass('add-only');
-				}
-				
-				else {
-					controls.addClass('add-only');
-				}
-				
-				controls.show();
-			});
-			
 		/*-------------------------------------------------------------------*/
 			
 			object.find('*').live('field-initialize', function() {
 				var field = jQuery(this);
 				
 				// Controls are missing?
-				if (field.find('> a').length == 0) {
-					jQuery('<a />')
-						.addClass('menu')
-						.text('Add ▼')
-						.appendTo(field);
-					
+				if (field.find('> .remove').length == 0) {
 					jQuery('<a />')
 						.addClass('remove')
 						.text('×')
 						.appendTo(field);
 				}
+				
+				// Ignore mouse clicks:
+				field.bind('mousedown', function() {
+					return false;
+				});
 				
 				field.trigger('field-refresh')
 			});

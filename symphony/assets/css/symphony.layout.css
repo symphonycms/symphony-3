@@ -79,100 +79,88 @@
 			width: 100%;
 		}
 		.layout-widget > .columns > li {
+			overflow: hidden;
 			padding: 20px 20px 0 20px !important;
 		}
 		.layout-widget > .columns > li > fieldset > .fields {
 			list-style: none;
 		}
-		.layout-widget > .columns > li > fieldset > .fields > li {
-			background: #333333;
-			background: -moz-linear-gradient(#444444, #333333);
+		.layout-widget > .columns > li > fieldset > .fields > *,
+		.layout-widget > .columns > li > fieldset > .controls > * {
+			background: hsl(0, 0%, 20%);
+			background: -moz-linear-gradient(hsl(0, 0%, 25%), hsl(0, 0%, 15%));
 			background: -webkit-gradient(
 				linear, left top, left bottom,
-				from(#444444),
-				to(#333333)
+				from(hsl(0, 0%, 25%)),
+				to(hsl(0, 0%, 15%))
 			);
 			-moz-border-radius: 5px;
 			-webkit-border-radius: 5px;
+			color: #ffffff;
 			display: block;
-			line-height: 23px;
-			margin: 10px 0 0 0;
+			margin: 10px 0;
 			padding: 1px;
 			position: relative;
 		}
-		.layout-widget > .columns > li > fieldset > .fields > .controls {
-			margin: 0;
-			float: left;
-		}
-		.layout-widget > .columns > li > fieldset > .fields > .field + .controls {
-			margin: 10px 0 0 0;
-		}
-		.layout-widget > .columns > li > fieldset > .fields > li .name {
+		.layout-widget > .columns > li > fieldset > .fields > * > span,
+		.layout-widget > .columns > li > fieldset > .controls > * > span {
+			background: hsla(0, 0%, 100%, 0.1);
 			border: 1px solid hsla(0, 0%, 100%, 0.1);
-			-moz-border-radius: 3px;
-			-webkit-border-radius: 3px;
-			color: white;
+			-moz-border-radius: 4px;
+			-webkit-border-radius: 4px;
 			display: block;
-			height: 25px;
-			padding: 0 35px 0 55px;
+			line-height: 23px;
+			margin: 0;
+			padding: 0 10px;
 		}
-		.layout-widget > .columns > li > fieldset > .fields > li:hover .name {
-			border: 1px solid hsla(0, 0%, 100%, 0.2);
+		.layout-widget > .columns > li > fieldset > .fields > :hover,
+		.layout-widget > .columns > li > fieldset > .controls > :hover {
+			background: hsl(0, 0%, 23%);
+			background: -moz-linear-gradient(hsl(0, 0%, 28%), hsl(0, 0%, 18%));
+			background: -webkit-gradient(
+				linear, left top, left bottom,
+				from(hsl(0, 0%, 28%)),
+				to(hsl(0, 0%, 18%))
+			);
+		}
+		.layout-widget > .columns > li > fieldset > .fields > :hover > span,
+		.layout-widget > .columns > li > fieldset > .controls > :hover > span {
+			border-color: hsla(0, 0%, 100%, 0.2);
 		}
 		
-		.layout-widget > .columns > li > fieldset > .fields > li .menu,
-		.layout-widget > .columns > li > fieldset > .fields > li .remove {
+		.layout-widget > .columns > li > fieldset > .fields > * > .name {
+			padding: 0 35px 0 10px;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > * .remove {
 			background: hsla(0, 0%, 100%, 0.05);
-			bottom: 0;
-			color: #ffffff;
-			line-height: 25px;
-			position: absolute;
-			text-align: center;
-			text-decoration: none;
-			top: 0;
-			width: 25px;
-		}
-		.layout-widget > .columns > li > fieldset > .fields > li .menu {
-			border-right: 1px solid hsla(0, 0%, 100%, 0.05);
-			-moz-border-radius-topleft: 3px;
-			-moz-border-radius-bottomleft: 3px;
-			font-size: 7pt;
-			left: 0;
-			text-transform: uppercase;
-			width: 45px;
-		}
-		.layout-widget > .columns > li > fieldset > .fields > li .remove {
 			border-left: 1px solid hsla(0, 0%, 100%, 0.05);
 			-moz-border-radius-topright: 3px;
 			-moz-border-radius-bottomright: 3px;
+			bottom: 0;
+			color: #ffffff;
+			line-height: 25px;
+			padding: 0 10px;
+			position: absolute;
 			right: 0;
+			text-align: center;
+			text-decoration: none;
+			top: 0;
 		}
-		
-		.layout-widget > .columns > li > fieldset > .fields > li .menu:hover,
-		.layout-widget > .columns > li > fieldset > .fields > li .remove:hover {
+		.layout-widget > .columns > li > fieldset > .fields > * .remove:hover {
 			background: hsla(0, 0%, 100%, 0.1);
 			border-color: hsla(0, 0%, 100%, 0.1);
 		}
 		
-		.layout-widget > .columns > li > fieldset > .fields > li.controls {
-			width: 69px;
+		.layout-widget > .columns > li > fieldset > .controls {
+			margin: 0;
+			float: right;
+			list-style: none;
 		}
-		.layout-widget > .columns > li > fieldset > .fields > li.controls .name {
-			padding: 0;
+		.layout-widget > .columns > li > fieldset > .controls > * {
+			float: left;
+			margin: 0 0 0 10px;
 		}
-		.layout-widget > .columns > li > fieldset > .fields > li.controls .menu,
-		.layout-widget > .columns > li > fieldset > .fields > li.controls .remove {
-			border-color: hsla(0, 0%, 100%, 0.025);
-		}
-		
-		.layout-widget > .columns > li > fieldset > .fields > li.controls.add-only {
-			padding: 1px;
-			width: 45px;
-		}
-		.layout-widget > .columns > li > fieldset > .fields > li.controls.add-only .menu {
-			border-left: none;
-		}
-		.layout-widget > .columns > li > fieldset > .fields > li.controls.add-only .remove {
+		.layout-widget > .columns > li > fieldset > .controls > .disabled {
 			display: none;
 		}
 		
@@ -199,19 +187,19 @@
 			padding: 10px;
 		}
 		.layout-widget > .layouts li {
-			cursor: pointer;
-			float: left;
-			padding: 5px;
-		}
-		.layout-widget > .layouts li.active {
-			background: hsla(0, 0%, 0%, 0.1);
+			background: hsla(0, 0%, 0%, 0.05);
 			-moz-border-radius: 5px;
 			-webkit-border-radius: 5px;
+			cursor: pointer;
+			float: left;
+			margin: 5px;
+			padding: 2px;
+		}
+		.layout-widget > .layouts li.active {
+			background: hsla(0, 0%, 0%, 0.2);
 		}
 		.layout-widget > .layouts li:hover {
 			background: hsla(0, 0%, 0%, 0.2);
-			-moz-border-radius: 5px;
-			-webkit-border-radius: 5px;
 		}
 		.layout-widget > .layouts li > div {
 			cursor: pointer;
@@ -221,12 +209,12 @@
 			-webkit-box-orient: horizontal;
 			-moz-box-pack: justify;
 			-webkit-box-pack: justify;
-			height: 50px;
+			height: 58px;
 			width: 110px;
 		}
 		.layout-widget > .layouts li > div > * {
 			cursor: pointer;
-			padding: 5px !important;
+			padding: 2px !important;
 		}
 		.layout-widget > .layouts li > div > * > * {
 			background: #eeeeee;
@@ -240,15 +228,14 @@
 			-webkit-border-radius: 2px;
 			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
 			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
-			color: #aaaaaa;
+			color: hsla(0, 0%, 0%, 0.2);
 			cursor: pointer;
 			display: block;
-			font-size: 5pt;
-			height: 40px;
-			line-height: 40px;
+			font-size: 7pt;
+			height: 54px;
+			line-height: 54px;
 			text-align: center;
 			text-transform: uppercase;
-			width: 100%;
 		}
 		.layout-widget > .layouts li:hover > div > * > *,
 		.layout-widget > .layouts li.active > div > * > * {
