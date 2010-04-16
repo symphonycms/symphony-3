@@ -189,7 +189,7 @@
 						$li->setAttribute('class', 'odd');
 					}
 
-					$li->appendChild(Widget::Anchor($util, URL . '/symphony/blueprints/utilities/edit/' . str_replace('.xsl', '', $util) . '/', NULL));
+					$li->appendChild(Widget::Anchor($util, URL . '/symphony/blueprints/utilities/edit/' . str_replace('.xsl', '', $util) . '/', array()));
 					$ul->appendChild($li);
 				}
 

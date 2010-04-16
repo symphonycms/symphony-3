@@ -421,17 +421,13 @@
 					: $label
 			));
 
-			$label = Widget::Label();
-			$input = Widget::Input('essentials[hidden-from-publish-menu]', 'yes', 'checkbox', ($this->section->{'hidden-from-publish-menu'} == 'yes' ? array('checked' => 'checked') : NULL));
-			$label->setValue(__('%s Hide this section from the Publish menu', array($input->generate(false))));
-			$fieldset->appendChild($label);
-
 			$input = Widget::Input('essentials[hidden-from-publish-menu]', 'yes', 'checkbox',
 				($this->section->{'hidden-from-publish-menu'} == 'yes') ? array('checked' => 'checked') : array()
 			);
 
 			$label = Widget::Label(null, $input);
 			$label->setValue(__('%s Hide this section from the Publish menu', array($input)));
+			
 			$fieldset->appendChild($label);
 
 			$label = Widget::Label(__('Navigation Group'));

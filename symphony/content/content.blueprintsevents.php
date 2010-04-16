@@ -262,7 +262,7 @@
 					$input->setAttribute('checked', 'checked');
 				}
 
-				$label->appendChild($input)
+				$label->appendChild($input);
 				$label->setValue(__('Add entry ID to the parameter pool in the format of <code>$event-name-id</code> when saving is successful.'));
 				$fieldset->appendChild($label);
 				$layout->appendToCol($fieldset, 2);
