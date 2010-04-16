@@ -4,8 +4,6 @@
 		
 		protected $_headers;
 		
-		const CRLF = "\r\n";
-		
 		public function __construct(){
 			$this->_headers = array();
 		}

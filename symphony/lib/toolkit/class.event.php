@@ -5,7 +5,6 @@
 		protected $_Parent;
 		protected $_env;
 		
-		const CRLF = "\r\n";
 		const kHIGH = 3;
 		const kNORMAL = 2;
 		const kLOW = 1;

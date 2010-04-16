@@ -1,5 +1,7 @@
 <?php
-	
+	/*
+	**	No DOMDocument or DBC integration has been done this class as yet 
+	*/
 	Class NavigationDataSource extends DataSource {
 		
 		public function __construct(){
@@ -79,7 +81,7 @@
 			return $oPage;
 		}
 		
-		public function grab() {
+		public function render(Register &$ParameterOutput){
 			throw new Exception('TODO: Fix navigation datasource template.');
 			
 			$result = new XMLElement($this->getRootElement());
