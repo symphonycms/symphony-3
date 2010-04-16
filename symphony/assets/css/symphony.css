@@ -983,3 +983,51 @@
 		content: "↑";
 		margin-right: 3px;
 	}
+
+/*-----------------------------------------------------------------------------
+	System: Extensions
+-----------------------------------------------------------------------------*/
+	
+#extension_stats {
+	font-size: 1.15em;
+	line-height: 2.5em;
+	list-style: none;
+	color: #666;
+}
+
+#extension_stats li {
+	position: relative;
+	margin: 10px 0;
+	background: -moz-linear-gradient(top, hsl(0, 0%, 94%), hsl(0, 0%, 88%));
+	background: -webkit-gradient(
+		linear, left top, left bottom,
+		from(hsl(0, 0%, 94%)),
+		to(hsl(0, 0%, 88%))
+	);
+	border: 1px solid hsla(0, 0%, 0%, 0.15);
+	-moz-border-radius: 5px;
+}
+
+#extension_stats li h4 {
+	margin-left: 10px;
+	font-weight: normal;
+}
+
+#extension_stats li p {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 50px;
+	text-align: center;
+	padding: 0 10px;
+	color: #555;
+	background: -moz-linear-gradient(top, hsl(0, 0%, 89%), hsl(0, 0%, 82%));
+	background: -webkit-gradient(
+		linear, left top, left bottom,
+		from(hsl(0, 0%, 89%)),
+		to(hsl(0, 0%, 72%))
+	);
+	border-left: 1px solid hsla(0, 0%, 0%, 0.15);
+	-moz-border-radius-topright: 5px;
+	-moz-border-radius-bottomright: 5px;
+}

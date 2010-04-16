@@ -11,7 +11,7 @@
 			switch($name){
 
 				case '__viewIndex':
-				case '__viewAll':
+				case '__viewOverview':
 					$this->buildOverview(
 						ExtensionManager::instance()->listAll()
 					);
@@ -57,7 +57,7 @@
 
 			$viewoptions = array(
 				'subnav'	=> array(
-					'All'				=>	$path,
+					'Overview'			=>	$path,
 					'Data Sources'		=>	$path . 'datasources/',
 					'Fields'			=>	$path . 'fields/',
 					'Other'				=>	$path . 'other/'
@@ -94,23 +94,24 @@
 			}
 			
 			## First column: Summary of extensions
-			$fieldset = Widget::Fieldset(__('Stats'), NULL, array(
-				'id' => 'extension_stats'
-			));
+			$fieldset = Widget::Fieldset(__('Stats'));
+			
+			$ul = $this->createElement('ul', NULL, array('id' => 'extension_stats'));
 			
 			foreach($lists as $list => $extensions){
 				if(!empty($extensions)){
-					$dl = $this->createElement('dl');
-					$dt = $this->createElement('dt', ucwords($list));
-					$dd = $this->createElement('dd', count($extensions));
+					$li = $this->createElement('li');
+					$h4 = $this->createElement('h4', ucwords($list));
+					$p = $this->createElement('p', count($extensions));
 					
-					$dl->appendChild($dt);
-					$dl->appendChild($dd);
+					$li->appendChild($h4);
+					$li->appendChild($p);
 					
-					$fieldset->appendChild($dl);
+					$ul->appendChild($li);
 				}
 			}
 			
+			$fieldset->appendChild($ul);
 			$layout->appendToCol($fieldset, 1);
 			
 			## Second column: Lists w actions
