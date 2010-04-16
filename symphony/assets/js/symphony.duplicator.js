@@ -266,6 +266,7 @@
 				.append('<a class="add">Add Items</a>')
 				.bind('mousedown', function() { return false; })
 				.prependTo(object)
+				.find('.add')
 				.bind('click', function() {
 					var pallet = find(select.template_parent);
 					
