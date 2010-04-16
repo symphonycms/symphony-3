@@ -10,24 +10,12 @@
 
 		## Forms
 		## First take at a generic fieldset builder for the new form layout
-<<<<<<< HEAD:symphony/lib/toolkit/class.widget.php
-		public static function Fieldset($title=NULL, $help=NULL, $attributes=NULL){
-			$fieldset = new XMLElement('fieldset');
-			
-			if(is_array($attributes) && !empty($attributes)){
-				foreach($attributes as $key => $val)
-					$fieldset->setAttribute($key, $val);	
-			}			
-			
-			if(!is_null($title)){
-=======
 		public static function Fieldset($value=null, $help=null, array $attributes = array()){
 			if(!self::$Symphony) Widget::init();
 
 			$fieldset = Widget::$Symphony->createElement('fieldset', null, $attributes);
 
 			if(!is_null($value)){
->>>>>>> alistair/working:symphony/lib/toolkit/class.widget.php
 				$fieldset->appendChild(
 					Widget::$Symphony->createElement('h3',$value)
 				);
