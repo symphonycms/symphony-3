@@ -3,30 +3,26 @@
 	Class Layout{
 		protected $properties;
 		protected $content;
+		protected $page;
 		
 		public function __construct($col1=NULL, $col2=NULL, $col3=NULL, $col4=NULL){
 			$arguments = func_get_args();
+			$this->page = Symphony::Parent()->Page;
 			
 			$this->properties = array(
 				'cols'				=> count($arguments),
 				'proportions'		=> $arguments
 			);
 			$this->content = array(
-				'container'	=> new XMLElement('div', NULL, array('id' => 'layout'))
+				'container'	=> $this->page->createElement('div', NULL, array('id' => 'layout'))
 			);
 			
 			foreach($this->properties['proportions'] as $key => $val){
-				$this->content['columns'][$key + 1] = new XMLElement(
-					'div',
-					NULL,
-					array (
-						'class' => 'column ' . $val
-					)
-				);
+				$this->content['columns'][$key + 1] = $this->page->createElement('div', NULL, array('class' => 'column ' . $val));
 			}
 		}
 		
-		public function appendToCol(XMLElement $element, $col){
+		public function appendToCol(SymphonyDOMElement $element, $col){
 			if($this->content['columns'][$col]){
 				$this->content['columns'][$col]->appendChild($element);
 			}
