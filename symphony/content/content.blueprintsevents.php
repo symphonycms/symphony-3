@@ -312,7 +312,7 @@
 
 				$doc = $existing->documentation();
 				$fieldset->appendChild($this->createElement('legend', __('Description')));
-				$fieldset->setValue(self::CRLF . General::tabsToSpaces($doc, 2));
+				$fieldset->setValue(PHP_EOL . General::tabsToSpaces($doc, 2));
 
 				$this->Form->appendChild($fieldset);
 			endif;
@@ -653,10 +653,10 @@
 					$documentation_parts[] = $this->createElement('p', __('The send email filter, upon the event successfully saving the entry, takes input from the form and send an email to the desired recipient. <b>This filter currently does not work with the "Allow Multiple" option.</b> The following are the recognised fields:'));
 
 					$documentation_parts[] = self::processDocumentationCode(
-						'send-email[sender-email] // '.__('Optional').self::CRLF.
-						'send-email[sender-name] // '.__('Optional').self::CRLF.
-						'send-email[subject] // '.__('Optional').self::CRLF.
-						'send-email[body]'.self::CRLF.
+						'send-email[sender-email] // '.__('Optional').PHP_EOL.
+						'send-email[sender-name] // '.__('Optional').PHP_EOL.
+						'send-email[subject] // '.__('Optional').PHP_EOL.
+						'send-email[body]'.PHP_EOL.
 						'send-email[recipient] // '.__('list of comma separated usernames.'));
 
 					$documentation_parts[] = $this->createElement('p', __('All of these fields can be set dynamically using the exact field name of another field in the form as shown below in the example form:'));
@@ -686,7 +686,7 @@
 					array('selected' => $fields['filters'], 'documentation' => &$documentation_parts)
 				);
 
-				$documentation = join(self::CRLF, array_map(create_function('$x', 'return rtrim($x->generate(true, 4));'), $documentation_parts));
+				$documentation = join(PHP_EOL, array_map(create_function('$x', 'return rtrim($x->generate(true, 4));'), $documentation_parts));
 				$documentation = str_replace('\'', '\\\'', $documentation);
 
 				$pattern = array(
@@ -759,7 +759,7 @@
 
 
 		private static function __injectArrayValues($shell, $variable, array $elements){
-			return str_replace('<!-- '.strtoupper($variable).' -->',  "'" . implode("'," . self::CRLF . "\t\t\t'", $elements) . "'", $shell);
+			return str_replace('<!-- '.strtoupper($variable).' -->',  "'" . implode("'," . PHP_EOL . "\t\t\t'", $elements) . "'", $shell);
 		}
 
 		private static function __injectOverridesAndDefaults($shell, array $overrides=NULL, array $defaults=NULL){

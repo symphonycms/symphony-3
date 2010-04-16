@@ -22,8 +22,6 @@
 		const GATEWAY_FORCE_CURL = 1;
 		const GATEWAY_FORCE_SOCKET = 2;
 		
-		const CRLF = "\r\n";
-		
         private $_host;
         private $_scheme;
         private $_port;
@@ -205,13 +203,13 @@
 
 			else{
 				
-				$query = $this->_method . ' ' . $this->_path . ' HTTP/' . $this->_http_version . self::CRLF;
-				$query .= 'Host: '.$this->_host . self::CRLF;
-				$query .= 'Content-type: '.$this->_content_type . self::CRLF;
-				$query .= 'User-Agent: '.$this->_agent . self::CRLF;
-				$query .= @implode(self::CRLF, $this->_headers);
-				$query .= 'Content-length: ' . strlen($this->_postfields) . self::CRLF;
-				$query .= 'Connection: close' . self::CRLF . self::CRLF;
+				$query = $this->_method . ' ' . $this->_path . ' HTTP/' . $this->_http_version . PHP_EOL;
+				$query .= 'Host: '.$this->_host . PHP_EOL;
+				$query .= 'Content-type: '.$this->_content_type . PHP_EOL;
+				$query .= 'User-Agent: '.$this->_agent . PHP_EOL;
+				$query .= @implode(PHP_EOL, $this->_headers);
+				$query .= 'Content-length: ' . strlen($this->_postfields) . PHP_EOL;
+				$query .= 'Connection: close' . PHP_EOL . PHP_EOL;
 				
 				if($this->_method == 'POST') $query .= $this->_postfields;				
 

@@ -4,7 +4,6 @@
 		
 		const NAV_CHILD = 0;
 		const NAV_GROUP = 1;
-		const CRLF = PHP_EOL;
 		
 		const ENABLED = 3;
 		const DISABLED = 4;

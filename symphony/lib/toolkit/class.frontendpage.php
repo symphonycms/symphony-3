@@ -166,7 +166,7 @@
 			
 			## EVENT DETAILS IN SOURCE
 			if (Frontend::instance()->isLoggedIn() && Symphony::Configuration()->get('display_event_xml_in_source', 'public') == 'yes') {
-				$output .= General::CRLF . '<!-- ' . General::CRLF . $this->_events_xml->generate(true) . ' -->';
+				$output .= PHP_EOL . '<!-- ' . PHP_EOL . $this->_events_xml->generate(true) . ' -->';
 			}
 			
 			return $output;
@@ -509,7 +509,7 @@
 				if ($xml = $ds->grab($this->_env['pool'])) {
 					if (is_object($xml)) $wrapper->appendChild($xml);
 					else $wrapper->setValue(
-						$wrapper->getValue() . General::CRLF . '	' . trim($xml)
+						$wrapper->getValue() . PHP_EOL . '	' . trim($xml)
 					);
 				}
 				
@@ -569,7 +569,7 @@
 					if($xml = $event->load()):
 				
 						if(is_object($xml)) $wrapper->appendChild($xml);
-						else $wrapper->setValue($wrapper->getValue() . General::CRLF . '	' . trim($xml));
+						else $wrapper->setValue($wrapper->getValue() . PHP_EOL . '	' . trim($xml));
 										
 					endif;
 				

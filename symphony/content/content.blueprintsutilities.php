@@ -84,7 +84,7 @@
 		}
 
 		public function __viewEdit() {
-			$layout = new Layout('2', '2:1');
+			$layout = new Layout(Layout::LARGE, Layout::MEDIUM);
 
 			$this->_existing_file = (isset($this->_context[1]) ? $this->_context[1] . '.xsl' : NULL);
 
@@ -168,7 +168,7 @@
 
 			$fieldset->appendChild((isset($this->_errors['body']) ? Widget::wrapFormElementWithError($label, $this->_errors['body']) : $label));
 
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 
 			$utilities = General::listStructure(UTILITIES, array('xsl'), false, 'asc', UTILITIES);
 			$utilities = $utilities['filelist'];
@@ -194,7 +194,7 @@
 
 				$fieldset->appendChild($ul);
 
-				$layout->appendToCol($fieldset, 2);
+				$layout->appendToColumn(2, $fieldset);
 			}
 
 			$this->Form->appendChild($layout->generate());
