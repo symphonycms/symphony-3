@@ -381,7 +381,8 @@
 		}
 
 		private function __form(Section $existing=NULL){
-
+			$layout = new Layout(Layout::MEDIUM, Layout::LARGE);
+			
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 			if(isset($callback['flag']) && !is_null($callback['flag'])){
@@ -430,7 +431,6 @@
 				$this->createElement('h3', __('Essentials'))
 			);
 
-			$div = $this->createElement('div', NULL, array('class' => 'group'));
 			$namediv = $this->createElement('div');
 
 			$label = Widget::Label('Name');
@@ -475,7 +475,7 @@
 			$div->appendChild($navgroupdiv);
 
 			$fieldset->appendChild($div);
-			$this->Form->appendChild($fieldset);
+			$layout->appendToColumn(1, $fieldset);
 
 			// Fields
 
@@ -483,14 +483,15 @@
 			$fieldset = $this->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild($this->createElement('h3', __('Fields')));
-
+			
+			/*
 			$layout = $this->createElement('div');
 			$layout->setAttribute('class', 'layout');
 
 			$templates = $this->createElement('ol');
 			$templates->setAttribute('class', 'templates');
 
-			/*
+			/ *
 			$div = new XMLElement('div');
 			$h3 = new XMLElement('h3', __('Fields'));
 			$h3->setAttribute('class', 'label');
@@ -513,7 +514,7 @@
 
 				}
 			}
-			*/
+			* /
 
 
 
@@ -660,8 +661,9 @@
 			$layout->appendChild($content);
 
 			$fieldset->appendChild($layout);
+			*/
 
-			$this->Form->appendChild($fieldset);
+			$this->Form->appendChild($layout->generate());
 
 			/*
 				<h3>Fields</h3>

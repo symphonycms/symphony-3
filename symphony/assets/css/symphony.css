@@ -543,28 +543,20 @@
 		padding: 0 15px;
 	}
 	form #layout .column {
-		padding: 15px;
+		padding: 0 15px;
 	}
-		.span-1 {
-			width: 210px;
-			-moz-box-flex: 1;
-			-webkit-box-flex: 1;
-		}
-		.span-2 {
-			width: 420px;
-			-moz-box-flex: 2;
-			-webkit-box-flex: 2;
-		}
-		.span-3 {
-			width: 630px;
-			-moz-box-flex: 3;
-			-webkit-box-flex: 3;
-		}
-		.span-4 {
-			width: 840px;
-			-moz-box-flex: 4;
-			-webkit-box-flex: 4;
-		}
+	form #layout .column.size-small {
+		-moz-box-flex: 1;
+		-webkit-box-flex: 1;
+	}
+	form #layout .column.size-medium {
+		-moz-box-flex: 2;
+		-webkit-box-flex: 2;
+	}
+	form #layout .column.size-large {
+		-moz-box-flex: 4;
+		-webkit-box-flex: 4;
+	}
 
 	form fieldset {
 		position: relative;

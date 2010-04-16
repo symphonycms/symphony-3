@@ -1,34 +1,45 @@
 <?php
 
 	Class Layout{
+		const SMALL = 'small';
+		const MEDIUM = 'medium';
+		const LARGE = 'large';
+		
 		protected $_columns;
 		protected $_proportions;
 		public $div;
 
-		public function __construct($cols=NULL, $proportions=NULL){
-			$this->div = Administration::instance()->Page->createElement('div');
-			$this->div->setAttributeArray(array(
-					'id' => 'layout',
-					'class' => 'cols-' . $cols
-				));
-
+		public function __construct($column) {
+			$page = Symphony::Parent()->Page;
+			$columns = func_get_args();
 			$this->_columns = array();
-			$this->_proportions = explode(':', $proportions);
-
-			$i = 1;
-
-			while($i <= $cols){
-				$this->_columns[$i] = Administration::instance()->Page->createElement('div', NULL, array (
-					'class' => 'column span-' . $this->_proportions[$i - 1]
-				));
-				$i++;
+			
+			if (count($columns) > 4) throw new Exception('Too many columns, a maximum of four may be given.');
+			
+			foreach ($columns as $index => $column) {
+				if ($column == Layout::SMALL || $column == Layout::MEDIUM || $column == Layout::LARGE) {
+					$this->_columns[$index + 1] = $page->createElement('div', null, array (
+						'class'	=> 'column size-' . $column
+					));
+					
+					continue;
+				}
+				
+				throw new Exception(sprintf('Invalid column type %s.', var_export($column, true)));
 			}
+			
+			$this->div = $page->createElement('div');
+			$this->div->setAttributeArray(array(
+				'id'	=> 'layout',
+			));
 		}
-
-		public function appendToCol(SymphonyDOMElement $element, $col){
-			if($this->_columns[$col]){
-				$this->_columns[$col]->appendChild($element);
+		
+		public function appendToColumn($column, SymphonyDOMElement $element) {
+			if (!isset($this->_columns[$column])) {
+				throw new Exception(sprintf('Unknown column %s.', var_export($column, true)));
 			}
+			
+			$this->_columns[$column]->appendChild($element);
 		}
 
 		public function generate(){

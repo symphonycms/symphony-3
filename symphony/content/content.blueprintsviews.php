@@ -364,7 +364,7 @@
 		}
 
 		public function __form() {
-			$layout = new Layout(3, '1:1:1');
+			$layout = new Layout(Layout::MEDIUM, Layout::MEDIUM, Layout::MEDIUM);
 
 			$fields = array();
 
@@ -506,7 +506,7 @@
 			$container->appendChild($tags);
 			$fieldset->appendChild($container);
 
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 
 		// Fieldset -----------------------------------------------------------
 
@@ -557,7 +557,7 @@
 			));
 
 			$fieldset->appendChild($label);
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 
 		// Fieldset -----------------------------------------------------------
 
@@ -597,7 +597,7 @@
 
 			$label->appendChild(Widget::Select('fields[data-sources][]', $options, array('multiple' => 'multiple')));
 			$fieldset->appendChild($label);
-			$layout->appendToCol($fieldset, 3);
+			$layout->appendToColumn(3, $fieldset);
 
 			$this->Form->appendChild($layout->generate());
 
