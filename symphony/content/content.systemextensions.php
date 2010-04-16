@@ -13,7 +13,8 @@
 				case '__viewIndex':
 				case '__viewAll':
 					$this->buildOverview(
-						ExtensionManager::instance()->listAll(), 
+						ExtensionManager::instance()->listAll()
+					);
 					return;
 					break;
 
@@ -99,9 +100,9 @@
 			
 			foreach($lists as $list => $extensions){
 				if(!empty($extensions)){
-					$dl = new XMLElement('dl');
-					$dt = new XMLElement('dt', ucwords($list));
-					$dd = new XMLElement('dd', count($extensions));
+					$dl = $this->createElement('dl');
+					$dt = $this->createElement('dt', ucwords($list));
+					$dd = $this->createElement('dd', count($extensions));
 					
 					$dl->appendChild($dt);
 					$dl->appendChild($dd);
