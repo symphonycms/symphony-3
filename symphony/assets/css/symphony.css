@@ -1,4 +1,4 @@
-/* @override 
+/* @override
 	http://symphony-21.local/symphony/assets/css/symphony.css
 	http://localhost/projects/symphony-21/symphony/assets/css/symphony.css
 */
@@ -314,7 +314,7 @@
 	h2 + #tab {
 		margin-top: -5px;
 	}
-	
+
 /*-----------------------------------------------------------------------------
 	Content
 -----------------------------------------------------------------------------*/
@@ -349,6 +349,7 @@
 -----------------------------------------------------------------------------*/
 
 	fieldset ~ .actions input[type=submit],
+	div ~ .actions input[type=submit],
 	button,
 	.button {
 		background-color: #222;
@@ -559,7 +560,7 @@
 			-moz-box-flex: 3;
 			-webkit-box-flex: 3;
 		}
-		
+
 	form fieldset {
 		position: relative;
 		border: none;
@@ -612,6 +613,9 @@
 		display: block;
 		margin-bottom: 15px;
 	}
+	form label i {
+		margin-left: .25em;
+	}
 	form label input,
 	form .label input,
 	form label select,
@@ -632,6 +636,8 @@
 	form input[type=checkbox] {
 		display: inline;
 		width: auto;
+		margin-right: .4em;
+		cursor: pointer;
 	}
 	form select[multiple] {
 		min-height: 100px;
@@ -686,7 +692,7 @@
 /*-----------------------------------------------------------------------------
 	Content: Form: Options List
 -----------------------------------------------------------------------------*/
-	
+
 	.options-list {
 		border-top: 1px dotted #dddddd;
 		border-top-color: hsla(0, 0%, 0%, 0.2);
@@ -700,7 +706,7 @@
 	.options-list li label {
 		margin: 0;
 	}
-	
+
 /*-----------------------------------------------------------------------------
 	Content: Form: Tags
 -----------------------------------------------------------------------------*/
@@ -763,7 +769,7 @@
 	#utilities li:nth-child(even) {
 		background-color: #fff;
 	}
-	
+
 	#utilities li:first-child {
 		border-top: 0;
 	}
@@ -843,7 +849,7 @@
 		border-radius: 9px;
 		-moz-border-radius: 9px;
 		-webkit-border-radius: 9px;
-		display: block;	
+		display: block;
 	}
 	#sections-tool tbody .added .status:before {
 		content: "+";

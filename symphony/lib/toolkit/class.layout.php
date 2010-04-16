@@ -31,7 +31,7 @@
 				$this->content['columns'][$col]->appendChild($element);
 			}
 		}
-		
+
 		public function generate(){
 			###
 			# Delegate: LayoutPreGenerate

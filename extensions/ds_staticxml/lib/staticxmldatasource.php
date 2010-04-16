@@ -39,8 +39,8 @@
 			return parent::save($errors);
 		}
 		
-		public function grab() {
-			$result = new XMLElement($this->about()->{'root-element'});
+		public function render(Register &$ParameterOutput){
+			$result = Symphony::Parent()->Page->createElement($this->about()->{'root-element'});
 			
 			try {
 				$result = $this->parameters()->xml;
@@ -51,7 +51,7 @@
 			}
 			
 			catch (Exception $error) {
-				$result->appendChild(new XMLElement(
+				$result->appendChild(Symphony::Parent()->Page->createElement(
 					'error', General::sanitize($error->getMessage())
 				));
 			}	

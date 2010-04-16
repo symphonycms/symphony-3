@@ -136,9 +136,7 @@
 		public $User;
 
 		protected static $_instance;
-
-		const CRLF = "\r\n";
-
+		
 		protected function __construct(){
 
 			$this->Profiler = new Profiler;
@@ -178,7 +176,6 @@
 			Cache::setDriver(self::Configuration()->core()->{'cache-driver'});
 
 			Lang::loadAll(true);
-
 		}
 
 		public function lang(){
@@ -258,7 +255,11 @@
 		public function isLoggedIn(){
 
 			if ($this->User) return true;
-
+			
+			if (isset($_REQUEST['auth-token']) && $_REQUEST['auth-token'] && strlen($_REQUEST['auth-token']) == 8) {
+				return $this->loginFromToken($_REQUEST['auth-token']);
+			}
+			
 			$username = $this->Cookie->get('username');
 			$password = $this->Cookie->get('pass');
 
