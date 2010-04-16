@@ -123,7 +123,7 @@
 
 			$help = $page->createElement('p');
 			$help->setAttribute('class', 'help');
-			$help->setValue('<code>$param</code>');
+			$help->appendChild($page->createElement('code', '$param'));
 			$fieldset->appendChild($help);
 
 			$conditionals_container = $page->createElement('div');
@@ -222,7 +222,9 @@
 
 			$help = $page->createElement('p');
 			$help->setAttribute('class', 'help');
-			$help->setValue(__('<code>{$param}</code> or <code>Value</code>'));
+			$help->appendChild($page->createElement('code', '$param'));
+			$help->appendChild(new DOMText(' or '));
+			$help->appendChild($page->createElement('code', 'Value'));
 			$fieldset->appendChild($help);
 
 			$container_filter_results = $page->createElement('div');
@@ -289,7 +291,9 @@
 
 			$help = $page->createElement('p');
 			$help->setAttribute('class', 'help');
-			$help->setValue(__('<code>{$param}</code> or <code>Value</code>'));
+			$help->appendChild($page->createElement('code', '$param'));
+			$help->appendChild(new DOMText(' or '));
+			$help->appendChild($page->createElement('code', 'Value'));
 			$fieldset->appendChild($help);
 
 			$group = $page->createElement('div');

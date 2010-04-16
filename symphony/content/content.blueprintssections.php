@@ -7,7 +7,7 @@
 
 	Class contentBlueprintsSections extends AdministrationPage{
 
-		private $errors;
+		public $errors;
 		private $section;
 
 		public function __viewIndex(){
@@ -382,7 +382,7 @@
 
 		private function __form(Section $existing=NULL){
 			$layout = new Layout(Layout::MEDIUM, Layout::LARGE);
-			
+
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 			if(isset($callback['flag']) && !is_null($callback['flag'])){
@@ -431,12 +431,12 @@
 				$this->createElement('h3', __('Essentials'))
 			);
 
-			$namediv = $this->createElement('div');
+			//$namediv = $this->createElement('div');
 
 			$label = Widget::Label('Name');
 			$label->appendChild(Widget::Input('essentials[name]', $this->section->name));
 
-			$namediv->appendChild((
+			$fieldset->appendChild((
 				isset($this->errors->name)
 					? Widget::wrapFormElementWithError($label, $this->errors->name)
 					: $label
@@ -446,18 +446,20 @@
 				($this->section->{'hidden-from-publish-menu'} == 'yes') ? array('checked' => 'checked') : array()
 			);
 
-			$label = Widget::Label(null, $input);
-			$label->setValue(__('%s Hide this section from the Publish menu', array($input)));
-			$namediv->appendChild($label);
-			$div->appendChild($namediv);
+			$label = Widget::Label(null);
+			$label->appendChild($input);
+			$label->setValue(__('Hide this section from the Publish menu'));
 
-			$navgroupdiv = $this->createElement('div');
+			$fieldset->appendChild($label);
+			//$namediv->appendChild($label);
+
+			//$navgroupdiv = $this->createElement('div');
 
 			$label = Widget::Label(__('Navigation Group'));
 			$label->setValue($this->createElement('i', __('Created if does not exist')));
 			$label->appendChild(Widget::Input('essentials[navigation-group]', $this->section->{"navigation-group"}));
 
-			$navgroupdiv->appendChild((
+			$fieldset->appendChild((
 				isset($this->errors->{'navigation-group'})
 					? Widget::wrapFormElementWithError($label, $this->errors->{'navigation-group'})
 					: $label
@@ -469,12 +471,11 @@
 				foreach($navigation_groups as $g){
 					$ul->appendChild($this->createElement('li', $g));
 				}
-				$navgroupdiv->appendChild($ul);
+				$fieldset->appendChild($ul);
 			}
 
-			$div->appendChild($navgroupdiv);
+			//$fieldset->appendChild($navgroupdiv);
 
-			$fieldset->appendChild($div);
 			$layout->appendToColumn(1, $fieldset);
 
 			// Fields
@@ -483,7 +484,7 @@
 			$fieldset = $this->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild($this->createElement('h3', __('Fields')));
-			
+
 			/*
 			$layout = $this->createElement('div');
 			$layout->setAttribute('class', 'layout');
