@@ -17,8 +17,6 @@
 		private $_placeValueAfterChildElements;
 		private $_no_end_tags;
 		
-		const CRLF = "\r\n";
-		
 		function XMLElement($name, $value=NULL, $attributes=array()){
 	
 			$this->_name = $name;
@@ -133,7 +131,7 @@
 	
 			$result = NULL;
 		
-			$newline = ($indent ? self::CRLF : NULL);
+			$newline = ($indent ? PHP_EOL : NULL);
 			
 			if(!$hasParent){
 				if($this->_includeHeader){
@@ -143,7 +141,7 @@
 				if($this->_dtd) $result .= $this->_dtd . $newline;
 			
 				if(is_array($this->_processingInstructions) && !empty($this->_processingInstructions)){
-					$result .= implode(self::CRLF, $this->_processingInstructions);
+					$result .= implode(PHP_EOL, $this->_processingInstructions);
 				}
 			}
 			

@@ -516,21 +516,21 @@
 		function __injectIncludedElements(&$shell, $elements){
 			if(!is_array($elements) || empty($elements)) return;
 
-			$shell = str_replace('<!-- INCLUDED ELEMENTS -->', "public \$dsParamINCLUDEDELEMENTS = array(" . self::CRLF . "\t\t\t'" . implode("'," . self::CRLF . "\t\t\t'", $elements) . "'" . self::CRLF . '		);' . self::CRLF, $shell);
+			$shell = str_replace('<!-- INCLUDED ELEMENTS -->', "public \$dsParamINCLUDEDELEMENTS = array(" . PHP_EOL . "\t\t\t'" . implode("'," . PHP_EOL . "\t\t\t'", $elements) . "'" . PHP_EOL . '		);' . PHP_EOL, $shell);
 
 		}
 
 		function __injectFilters(&$shell, $filters){
 			if(!is_array($filters) || empty($filters)) return;
 
-			$string = 'public $dsParamFILTERS = array(' . self::CRLF;
+			$string = 'public $dsParamFILTERS = array(' . PHP_EOL;
 
 			foreach($filters as $key => $val){
 				if(strlen(trim($val)) == 0) continue;
-				$string .= "\t\t\t'$key' => '" . addslashes($val) . "'," . self::CRLF;
+				$string .= "\t\t\t'$key' => '" . addslashes($val) . "'," . PHP_EOL;
 			}
 
-			$string .= '		);' . self::CRLF;
+			$string .= '		);' . PHP_EOL;
 
 			$shell = str_replace('<!-- FILTERS -->', trim($string), $shell);
 
@@ -553,14 +553,14 @@
 				$var_list .= sprintf('		public $dsParam%s = ', strtoupper($key));
 
 				if(is_array($val) && !empty($val)){
-					$var_list .= 'array(' . self::CRLF;
+					$var_list .= 'array(' . PHP_EOL;
 					foreach($val as $item){
-						$var_list .= sprintf("\t\t\t'%s',", addslashes($item)) . self::CRLF;
+						$var_list .= sprintf("\t\t\t'%s',", addslashes($item)) . PHP_EOL;
 					}
-					$var_list .= '		);' . self::CRLF;
+					$var_list .= '		);' . PHP_EOL;
 				}
 				else{
-					$var_list .= sprintf("'%s';", addslashes($val)) . self::CRLF;
+					$var_list .= sprintf("'%s';", addslashes($val)) . PHP_EOL;
 				}
 			}
 

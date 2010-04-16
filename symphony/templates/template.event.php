@@ -40,7 +40,7 @@
 		}
 
 		public static function documentation(){
-			return General::CRLF . '<!-- DOCUMENTATION -->';
+			return PHP_EOL . '<!-- DOCUMENTATION -->';
 		}
 		
 		public function load(){			

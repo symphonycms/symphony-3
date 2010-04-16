@@ -228,7 +228,7 @@
 					
 					if($writeToCache) $cache->write($cache_id, $xml);
 					
-					$result->setValue(self::CRLF . preg_replace('/([\r\n]+)/', '$1	', $ret));
+					$result->setValue(PHP_EOL . preg_replace('/([\r\n]+)/', '$1	', $ret));
 					$result->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
 					$result->setAttribute('creation', $creation);
 					

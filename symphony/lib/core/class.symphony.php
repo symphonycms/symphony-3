@@ -136,9 +136,7 @@
 		public $User;
 
 		protected static $_instance;
-
-		const CRLF = PHP_EOL;
-
+		
 		protected function __construct(){
 
 			$this->Profiler = new Profiler;

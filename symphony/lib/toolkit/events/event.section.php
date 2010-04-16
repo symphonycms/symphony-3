@@ -209,11 +209,11 @@
 
 				$edit_link = ADMIN_URL . '/publish/'.$section->get('handle').'/edit/'.$entry->get('id').'/';
 
-				$body = __('Dear <!-- RECIPIENT NAME -->,') . General::CRLF . __('This is a courtesy email to notify you that an entry was created on the %1$s section. You can edit the entry by going to: %2$s', array($section->get('name'), $edit_link)). General::CRLF . General::CRLF;
+				$body = __('Dear <!-- RECIPIENT NAME -->,') . PHP_EOL . __('This is a courtesy email to notify you that an entry was created on the %1$s section. You can edit the entry by going to: %2$s', array($section->get('name'), $edit_link)). PHP_EOL . PHP_EOL;
 
 				if(is_array($fields['body'])){
 					foreach($fields['body'] as $field_handle => $value){
-						$body .= "// $field_handle" . General::CRLF . $value . General::CRLF . General::CRLF;
+						$body .= "// $field_handle" . PHP_EOL . $value . PHP_EOL . PHP_EOL;
 					}
 				}
 
