@@ -13,7 +13,8 @@
 			template_parent:	'.templates'
 		};
 		var settings = {
-			orderable:			true
+			multiselect:		false,
+			orderable:			false
 		}
 		
 		jQuery.extend(settings, custom_settings);
@@ -218,30 +219,32 @@
 				});
 			
 			// Make tabs orderable:
-			find(select.tab_parent)
-				.symphonyOrderable({
-					items:		'> *',
-					handles:	''
-				});
-			
-			// Reoder tabs:
-			find(select.tabs)
-				.live('orderable-started', function(event, target) {
-					find(select.tabs + '.ordering')
-						.trigger('duplicator-tab-select-only');
-				})
-				.live('orderable-completed', function(event, target) {
-					target.trigger('duplicator-tab-reorder');
-					find(select.tabs).trigger('duplicator-tab-refresh');
-				})
+			if (settings.orderable) {
+				find(select.tab_parent)
+					.symphonyOrderable({
+						items:		'> *',
+						handles:	''
+					});
+				
+				// Reoder tabs:
+				find(select.tabs)
+					.live('orderable-started', function(event, target) {
+						find(select.tabs + '.ordering')
+							.trigger('duplicator-tab-select-only');
+					})
+					.live('orderable-completed', function(event, target) {
+						target.trigger('duplicator-tab-reorder');
+						find(select.tabs).trigger('duplicator-tab-refresh');
+					})
+			}
 			
 			// Select tabs:
 			find(select.tabs)
 				.live('click', function(event) {
 					var tab = jQuery(this);
 					
-					if (event.shiftKey == true) {
-						if (tab.is('.active') && get_tabs('.active').length > 1) {
+					if (settings.multiselect && event.shiftKey == true) {
+						if (tab.is('.active') && find(select.tabs + '.active').length > 1) {
 							tab.trigger('duplicator-tab-deselect');
 						}
 						
@@ -313,7 +316,10 @@
 		});
 		
 		// Initialize duplicator:
-		duplicator.symphonyDuplicatorNew();
+		duplicator.symphonyDuplicatorNew({
+			multiselect:	true,
+			orderable:		true
+		});
 	});
 	
 	
