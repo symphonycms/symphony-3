@@ -40,7 +40,7 @@
 		    }
 
 		// SETUP PAGE
-			$layout = new Layout(3, '2:1:1');
+			$layout = new Layout(Layout::LARGE, Layout::MEDIUM, Layout::MEDIUM);
 
 		// SITE SETUP
 			$helptext = 'Symphony version: ' . Symphony::Configuration()->get('version', 'symphony');
@@ -72,7 +72,7 @@
 				// Append language selection
 				$fieldset->appendChild($label);
 			}
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 
 		// REGIONAL SETTINGS
 
@@ -100,7 +100,7 @@
 			$label->appendChild($select);
 			$fieldset->appendChild($label);
 
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 
 		// PERMISSIONS
 
@@ -141,7 +141,7 @@
 			$label->appendChild($select);
 			$fieldset->appendChild($label);
 
-			$layout->appendToCol($fieldset, 3);
+			$layout->appendToColumn(3, $fieldset);
 
 			###
 			# Delegate: AddCustomPreferenceFieldsets
