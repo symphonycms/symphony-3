@@ -6,7 +6,6 @@
 		public function __construct(){
 			parent::__construct();
 
-			## DEPRECATED $this->setPageType('form');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Settings'))));
 		}
 
@@ -41,7 +40,7 @@
 
 		// SETUP PAGE
 
-			$layout = new Layout('medium', 'small', 'small');
+			$layout = new Layout('small', 'small', 'small');
 		
 		// SITE SETUP
 			$helptext = 'Symphony version: ' . Symphony::Configuration()->get('version', 'symphony');

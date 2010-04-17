@@ -71,15 +71,12 @@
 
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
+			
+			$layout = new Layout('small', 'medium', 'small');
 
 		//	Essentials --------------------------------------------------------
 
-			$fieldset = $page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($page->createElement('legend', __('Essentials')));
-
-			$group = $page->createElement('div');
-			$group->setAttribute('class', 'group');
+			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			// Name:
 			$label = Widget::Label(__('Name'));
@@ -90,7 +87,7 @@
 				$label = Widget::wrapFormElementWithError($label, $errors->{'about::name'});
 			}
 
-			$group->appendChild($label);
+			$fieldset->appendChild($label);
 
 			// Section:
 			//$sectionManager = SectionManager::instance();
@@ -110,21 +107,13 @@
 
 			$label = Widget::Label(__('Section'));
 			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'context')));
-			$group->appendChild($label);
 
-			$fieldset->appendChild($group);
-			$wrapper->appendChild($fieldset);
+			$fieldset->appendChild($label);
+			$layout->appendToCol($fieldset, 1);
 
 		//	Conditions ---------------------------------------------------------
 
-			$fieldset = $page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($page->createElement('legend', __('Conditions')));
-
-			$help = $page->createElement('p');
-			$help->setAttribute('class', 'help');
-			$help->setValue('<code>$param</code>');
-			$fieldset->appendChild($help);
+			$fieldset = Widget::Fieldset(__('Conditions'), '<code>$param</code>');
 
 			$conditionals_container = $page->createElement('div');
 			$ol = $page->createElement('ol');
@@ -212,18 +201,11 @@
 			$conditionals_container->appendChild($ol);
 			$fieldset->appendChild($conditionals_container);
 
-			$wrapper->appendChild($fieldset);
+			$layout->appendToCol($fieldset, 2);
 
 		//	Filtering ---------------------------------------------------------
 
-			$fieldset = $page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($page->createElement('legend', __('Filtering')));
-
-			$help = $page->createElement('p');
-			$help->setAttribute('class', 'help');
-			$help->setValue(__('<code>{$param}</code> or <code>Value</code>'));
-			$fieldset->appendChild($help);
+			$fieldset = Widget::Fieldset(__('Filtering'), '<code>{$param}</code> or <code>Value</code>');
 
 			$container_filter_results = $page->createElement('div');
 			$fieldset->appendChild($container_filter_results);
@@ -252,14 +234,12 @@
 			$label->setValue(__('Redirect to 404 page when no results are found'));
 			$fieldset->appendChild($label);
 
-			$wrapper->appendChild($fieldset);
+			$layout->appendToCol($fieldset, 2);
 
 
 		//	Sorting -----------------------------------------------------------
 
-			$fieldset = $page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($page->createElement('legend', __('Sorting')));
+			$fieldset = Widget::Fieldset(__('Sorting'));
 
 			$group = $page->createElement('div');
 			$group->setAttribute('class', 'group');
@@ -279,21 +259,11 @@
 			$group->appendChild($label);
 
 			$fieldset->appendChild($group);
-			$wrapper->appendChild($fieldset);
+			$layout->appendToCol($fieldset, 2);
 
 		//	Limiting ----------------------------------------------------------
 
-			$fieldset = $page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($page->createElement('legend', __('Limiting')));
-
-			$help = $page->createElement('p');
-			$help->setAttribute('class', 'help');
-			$help->setValue(__('<code>{$param}</code> or <code>Value</code>'));
-			$fieldset->appendChild($help);
-
-			$group = $page->createElement('div');
-			$group->setAttribute('class', 'group');
+			$fieldset = Widget::Fieldset(__('Limiting'), '<code>{$param}</code> or <code>Value</code>');
 
 			$label = Widget::Label();
 			$input = Widget::Input('fields[limit]', $datasource->parameters()->limit, NULL, array('size' => '6'));
@@ -303,7 +273,7 @@
 				$label = Widget::wrapFormElementWithError($label, $errors->limit);
 			}
 
-			$group->appendChild($label);
+			$fieldset->appendChild($label);
 
 			$label = Widget::Label();
 			$input = Widget::Input('fields[page]', $datasource->parameters()->page, NULL, array('size' => '6'));
@@ -314,30 +284,19 @@
 				$label = Widget::wrapFormElementWithError($label, $errors->page);
 			}
 
-			$group->appendChild($label);
-			$fieldset->appendChild($group);
+			$fieldset->appendChild($label);
 
-			$wrapper->appendChild($fieldset);
+			$layout->appendToCol($fieldset, 3);
 
 		//	Output options ----------------------------------------------------
 
-			$fieldset = $page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($page->createElement('legend', __('Output Options')));
-
-			$group = $page->createElement('div');
-			$group->setAttribute('class', 'group');
+			$fieldset = Widget::Fieldset(__('Output Options'));
 
 			$container_parameter_output = $page->createElement('div');
-			$group->appendChild($container_parameter_output);
+			$fieldset->appendChild($container_parameter_output);
 
 			$container_xml_output = $page->createElement('div');
-			$group->appendChild($container_xml_output);
-
-			$fieldset->appendChild($group);
-
-			$group = $page->createElement('div');
-			$group->setAttribute('class', 'group');
+			$fieldset->appendChild($container_xml_output);
 
 			$fieldset->appendChild(Widget::Input('fields[append-pagination]', 'no', 'hidden'));
 
@@ -350,7 +309,7 @@
 
 			$label->appendChild($input);
 			$label->setValue(__('Append pagination data'));
-			$group->appendChild($label);
+			$fieldset->appendChild($label);
 
 			$fieldset->appendChild(Widget::Input('fields[append-associated-entry-count]', 'no', 'hidden'));
 
@@ -363,7 +322,7 @@
 
 			$label->appendChild($input);
 			$label->setValue(__('Append entry count'));
-			$group->appendChild($label);
+			$fieldset->appendChild($label);
 
 			$label = Widget::Label();
 			$input = Widget::Input('fields[html-encode]', 'yes', 'checkbox');
@@ -374,11 +333,10 @@
 
 			$label->appendChild($input);
 			$label->setValue(__('HTML-encode text'));
-			$group->appendChild($label);
+			$fieldset->appendChild($label);
 
-			$fieldset->appendChild($group);
-
-			$wrapper->appendChild($fieldset);
+			$layout->appendToCol($fieldset, 3);
+			$wrapper->appendChild($layout->generate());
 
 		//	Build contexts ----------------------------------------------------
 
@@ -536,6 +494,7 @@
 
 				$label->appendChild($select);
 				$container_xml_output->appendChild($label);
+
 			}
 		}
 	}

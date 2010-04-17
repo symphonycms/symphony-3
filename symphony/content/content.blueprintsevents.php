@@ -210,7 +210,7 @@
 
 			if(isset($_POST['fields'])) $fields = $_POST['fields'];
 
-			$layout = new Layout('small', 'small', 'large');
+			$layout = new Layout('small', 'small', 'medium');
 			
 			$this->setTitle(__(($isEditing ? '%1$s &ndash; %2$s &ndash; %3$s' : '%1$s &ndash; %2$s'), array(__('Symphony'), __('Events'), $about['name'])));
 			$this->appendSubheading(($isEditing ? $about['name'] : __('Untitled')));
