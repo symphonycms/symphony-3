@@ -11,7 +11,7 @@
 		protected $_errors;
 
 		/*
-		TODO: Remove this?
+		TODO: Remove Children and buildParentBreadcrumb functions?
 
 		private static function __countChildren($id){
 			$children = Symphony::Database()->fetchCol('id', "SELECT `id` FROM `tbl_pages` WHERE `parent` = {$id}");
@@ -235,7 +235,7 @@
 
 			$label = Widget::Label(__('Template'));
 			$label->appendChild(
-				Widget::Textarea('fields[template]', General::sanitize($view->template), array(
+				Widget::Textarea('fields[template]', $view->template, array(
 					'rows' => 30,
 					'cols' => 80,
 					'class'	=> 'code'
