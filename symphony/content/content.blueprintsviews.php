@@ -226,7 +226,7 @@
 
 			$this->appendViewOptions($viewoptions);
 			
-			$layout = new Layout('medium', 'small');
+			$layout = new Layout(Layout::MEDIUM, Layout::SMALL);
 
 			if(!empty($_POST)){
 				$view->template = $_POST['fields']['template'];
@@ -248,7 +248,7 @@
 			}
 
 			$fieldset->appendChild($label);
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 
 			$utilities = new UtilityIterator;
 
@@ -268,7 +268,7 @@
 				}
 
 				$fieldset->appendChild($ul);
-				$layout->appendToCol($fieldset, 2);
+				$layout->appendToColumn(2, $fieldset);
 			}
 			
 			$this->Form->appendChild($layout->generate());
