@@ -1,5 +1,7 @@
 <?php
-
+	
+	require_once(TOOLKIT . '/class.messagestack.php');
+	
 	Class XSLProcException extends Exception{
 		private $error;
 
