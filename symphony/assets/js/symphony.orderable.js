@@ -6,142 +6,130 @@
 		var objects = this;
 		var settings = {
 			items:				'li',
-			handles:			'*',
-			delay_initialize:	false
+			handles:			'> *'
 		};
 		
 		jQuery.extend(settings, custom_settings);
 		
-	/*-------------------------------------------------------------------------
-		Orderable
-	-------------------------------------------------------------------------*/
+	/*-----------------------------------------------------------------------*/
 		
 		objects = objects.map(function() {
-			var object = this;
-			var state = null;
+			var object = jQuery(this).addClass('orderable-widget');
 			
-			var start = function() {
-				state = {
-					item:		jQuery(this).parents(settings.items),
-					min:		null,
-					max:		null,
-					delta:		0
-				};
-				
-				jQuery(document).mousemove(change);
-				jQuery(document).mouseup(stop);
-				
-				return false;
+			var find = function(selector) {
+				return object.find(selector);
 			};
-			
-			var change = function(event) {
-				var item = state.item;
-				var target, next, top = event.pageY;
-				var a = item.height();
-				var b = item.offset().top;
-				var prev = item.prev();
-				
-				state.min = Math.min(b, a + (prev.size() > 0 ? prev.offset().top : -Infinity));
-				state.max = Math.max(a + b, b + (item.next().height() ||  Infinity));
-				
-				if (!object.is('.ordering')) {
-					object.addClass('ordering');
-					item.addClass('ordering');
-					object.trigger('orderstart', [state.item]);
-				}
-				
-				if (top < state.min) {
-					target = item.prev(settings.items);
-					
-					while (true) {
-						state.delta--;
-						next = target.prev(settings.items);
-						
-						if (next.length === 0 || top >= (state.min -= next.height())) {
-							item.insertBefore(target); break;
-						}
-						
-						target = next;
-					}
-				}
-				
-				else if (top > state.max) {
-					target = item.next(settings.items);
-					
-					while (true) {
-						state.delta++;
-						next = target.next(settings.items);
-						
-						if (next.length === 0 || top <= (state.max += next.height())) {
-							item.insertAfter(target); break;
-						}
-						
-						target = next;
-					}
-				}
-				
-				object.trigger('orderchange', [state.item]);
-				
-				return false;
-			};
-			
-			var stop = function() {
-				jQuery(document).unbind('mousemove', change);
-				jQuery(document).unbind('mouseup', stop);
-				
-				if (state != null) {
-					object.removeClass('ordering');
-					state.item.removeClass('ordering');
-					object.trigger('orderstop', [state.item]);
-					state = null;
-				}
-				
+			var block = function() {
 				return false;
 			};
 			
 		/*-------------------------------------------------------------------*/
 			
-			if (object instanceof jQuery === false) {
-				object = jQuery(object);
-			}
-			
-			object.orderable = {
-				settings: settings,
+			find('*').live('orderable-item-initialize', function() {
+				var item = jQuery(this);
+				var handle = item.find(settings.handles);
 				
-				cancel: function() {
-					jQuery(document).unbind('mousemove', change);
-					jQuery(document).unbind('mouseup', stop);
+				if (handle.length == 0) handle = item;
+				
+				var handle = jQuery(this);
+				var index = handle.prevAll().length;
+				var item = find(settings.items + ':eq(' + index + ')');
+				var state = null;
+				
+				var action_start = function(event) {
+					state = {
+						min:		null,
+						max:		null,
+						delta:		0
+					};
+					
+					jQuery(document)
+						.bind('mousemove', action_change)
+						.bind('mouseup', action_stop);
+					
+					return false;
+				};
+				
+				var action_change = function(event) {
+					var target, next, top = event.pageY;
+					var a = item.height();
+					var b = item.offset().top;
+					var prev = item.prev();
+					
+					state.min = Math.min(b, a + (prev.size() > 0 ? prev.offset().top : -Infinity));
+					state.max = Math.max(a + b, b + (item.next().height() ||  Infinity));
+					
+					if (!object.is('.ordering')) {
+						object.addClass('ordering');
+						item.addClass('ordering')
+							.trigger('orderable-started');
+					}
+					
+					if (top < state.min) {
+						target = item.prev();
+						
+						while (true) {
+							state.delta--;
+							next = target.prev();
+							
+							if (next.length === 0 || top >= (state.min -= next.height())) {
+								item.insertBefore(target); break;
+							}
+							
+							target = next;
+						}
+					}
+					
+					else if (top > state.max) {
+						target = item.next();
+						
+						while (true) {
+							state.delta++;
+							next = target.next();
+							
+							if (next.length === 0 || top <= (state.max += next.height())) {
+								item.insertAfter(target); break;
+							}
+							
+							target = next;
+						}
+					}
+					
+					item.trigger('orderable-moved');
+					
+					return false;
+				};
+				
+				var action_stop = function(event) {
+					jQuery(document)
+						.unbind('mousemove', action_change)
+						.unbind('mouseup', action_stop);
 					
 					if (state != null) {
 						object.removeClass('ordering');
-						state.item.removeClass('ordering');
-						object.trigger('ordercancel', [state.item]);
+						item.removeClass('ordering')
+							.trigger('orderable-completed', [item]);
 						state = null;
 					}
-				},
+					
+					return false;
+				};
 				
-				initialize: function() {
-					object.addClass('orderable');
-					object.find(settings.items).each(function() {
-						var item = jQuery(this);
-						var handle = item.find(settings.handles);
-						
-						handle.unbind('mousedown', start);
-						handle.bind('mousedown', start);
-					});
-				}
-			};
+				handle.data('index', index);
+				handle.data('item', item);
+				
+				// Unbind any accidents:
+				jQuery(document).unbind('mousemove', action_change);
+				jQuery(document).unbind('mouseup', action_stop);
+				
+				handle.bind('mousedown', action_start);
+			});
 			
-			if (settings.delay_initialize !== true) {
-				object.orderable.initialize();
-			}
+		/*-------------------------------------------------------------------*/
 			
-			return object;
+			find(settings.items)
+				.trigger('orderable-item-initialize');
 		});
-		
-		objects.collapsible = {
-			settings: settings
-		};
 		
 		return objects;
 	};

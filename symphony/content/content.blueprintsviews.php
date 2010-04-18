@@ -11,7 +11,7 @@
 		protected $_errors;
 
 		/*
-		TODO: Remove this?
+		TODO: Remove Children and buildParentBreadcrumb functions?
 
 		private static function __countChildren($id){
 			$children = Symphony::Database()->fetchCol('id', "SELECT `id` FROM `tbl_pages` WHERE `parent` = {$id}");
@@ -231,7 +231,7 @@
 
 			$label = Widget::Label(__('Template'));
 			$label->appendChild(
-				Widget::Textarea('fields[template]', General::sanitize($view->template), array(
+				Widget::Textarea('fields[template]', $view->template, array(
 					'rows' => 30,
 					'cols' => 80,
 					'class'	=> 'code'
@@ -355,7 +355,7 @@
 		}
 
 		public function __form() {
-			$layout = new Layout(small, small, small);
+			$layout = new Layout(Layout::MEDIUM, Layout::MEDIUM, Layout::MEDIUM);
 
 			$fields = array();
 
@@ -497,7 +497,7 @@
 			$container->appendChild($tags);
 			$fieldset->appendChild($container);
 
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 
 		// Fieldset -----------------------------------------------------------
 
@@ -548,7 +548,7 @@
 			));
 
 			$fieldset->appendChild($label);
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 
 		// Fieldset -----------------------------------------------------------
 
@@ -588,7 +588,7 @@
 
 			$label->appendChild(Widget::Select('fields[data-sources][]', $options, array('multiple' => 'multiple')));
 			$fieldset->appendChild($label);
-			$layout->appendToCol($fieldset, 3);
+			$layout->appendToColumn(3, $fieldset);
 
 			$this->Form->appendChild($layout->generate());
 

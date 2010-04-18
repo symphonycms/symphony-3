@@ -141,10 +141,11 @@
 		}
 
 		private function __form(){
-			$layout = new Layout('small', 'medium', 'small');
-			
-			require_once(TOOLKIT . '/class.field.php');	
-			
+
+			$layout = new Layout(Layout::SMALL, Layout::MEDIUM, Layout::SMALL);
+
+			require_once(TOOLKIT . '/class.field.php');
+
 			## Handle unknow context
 			if(!in_array($this->_context[0], array('new', 'edit'))) throw new AdministrationPageNotFoundException;
 
@@ -220,7 +221,7 @@
 			$label->appendChild(Widget::Input('fields[email]', $user->get('email')));
 			$fieldset->appendChild((isset($this->_errors['email']) ? Widget::wrapFormElementWithError($label, $this->_errors['email']) : $label));
 
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 			###
 
 			### Login Details ###
@@ -274,7 +275,7 @@
 
 			$fieldset->appendChild($label);
 
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 
 			###
 
@@ -300,7 +301,7 @@
 				$label->appendChild($select);
 				$fieldset->appendChild($label);
 
-				$layout->appendToCol($fieldset, 3);
+				$layout->appendToColumn(3, $fieldset);
 
 				$this->Form->appendChild($layout->generate());
 			}

@@ -37,6 +37,10 @@
 			$meta->setAttribute('http-equiv', 'Content-Type');
 			$meta->setAttribute('content', 'text/html; charset=UTF-8');
 
+			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.css'));
+			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.duplicator.css'));
+			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.layout.css'));
+
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/jquery.js'));
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/jquery-ui.js'));
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.collapsible.js'));
@@ -45,10 +49,6 @@
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/admin.js'));
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.js'));
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.layout.js'));
-
-			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.css'));
-			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.duplicator.css'));
-			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.layout.css'));
 
 			###
 			# Delegate: InitaliseAdminPageHead

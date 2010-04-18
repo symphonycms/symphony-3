@@ -6,7 +6,14 @@
 		public function __construct(){
 			parent::__construct();
 
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Settings'))));
+			//$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Settings'))));
+			
+			// This is the 'correct' way to append a string containing an entity
+			$title = $this->createElement('title');
+			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
+			$title->appendChild($this->createEntityReference('ndash'));
+			$title->appendChild($this->createTextNode(' ' . __('Settings')));
+			$this->insertNodeIntoHead($title);
 		}
 
 		## Overload the parent 'view' function since we dont need the switchboard logic
@@ -39,8 +46,7 @@
 		    }
 
 		// SETUP PAGE
-
-			$layout = new Layout('small', 'small', 'small');
+			$layout = new Layout(Layout::SMALL, Layout::SMALL, Layout::SMALL);
 		
 		// SITE SETUP
 			$helptext = 'Symphony version: ' . Symphony::Configuration()->get('version', 'symphony');
@@ -72,11 +78,11 @@
 				// Append language selection
 				$fieldset->appendChild($label);
 			}
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 
 		// REGIONAL SETTINGS
 
-			$fieldset = Widget::Fieldset(__('Date &amp; Time Settings'));
+			$fieldset = Widget::Fieldset(__('Date & Time Settings'));
 
 			// Date and Time Settings
 			$label = Widget::Label(__('Date Format'));
@@ -100,7 +106,7 @@
 			$label->appendChild($select);
 			$fieldset->appendChild($label);
 
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 
 		// PERMISSIONS
 
@@ -141,7 +147,7 @@
 			$label->appendChild($select);
 			$fieldset->appendChild($label);
 
-			$layout->appendToCol($fieldset, 3);
+			$layout->appendToColumn(3, $fieldset);
 
 			###
 			# Delegate: AddCustomPreferenceFieldsets

@@ -381,7 +381,8 @@
 		}
 
 		private function __form(Section $existing=NULL){
-
+			$layout = new Layout(Layout::MEDIUM, Layout::LARGE);
+			
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 			if(isset($callback['flag']) && !is_null($callback['flag'])){
@@ -449,8 +450,9 @@
 				$fieldset->appendChild($ul);
 			}
 
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 
+			$fieldset->appendChild($div);
 
 			// Fields
 
@@ -633,7 +635,7 @@
 
 			$fieldset->appendChild($fields_div);
 
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 			
 			$this->Form->appendChild($layout->generate());
 

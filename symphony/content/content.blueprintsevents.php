@@ -235,7 +235,7 @@
 
 				$label->appendChild(Widget::Select('fields[source]', $options, array('id' => 'event-context-selector')));
 				$fieldset->appendChild($label);
-				$layout->appendtoCol($fieldset, 1);
+				$layout->appendtoColumn(1, $fieldset);
 
 				$fieldset = Widget::Fieldset(__('Processing Options'));
 				$label = Widget::Label(__('Filter Rules'));
@@ -265,7 +265,7 @@
 				$label->appendChild($input);
 				$label->setValue(__('Add entry ID to the parameter pool in the format of <code>$event-name-id</code> when saving is successful.'));
 				$fieldset->appendChild($label);
-				$layout->appendToCol($fieldset, 2);
+				$layout->appendToColumn(2, $fieldset);
 				
 			endif;
 
@@ -292,7 +292,7 @@
 			*/
 
 			$fieldset->appendChild($div);
-			$layout->appendToCol($fieldset, 3);
+			$layout->appendToColumn(3, $fieldset);
 			
 			$this->Form->appendChild($layout->generate());
 

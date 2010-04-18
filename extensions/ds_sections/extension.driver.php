@@ -72,7 +72,7 @@
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
 			
-			$layout = new Layout('small', 'medium', 'small');
+			$layout = new Layout(Layout::SMALL, Layout::MEDIUM, Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -109,7 +109,7 @@
 			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'context')));
 
 			$fieldset->appendChild($label);
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 
 		//	Conditions ---------------------------------------------------------
 
@@ -201,7 +201,7 @@
 			$conditionals_container->appendChild($ol);
 			$fieldset->appendChild($conditionals_container);
 
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
@@ -234,7 +234,7 @@
 			$label->setValue(__('Redirect to 404 page when no results are found'));
 			$fieldset->appendChild($label);
 
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 
 
 		//	Sorting -----------------------------------------------------------
@@ -259,7 +259,7 @@
 			$group->appendChild($label);
 
 			$fieldset->appendChild($group);
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 
 		//	Limiting ----------------------------------------------------------
 
@@ -286,7 +286,7 @@
 
 			$fieldset->appendChild($label);
 
-			$layout->appendToCol($fieldset, 3);
+			$layout->appendToColumn(3, $fieldset);
 
 		//	Output options ----------------------------------------------------
 
@@ -335,7 +335,7 @@
 			$label->setValue(__('HTML-encode text'));
 			$fieldset->appendChild($label);
 
-			$layout->appendToCol($fieldset, 3);
+			$layout->appendToColumn(3, $fieldset);
 			$wrapper->appendChild($layout->generate());
 
 		//	Build contexts ----------------------------------------------------
