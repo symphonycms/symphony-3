@@ -125,7 +125,12 @@
 				if($this->_invalidPassword){
 					$div = $this->createElement('div', NULL, array('class' => 'invalid'));
 					$div->appendChild($label);
-					$div->appendChild($this->createElement('p', __('The supplied password was rejected. <a href="%s">Retrieve password?</a>', array(ADMIN_URL . '/login/retrieve-password/'))));
+
+					$p = $this->createElement('p', __('The supplied password was rejected.'));
+					$p->appendChild(
+						Widget::Anchor(__('Retrieve password?'), ADMIN_URL . '/login/retrieve-password/')
+					);
+					$div->appendChild($p);
 					$fieldset->appendChild($div);
 				}
 
@@ -224,13 +229,8 @@
 							);
 						}
 
-						// TODO: Is this really the best way to get the a Symphony Concierge email
-						// Should Conceirge really be the Admin's name??
-						$from = Symphony::Database()->query("SELECT `email` FROM `tbl_users` ORDER BY `id` ASC LIMIT 1");
-						if($from->valid()) $from = $from->current();
-
 						$this->_email_sent = General::sendEmail($user['email'],
-									$from->email,
+									'noreply@' . HTTP_HOST,
 									__('Symphony Concierge'),
 									__('New Symphony Account Password'),
 									__('Hi %s,', array($user->first_name)) . PHP_EOL .
@@ -314,7 +314,7 @@
 					$newpass = General::generatePassword();
 
 					General::sendEmail($user->email,
-								'noreply@symphony-cms.com',
+								'noreply@' . HTTP_HOST,
 								'Symphony Concierge',
 								'RE: New Symphony Account Password',
 								'Hi ' . $user['first_name']. ',' . PHP_EOL .
