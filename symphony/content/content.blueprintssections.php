@@ -457,7 +457,7 @@
 
 			$layout->appendToColumn(1, $fieldset);
 
-			$fieldset->appendChild($div);
+			//$fieldset->appendChild($div);
 
 			// Fields
 
