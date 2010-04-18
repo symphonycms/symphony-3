@@ -7,7 +7,6 @@
 
 	Class contentBlueprintsSections extends AdministrationPage{
 
-		private $errors;
 		private $section;
 
 		public function __viewIndex(){
