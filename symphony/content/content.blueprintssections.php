@@ -101,7 +101,7 @@
 
 		}
 
-		private function __save(array $essentials, array $fieldsets=NULL, Section $section=NULL){
+		private function __save(array $essentials, array $fields = NULL, Section $section=NULL){
 			$renamed = false;
 
 			if(is_null($section)){
@@ -120,136 +120,51 @@
 			$this->section->name = $essentials['name'];
 			$this->section->{'navigation-group'} = $essentials['navigation-group'];
 			$this->section->{'hidden-from-publish-menu'} = (isset($essentials['hidden-from-publish-menu']) && $essentials['hidden-from-publish-menu'] == 'yes' ? 'yes' : 'no');
-
+			
 			/*
-			Array
-			(
-			    [0] => Array
-			        (
-			            [type] => checkbox
-			            [label] => Test Checkbox
-			            [location] => sidebar
-			            [description] => Please Check Me!!
-			            [default_state] => on
-			            [show_column] => yes
-			        )
-
-			    [1] => Array
-			        (
-			            [type] => input
-			            [label] => I am the name
-			            [location] => main
-			            [validator] => /^[^\s:\/?#]+:(?:\/{2,3})?[^\s.\/?#]+(?:\.[^\s.\/?#]+)*(?:\/[^\s?#]*\??[^\s?#]*(#[^\s#]*)?)?$/
-			            [required] => yes
-			            [show_column] => yes
-			        )
-
-			)
+			array
+			  0 => 
+			    array
+			      'label' => string 'Test' (length=4)
+			      'formatter' => string '' (length=0)
+			      'show_column' => string 'no' (length=2)
+			      'required' => string 'yes' (length=3)
+			      'type' => string 'textarea' (length=8)
+			  1 => 
+			    array
+			      'label' => string 'Image' (length=5)
+			      'destination' => string '/workspace' (length=10)
+			      'validator' => string '' (length=0)
+			      'show_column' => string 'yes' (length=3)
+			      'required' => string 'yes' (length=3)
+			      'type' => string 'upload' (length=6)
+			  2 => 
+			    array
+			      'label' => string 'Test Me now!' (length=12)
+			      'formatter' => string '' (length=0)
+			      'show_column' => string 'no' (length=2)
+			      'required' => string 'yes' (length=3)
+			      'type' => string 'textarea' (length=8)
 			*/
 
-
 			try{
-
 				$this->errors = new MessageStack;
-
 				$this->section->removeAllFields();
-/*
-[0] => Array
-    (
-        [label] => Essentials
-        [rows] => Array
-            (
-                [0] => Array
-                    (
-                        [fields] => Array
-                            (
-                                [1] => Array
-                                    (
-                                        [label] => Date
-                                        [width] => 1
-                                        [pre-populate] => yes
-                                        [show_column] => no
-                                    )
-
-                                [0] => Array
-                                    (
-                                        [label] => Title
-                                        [width] => 2
-                                        [validator] =>
-                                        [required] => no
-                                        [show_column] => no
-                                    )
-
-                            )
-
-                    )
-
-                [1] => Array
-                    (
-                        [fields] => Array
-                            (
-                                [0] => Array
-                                    (
-                                        [label] => Body
-                                        [width] => 1
-                                        [formatter] => markdown_with_purifier
-                                        [size] => 15
-                                        [show_column] => no
-                                        [required] => no
-                                    )
-
-                            )
-
-                    )
-
-            )
-
-    )
-
-*/
-				if(!is_null($fieldsets) && !empty($fieldsets)) {
-
-					$doc = new DOMDocument('1.0', 'UTF-8');
-					$doc->formatOutput = true;
-
-					$layout = $doc->createElement('layout');
-					$doc->appendChild($layout);
-
-					if (is_array($fieldsets)) foreach($fieldsets as $f){
-
-						$fieldset = $doc->createElement('fieldset');
-						$fieldset->appendChild($doc->createElement('label', General::sanitize($f['label'])));
-
-						if (is_array($f['rows'])) foreach($f['rows'] as $r){
-
-							if(!isset($r['fields']) || empty($r['fields'])) continue;
-
-							$row = $doc->createElement('row');
-
-							$fields = $doc->createElement('fields');
-
-							ksort($r['fields']);
-
-							foreach($r['fields'] as $index => $f){
-								$obj = $this->section->appendField($f['type'], $f);
-								$fields->appendChild($doc->createElement('item', General::sanitize($obj->get('element_name'))));
-							}
-
-							$row->appendChild($fields);
-							$fieldset->appendChild($row);
-						}
-
-						$layout->appendChild($fieldset);
+				
+				if (is_array($fields) and !empty($fields)) {
+					foreach ($fields as $field) {
+						$this->section->appendField($field['type'], $field);
 					}
 				}
-
-				Section::save($this->section, $this->errors, array($doc));
-
+				
+				Section::save($this->section, $this->errors);
+				
 				// If it's a renamed section, cleanup!
-				if($renamed !== false) Section::rename($renamed);
-
+				if ($renamed !== false) Section::rename($renamed);
+				
 				return true;
 			}
+			
 			catch(SectionException $e){
 				switch($e->getCode()){
 					case Section::ERROR_MISSING_OR_INVALID_FIELDS:
@@ -261,6 +176,7 @@
 						break;
 				}
 			}
+			
 			catch(Exception $e){
 				// Errors!!
 				// Not sure what happened!!
@@ -288,7 +204,7 @@
 
 		public function __actionNew(){
 			if(isset($_POST['action']['save'])){
-				if($this->__save($_POST['essentials'], (isset($_POST['fieldset']) ? $_POST['fieldset'] : NULL)) == true){
+				if($this->__save($_POST['essentials'], (isset($_POST['fields']) ? $_POST['fields'] : NULL)) == true){
 					redirect(ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/:created/");
 				}
 			}
@@ -306,7 +222,7 @@
 			elseif(array_key_exists('save', $_POST['action'])) {
 				if($this->__save(
 					$_POST['essentials'],
-					(isset($_POST['fieldset']) ? $_POST['fieldset'] : NULL),
+					(isset($_POST['fields']) ? $_POST['fields'] : NULL),
 					Section::load(SECTIONS . '/' . $this->_context[1] . '.xml')) == true
 				) {
 					redirect(ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/:saved/");
@@ -381,16 +297,13 @@
 		}
 
 		private function __form(Section $existing=NULL){
-			$layout = new Layout(Layout::MEDIUM, Layout::LARGE);
+			$layout = new Layout(Layout::SMALL, Layout::LARGE);
 			
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 			if(isset($callback['flag']) && !is_null($callback['flag'])){
-
 				switch($callback['flag']){
-
 					case 'saved':
-
 						$this->pageAlert(
 							__(
 								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
@@ -401,11 +314,8 @@
 								)
 							),
 							Alert::SUCCESS);
-
 						break;
-
 					case 'created':
-
 						$this->pageAlert(
 							__(
 								'Section created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
@@ -416,27 +326,24 @@
 								)
 							),
 							Alert::SUCCESS);
-
 						break;
-
 				}
 			}
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
-
+			
+			// Essentials:
 			$fieldset = $this->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild(
 				$this->createElement('h3', __('Essentials'))
 			);
 
-			$namediv = $this->createElement('div');
-
 			$label = Widget::Label('Name');
 			$label->appendChild(Widget::Input('essentials[name]', $this->section->name));
 
-			$namediv->appendChild((
+			$fieldset->appendChild((
 				isset($this->errors->name)
 					? Widget::wrapFormElementWithError($label, $this->errors->name)
 					: $label
@@ -448,77 +355,56 @@
 
 			$label = Widget::Label(null, $input);
 			$label->setValue(__('%s Hide this section from the Publish menu', array($input)));
-			$namediv->appendChild($label);
-			$div->appendChild($namediv);
-
-			$navgroupdiv = $this->createElement('div');
+			$fieldset->appendChild($label);
 
 			$label = Widget::Label(__('Navigation Group'));
-			$label->setValue($this->createElement('i', __('Created if does not exist')));
+			$label->appendChild($this->createElement('i', __('Created if does not exist')));
 			$label->appendChild(Widget::Input('essentials[navigation-group]', $this->section->{"navigation-group"}));
 
-			$navgroupdiv->appendChild((
+			$fieldset->appendChild((
 				isset($this->errors->{'navigation-group'})
 					? Widget::wrapFormElementWithError($label, $this->errors->{'navigation-group'})
 					: $label
 			));
 
 			$navigation_groups = Section::fetchUsedNavigationGroups();
+			
 			if(is_array($navigation_groups) && !empty($navigation_groups)){
 				$ul = $this->createElement('ul', NULL, array('class' => 'tags singular'));
 				foreach($navigation_groups as $g){
 					$ul->appendChild($this->createElement('li', $g));
 				}
-				$navgroupdiv->appendChild($ul);
+				$fieldset->appendChild($ul);
 			}
 
-			$div->appendChild($navgroupdiv);
-
-			$fieldset->appendChild($div);
 			$layout->appendToColumn(1, $fieldset);
-
+			
 			// Fields
-
-
 			$fieldset = $this->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild($this->createElement('h3', __('Fields')));
-			
-			/*
-			$layout = $this->createElement('div');
-			$layout->setAttribute('class', 'layout');
 
-			$templates = $this->createElement('ol');
-			$templates->setAttribute('class', 'templates');
-
-			/ *
 			$div = new XMLElement('div');
 			$h3 = new XMLElement('h3', __('Fields'));
 			$h3->setAttribute('class', 'label');
 			$div->appendChild($h3);
+			
+			$duplicator = $this->createElement('div');
+			$duplicator->setAttribute('id', 'section-duplicator');
+
+			$templates = $this->createElement('ol');
+			$templates->setAttribute('class', 'templates');
+
+			$instances = $this->createElement('ol');
+			$instances->setAttribute('class', 'instances');
 
 			$ol = new XMLElement('ol');
 			$ol->setAttribute('id', 'section-' . $section_id);
 			$ol->setAttribute('class', 'section-duplicator');
 
 			$fields = $this->section->fields;
-
-			if(is_array($fields) && !empty($fields)){
-				foreach($fields as $position => $field){
-
-					$wrapper = new XMLElement('li');
-
-					$field->set('sortorder', $position);
-					$field->displaySettingsPanel($wrapper, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
-					$ol->appendChild($wrapper);
-
-				}
-			}
-			* /
-
-
-
 			$types = array();
+
 			foreach (FieldManager::instance()->fetchTypes() as $type){
 				if ($field = FieldManager::instance()->create($type)){
 					$types[$type] = $field;
@@ -528,324 +414,47 @@
 			// To Do: Sort this list based on how many times a field has been used across the system
 			uasort($types, create_function('$a, $b', 'return strnatcasecmp($a->name(), $b->name());'));
 
-
-			foreach ($types as $type => $field){
+			if (is_array($types)) foreach ($types as $type => $field) {
 				$defaults = array();
-
+				
 				$field->findDefaults($defaults);
 				$field->setArray($defaults);
-
-				$wrapper = $this->createElement('li');
+				
+				$item = $this->createElement('li');
+				
+				$name = $this->createElement('span', $field->name());
+				$name->setAttribute('class', 'name');
+				
+				$item->appendChild($name);
+				
+				$wrapper = $this->createElement('fieldset');
 				$field->displaySettingsPanel($wrapper);
-				$wrapper->appendChild(Widget::Input('type', General::sanitize($type), 'hidden'));
-
-				$templates->appendChild($wrapper);
+				$wrapper->appendChild(Widget::Input('type', $type, 'hidden'));
+				
+				$item->appendChild($wrapper);
+				$templates->appendChild($item);
 			}
+			
+			if (is_array($fields)) foreach($fields as $position => $field) {
+				$field->set('sortorder', $position);
 
-
-			$layout->appendChild($templates);
-
-
-			// Existing Fields
-			// 			var_dump($existing->layout->fieldsets); die();
-
-			// Organise the fields into an array indexed by the element name
-			$fields = array();
-
-			if(is_array($this->section->fields) && count($this->section->fields) > 0){
-				foreach($this->section->fields as $position => $field){
-
-					$fields[$field->get('element_name')] = array('position' => $position, 'field' => $field);
-
-					//$wrapper = new XMLElement('li');
-
-				//	$field->set('sortorder', $position);
-				//	$field->displaySettingsPanel($wrapper, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
-				//	$ol->appendChild($wrapper);
-
-				}
+				$item = $this->createElement('li');
+				
+				$wrapper = $this->createElement('fieldset');
+				$field->displaySettingsPanel($wrapper, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
+				$wrapper->appendChild(
+					Widget::Input('type', $field->get('type'), 'hidden')
+				);
+				
+				$item->appendChild($wrapper);
+				$instances->appendChild($item);
 			}
-
-
-			$content = $this->createElement('div');
-			$content->setAttribute('class', 'content');
-
-			if(!isset($this->section->layout) || !isset($this->section->layout->fieldsets) || empty($this->section->layout->fieldsets)){
-
-				$row = $this->createElement('div');
-				$h3 = $this->createElement('h3');
-				$h3->appendChild(Widget::Input('label', 'Default Fieldset'));
-				$row->appendChild($h3);
-
-				if(is_array($fields) && !empty($fields)){
-					foreach($fields as $element_name => $data){
-
-						$ol = $this->createElement('ol');
-
-						$field = $data['field'];
-						$position = $data['position'];
-
-						$li = $this->createElement('li');
-
-						$settings_div = $this->createElement('div');
-						$settings_div->setAttribute('class', 'settings');
-
-						$field->set('sortorder', $position);
-						$field->displaySettingsPanel($settings_div, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
-						$settings_div->appendChild(
-							Widget::Input('type', General::sanitize($field->get('type')), 'hidden')
-						);
-						$li->appendChild($settings_div);
-						$ol->appendChild($li);
-
-						$row->appendChild($ol);
-					}
-				}
-
-				else{
-					$row->appendChild($this->createElement('ol'));
-
-				}
-
-				$content->appendChild($row);
-
-			}
-
-			else{
-
-				foreach($this->section->layout->fieldsets as $f){
-
-					$group = $this->createElement('div');
-					$h3 = $this->createElement('h3');
-					$h3->appendChild(Widget::Input('label', $f->label));
-					$group->appendChild($h3);
-
-					foreach($f->rows as $r){
-						if(isset($r) && !empty($r)){
-
-							$ol = $this->createElement('ol');
-
-							foreach($r as $element_name){
-
-								if(!isset($fields[$element_name]['field']) || !($fields[$element_name]['field'] instanceof Field)) continue;
-
-								$field = $fields[$element_name]['field'];
-								$position = $fields[$element_name]['position'];
-
-								$li = $this->createElement('li');
-
-								$settings_div = $this->createElement('div');
-								$settings_div->setAttribute('class', 'settings');
-
-								$field->set('sortorder', $position);
-								$field->displaySettingsPanel($settings_div, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
-								$settings_div->appendChild(
-									Widget::Input('type', General::sanitize($field->get('type')), 'hidden')
-								);
-								$li->appendChild($settings_div);
-								$ol->appendChild($li);
-
-							}
-
-							$group->appendChild($ol);
-						}
-					}
-
-
-					$content->appendChild($group);
-
-
-				}
-			}
-
-			$layout->appendChild($content);
-
-			$fieldset->appendChild($layout);
-			*/
-
+			
+			$duplicator->appendChild($templates);
+			$duplicator->appendChild($instances);
+			$fieldset->appendChild($duplicator);
+			$layout->appendToColumn(2, $fieldset);
 			$this->Form->appendChild($layout->generate());
-
-			/*
-				<h3>Fields</h3>
-
-				<div class="layout">
-					<ol class="templates">
-						<li>
-							<h3>Checkbox</h3>
-
-							<label class="field-label">
-								Label
-								<input name="label" value="" />
-							</label>
-							<label class="field-flex">
-								Width
-								<select name="width">
-									<option value="1">Small</option>
-									<option value="2" selected="selected">Medium</option>
-									<option value="3">Large</option>
-								</select>
-							</label>
-							<label>
-								Alternate label
-								<input name="alternate-label" value="" />
-							</label>
-
-							<ul class="options-list">
-								<li>
-									<label>
-										<input type="checkbox" checked="checked" />
-										Show column
-									</label>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<h3>Taglist</h3>
-
-							<label class="field-label">
-								Label
-								<input name="label" value="" />
-							</label>
-							<label class="field-flex">
-								Width
-								<select name="width">
-									<option value="1">Small</option>
-									<option value="2" selected="selected">Medium</option>
-									<option value="3">Large</option>
-								</select>
-							</label>
-							<label>
-								Static Options
-								<input name="static-options" value="" />
-							</label>
-							<label>
-								Dynamic Options
-								<select>
-									<option>None</option>
-								</select>
-							</label>
-
-							<ul class="options-list">
-								<li>
-									<label>
-										<input type="checkbox" checked="checked" />
-										Show column
-									</label>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<h3>Textbox</h3>
-
-							<label class="field-label">
-								Label
-								<input name="label" value="" />
-							</label>
-
-							<div class="group">
-								<label class="field-flex">
-									Width
-									<select name="width">
-										<option value="1">Small</option>
-										<option value="2" selected="selected">Medium</option>
-										<option value="3">Large</option>
-									</select>
-								</label>
-								<label>
-									Height
-									<select name="height">
-										<option>Single Line</option>
-										<option>Small</option>
-										<option selected="selected">Medium</option>
-										<option>Large</option>
-									</select>
-								</label>
-							</div>
-
-							<label>
-								Text Formatter
-								<select name="text-formatter">
-									<option>None</option>
-									<option>HTML Normal</option>
-									<option>HTML Pretty</option>
-								</select>
-							</label>
-
-							<div class="group">
-								<label>
-									Limit (characters)
-									<input name="limit" value="0" />
-								</label>
-								<label>
-									Preview length
-									<input name="preview-length" value="75" />
-								</label>
-							</div>
-
-							<ul class="options-list">
-								<li>
-									<label>
-										<input type="checkbox" />
-										Output with handles
-									</label>
-								</li>
-								<li>
-									<label>
-										<input type="checkbox" />
-										Output as CDATA
-									</label>
-								</li>
-								<li>
-									<label>
-										<input type="checkbox" />
-										Make this a required field
-									</label>
-								</li>
-								<li>
-									<label>
-										<input type="checkbox" checked="checked" />
-										Show column
-									</label>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<h3>Upload</h3>
-
-							<label class="field-label">
-								Label
-								<input name="label" value="" />
-							</label>
-							<label class="field-flex">
-								Width
-								<select name="width">
-									<option value="1">Small</option>
-									<option value="2" selected="selected">Medium</option>
-									<option value="3">Large</option>
-								</select>
-							</label>
-
-							<ul class="options-list">
-								<li>
-									<label>
-										<input type="checkbox" checked="checked" />
-										Show column
-									</label>
-								</li>
-							</ul>
-						</li>
-					</ol>
-
-					<div class="content">
-						<div>
-							<h3><input value="One" /></h3>
-							<ol></ol>
-						</div>
-
-					</div>
-				</div>
-*/
-
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');

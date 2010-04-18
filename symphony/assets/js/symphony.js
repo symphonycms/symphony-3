@@ -207,9 +207,40 @@ var Symphony;
 -----------------------------------------------------------------------------*/
 	
 	jQuery(document).ready(function() {
-		jQuery('#section-duplicator').symphonyDuplicatorWithName({
+		var duplicator = jQuery('#section-duplicator');
+		
+		if (duplicator.length == 0) return;
+		
+		duplicator.symphonyDuplicatorWithName({
 			multiselect:	true,
 			orderable:		true
+		});
+		
+		// Update input names before submit:
+		$('form').submit(function() {
+			var expression = /^fields\[[0-9]+\]\[(.*)]$/;
+			
+			duplicator.find('> .content > .instances > li').each(function(index) {
+				var instance = $(this);
+				
+				instance.find('[name]').each(function() {
+					var input = $(this);
+					var name = input.attr('name');
+					var match = null;
+					
+					// Extract name:
+					if (match = name.match(expression)) name = match[1];
+					
+					input.attr(
+						'name',
+						'fields['
+						+ index
+						+ ']['
+						+ name
+						+ ']'
+					);
+				});
+			});
 		});
 	});
 	

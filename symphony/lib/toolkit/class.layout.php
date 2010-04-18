@@ -13,6 +13,7 @@
 			$page = Symphony::Parent()->Page;
 			$columns = func_get_args();
 			$this->_columns = array();
+			$class = array('columns');
 			
 			if (count($columns) > 4) throw new Exception('Too many columns, a maximum of four may be given.');
 			
@@ -21,6 +22,7 @@
 					$this->_columns[$index + 1] = $page->createElement('div', null, array (
 						'class'	=> 'column size-' . $column
 					));
+					$class[] = $column;
 					
 					continue;
 				}
@@ -31,6 +33,7 @@
 			$this->div = $page->createElement('div');
 			$this->div->setAttributeArray(array(
 				'id'	=> 'layout',
+				'class'	=> implode('-', $class)
 			));
 		}
 		

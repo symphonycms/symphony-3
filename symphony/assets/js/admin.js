@@ -411,12 +411,14 @@ var Symphony;
 		$('textarea').blur();
 
 		// Fields duplicator:
+			/*
 		$('.section-duplicator[id]').symphonyCollapsedDuplicator({
 			orderable:		true
 		});
 		$('.section-duplicator:not([id])').symphonyDuplicator({
 			orderable:		true
 		});
+		*/
 
 		//console.log(fields[0].collapsible.collapseAll());
 

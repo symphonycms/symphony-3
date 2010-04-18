@@ -22,11 +22,7 @@
 	/*-----------------------------------------------------------------------*/
 		
 		objects = objects.map(function() {
-			var object = this;
-			
-			if (object instanceof jQuery === false) {
-				object = jQuery(object);
-			}
+			var object = jQuery(this).addClass('duplicator-widget');
 			
 			var find = function(selector) {
 				return object.find(selector);

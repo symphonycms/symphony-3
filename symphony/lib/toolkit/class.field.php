@@ -413,9 +413,8 @@
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors=NULL){
-			$wrapper->appendChild(Symphony::Parent()->Page->createElement('h3', ucwords($this->name())));
+			//$wrapper->appendChild(Symphony::Parent()->Page->createElement('h3', ucwords($this->name())));
 			$wrapper->appendChild($this->buildSummaryBlock($errors));
-			$wrapper->appendChild($this->buildWidthSelect());
 		}
 
 		public function buildWidthSelect(){

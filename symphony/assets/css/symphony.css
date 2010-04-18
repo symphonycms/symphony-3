@@ -533,29 +533,32 @@
 	form {
 		margin-bottom: 20px;
 	}
-	form #layout {
-		display: -moz-box;
-		display: -webkit-box;
-		-moz-box-orient: horizontal;
-		-webkit-box-orient: horizontal;
+	#layout {
+		border-spacing: 20px;
+		display: table;
 		width: 100%;
 		max-width: 1200px;
-		padding: 0 15px;
+		margin: -20px 0;
+		padding: 0 10px;
+		table-layout: fixed;
 	}
-	form #layout .column {
-		padding: 0 15px;
+	#layout .column {
+		display: table-cell;
 	}
-	form #layout .column.size-small {
-		-moz-box-flex: 1;
-		-webkit-box-flex: 1;
+	
+	/* Small|Large or Large|Small layouts: */
+	#layout.columns-small-large .column.size-small,
+	#layout.columns-large-small .column.size-small {
+		width: 30%;
 	}
-	form #layout .column.size-medium {
-		-moz-box-flex: 2;
-		-webkit-box-flex: 2;
+	#layout.columns-small-large .column.size-large,
+	#layout.columns-large-small .column.size-large {
+		width: 70%;
 	}
-	form #layout .column.size-large {
-		-moz-box-flex: 4;
-		-webkit-box-flex: 4;
+	
+	/* M|M|M layouts: */
+	#layout.columns-medium-medium-medium .column {
+		width: 33.3%;
 	}
 
 	form fieldset {

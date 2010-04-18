@@ -3,8 +3,9 @@
 	require_once(TOOLKIT . '/class.messagestack.php');
 
 	Class XMLDocument extends DOMDocument{
-
-		private $error;
+		
+		// TODO: What's with the error handling here?
+		private $_error;
 		static private $_errorLog;
 
 		public function __construct($version='1.0', $encoding='utf-8'){
@@ -14,7 +15,7 @@
 
 			$this->preserveWhitespace = false;
 			$this->formatOutput = false;
-			$this->errors = new MessageStack;
+			$this->_errors = new MessageStack;
 		}
 
 		public function xpath($query){
@@ -23,7 +24,7 @@
 		}
 
 		public function flushLog(){
-			$this->errors->flush();
+			$this->_errors->flush();
 		}
 
 		public function loadXML($xml){
@@ -44,18 +45,18 @@
 
 			foreach(libxml_get_errors() as $error){
 				$error->type = $type;
-				$this->errors->append(NULL, $error);
+				$this->_errors->append(NULL, $error);
 			}
 
 			libxml_clear_errors();
 		}
 
 		public function hasErrors(){
-			return (bool)($this->errors instanceof MessageStack && $this->errors->valid());
+			return (bool)($this->_errors instanceof MessageStack && $this->_errors->valid());
 		}
 
 		public function getErrors(){
-			return $this->errors;
+			return $this->_errors;
 		}
 
 	}
