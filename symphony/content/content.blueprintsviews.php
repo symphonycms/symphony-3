@@ -45,7 +45,12 @@
 		*/
 
 		public function __viewIndex() {
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Views'))));
+			// This is the 'correct' way to append a string containing an entity
+			$title = $this->createElement('title');
+			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
+			$title->appendChild($this->createEntityReference('ndash'));
+			$title->appendChild($this->createTextNode(' ' . __('Views')));
+			$this->insertNodeIntoHead($title);
 
 			$nesting = (Symphony::Configuration()->get('pages_table_nest_children', 'symphony') == 'yes');
 

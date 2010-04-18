@@ -26,7 +26,12 @@
 		}
 
 		public function __viewIndex() {
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Data Sources'))));
+			// This is the 'correct' way to append a string containing an entity
+			$title = $this->createElement('title');
+			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
+			$title->appendChild($this->createEntityReference('ndash'));
+			$title->appendChild($this->createTextNode(' ' . __('Data Sources')));
+			$this->insertNodeIntoHead($title);
 
 			$this->appendSubheading(__('Data Sources') . $heading, Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(

@@ -11,7 +11,13 @@
 		private $section;
 
 		public function __viewIndex(){
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
+			// This is the 'correct' way to append a string containing an entity
+			$title = $this->createElement('title');
+			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
+			$title->appendChild($this->createEntityReference('ndash'));
+			$title->appendChild($this->createTextNode(' ' . __('Sections')));
+			$this->insertNodeIntoHead($title);
+			
 			$this->appendSubheading(__('Sections'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', array(
 					'title' => __('Create a new section'),
