@@ -112,12 +112,12 @@
 			}
 			
 			$fieldset->appendChild($ul);
-			$layout->appendToCol($fieldset, 1);
+			$layout->appendToColumn(1, $fieldset);
 			
 			## Second column: Lists w actions
 			$fieldset = Widget::Fieldset(__('Available Actions'));
 			
-			$layout->appendToCol($fieldset, 2);
+			$layout->appendToColumn(2, $fieldset);
 			
 			$this->Form->appendChild($layout->generate());
 		}
