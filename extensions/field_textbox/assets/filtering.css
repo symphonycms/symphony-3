@@ -1,0 +1,39 @@
+.field-textbox ul {
+	color: #888877;
+	list-style: none;
+	margin: -1em 0 1.5em 0;
+	overflow: hidden;
+}
+.field-textbox.selected ul {
+	color: #aabbee;
+}
+.field-textbox ul li {
+	cursor: pointer;
+	float: left;
+}
+.field-textbox ul li:hover,
+.field-textbox ul li.selected {
+	background: transparent;
+	color: #444433;
+}
+.field-textbox.selected ul li:hover,
+.field-textbox.selected ul li.selected {
+	color: #ffffff;
+}
+.field-textbox ul li:before {
+	color: #888877;
+	content: ', ';
+}
+.field-textbox.selected ul li:before {
+	color: #aabbee;
+}
+.field-textbox ul li:first-child:before {
+	content: '';
+}
+.field-textbox.selected p {
+	color: #aabbee;
+}
+.field-textbox p code {
+	font-size: 110%;
+	line-height: 1.3;
+}

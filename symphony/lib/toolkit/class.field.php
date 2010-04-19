@@ -542,17 +542,19 @@
 
 		public function appendRequiredCheckbox(SymphonyDOMElement &$wrapper) {
 			if (!$this->_required) return;
-
-			$wrapper->appendChild(Widget::Input('required', 'no', 'hidden'));
-
-			$label = Widget::Label();
+			
+			$document = $wrapper->ownerDocument;
+			$item = $document->createElement('li');
+			$item->appendChild(Widget::Input('required', 'no', 'hidden'));
+		
+			$label = Widget::Label(__('Make this a required field'));
 			$input = Widget::Input('required', 'yes', 'checkbox');
 
-			if ($this->properties()->required == 'yes') $input->setAttribute('checked', 'checked');
-			$label->appendChild($input);
-			$label->setValue(__('Make this a required field'));
-
-			$item = $wrapper->ownerDocument->createElement('li');
+			if ($this->get('required') == 'yes') {
+				$input->setAttribute('checked', 'checked');
+			}
+			
+			$label->prependChild($input);
 			$item->appendChild($label);
 			$wrapper->appendChild($item);
 		}
@@ -560,18 +562,17 @@
 		public function appendShowColumnCheckbox(SymphonyDOMElement &$wrapper) {
 			if (!$this->_showcolumn) return;
 
-			$wrapper->appendChild(Widget::Input('show_column', 'no', 'hidden'));
+			$document = $wrapper->ownerDocument;
+			$item = $document->createElement('li');
+			$item->appendChild(Widget::Input('show_column', 'no', 'hidden'));
 
-			$label = Widget::Label();
+			$label = Widget::Label(__('Show column'));
 			$label->setAttribute('class', 'meta');
 			$input = Widget::Input('show_column', 'yes', 'checkbox');
 
 			if ($this->properties()->show_column == 'yes') $input->setAttribute('checked', 'checked');
 
-			$label->appendChild($input);
-			$label->setValue(__('Show column'));
-
-			$item = $wrapper->ownerDocument->createElement('li');
+			$label->prependChild($input);
 			$item->appendChild($label);
 			$wrapper->appendChild($item);
 		}
