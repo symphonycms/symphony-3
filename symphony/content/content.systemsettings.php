@@ -6,15 +6,7 @@
 		public function __construct(){
 			parent::__construct();
 
-			## DEPRECATED $this->setPageType('form');
-			//$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Settings'))));
-			
-			// This is the 'correct' way to append a string containing an entity
-			$title = $this->createElement('title');
-			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
-			$title->appendChild($this->createEntityReference('ndash'));
-			$title->appendChild($this->createTextNode(' ' . __('Settings')));
-			$this->insertNodeIntoHead($title);
+			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Settings'))));
 		}
 
 		## Overload the parent 'view' function since we dont need the switchboard logic
@@ -47,8 +39,8 @@
 		    }
 
 		// SETUP PAGE
-			$layout = new Layout(Layout::LARGE, Layout::MEDIUM, Layout::MEDIUM);
-
+			$layout = new Layout(Layout::SMALL, Layout::SMALL, Layout::SMALL);
+		
 		// SITE SETUP
 			$helptext = 'Symphony version: ' . Symphony::Configuration()->get('version', 'symphony');
 			$fieldset = Widget::Fieldset(__('Site Setup'), $helptext);
@@ -83,7 +75,7 @@
 
 		// REGIONAL SETTINGS
 
-			$fieldset = Widget::Fieldset(__('Date & Time Settings'));
+			$fieldset = Widget::Fieldset(__('Date &amp; Time Settings'));
 
 			// Date and Time Settings
 			$label = Widget::Label(__('Date Format'));

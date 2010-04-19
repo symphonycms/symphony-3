@@ -50,14 +50,14 @@
 			$wrapper->appendChild($list);
 		}
 
-		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
 
-			parent::displayDatasourceFilterPanel($wrapper, $data, $errors, $fieldnamePrefix, $fieldnamePostfix);
+			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
 			if($this->get('pre_populate_source') != NULL) $this->prepopulateSource($wrapper);
 		}
 
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
 
 			$value = NULL;
 			if(isset($data['value'])){
@@ -66,7 +66,7 @@
 
 			$label = Widget::Label($this->get('label'));
 
-			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, (strlen($value) != 0 ? $value : NULL)));
+			$label->appendChild(Widget::Input('fields['.$this->get('element_name').']', (strlen($value) != 0 ? $value : NULL)));
 
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);

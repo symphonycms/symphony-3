@@ -122,7 +122,7 @@
 			return $data;
 		}
 
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
 			$states = $this->getToggleStates();
 			natsort($states);
 
@@ -134,7 +134,7 @@
 				$options[] = array(General::sanitize($v), in_array($v, $data['value']), General::sanitize($v));
 			}
 
-			$fieldname = 'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix;
+			$fieldname = 'fields['.$this->get('element_name').']';
 			if($this->get('allow_multiple_selection') == 'yes') $fieldname .= '[]';
 
 			$label = Widget::Label($this->get('label'));
@@ -146,9 +146,9 @@
 			else $wrapper->appendChild($label);
 		}
 
-		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
 
-			parent::displayDatasourceFilterPanel($wrapper, $data, $errors, $fieldnamePrefix, $fieldnamePostfix);
+			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
 			$data = preg_split('/,\s*/i', $data);
 			$data = array_map('trim', $data);

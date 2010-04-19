@@ -1,8 +1,3 @@
-/* @override
-	http://symphony-21.local/symphony/assets/css/symphony.css
-	http://localhost/projects/symphony-21/symphony/assets/css/symphony.css
-*/
-
 /*-----------------------------------------------------------------------------
 	Symphony Global
 -----------------------------------------------------------------------------*/
@@ -316,6 +311,28 @@
 	}
 
 /*-----------------------------------------------------------------------------
+	Layout
+-----------------------------------------------------------------------------*/
+
+	#layout {
+		border-spacing: 20px 0;
+		display: table;
+		margin: 0 10px;
+		max-width: 1200px;
+		table-layout: fixed;
+	}
+	#layout > .column {
+		display: table-cell;
+		vertical-align: top;
+	}
+	#layout > .small {
+		width: 30%;
+	}
+	#layout > .large {
+		width: 70%;
+	}
+	
+/*-----------------------------------------------------------------------------
 	Content
 -----------------------------------------------------------------------------*/
 
@@ -525,7 +542,7 @@
 		display: block;
 		margin: 0 auto;
 	}
-
+	
 /*-----------------------------------------------------------------------------
 	Content: Form
 -----------------------------------------------------------------------------*/
@@ -533,43 +550,23 @@
 	form {
 		margin-bottom: 20px;
 	}
-	#layout {
-		border-spacing: 20px;
-		display: table;
-		width: 100%;
-		max-width: 1200px;
-		margin: -20px 0;
-		padding: 0 10px;
-		table-layout: fixed;
-	}
-	#layout .column {
-		display: table-cell;
-	}
-	
-	/* Small|Large or Large|Small layouts: */
-	#layout.columns-small-large .column.size-small,
-	#layout.columns-large-small .column.size-small {
-		width: 30%;
-	}
-	#layout.columns-small-large .column.size-large,
-	#layout.columns-large-small .column.size-large {
-		width: 70%;
-	}
-	
-	/* M|M|M layouts: */
-	#layout.columns-medium-medium-medium .column {
-		width: 33.3%;
-	}
 
 	form fieldset {
-		position: relative;
 		border: none;
-		margin-bottom: 25px;
+		-webkit-margin-bottom-collapse: separate;
+		margin: 20px 0;
+		position: relative;
 	}
-	form h2 + fieldset {
+	form fieldsets + fieldset {
+		margin-top: 25px;
 	}
-	form fieldset legend {
+	form fieldset:first-child {
+		margin-top: 0;
 	}
+	form fieldset:last-child {
+		margin-bottom: 0;
+	}
+	
 	form h3 {
 		color: #666666;
 		font-size: 10pt;
@@ -656,6 +653,7 @@
 		width: auto;
 		margin: 0 auto;
 	}
+	
 	form .group {
 		display: table;
 		table-layout: fixed;
@@ -984,3 +982,51 @@
 		content: "↑";
 		margin-right: 3px;
 	}
+
+/*-----------------------------------------------------------------------------
+	System: Extensions
+-----------------------------------------------------------------------------*/
+	
+#extension_stats {
+	font-size: 1.15em;
+	line-height: 2.5em;
+	list-style: none;
+	color: #666;
+}
+
+#extension_stats li {
+	position: relative;
+	margin: 10px 0;
+	background: -moz-linear-gradient(top, hsl(0, 0%, 94%), hsl(0, 0%, 88%));
+	background: -webkit-gradient(
+		linear, left top, left bottom,
+		from(hsl(0, 0%, 94%)),
+		to(hsl(0, 0%, 88%))
+	);
+	border: 1px solid hsla(0, 0%, 0%, 0.15);
+	-moz-border-radius: 5px;
+}
+
+#extension_stats li h4 {
+	margin-left: 10px;
+	font-weight: normal;
+}
+
+#extension_stats li p {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 50px;
+	text-align: center;
+	padding: 0 10px;
+	color: #555;
+	background: -moz-linear-gradient(top, hsl(0, 0%, 89%), hsl(0, 0%, 82%));
+	background: -webkit-gradient(
+		linear, left top, left bottom,
+		from(hsl(0, 0%, 89%)),
+		to(hsl(0, 0%, 72%))
+	);
+	border-left: 1px solid hsla(0, 0%, 0%, 0.15);
+	-moz-border-radius-topright: 5px;
+	-moz-border-radius-bottomright: 5px;
+}

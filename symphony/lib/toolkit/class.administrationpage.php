@@ -13,9 +13,10 @@
 		public $_navigation;
 		public $_context;
 
-		### By CZ: Should be checked and/or rewritten
+		### By CZ: Should be checked
 		var $_layout;
-
+		### - - - - - - ###
+		
 		public function __construct(){
 			parent::__construct('1.0', 'utf-8', "html");
 		}

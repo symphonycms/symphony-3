@@ -7,11 +7,16 @@
 
 	Class contentBlueprintsSections extends AdministrationPage{
 
-		private $errors;
 		private $section;
 
 		public function __viewIndex(){
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
+			// This is the 'correct' way to append a string containing an entity
+			$title = $this->createElement('title');
+			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
+			$title->appendChild($this->createEntityReference('ndash'));
+			$title->appendChild($this->createTextNode(' ' . __('Sections')));
+			$this->insertNodeIntoHead($title);
+			
 			$this->appendSubheading(__('Sections'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', array(
 					'title' => __('Create a new section'),
@@ -306,19 +311,6 @@
 					case 'saved':
 						$this->pageAlert(
 							__(
-								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
-								array(
-									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									ADMIN_URL . '/blueprints/sections/new/',
-									ADMIN_URL . '/blueprints/sections/',
-								)
-							),
-							Alert::SUCCESS);
-						break;
-					case 'created':
-						$this->pageAlert(
-							__(
-								'Section created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',
@@ -329,6 +321,10 @@
 						break;
 				}
 			}
+
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::SMALL);
+			$right = $layout->createColumn(Layout::LARGE);
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
@@ -376,8 +372,8 @@
 				}
 				$fieldset->appendChild($ul);
 			}
-
-			$layout->appendToColumn(1, $fieldset);
+			
+			$left->appendChild($fieldset);
 			
 			// Fields
 			$fieldset = $this->createElement('fieldset');
@@ -450,8 +446,9 @@
 			$duplicator->appendChild($templates);
 			$duplicator->appendChild($instances);
 			$fieldset->appendChild($duplicator);
-			$layout->appendToColumn(2, $fieldset);
-			$this->Form->appendChild($layout->generate());
+			$right->appendChild($fieldset);
+			
+			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');

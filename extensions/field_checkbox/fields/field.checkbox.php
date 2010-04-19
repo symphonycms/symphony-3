@@ -109,9 +109,9 @@
 			return true;
 		}
 
-		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
 
-			parent::displayDatasourceFilterPanel($wrapper, $data, $errors, $fieldnamePrefix, $fieldnamePostfix);
+			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
 			$existing_options = array('yes', 'no');
 
@@ -126,7 +126,7 @@
 
 		}
 
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
 
 			if(!$data){
 				## TODO: Don't rely on $_POST
@@ -138,7 +138,7 @@
 			else $value = ($data['value'] == 'yes' ? 'yes' : 'no');
 
 			$label = Widget::Label();
-			$input = Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
+			$input = Widget::Input('fields['.$this->get('element_name').']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
 
 			$label->appendChild($input);
 			$label->setValue(($this->get('description') != NULL ? $this->get('description') : $this->get('label')));

@@ -3,10 +3,8 @@
 	require_once(TOOLKIT . '/class.messagestack.php');
 
 	Class XMLDocument extends DOMDocument{
-		
-		// TODO: What's with the error handling here?
-		private $_error;
-		static private $_errorLog;
+
+		protected $errors;
 
 		public function __construct($version='1.0', $encoding='utf-8'){
 			parent::__construct($version, $encoding);
@@ -15,7 +13,7 @@
 
 			$this->preserveWhitespace = false;
 			$this->formatOutput = false;
-			$this->_errors = new MessageStack;
+			$this->errors = new MessageStack;
 		}
 
 		public function xpath($query){
@@ -24,7 +22,7 @@
 		}
 
 		public function flushLog(){
-			$this->_errors->flush();
+			$this->errors->flush();
 		}
 
 		public function loadXML($xml){
@@ -45,18 +43,18 @@
 
 			foreach(libxml_get_errors() as $error){
 				$error->type = $type;
-				$this->_errors->append(NULL, $error);
+				$this->errors->append(NULL, $error);
 			}
 
 			libxml_clear_errors();
 		}
 
 		public function hasErrors(){
-			return (bool)($this->_errors instanceof MessageStack && $this->_errors->valid());
+			return (bool)($this->errors instanceof MessageStack && $this->errors->valid());
 		}
 
 		public function getErrors(){
-			return $this->_errors;
+			return $this->errors;
 		}
 
 	}
@@ -69,10 +67,9 @@
 			if($value instanceof DOMElement || $value instanceof DOMDocumentFragment) {
 				$this->appendChild($value);
 			}
-			else if(!is_null($value) && is_string($value)) {
-				$this->appendChild(
-					new DOMText($value)
-				);
+			
+			elseif(!is_null($value) && is_string($value)) {
+				$this->nodeValue = $value;
 			}
 		}
 
