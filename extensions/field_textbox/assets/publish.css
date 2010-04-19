@@ -1,0 +1,15 @@
+.field-textbox .size-small {
+	height: 5em;
+}
+.field-textbox .size-medium {
+	height: 20em;
+}
+.field-textbox .size-large {
+	height: 35em;
+}
+.field-textbox .size-huge {
+	height: 50em;
+}
+.field-textbox i.invalid {
+	color: #d42;
+}

@@ -1,0 +1,18 @@
+.field-textbox .options-list {
+	border-top: 1px solid #ccccbb;
+	display: -moz-box;
+	display: -webkit-box;
+	list-style: none;
+	margin: 0;
+	padding: 1.75em 0;
+	width: 100%;
+}
+.field-textbox .options-list > * {
+	padding-right: 1.75em;
+}
+.field-textbox .options-list > *:last-child {
+	padding-right: 0;
+}
+.field-textbox .options-list label {
+	margin-bottom: 0;
+}
