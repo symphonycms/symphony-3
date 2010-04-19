@@ -237,7 +237,7 @@
 
 							foreach($r['fields'] as $index => $f){
 								$obj = $this->section->appendField($f['type'], $f);
-								$fields->appendChild($doc->createElement('item', General::sanitize($obj->get('element_name'))));
+								$fields->appendChild($doc->createElement('item', General::sanitize($obj->properties()->element_name)));
 							}
 
 							$row->appendChild($fields);
@@ -486,7 +486,7 @@
 
 					$wrapper = new XMLElement('li');
 
-					$field->set('sortorder', $position);
+					$field->properties()->sortorder = $position;
 					$field->displaySettingsPanel($wrapper, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
 					$ol->appendChild($wrapper);
 
@@ -513,7 +513,9 @@
 				$defaults = array();
 
 				$field->findDefaults($defaults);
-				$field->setArray($defaults);
+				foreach($defaults as $key => $value){
+					$field->properties()->$key = $value;
+				}
 
 				$wrapper = $this->createElement('li');
 				$field->displaySettingsPanel($wrapper);
@@ -535,11 +537,11 @@
 			if(is_array($this->section->fields) && count($this->section->fields) > 0){
 				foreach($this->section->fields as $position => $field){
 
-					$fields[$field->get('element_name')] = array('position' => $position, 'field' => $field);
+					$fields[$field->properties()->element_name] = array('position' => $position, 'field' => $field);
 
 					//$wrapper = new XMLElement('li');
 
-				//	$field->set('sortorder', $position);
+				//	$field->properties()->sortorder = $position;
 				//	$field->displaySettingsPanel($wrapper, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
 				//	$ol->appendChild($wrapper);
 
@@ -570,10 +572,10 @@
 						$settings_div = $this->createElement('div');
 						$settings_div->setAttribute('class', 'settings');
 
-						$field->set('sortorder', $position);
+						$field->properties()->sortorder = $position;
 						$field->displaySettingsPanel($settings_div, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
 						$settings_div->appendChild(
-							Widget::Input('type', General::sanitize($field->get('type')), 'hidden')
+							Widget::Input('type', General::sanitize($field->properties()->type), 'hidden')
 						);
 						$li->appendChild($settings_div);
 						$ol->appendChild($li);
@@ -617,10 +619,10 @@
 								$settings_div = $this->createElement('div');
 								$settings_div->setAttribute('class', 'settings');
 
-								$field->set('sortorder', $position);
+								$field->properties()->sortorder = $position;
 								$field->displaySettingsPanel($settings_div, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
 								$settings_div->appendChild(
-									Widget::Input('type', General::sanitize($field->get('type')), 'hidden')
+									Widget::Input('type', General::sanitize($field->properties()->type), 'hidden')
 								);
 								$li->appendChild($settings_div);
 								$ol->appendChild($li);
@@ -936,7 +938,7 @@
 
 						$wrapper = new XMLElement('li');
 
-						$input->set('sortorder', $position);
+						$input->properties()->sortorder = $position;
 						$input->displaySettingsPanel($wrapper, (isset($this->errors[$position]) ? $this->errors[$position] : NULL));
 						$ol->appendChild($wrapper);
 
@@ -961,7 +963,7 @@
 				$wrapper = new XMLElement('li');
 				$wrapper->setAttribute('class', 'template');
 
-				$type->set('sortorder', '-1');
+				$type->properties()->sortorder = '-1';
 				$type->displaySettingsPanel($wrapper);
 
 				$ol->appendChild($wrapper);
@@ -1035,7 +1037,7 @@
 					foreach($_POST['fields'] as $position => $data){
 						if($fields[$position] = fieldManager::instance()->create($data['type'])){
 							$fields[$position]->setArray($data);
-							$fields[$position]->set('sortorder', $position);
+							$fields[$position]->properties()->sortorder = $position;
 						}
 					}
 				}
@@ -1120,7 +1122,7 @@
 
 					$wrapper = new XMLElement('li');
 
-					$field->set('sortorder', $position);
+					$field->properties()->sortorder = $position;
 					$field->displaySettingsPanel($wrapper, (isset($this->errors[$position]) ? $this->errors[$position] : NULL));
 					$ol->appendChild($wrapper);
 
@@ -1144,7 +1146,7 @@
 				$wrapper = new XMLElement('li');
 				$wrapper->setAttribute('class', 'template');
 
-				$type->set('sortorder', '-1');
+				$type->properties()->sortorder = '-1';
 				$type->displaySettingsPanel($wrapper);
 
 				$ol->appendChild($wrapper);
@@ -1255,8 +1257,8 @@
 						$field = fieldManager::instance()->create($data['type']);
 						$field->setFromPOST($data);
 
-						if($field->mustBeUnique() && !in_array($field->get('type'), $unique)) $unique[] = $field->get('type');
-						elseif($field->mustBeUnique() && in_array($field->get('type'), $unique)){
+						if($field->mustBeUnique() && !in_array($field->properties()->type, $unique)) $unique[] = $field->properties()->type;
+						elseif($field->mustBeUnique() && in_array($field->properties()->type, $unique)){
 							## Warning. cannot have 2 of this field!
 							$canProceed = false;
 							$this->errors[$position] = array('label' => __('There is already a field of type <code>%s</code>. There can only be one per section.', array($field->name())));
@@ -1294,12 +1296,12 @@
 
 								$field = fieldManager::instance()->create($data['type']);
 								$field->setFromPOST($data);
-								$field->set('sortorder', $position);
-								$field->set('parent_section', $section_id);
+								$field->properties()->sortorder = $position;
+								$field->properties()->parent_section = $section_id;
 
 								$field->commit();
 
-								$field_id = $field->get('id');
+								$field_id = $field->properties()->id;
 
 						        if($field_id){
 
@@ -1394,8 +1396,8 @@
 							$field = fieldManager::instance()->create($data['type']);
 							$field->setFromPOST($data);
 
-							if($field->mustBeUnique() && !in_array($field->get('type'), $unique)) $unique[] = $field->get('type');
-							elseif($field->mustBeUnique() && in_array($field->get('type'), $unique)){
+							if($field->mustBeUnique() && !in_array($field->properties()->type, $unique)) $unique[] = $field->properties()->type;
+							elseif($field->mustBeUnique() && in_array($field->properties()->type, $unique)){
 								## Warning. cannot have 2 of this field!
 								$canProceed = false;
 								$this->errors[$position] = array('label' => __('There is already a field of type <code>%s</code>. There can only be one per section.', array($field->name())));
@@ -1445,16 +1447,16 @@
 
 								$field = fieldManager::instance()->create($data['type']);
 								$field->setFromPOST($data);
-								$field->set('sortorder', (string)$position);
-								$field->set('parent_section', $section_id);
+								$field->properties()->sortorder = (string)$position;
+								$field->properties()->parent_section = $section_id;
 
 								$bEdit = true;
-								if(!$field->get('id')) $bEdit = false;
+								if(!$field->properties()->id) $bEdit = false;
 
 								## Creation
 								if($field->commit()){
 
-									$field_id = $field->get('id');
+									$field_id = $field->properties()->id;
 
 									###
 									# Delegate: FieldPostCreate

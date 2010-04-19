@@ -226,8 +226,8 @@
         }
 
 		## This function is required in order to edit it in the data source editor page.
-		## Do not overload this function if you are creating a custom data source. It is only
-		## used by the data source editor
+		## Overload this function, and return false if you do not want the Data Source editor
+		## loading your Data Source
 		public function allowEditorToParse(){
 			return true;
 		}

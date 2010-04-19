@@ -378,8 +378,8 @@
 					foreach ($section_data['fields'] as $input) {
 						if (!$input->canFilter()) continue;
 
-						//$field_id = $input->get('id');
-						$element_name = $input->get('element_name');
+						//$field_id = $input->properties()->id;
+						$element_name = $input->properties()->element_name;
 
 						if (isset($filter_data[$element_name])) {
 							$filter = $page->createElement('li');
@@ -439,8 +439,8 @@
 
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
 					foreach ($section_data['fields'] as $field) {
-						$field_handle = $field->get('element_name');
-						$field_label = $field->get('label');
+						$field_handle = $field->properties()->element_name;
+						$field_label = $field->properties()->label;
 						$modes = $field->fetchIncludableElements();
 
 						if ($field->isSortable()) {

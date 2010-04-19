@@ -57,21 +57,21 @@
 			$aTableHead = array();
 
 			foreach($section->fields as $column){
-				if($column->get('show_column') != 'yes') continue;
+				if($column->properties()->show_column != 'yes') continue;
 
-				$label = $column->get('label');
+				$label = $column->properties()->label;
 
 				// TO DO: Fix the ordering links
 				/*if($column->isSortable()) {
 
-					if($column->get('id') == $section->get('entry_order')){
-						$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->get('id').'&amp;order='. ($section->get('entry_order_direction') == 'desc' ? 'asc' : 'desc').($filter ? "&amp;filter=$field_handle:$filter_value" : '');
-						$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(($section->get('entry_order_direction') == 'desc' ? __('ascending') : __('descending')), strtolower($column->get('label')))), 'active');
+					if($column->properties()->id == $section->get('entry_order')){
+						$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->properties()->id.'&amp;order='. ($section->get('entry_order_direction') == 'desc' ? 'asc' : 'desc').($filter ? "&amp;filter=$field_handle:$filter_value" : '');
+						$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(($section->get('entry_order_direction') == 'desc' ? __('ascending') : __('descending')), strtolower($column->properties()->label))), 'active');
 					}
 
 					else{
-						$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->get('id').'&amp;order=asc'.($filter ? "&amp;filter=$field_handle:$filter_value" : '');
-						$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(__('ascending'), strtolower($column->get('label')))));
+						$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->properties()->id.'&amp;order=asc'.($filter ? "&amp;filter=$field_handle:$filter_value" : '');
+						$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(__('ascending'), strtolower($column->properties()->label))));
 					}
 
 					$aTableHead[] = array($anchor, 'col');
@@ -122,10 +122,10 @@
 				$index = 2;
 
 				foreach ($toggable_fields as $field) {
-					$options[$index] = array('label' => __('Set %s', array($field->get('label'))), 'options' => array());
+					$options[$index] = array('label' => __('Set %s', array($field->properties()->label)), 'options' => array());
 
 					foreach ($field->getToggleStates() as $value => $state) {
-						$options[$index]['options'][] = array('toggle-' . $field->get('id') . '-' . $value, false, $state);
+						$options[$index]['options'][] = array('toggle-' . $field->properties()->id . '-' . $value, false, $state);
 					}
 
 					$index++;
@@ -213,18 +213,18 @@
 			if(is_array($visible_columns) && !empty($visible_columns)){
 				foreach($visible_columns as $column){
 
-					$label = $column->get('label');
+					$label = $column->properties()->label;
 
 					if($column->isSortable()) {
 
-						if($column->get('id') == $section->get('entry_order')){
-							$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->get('id').'&amp;order='. ($section->get('entry_order_direction') == 'desc' ? 'asc' : 'desc').($filter ? "&amp;filter=$field_handle:$filter_value" : '');
-							$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(($section->get('entry_order_direction') == 'desc' ? __('ascending') : __('descending')), strtolower($column->get('label')))), 'active');
+						if($column->properties()->id == $section->get('entry_order')){
+							$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->properties()->id.'&amp;order='. ($section->get('entry_order_direction') == 'desc' ? 'asc' : 'desc').($filter ? "&amp;filter=$field_handle:$filter_value" : '');
+							$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(($section->get('entry_order_direction') == 'desc' ? __('ascending') : __('descending')), strtolower($column->properties()->label))), 'active');
 						}
 
 						else{
-							$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->get('id').'&amp;order=asc'.($filter ? "&amp;filter=$field_handle:$filter_value" : '');
-							$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(__('ascending'), strtolower($column->get('label')))));
+							$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->properties()->id.'&amp;order=asc'.($filter ? "&amp;filter=$field_handle:$filter_value" : '');
+							$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(__('ascending'), strtolower($column->properties()->label))));
 						}
 
 						$aTableHead[] = array($anchor, 'col');
@@ -289,7 +289,7 @@
 
 						foreach ($visible_columns as $position => $column) {
 							$data = $entry->getData($column->get('id'));
-							$field = $field_pool[$column->get('id')];
+							$field = $field_pool[$column->properties()->id];
 
 							$value = $field->prepareTableValue($data, ($position == 0 ? $link : null), $entry->get('id'));
 
@@ -336,7 +336,7 @@
 										'%s/symphony/publish/%s/?filter=%s:%s',
 										URL,
 										$as->get('handle'),
-										$field->get('element_name'),
+										$field->properties()->element_name,
 										rawurlencode($search_value)
 									),
 									$entry->get('id'),
@@ -378,10 +378,10 @@
 				$index = 2;
 
 				foreach ($toggable_fields as $field) {
-					$options[$index] = array('label' => __('Set %s', array($field->get('label'))), 'options' => array());
+					$options[$index] = array('label' => __('Set %s', array($field->properties()->label)), 'options' => array());
 
 					foreach ($field->getToggleStates() as $value => $state) {
-						$options[$index]['options'][] = array('toggle-' . $field->get('id') . '-' . $value, false, $state);
+						$options[$index]['options'][] = array('toggle-' . $field->properties()->id . '-' . $value, false, $state);
 					}
 
 					$index++;
@@ -483,15 +483,15 @@
 			$div = $this->createElement('div', NULL, array(
 					'class' => sprintf('field field-%s %s %s',
 						$field->handle(),
-						($field->get('required') == 'yes' ? 'required' : ''),
-						$this->__calculateWidth($field->get('width'))
+						($field->properties()->required == 'yes' ? 'required' : ''),
+						$this->__calculateWidth($field->properties()->width)
 					)
 				)
 			);
 
 			$field->displayPublishPanel(
-				$div, (!is_null($entry) ? $entry->getData($field->get('id')) : NULL),
-				(isset($this->_errors[$field->get('id')]) ? $this->_errors[$field->get('id')] : NULL),
+				$div, (!is_null($entry) ? $entry->getData($field->properties()->id) : NULL),
+				(isset($this->_errors[$field->properties()->id]) ? $this->_errors[$field->properties()->id] : NULL),
 				null,
 				null,
 				(!is_null($entry) && is_numeric($entry->get('id')) ? $entry->get('id') : NULL)
@@ -538,7 +538,7 @@
 			// Load all the fields for this section
 			$section_fields = array();
 			foreach($section->fields as $index => $field) {
-				$section_fields[$field->get('element_name')] = $field;
+				$section_fields[$field->properties()->element_name] = $field;
 			}
 
 			// Parse the layout
@@ -563,14 +563,14 @@
 							$div = $this->createElement('div', NULL, array(
 									'class' => trim(sprintf('field field-%s %s %s',
 										$field->handle(),
-										$this->__calculateWidth($field->get('width')),
-										($field->get('required') == 'yes' ? 'required' : '')
+										$this->__calculateWidth($field->properties()->width),
+										($field->properties()->required == 'yes' ? 'required' : '')
 									))
 								)
 							);
 
-							$field->displayPublishPanel($div, null, (isset($this->_errors[$field->get('id')])
-								? $this->_errors[$field->get('id')]
+							$field->displayPublishPanel($div, null, (isset($this->_errors[$field->properties()->id])
+								? $this->_errors[$field->properties()->id]
 								: NULL)
 							);
 
@@ -601,7 +601,7 @@
 				// The actual pre-populating should only happen if there is not existing fields post data
 				if(!isset($_POST['fields']) && $field = FieldManager::instance()->fetch($field_id)) {
 					$entry->setData(
-						$field->get('id'),
+						$field->properties()->id,
 						$field->processRawFieldData($value, $error, true)
 					);
 				}
@@ -780,7 +780,7 @@
 			$field_id = Symphony::Database()->fetchVar('id', 0, "SELECT `id` FROM `tbl_fields` WHERE `parent_section` = '".$section->get('id')."' ORDER BY `sortorder` LIMIT 1");
 			$field = FieldManager::instance()->fetch($field_id);
 
-			$title = trim(strip_tags($field->prepareTableValue($existingEntry->getData($field->get('id')), NULL, $entry_id)));
+			$title = trim(strip_tags($field->prepareTableValue($existingEntry->getData($field->properties()->id), NULL, $entry_id)));
 
 			if (trim($title) == '') {
 				$title = 'Untitled';

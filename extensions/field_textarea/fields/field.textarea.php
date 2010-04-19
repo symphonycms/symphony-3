@@ -7,8 +7,8 @@
 			$this->_required = true;
 
 			// Set default
-			$this->set('show_column', 'no');
-			$this->set('required', 'yes');
+			$this->properties()->show_column = 'no';
+			$this->properties()->required = 'yes';
 		}
 
 		function canFilter(){
@@ -20,19 +20,19 @@
 		}
 
 		function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
-			$label = Widget::Label($this->get('label'));
-			if($this->get('required') != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
+			$label = Widget::Label($this->properties()->label);
+			if($this->properties()->required != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
 
 			$textarea = Widget::Textarea(
-				'fields['.$this->get('element_name').']',
+				'fields['.$this->properties()->element_name.']',
 				(strlen($data['value']) != 0 ? General::sanitize($data['value']) : NULL),
 				array(
-					'rows' => $this->get('size'),
+					'rows' => $this->properties()->size,
 					'cols' => '50'
 				)
 			);
 
-			if($this->get('formatter') != 'none') $textarea->setAttribute('class', $this->get('formatter'));
+			if($this->properties()->formatter != 'none') $textarea->setAttribute('class', $this->properties()->formatter);
 
 			###
 			# Delegate: ModifyTextareaFieldPublishWidget
@@ -49,15 +49,15 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->id;
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'size' => $this->get('size'),
-				'formatter' => ($this->get('formatter') != 'none') ? $this->get('formatter') : NULL
+				'size' => $this->properties()->size,
+				'formatter' => ($this->properties()->formatter != 'none') ? $this->properties()->formatter : NULL
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -67,7 +67,7 @@
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where) {
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->id;
 
 			if (self::isFilterRegex($data[0])) {
 				self::$key++;
@@ -99,17 +99,17 @@
 			return true;
 		}
 
-		function checkPostFieldData($data, &$message, $entry_id=NULL){
+		public function checkPostFieldData($data, &$message, $entry_id=NULL){
 
 			$message = NULL;
 
-			if($this->get('required') == 'yes' && strlen($data) == 0){
-				$message = __("'%s' is a required field.", array($this->get('label')));
+			if($this->properties()->required == 'yes' && strlen($data) == 0){
+				$message = __("'%s' is a required field.", array($this->properties()->label));
 				return self::ERROR_MISSING_FIELDS;
 			}
 
 			if($this->__applyFormatting($data, true, $errors) === false){
-				$message = __('"%1$s" contains invalid XML. The following error was returned: <code>%2$s</code>', array($this->get('label'), $errors[0]['message']));
+				$message = __('"%1$s" contains invalid XML. The following error was returned: <code>%2$s</code>', array($this->properties()->label, $errors[0]['message']));
 				return self::ERROR_INVALID_FIELDS;
 			}
 
@@ -135,10 +135,10 @@
 
 		protected function __applyFormatting($data, $validate=false, &$errors=NULL){
 
-			if($this->get('formatter')){
+			if($this->properties()->formatter){
 
 
-				$formatter = TextformatterManager::instance()->create($this->get('formatter'));
+				$formatter = TextformatterManager::instance()->create($this->properties()->formatter);
 
 				$result = $formatter->run($data);
 
@@ -169,7 +169,7 @@
 
 			if ($mode == null || $mode == 'formatted') {
 
-				if ($this->get('formatter') && isset($data['value_formatted'])) {
+				if ($this->properties()->formatter && isset($data['value_formatted'])) {
 					$value = $data['value_formatted'];
 				}
 
@@ -183,7 +183,7 @@
 
 				$wrapper->appendChild(
 					Symphony::Parent()->Page->createElement(
-						$this->get('element_name'),
+						$this->properties()->element_name,
 						($encode ? General::sanitize($value) : $value),
 						$attributes
 					)
@@ -195,7 +195,7 @@
 
 				$wrapper->appendChild(
 					Symphony::Parent()->Page->createElement(
-						$this->get('element_name'),
+						$this->properties()->element_name,
 						sprintf('<![CDATA[%s]]>', $data['value']),
 						array(
 							'mode' => $mode
@@ -207,25 +207,25 @@
 
 		}
 
-		function checkFields(&$required, $checkForDuplicates=true, $checkForParentSection=true){
+		public function checkFields(&$required, $checkForDuplicates=true, $checkForParentSection=true){
 			$required = array();
-			if($this->get('size') == '' || !is_numeric($this->get('size'))) $required[] = 'size';
+			if($this->properties()->size == '' || !is_numeric($this->properties()->size)) $required[] = 'size';
 			return parent::checkFields($required, $checkForDuplicates, $checkForParentSection);
 
 		}
 
-		function findDefaults(&$fields){
+		public function findDefaults(array &$fields){
 			if(!isset($fields['size'])) $fields['size'] = 15;
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$wrapper->appendChild($this->buildFormatterSelect($this->get('formatter'), 'formatter', __('Text Formatter')));
+			$wrapper->appendChild($this->buildFormatterSelect($this->properties()->formatter, 'formatter', __('Text Formatter')));
 
 			## Textarea Size
 			$label = Widget::Label();
-			$input = Widget::Input('size', $this->get('size'));
+			$input = Widget::Input('size', $this->properties()->size);
 			$input->setAttribute('size', '3');
 
 			//	TODO: Fix me.
@@ -254,17 +254,17 @@
 						KEY `entry_id` (`entry_id`),
 						FULLTEXT KEY `value` (`value`)
 					)',
-					$this->get('section'),
-					$this->get('element_name')
+					$this->properties()->section,
+					$this->properties()->element_name
 				)
 			);
 		}
 
 		public function getExampleFormMarkup(){
-			$label = Widget::Label($this->get('label'));
+			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(
-				Widget::Textarea('fields['.$this->get('element_name').']', null, array(
-					'rows' => $this->get('size'),
+				Widget::Textarea('fields['.$this->properties()->element_name.']', null, array(
+					'rows' => $this->properties()->size,
 					'cols' => '50'
 				)
 			));
@@ -274,15 +274,15 @@
 
 		public function fetchIncludableElements() {
 
-			if ($this->get('formatter')) {
+			if ($this->properties()->formatter) {
 				return array(
-					$this->get('element_name') . ': formatted',
-					$this->get('element_name') . ': unformatted'
+					$this->properties()->element_name . ': formatted',
+					$this->properties()->element_name . ': unformatted'
 				);
 			}
 
 			return array(
-				$this->get('element_name')
+				$this->properties()->element_name
 			);
 		}
 

@@ -7,7 +7,7 @@
 		}
 
 		public function canToggle(){
-			return ($this->get('allow_multiple_selection') == 'yes' ? false : true);
+			return ($this->properties()->allow_multiple_selection == 'yes' ? false : true);
 		}
 
 		public function allowDatasourceOutputGrouping(){
@@ -52,7 +52,7 @@
 
 			$callback = Administration::instance()->getPageCallback();
 
-			if ($this->get('default_to_current_user') == 'yes' && empty($data) && empty($_POST)) {
+			if ($this->properties()->default_to_current_user == 'yes' && empty($data) && empty($_POST)) {
 				$value = array(Administration::instance()->User->id);
 			}
 
@@ -68,14 +68,14 @@
 				$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
 			}
 
-			$fieldname = 'fields['.$this->get('element_name').']';
-			if($this->get('allow_multiple_selection') == 'yes') $fieldname .= '[]';
+			$fieldname = 'fields['.$this->properties()->element_name.']';
+			if($this->properties()->allow_multiple_selection == 'yes') $fieldname .= '[]';
 
 			$attr = array();
 
-			if($this->get('allow_multiple_selection') == 'yes') $attr['multiple'] = 'multiple';
+			if($this->properties()->allow_multiple_selection == 'yes') $attr['multiple'] = 'multiple';
 
-			$label = Widget::Label($this->get('label'));
+			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(Widget::Select($fieldname, $options, $attr));
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
@@ -120,7 +120,7 @@
 		}
 
 		public function isSortable(){
-			return ($this->get('allow_multiple_selection') == 'yes' ? false : true);
+			return ($this->properties()->allow_multiple_selection == 'yes' ? false : true);
 		}
 
 		public function canFilter(){
@@ -132,12 +132,12 @@
 		}
 
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->get('id')."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`user_id` $order");
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->id;
 
 			if (self::isFilterRegex($data[0])) {
 				self::$key++;
@@ -191,15 +191,15 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->id;
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'allow_multiple_selection' => ($this->get('allow_multiple_selection') ? $this->get('allow_multiple_selection') : 'no'),
-				'default_to_current_user' => ($this->get('default_to_current_user') ? $this->get('default_to_current_user') : 'no')
+				'allow_multiple_selection' => ($this->properties()->allow_multiple_selection ? $this->properties()->allow_multiple_selection : 'no'),
+				'default_to_current_user' => ($this->properties()->default_to_current_user ? $this->properties()->default_to_current_user : 'no')
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -211,7 +211,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 	        if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
 
-	        $list = Symphony::Parent()->Page->createElement($this->get('element_name'));
+	        $list = Symphony::Parent()->Page->createElement($this->properties()->element_name);
 	        foreach($data['user_id'] as $user_id){
 	            $user = new User($user_id);
 	            $list->appendChild(
@@ -237,7 +237,7 @@
 			## Allow multiple selection
 			$label = Widget::Label();
 			$input = Widget::Input('allow-multiple-selection', 'yes', 'checkbox');
-			if($this->get('allow-multiple-selection') == 'yes') $input->setAttribute('checked', 'checked');
+			if($this->properties()->{'allow-multiple-selection'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->appendChild($input);
 			$label->setValue(__('Allow selection of multiple users'));
@@ -246,7 +246,7 @@
 			## Default to current logged in user
 			$label = Widget::Label();
 			$input = Widget::Input('default-to-current-user', 'yes', 'checkbox');
-			if($this->get('default-to-current-user') == 'yes') $input->setAttribute('checked', 'checked');
+			if($this->properties()->{'default-to-current-user'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->appendChild($input);
 			$label->setValue(__('Select current user by default'));
@@ -268,8 +268,8 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `user_id` (`user_id`)
 					)',
-					$this->get('section'),
-					$this->get('element_name')
+					$this->properties()->section,
+					$this->properties()->element_name
 				)
 			);
 		}
@@ -284,14 +284,14 @@
 				$options[] = array($u->id, NULL, $u->getFullName());
 			}
 
-			$fieldname = 'fields['.$this->get('element_name').']';
-			if($this->get('allow_multiple_selection') == 'yes') $fieldname .= '[]';
+			$fieldname = 'fields['.$this->properties()->element_name.']';
+			if($this->properties()->allow_multiple_selection == 'yes') $fieldname .= '[]';
 
 			$attr = array();
 
-			if($this->get('allow_multiple_selection') == 'yes') $attr['multiple'] = 'multiple';
+			if($this->properties()->allow_multiple_selection == 'yes') $attr['multiple'] = 'multiple';
 
-			$label = Widget::Label($this->get('label'));
+			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(Widget::Select($fieldname, $options, $attr));
 
 			return $label;

@@ -7,7 +7,7 @@
 			parent::__construct();
 			$this->_name = __('Text Input');
 			$this->_required = true;
-			$this->set('required', 'no');
+			$this->properties()->required = 'no';
 		}
 
 		public function allowDatasourceOutputGrouping(){
@@ -22,20 +22,20 @@
 
 			if(!is_array($records) || empty($records)) return;
 
-			$groups = array($this->get('element_name') => array());
+			$groups = array($this->properties()->element_name => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->get('id'));
+				$data = $r->getData($this->properties()->id);
 
 				$value = $data['value'];
 				$handle = Lang::createHandle($value);
 
-				if(!isset($groups[$this->get('element_name')][$handle])){
-					$groups[$this->get('element_name')][$handle] = array('attr' => array('handle' => $handle, 'value' => $value),
+				if(!isset($groups[$this->properties()->element_name][$handle])){
+					$groups[$this->properties()->element_name][$handle] = array('attr' => array('handle' => $handle, 'value' => $value),
 																		 'records' => array(), 'groups' => array());
 				}
 
-				$groups[$this->get('element_name')][$handle]['records'][] = $r;
+				$groups[$this->properties()->element_name][$handle]['records'][] = $r;
 
 			}
 
@@ -43,7 +43,7 @@
 		}
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
-			$h4 = Symphony::Parent()->Page->createElement('h4', $this->get('label'));
+			$h4 = Symphony::Parent()->Page->createElement('h4', $this->properties()->label);
 			$h4->appendChild(
 				Symphony::Parent()->Page->createElement('i', $this->Name())
 			);
@@ -57,7 +57,7 @@
 			$label->appendChild(Widget::Select(
 				'fields[filter]'
 				//. (!is_null($fieldnamePrefix) ? "[{$fieldnamePrefix}]" : NULL)
-				. '[' . $this->get('element_name') . '][operation]',
+				. '[' . $this->properties()->element_name . '][operation]',
 				//. (!is_null($fieldnamePostfix) ? "[{$fieldnamePostfix}]" : NULL),
 				//(!is_null($data) ? General::sanitize($data) : NULL)
 				array(
@@ -73,7 +73,7 @@
 			$label->appendChild(Widget::Input(
 				'fields[filter]'
 				//. (!is_null($fieldnamePrefix) ? "[{$fieldnamePrefix}]" : NULL)
-				. '[' . $this->get('element_name') . '][value]',
+				. '[' . $this->properties()->element_name . '][value]',
 				//. (!is_null($fieldnamePostfix) ? "[{$fieldnamePostfix}]" : NULL),
 				(!is_null($data) && isset($data['value']) ? General::sanitize($data['value']) : NULL)
 			));
@@ -84,9 +84,9 @@
 
 		public function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 			$value = General::sanitize($data['value']);
-			$label = Widget::Label($this->get('label'));
-			if($this->get('required') != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
-			$label->appendChild(Widget::Input('fields['.$this->get('element_name').']', (strlen($value) != 0 ? $value : NULL)));
+			$label = Widget::Label($this->properties()->label);
+			if($this->properties()->required != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
+			$label->appendChild(Widget::Input('fields['.$this->properties()->element_name.']', (strlen($value) != 0 ? $value : NULL)));
 
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
@@ -105,12 +105,12 @@
 		}
 
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->get('id')."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`value` $order");
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->id;
 
 			if (self::isFilterRegex($data[0])) {
 				self::$key++;
@@ -170,7 +170,7 @@
 		}
 
 		private function __applyValidationRules($data){
-			$rule = $this->get('validator');
+			$rule = $this->properties()->validator;
 			return ($rule ? General::validateString($data, $rule) : true);
 		}
 
@@ -184,13 +184,13 @@
 
 			$handle = Lang::createHandle($data);
 
-			if($this->get('required') == 'yes' && strlen($data) == 0){
-				$message = __("'%s' is a required field.", array($this->get('label')));
+			if($this->properties()->required == 'yes' && strlen($data) == 0){
+				$message = __("'%s' is a required field.", array($this->properties()->label));
 				return self::ERROR_MISSING_FIELDS;
 			}
 
 			if(!$this->__applyValidationRules($data)){
-				$message = __("'%s' contains invalid data. Please check the contents.", array($this->get('label')));
+				$message = __("'%s' contains invalid data. Please check the contents.", array($this->properties()->label));
 				return self::ERROR_INVALID_FIELDS;
 			}
 
@@ -240,7 +240,7 @@
 
 			$wrapper->appendChild(
 				Symphony::Parent()->Page->createElement(
-					$this->get('element_name'), $value, array('handle' => $data['handle'])
+					$this->properties()->element_name, $value, array('handle' => $data['handle'])
 				)
 			);
 		}
@@ -249,14 +249,14 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->id;
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'validator' => ($fields['validator'] == 'custom' ? NULL : $this->get('validator'))
+				'validator' => ($fields['validator'] == 'custom' ? NULL : $this->properties()->validator)
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -267,13 +267,13 @@
 
 		public function setFromPOST($postdata){
 			parent::setFromPOST($postdata);
-			if($this->get('validator') == '') $this->remove('validator');
+			if(strlen(trim($this->properties()->validator)) == 0) unset($this->properties()->validator);
 		}
 
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$this->buildValidationSelect($wrapper, $this->get('validator'), 'validator');
+			$this->buildValidationSelect($wrapper, $this->properties()->validator, 'validator');
 
 			$options_list = Symphony::Parent()->Page->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
@@ -298,8 +298,8 @@
 						KEY `handle` (`handle`),
 						KEY `value` (`value`)
 					)',
-					$this->get('section'),
-					$this->get('element_name')
+					$this->properties()->section,
+					$this->properties()->element_name
 				)
 			);
 		}
