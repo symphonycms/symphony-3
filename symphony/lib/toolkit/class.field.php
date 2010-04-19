@@ -458,7 +458,7 @@
 		}
 
 		public function prepareTableValue($data, XMLElement $link=NULL) {
-			$max_length = Symphony::Configuration()->get('cell_truncation_length', 'symphony');
+			$max_length = Symphony::Configuration()->get('cell-truncation-length', 'symphony');
 			$max_length = ($max_length ? $max_length : 75);
 
 			$value = strip_tags($data['value']);

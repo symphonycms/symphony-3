@@ -16,21 +16,4 @@
 				),
 			);
 		}
-		
-		public function uninstall() {
-			Symphony::Database()->query("DROP TABLE `tbl_fields_checkbox`");
-		}
-		
-		public function install() {
-			return Symphony::Database()->query("
-				CREATE TABLE IF NOT EXISTS `tbl_fields_checkbox` (
-					`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-					`field_id` int(11) unsigned NOT NULL,
-					`default_state` enum('on','off') NOT NULL DEFAULT 'on',
-					`description` varchar(255) DEFAULT NULL,
-					PRIMARY KEY (`id`),
-					KEY `field_id` (`field_id`)
-				)
-			");
-		}
 	}

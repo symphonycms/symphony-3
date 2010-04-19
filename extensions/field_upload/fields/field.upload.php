@@ -134,8 +134,6 @@
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$order = $this->properties()->{'sortorder'};
-
 		// Destination --------------------------------------------------------
 
 			$ignore = array(
@@ -172,30 +170,25 @@
 			$wrapper->appendChild($label);
 
 		// Validator ----------------------------------------------------------
-
-			$this->appendValidationSelect($wrapper, $this->properties()->{'validator'}, 'validator', 'upload');
-
-
-
+			
+			$this->appendValidationSelect($wrapper, $this->properties()->{'validator'}, 'validator', __('Validation Rule'), 'upload');
+			
+		// Options ------------------------------------------------------------
+			
 			$options_list = Symphony::Parent()->Page->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-
-			// Serialise ----------------------------------------------------------
-
-			if ($this->properties()->{'serialise'} == 'yes') $input->setAttribute('checked', 'checked');
 			
-			$label->appendChild($input);
-			$label->setValue(__('Serialise file names'));
+			$label = Widget::Label(__('Serialise file names'));
+			$input = Widget::Input('serialise', 'yes', 'checkbox');
+			
+			if ($this->properties()->{'serialise'} == 'yes') {
+				$input->setAttribute('checked', 'checked');
+			}
+			
+			$label->prependChild($input);
 			$item = $wrapper->ownerDocument->createElement('li');
 			$item->appendChild($label);
 			$options_list->appendChild($item);
-
-				if ($this->properties()->serialise == 'yes') $input->setAttribute('checked', 'checked');
-				
-				$label->appendChild($input);
-				$label->setValue(__('Serialise file names'));
-				$options_list->appendChild($label);
-
 
 			$this->appendShowColumnCheckbox($options_list);
 			$this->appendRequiredCheckbox($options_list);

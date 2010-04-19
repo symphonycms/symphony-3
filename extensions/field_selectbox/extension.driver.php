@@ -16,22 +16,4 @@
 				),
 			);
 		}
-		
-		public function uninstall() {
-			Symphony::Database()->query("DROP TABLE `tbl_fields_select`");
-		}
-		
-		public function install() {
-			return Symphony::Database()->query("
-				CREATE TABLE IF NOT EXISTS `tbl_fields_select` (
-					`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-					`field_id` int(11) unsigned NOT NULL,
-					`allow_multiple_selection` enum('yes','no') NOT NULL DEFAULT 'no',
-					`static_options` text,
-					`dynamic_options` int(11) unsigned DEFAULT NULL,
-					PRIMARY KEY (`id`),
-					KEY `field_id` (`field_id`)
-				)
-			");
-		}
 	}

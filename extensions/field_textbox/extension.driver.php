@@ -18,30 +18,6 @@
 			);
 		}
 		
-		public function uninstall() {
-			$this->_Parent->Database->query("DROP TABLE `tbl_fields_textbox`");
-		}
-		
-		public function install() {
-			$this->_Parent->Database->query("
-				CREATE TABLE IF NOT EXISTS `tbl_fields_textbox` (
-					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-					`field_id` INT(11) UNSIGNED NOT NULL,
-					`column_length` INT(11) UNSIGNED DEFAULT 75,
-					`text_size` ENUM('single', 'small', 'medium', 'large', 'huge') DEFAULT 'medium',
-					`text_formatter` VARCHAR(255) DEFAULT NULL,
-					`text_validator` VARCHAR(255) DEFAULT NULL,
-					`text_length` INT(11) UNSIGNED DEFAULT 0,
-					`text_cdata` ENUM('yes', 'no') DEFAULT 'no',
-					`text_handle` ENUM('yes', 'no') DEFAULT 'no',
-					PRIMARY KEY (`id`),
-					KEY `field_id` (`field_id`)
-				)
-			");
-			
-			return true;
-		}
-		
 	/*-------------------------------------------------------------------------
 		Utilites:
 	-------------------------------------------------------------------------*/
