@@ -61,39 +61,43 @@
 					$users = UserManager::fetch();
 				}
 
-				if(is_array($users) && !empty($users)) foreach($users as $user){
+				if(is_array($users) && !empty($users)) {
+					foreach($users as $user) {
+						$xUser = $result->createElement('user', null);
+						$xUser->setAttribute('id', $user->id);
 
-					$xUser = $result->createElement('user', null);
-					$xUser->setAttribute('id', $user->id);
+						$fields = array(
+							'name' => $result->createElement('name', $user->getFullName()),
+							'username' => $result->createElement('username', $user->username),
+							'email' => $result->createElement('email', $user->email)
+						);
 
-					$fields = array(
-						'name' => $result->createElement('name', $user->getFullName()),
-						'username' => $result->createElement('username', $user->username),
-						'email' => $result->createElement('email', $user->email)
-					);
+						if($user->isTokenActive()) {
+							$fields['authentication-token'] = $result->createElement('authentication-token', $user->createAuthToken());
+						}
 
-					if($user->isTokenActive()) {
-						$fields['authentication-token'] = $result->createElement('authentication-token', $user->createAuthToken());
+						try {
+							$section = Section::loadFromHandle($user->default_section);
+
+							$default_section = $result->createElement('default-section', $section->name);
+							$default_section->setAttribute('handle', $section->handle);
+
+							$fields['default-section'] =  $default_section;
+						}
+						catch (SectionException $error) {
+							// Do nothing, section doesn't exist, but no need to error out about it..
+						}
+
+						foreach($fields as $field) {
+							$xUser->appendChild($value);
+						}
+
+						$root->appendChild($xUser);
 					}
+				}
 
-					try {
-						$section = Section::loadFromHandle($user->default_section);
-
-						$default_section = $result->createElement('default-section', $section->name);
-						$default_section->setAttribute('handle', $section->handle);
-
-						$fields['default-section'] =  $default_section;
-					}
-					catch (SectionException $error) {
-						// Do nothing, section doesn't exist, but no need to error out about it..
-					}
-
-					foreach($fields as $field) {
-						$xUser->appendChild($value);
-					}
-
-					$root->appendChild($xUser);
-
+				else {
+					throw new DataSourceException("No records found.");
 				}
 			}
 
@@ -105,9 +109,6 @@
 				$root->appendChild($doc->createElement(
 					'error', General::sanitize($error->getMessage())
 				));
-
-				$doc->appendChild($root);
-				return $doc;
 			}
 
 			$result->appendChild($root);
