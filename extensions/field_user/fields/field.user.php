@@ -1,8 +1,8 @@
 <?php
 
 	Class fieldUser extends Field {
-		function __construct($parent){
-			parent::__construct($parent);
+		function __construct(){
+			parent::__construct();
 			$this->_name = __('User');
 		}
 
@@ -34,7 +34,7 @@
 
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 
-			$status = self::__OK__;
+			$status = self::STATUS_OK;
 
 			if(!is_array($data) && !is_null($data)) return array('user_id' => $data);
 
@@ -46,7 +46,7 @@
 			return $result;
 		}
 
-		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
+		public function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 
 			$value = (isset($data['user_id']) ? $data['user_id'] : NULL);
 
@@ -140,28 +140,28 @@
 			$field_id = $this->get('id');
 
 			if (self::isFilterRegex($data[0])) {
-				$this->_key++;
+				self::$key++;
 				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
-					AND t{$field_id}_{$this->_key}.user_id REGEXP '{$pattern}'
+					AND t{$field_id}_{self::$key}.user_id REGEXP '{$pattern}'
 				";
 
 			} elseif ($andOperation) {
 				foreach ($data as $value) {
-					$this->_key++;
+					self::$key++;
 					$value = $this->escape($value);
 					$joins .= "
 						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+							ON (e.id = t{$field_id}_{self::$key}.entry_id)
 					";
 					$where .= "
-						AND t{$field_id}_{$this->_key}.user_id = '{$value}'
+						AND t{$field_id}_{self::$key}.user_id = '{$value}'
 					";
 				}
 
@@ -172,15 +172,15 @@
 					$value = $this->escape($value);
 				}
 
-				$this->_key++;
+				self::$key++;
 				$data = implode("', '", $data);
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
-					AND t{$field_id}_{$this->_key}.user_id IN ('{$data}')
+					AND t{$field_id}_{self::$key}.user_id IN ('{$data}')
 				";
 			}
 
@@ -300,3 +300,4 @@
 
 	}
 
+	return 'fieldUser';

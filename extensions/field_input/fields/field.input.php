@@ -3,11 +3,10 @@
 	require_once(TOOLKIT . '/class.xslproc.php');
 
 	Class fieldInput extends Field {
-		public function __construct(&$parent){
-			parent::__construct($parent);
+		public function __construct(){
+			parent::__construct();
 			$this->_name = __('Text Input');
 			$this->_required = true;
-
 			$this->set('required', 'no');
 		}
 
@@ -83,7 +82,7 @@
 			$wrapper->appendChild($group);
 		}
 
-		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
+		public function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 			$value = General::sanitize($data['value']);
 			$label = Widget::Label($this->get('label'));
 			if($this->get('required') != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
@@ -114,33 +113,33 @@
 			$field_id = $this->get('id');
 
 			if (self::isFilterRegex($data[0])) {
-				$this->_key++;
+				self::$key++;
 				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
 					AND (
-						t{$field_id}_{$this->_key}.value REGEXP '{$pattern}'
-						OR t{$field_id}_{$this->_key}.handle REGEXP '{$pattern}'
+						t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
+						OR t{$field_id}_{self::$key}.handle REGEXP '{$pattern}'
 					)
 				";
 
 			} elseif ($andOperation) {
 				foreach ($data as $value) {
-					$this->_key++;
+					self::$key++;
 					$value = $this->escape($value);
 					$joins .= "
 						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+							ON (e.id = t{$field_id}_{self::$key}.entry_id)
 					";
 					$where .= "
 						AND (
-							t{$field_id}_{$this->_key}.value = '{$value}'
-							OR t{$field_id}_{$this->_key}.handle = '{$value}'
+							t{$field_id}_{self::$key}.value = '{$value}'
+							OR t{$field_id}_{self::$key}.handle = '{$value}'
 						)
 					";
 				}
@@ -152,17 +151,17 @@
 					$value = $this->escape($value);
 				}
 
-				$this->_key++;
+				self::$key++;
 				$data = implode("', '", $data);
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
 					AND (
-						t{$field_id}_{$this->_key}.value IN ('{$data}')
-						OR t{$field_id}_{$this->_key}.handle IN ('{$data}')
+						t{$field_id}_{self::$key}.value IN ('{$data}')
+						OR t{$field_id}_{self::$key}.handle IN ('{$data}')
 					)
 				";
 			}
@@ -187,21 +186,21 @@
 
 			if($this->get('required') == 'yes' && strlen($data) == 0){
 				$message = __("'%s' is a required field.", array($this->get('label')));
-				return self::__MISSING_FIELDS__;
+				return self::ERROR_MISSING_FIELDS;
 			}
 
 			if(!$this->__applyValidationRules($data)){
 				$message = __("'%s' contains invalid data. Please check the contents.", array($this->get('label')));
-				return self::__INVALID_FIELDS__;
+				return self::ERROR_INVALID_FIELDS;
 			}
 
-			return self::__OK__;
+			return self::STATUS_OK;
 
 		}
 
 		public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null) {
 
-			$status = self::__OK__;
+			$status = self::STATUS_OK;
 
 			if (strlen(trim($data)) == 0) return array();
 
@@ -306,3 +305,4 @@
 		}
 	}
 
+	return 'fieldInput';

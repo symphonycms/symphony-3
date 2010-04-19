@@ -1,40 +1,153 @@
 <?php
-	/*
-	**	SOME DBC INTEGRATION HAS BEEN DONE ON THIS PAGE
-	*/
 
-	Class Field{
-		protected $_key = 0;
-		protected $_fields;
+	Class FieldException extends Exception {}
+
+	Class FieldFilterIterator extends FilterIterator{
+		public function __construct($path){
+			parent::__construct(new DirectoryIterator($path));
+		}
+
+		public function accept(){
+			if($this->isDir() == false && preg_match('/^field\..+\.php$/i', $this->getFilename())){
+				return true;
+			}
+			return false;
+		}
+	}
+
+	Class FieldIterator implements Iterator{
+
+		private $position;
+		private $fields;
+
+		public function __construct(){
+
+			$this->fields = array();
+			$this->position = 0;
+
+			foreach(new DirectoryIterator(EXTENSIONS) as $dir){
+				if(!$dir->isDir() || $dir->isDot() || !is_dir($dir->getPathname() . '/fields')) continue;
+
+				foreach(new FieldFilterIterator($dir->getPathname() . '/fields') as $file){
+					$this->fields[] = $file->getPathname();
+				}
+			}
+
+		}
+
+		public function length(){
+			return count($this->fields);
+		}
+
+		public function rewind(){
+			$this->position = 0;
+		}
+
+		public function current(){
+			return $this->fields[$this->position]; //Datasource::loadFromPath($this->events[$this->position]);
+		}
+
+		public function key(){
+			return $this->position;
+		}
+
+		public function next(){
+			++$this->position;
+		}
+
+		public function valid(){
+			return isset($this->fields[$this->position]);
+		}
+	}
+
+
+	Abstract Class Field{
+		
+		protected static $key;
+		protected static $loaded;
+				
+		protected $properties;
+		
+		protected $_fields; //DEPRICATED
 		protected $_required;
 		protected $_showcolumn;
+		
+		// Status codes
+		const STATUS_OK = 100;
+		const STATUS_ERROR = 150;
+		
+		// Error codes
+		const ERROR_MISSING_FIELDS = 200;
+		const ERROR_INVALID_FIELDS = 220;
+		const ERROR_DUPLICATE = 300;
+		const ERROR_CUSTOM = 400;
+		const ERROR_INVALID_QNAME = 500;
+		
+		// Filtering Flags
+		const FLAG_TOGGLEABLE = 600;
+		const FLAG_UNTOGGLEABLE = 700;
+		const FLAG_FILTERABLE = 800;
+		const FLAG_UNFILTERABLE = 900;
+		const FLAG_ALL = 1000;
+		
+		// Abstract functions
+		abstract public function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL);
+		
+		public function __construct(){
+			if(is_null(self::$key)) self::$key = 0;
+			
+			$this->properties = new StdClass;
 
-		const __OK__ = 100;
-		const __ERROR__ = 150;
-		const __MISSING_FIELDS__ = 200;
-		const __INVALID_FIELDS__ = 220;
-		const __DUPLICATE__ = 300;
-		const __ERROR_CUSTOM__ = 400;
-		const __INVALID_QNAME__ = 500;
-
-		const __TOGGLEABLE_ONLY__ = 600;
-		const __UNTOGGLEABLE_ONLY__ = 700;
-		const __FILTERABLE_ONLY__ = 800;
-		const __UNFILTERABLE_ONLY__ = 900;
-		const __FIELD_ALL__ = 1000;
-
-		function __construct(){
-
-			$this->_fields = array();
 			$this->_required = false;
 			$this->_showcolumn = true;
 
 			$this->_handle = (strtolower(get_class($this)) == 'field' ? 'field' : strtolower(substr(get_class($this), 5)));
 
-			$this->creationDate = DateTimeObj::getGMT('c');
+		}
+		
+		public function &properties(){
+			return $this->properties;
+		}
+		
+		public function __clone(){
+			$this->properties = new StdClass;
+		}
+		
+		public static function load($pathname){
+			if(!is_array(self::$loaded)){
+				self::$loaded = array();
+			}
 
+			if(!is_file($pathname)){
+		        throw new FieldException(
+					__('Could not find Field <code>%s</code>. If the Field was provided by an Extension, ensure that it is installed, and enabled.', array(basename($pathname)))
+				);
+			}
+
+			if(!isset(self::$loaded[$pathname])){
+				self::$loaded[$pathname] = require($pathname);
+			}
+
+			$obj = new self::$loaded[$pathname];
+			return $obj;
 		}
 
+		public static function loadFromType($type){
+			return self::load(self::__find($type) . "/field.{$type}.php");
+		}
+
+		protected static function __find($type){
+
+			$extensions = ExtensionManager::instance()->listInstalledHandles();
+
+			if(is_array($extensions) && !empty($extensions)){
+				foreach($extensions as $e){
+					if(is_file(EXTENSIONS . "/{$e}/fields/field.{$type}.php")) return EXTENSIONS . "/{$e}/fields";
+				}
+			}
+		    return false;
+	    }
+		
 		public function __toString(){
 
 			/*
@@ -92,7 +205,6 @@
 			return false;
 		}
 
-		// Abstract function
 		public function getToggleStates(){
 			return array();
 		}
@@ -109,10 +221,6 @@
 			return ($this->_name ? $this->_name : $this->_handle);
 		}
 
-		public function set($field, $value){
-			$this->_fields[$field] = $value;
-		}
-
 		public function entryDataCleanup($entry_id, $data=NULL){
 			Symphony::Database()->delete('tbl_entries_data_' . $this->get('id'), array($entry_id), "`entry_id` = %d ");
 
@@ -124,29 +232,41 @@
 			$data['show_column'] = (isset($data['show_column']) && $data['show_column'] == 'yes' ? 'yes' : 'no');
 			$this->setArray($data);
 		}
-
+		
+		// DEPRICATED
+		public function set($field, $value){
+			$this->properties()->$field = $value;
+//			$this->_fields[$field] = $value;
+		}
+						
+		// DEPRICATED
 		public function setArray($array){
 			if(empty($array) || !is_array($array)) return;
 			foreach($array as $field => $value) $this->set($field, $value);
 		}
-
+		
+		// DEPRICATED
 		public function get($field=NULL){
 
 			if(is_null($field)){
-				return $this->_fields;
+				return $this->properties();
+				//return $this->_fields;
 			}
 
 			if($field == 'element_name'
-				&& (isset($this->_fields['label']) && strlen(trim($this->_fields['label'])) > 0)
-					&& (!isset($this->_fields[$field]) || strlen(trim($this->_fields[$field])) == 0)){
-						$this->_fields[$field] = Lang::createHandle($this->_fields['label'], '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
+				&& (isset($this->properties()->label) && strlen(trim($this->properties()->label)) > 0)
+					&& (!isset($this->properties()->$field) || strlen(trim($this->properties()->$field)) == 0)){
+						$this->properties()->$field = Lang::createHandle(
+							$this->properties()->label, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL)
+						);
 			}
 
-			return (isset($this->_fields[$field]) ? $this->_fields[$field] : NULL);
+			return (isset($this->properties()->$field) ? $this->properties()->$field : NULL);
 		}
-
+		
+		// DEPRICATED
 		public function remove($field){
-			unset($this->_fields[$field]);
+			unset($this->properties()->$field);
 		}
 
 		/*
@@ -175,18 +295,13 @@
 		}
 		*/
 
-		public function flush(){
-			$this->_fields = array();
-		}
-
-		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $entry_id = null){
-		}
+		
 
 		public function canPrePopulate(){
 			return false;
 		}
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false, $mode=NULL, $entry_id=NULL) {
+		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, $entry_id=NULL) {
 			$wrapper->appendChild(
 				Symphony::Parent()->Page->createElement(
 					$this->get('element_name'),
@@ -246,9 +361,11 @@
 				}
 			}
 
-			return (is_array($errors) && !empty($errors) ? self::__ERROR__ : self::__OK__);
+			return (is_array($errors) && !empty($errors) ? self::STATUS_ERROR : self::STATUS_OK);
 		}
-
+		
+		
+		// TODO: Rethink this function
 		public function findDefaults(&$fields){
 		}
 
@@ -272,48 +389,52 @@
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
 			$field_id = $this->get('id');
 
-			if (self::isFilterRegex($data[0])) {
-				$this->_key++;
+			if (self::isFilterRegex($data[0])){
+				self::$key++;
 				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
-					AND t{$field_id}_{$this->_key}.value REGEXP '{$pattern}'
+					AND t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
 				";
 
-			} elseif ($andOperation) {
+			} 
+			
+			elseif ($andOperation == true){
 				foreach ($data as $value) {
-					$this->_key++;
+					self::$key++;
 					$value = $this->escape($value);
 					$joins .= "
 						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+							ON (e.id = t{$field_id}_{self::$key}.entry_id)
 					";
 					$where .= "
-						AND t{$field_id}_{$this->_key}.value = '{$value}'
+						AND t{$field_id}_{self::$key}.value = '{$value}'
 					";
 				}
 
-			} else {
+			} 
+			
+			else{
 				if (!is_array($data)) $data = array($data);
 
 				foreach ($data as &$value) {
 					$value = $this->escape($value);
 				}
 
-				$this->_key++;
+				self::$key++;
 				$data = implode("', '", $data);
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
-					AND t{$field_id}_{$this->_key}.value IN ('{$data}')
+					AND t{$field_id}_{self::$key}.value IN ('{$data}')
 				";
 			}
 
@@ -326,10 +447,10 @@
 			if ($this->get('required') == 'yes' && strlen($data) == 0){
 				$message = __("'%s' is a required field.", array($this->get('label')));
 
-				return self::__MISSING_FIELDS__;
+				return self::ERROR_MISSING_FIELDS;
 			}
 
-			return self::__OK__;
+			return self::STATUS_OK;
 		}
 
 		/*
@@ -341,9 +462,9 @@
 			$entry_id (optionsl) - Useful for identifying the current entry
 
 		*/
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=null) {
+		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL) {
 
-			$status = self::__OK__;
+			$status = self::STATUS_OK;
 
 			return array(
 				'value' => $data,
@@ -386,7 +507,7 @@
 		public function fetchAssociatedEntryCount($value){
 		}
 
-		function fetchAssociatedEntryIDs($value){
+		public function fetchAssociatedEntryIDs($value){
 		}
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
@@ -531,7 +652,7 @@
 		public function groupRecords($records){
 			trigger_error(__('Data source output grouping is not supported by the <code>%s</code> field', array($this->get('label'))), E_USER_ERROR);
 		}
-
+/*
 		public function commit(){
 
 			$fields = array();
@@ -559,7 +680,7 @@
 			return false;
 
 		}
-
+*/
 		public function createTable(){
 			return Symphony::Database()->query(
 				sprintf(

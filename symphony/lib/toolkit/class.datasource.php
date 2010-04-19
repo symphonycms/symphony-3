@@ -91,8 +91,9 @@
 		public function __construct(){
 
 			$this->datasources = array();
+			$this->position = 0;
 
-			foreach(new DataSourceFilterIterator(WORKSPACE . '/data-sources') as $file){
+			foreach(new DataSourceFilterIterator(DATASOURCES) as $file){
 				$this->datasources[] = $file->getPathname();
 			}
 
@@ -172,7 +173,7 @@
 
 			if(!is_file($pathname)){
 		        throw new DataSourceException(
-					__('Could not find Data Source <code>%s</code>. If the Data Source was provided by an Extensions, ensure that it is installed, and enabled.', array(basename($pathname)))
+					__('Could not find Data Source <code>%s</code>. If the Data Source was provided by an Extension, ensure that it is installed, and enabled.', array(basename($pathname)))
 				);
 			}
 

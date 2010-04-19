@@ -1,8 +1,8 @@
 <?php
 
 	Class fieldCheckbox extends Field {
-		function __construct(&$parent){
-			parent::__construct($parent);
+		function __construct(){
+			parent::__construct();
 			$this->_name = __('Checkbox');
 		}
 
@@ -56,7 +56,7 @@
 
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 
-			$status = self::__OK__;
+			$status = self::STATUS_OK;
 
 			return array(
 				'value' => (strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no')
@@ -75,15 +75,15 @@
 
 			if ($andOperation) {
 				foreach ($data as $value) {
-					$this->_key++;
+					self::$key++;
 					$value = $this->escape($value);
 					$joins .= "
 						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+							ON (e.id = t{$field_id}_{self::$key}.entry_id)
 					";
 					$where .= "
-						AND (t{$field_id}_{$this->_key}.value = '{$value})'
+						AND (t{$field_id}_{self::$key}.value = '{$value})'
 					";
 				}
 
@@ -94,15 +94,15 @@
 					$value = $this->escape($value);
 				}
 
-				$this->_key++;
+				self::$key++;
 				$data = implode("', '", $data);
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
-					AND (t{$field_id}_{$this->_key}.value IN ('{$data}'))
+					AND (t{$field_id}_{self::$key}.value IN ('{$data}'))
 				";
 			}
 
@@ -126,7 +126,7 @@
 
 		}
 
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
+		function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 
 			if(!$data){
 				## TODO: Don't rely on $_POST
@@ -141,7 +141,7 @@
 			$input = Widget::Input('fields['.$this->get('element_name').']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
 
 			$label->appendChild($input);
-			$label->setValue(($this->get('description') != NULL ? $this->get('description') : $this->get('label')));
+			$label->appendChild(new DOMText(($this->get('description') != NULL ? $this->get('description') : $this->get('label'))));
 
 			$wrapper->appendChild($label);
 		}
@@ -234,3 +234,4 @@
 
 	}
 
+	return 'fieldCheckbox';

@@ -1,7 +1,7 @@
 <?php
-
-	require_once(TOOLKIT . '/class.fieldmanager.php');
-
+	
+	require_once('class.field.php');
+	
 	Class SectionException extends Exception {}
 
 	Class SectionFilterIterator extends FilterIterator{
@@ -162,14 +162,14 @@
 
 		public function appendField($type, array $data=NULL){
 
-			$field = fieldManager::instance()->create($type);
+			$field = Field::loadFromType($type);
 
 			if(!is_null($data)){
 				$field->setFromPOST($data);
 			}
 
 			$this->fields[] = $field;
-
+			
 			return $field;
 		}
 
@@ -324,7 +324,7 @@
 			if(is_array($section->fields) && !empty($section->fields)){
 				foreach($section->fields as $index => $field){
 					$errors = NULL;
-					if($field->checkFields($errors, false, false) != Field::__OK__ && !empty($errors)){
+					if($field->checkFields($errors, false, false) != Field::STATUS_OK && !empty($errors)){
 						$messages->append("field::{$index}", $errors);
 					}
 				}
@@ -498,11 +498,11 @@
 		}
 
 		public function fetchFilterableFields($location=NULL){
-			return $this->_fieldManager->fetch(NULL, $this->get('id'), 'ASC', 'sortorder', NULL, $location, NULL, Field::__FILTERABLE_ONLY__);
+			return $this->_fieldManager->fetch(NULL, $this->get('id'), 'ASC', 'sortorder', NULL, $location, NULL, Field::FLAG_FILTERABLE);
 		}
 
 		public function fetchToggleableFields($location=NULL){
-			return $this->_fieldManager->fetch(NULL, $this->get('id'), 'ASC', 'sortorder', NULL, $location, NULL, Field::__TOGGLEABLE_ONLY__);
+			return $this->_fieldManager->fetch(NULL, $this->get('id'), 'ASC', 'sortorder', NULL, $location, NULL, Field::FLAG_TOGGLEABLE);
 		}
 
 		public function fetchFieldsSchema(){
