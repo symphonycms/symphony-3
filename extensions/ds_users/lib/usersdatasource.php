@@ -147,4 +147,14 @@
 
 			return (is_array($users) && !empty($users) ? $users : NULL);
 		}
+
+		public function prepareSourceColumnValue() {
+
+			return Widget::TableData(
+				Widget::Anchor("Users", URL . '/symphony/system/users/', array(
+					'title' => 'Users'
+				))
+			);
+
+		}
 	}

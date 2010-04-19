@@ -245,4 +245,15 @@
 
 			return $result;
 		}
+
+		public function prepareSourceColumnValue() {
+
+			return Widget::TableData(
+				Widget::Anchor(@parse_url($this->parameters()->url, PHP_URL_HOST), $this->parameters()->url, array(
+					'title' => $this->parameters()->url,
+					'rel' => 'external'
+				))
+			);
+
+		}
 	}
