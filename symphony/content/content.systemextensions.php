@@ -70,7 +70,9 @@
 		function buildOverview($extensions){
 			$this->prepPage();
 			
-			$layout = new Layout('small', 'large');
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::SMALL);
+			$right = $layout->createColumn(Layout::LARGE);
 			
 			## Build lists of extensions by status
 			$lists = array();
@@ -112,14 +114,14 @@
 			}
 			
 			$fieldset->appendChild($ul);
-			$layout->appendToColumn(1, $fieldset);
+			$left->appendChild($fieldset);
 			
 			## Second column: Lists w actions
 			$fieldset = Widget::Fieldset(__('Available Actions'));
 			
-			$layout->appendToColumn(2, $fieldset);
+			$right->appendChild($fieldset);
 			
-			$this->Form->appendChild($layout->generate());
+			$layout->appendTo($this->Form);
 		}
 
 		function buildTable($extensions, $prefixes=false){

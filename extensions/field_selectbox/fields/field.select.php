@@ -10,7 +10,7 @@
 		}
 
 		function canToggle(){
-			return ($this->get('allow_multiple_selection') == 'yes' ? false : true);
+			return ($this->properties()->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
 
 		function allowDatasourceOutputGrouping(){
@@ -41,7 +41,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (!is_array($data) or empty($data)) return;
 
-			$list = Symphony::Parent()->Page->createElement($this->get('element_name'));
+			$list = Symphony::Parent()->Page->createElement($this->properties()->{'element-name'});
 
 			if (!is_array($data['handle']) and !is_array($data['value'])) {
 				$data = array(
@@ -78,7 +78,7 @@
 				WHERE
 					`value` = '%s
 				",
-				$this->get('id'),
+				$this->properties()->{'id'},
 				$value
 			);
 
@@ -94,7 +94,7 @@
 				WHERE
 					`value` = '%s
 				",
-				$this->get('id'),
+				$this->properties()->{'id'},
 				$value
 			);
 
@@ -102,9 +102,9 @@
 		}
 
 		public function getToggleStates() {
-			$values = preg_split('/,\s*/i', $this->get('static_options'), -1, PREG_SPLIT_NO_EMPTY);
+			$values = preg_split('/,\s*/i', $this->properties()->{'static-options'}, -1, PREG_SPLIT_NO_EMPTY);
 
-			if ($this->get('dynamic_options') != '') $this->findAndAddDynamicOptions($values);
+			if ($this->properties()->{'dynamic-options'} != '') $this->findAndAddDynamicOptions($values);
 
 			$values = array_map('trim', $values);
 			$states = array();
@@ -134,12 +134,12 @@
 				$options[] = array(General::sanitize($v), in_array($v, $data['value']), General::sanitize($v));
 			}
 
-			$fieldname = 'fields['.$this->get('element_name').']';
-			if($this->get('allow_multiple_selection') == 'yes') $fieldname .= '[]';
+			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
+			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
-			$label = Widget::Label($this->get('label'));
+			$label = Widget::Label($this->properties()->{'label'});
 			$label->appendChild(Widget::Select($fieldname, $options,
-				($this->get('allow_multiple_selection') == 'yes') ? array('multiple' => 'multiple') : array()
+				($this->properties()->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));
 
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
@@ -181,7 +181,7 @@
 				ORDER BY
 					`value` DESC
 				",
-				$this->get('dynamic_options')
+				$this->properties()->{'dynamic-options'}
 			);
 
 			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
@@ -214,7 +214,7 @@
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 
 			if (self::isFilterRegex($data[0])) {
 				self::$key++;
@@ -277,16 +277,16 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'static_options' => ($this->get('static_options') != '') ? $this->get('static_options') : NULL,
-				'dynamic_options' => ($this->get('dynamic_options') != '') ? $this->get('dynamic_options') : NULL,
-				'allow_multiple_selection' => ($this->get('allow_multiple_selection') ? $this->get('allow_multiple_selection') : 'no')
+				'static_options' => ($this->properties()->{'static-options'} != '') ? $this->properties()->{'static-options'} : NULL,
+				'dynamic_options' => ($this->properties()->{'dynamic-options'} != '') ? $this->properties()->{'dynamic-options'} : NULL,
+				'allow-multiple-selection' => ($this->properties()->{'allow-multiple-selection'} ? $this->properties()->{'allow-multiple-selection'} : 'no')
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -295,7 +295,7 @@
 			if ($f_id == 0 || !$f_id) return false;
 
 			$this->removeSectionAssociation($field_id);
-			$this->createSectionAssociation(NULL, $field_id, $this->get('dynamic_options'));
+			$this->createSectionAssociation(NULL, $field_id, $this->properties()->{'dynamic-options'});
 
 			return true;
 
@@ -305,7 +305,7 @@
 
 			if(!is_array($errors)) $errors = array();
 
-			if($this->get('static_options') == '' && ($this->get('dynamic_options') == '' || $this->get('dynamic_options') == 'none'))
+			if($this->properties()->{'static-options'} == '' && ($this->properties()->{'dynamic-options'} == '' || $this->properties()->{'dynamic-options'} == 'none'))
 				$errors['dynamic_options'] = __('At least one source must be specified, dynamic or static.');
 
 			parent::checkFields($errors, $checkForDuplicates);
@@ -313,7 +313,7 @@
 		}
 
 		function findDefaults(&$fields){
-			if(!isset($fields['allow_multiple_selection'])) $fields['allow_multiple_selection'] = 'no';
+			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
 		}
 
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
@@ -323,7 +323,7 @@
 
 			$label = Widget::Label(__('Static Options'));
 			$label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
-			$input = Widget::Input('static_options', General::sanitize($this->get('static_options')));
+			$input = Widget::Input('static_options', General::sanitize($this->properties()->{'static-options'}));
 			$label->appendChild($input);
 			$wrapper->appendChild($label);
 
@@ -350,7 +350,7 @@
 
 				$fields = array();
 				foreach($group['fields'] as $f){
-					if($f->get('id') != $this->get('id') && $f->canPrePopulate()) $fields[] = array($f->get('id'), ($this->get('dynamic_options') == $f->get('id')), $f->get('label'));
+					if($f->get('id') != $this->properties()->{'id'} && $f->canPrePopulate()) $fields[] = array($f->get('id'), ($this->properties()->{'dynamic-options'} == $f->get('id')), $f->get('label'));
 				}
 
 				if(is_array($fields) && !empty($fields)) $options[] = array('label' => $group['section']->get('name'), 'options' => $fields);
@@ -366,8 +366,8 @@
 
 			## Allow selection of multiple items
 			$label = Widget::Label();
-			$input = Widget::Input('allow_multiple_selection', 'yes', 'checkbox');
-			if($this->get('allow_multiple_selection') == 'yes') $input->setAttribute('checked', 'checked');
+			$input = Widget::Input('allow-multiple-selection', 'yes', 'checkbox');
+			if($this->properties()->{'allow-multiple-selection'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->appendChild($input);
 			$label->setValue(__('Allow selection of multiple options'));
@@ -382,20 +382,20 @@
 
 			if(!is_array($records) || empty($records)) return;
 
-			$groups = array($this->get('element_name') => array());
+			$groups = array($this->properties()->{'element-name'} => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->get('id'));
+				$data = $r->getData($this->properties()->{'id'});
 
 				$value = $data['value'];
 				$handle = Lang::createHandle($value);
 
-				if(!isset($groups[$this->get('element_name')][$handle])){
-					$groups[$this->get('element_name')][$handle] = array('attr' => array('handle' => $handle, 'value' => $value),
+				if(!isset($groups[$this->properties()->{'element-name'}][$handle])){
+					$groups[$this->properties()->{'element-name'}][$handle] = array('attr' => array('handle' => $handle, 'value' => $value),
 																		 'records' => array(), 'groups' => array());
 				}
 
-				$groups[$this->get('element_name')][$handle]['records'][] = $r;
+				$groups[$this->properties()->{'element-name'}][$handle]['records'][] = $r;
 
 			}
 
@@ -415,8 +415,8 @@
 						KEY `handle` (`handle`),
 						KEY `value` (`value`)
 					)',
-					$this->get('section'),
-					$this->get('element_name')
+					$this->properties()->{'section'},
+					$this->properties()->{'element-name'}
 				)
 			);
 		}
@@ -430,12 +430,12 @@
 				$options[] = array($v, NULL, $v);
 			}
 
-			$fieldname = 'fields['.$this->get('element_name').']';
-			if($this->get('allow_multiple_selection') == 'yes') $fieldname .= '[]';
+			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
+			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
-			$label = Widget::Label($this->get('label'));
+			$label = Widget::Label($this->properties()->{'label'});
 			$label->appendChild(Widget::Select($fieldname, $options,
-				($this->get('allow_multiple_selection') == 'yes') ? array('multiple' => 'multiple') : array()
+				($this->properties()->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));
 
 			return $label;

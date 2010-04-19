@@ -49,8 +49,8 @@
 						FULLTEXT KEY `value_formatted` (`value_formatted`)
 					)
 				",
-				$this->get('section'),
-				$this->get('element_name')
+				$this->properties()->{'section'},
+				$this->properties()->{'element-name'}
 			));
 		}
 		
@@ -109,7 +109,7 @@
 						f.entry_id = '%s'
 					LIMIT 1
 				",
-				$this->get('id'), $entry_id
+				$this->properties()->{'id'}, $entry_id
 			));
 		}
 		
@@ -125,7 +125,7 @@
 						%s
 					LIMIT 1
 				",
-				$this->get('id'), $handle,
+				$this->properties()->{'id'}, $handle,
 				(!is_null($entry_id) ? "AND f.entry_id != '{$entry_id}'" : '')
 			));
 		}
@@ -142,7 +142,7 @@
 						AND f.value = '%s'
 					LIMIT 1
 				",
-				$this->get('id'), $entry_id,
+				$this->properties()->{'id'}, $entry_id,
 				$this->cleanValue(General::sanitize($value))
 			));
 		}
@@ -169,7 +169,6 @@
 			parent::displaySettingsPanel($wrapper, $errors);
 			
 			$document = $wrapper->ownerDocument;
-			$order = $this->get('sortorder');
 			
 		/*---------------------------------------------------------------------
 			Expression
@@ -181,13 +180,11 @@
 			$values = $this->_sizes;
 			
 			foreach ($values as &$value) {
-				$value[1] = $value[0] == $this->get('text-size');
+				$value[1] = $value[0] == $this->properties()->{'text-size'};
 			}
 			
 			$label = Widget::Label('Size');
-			$label->appendChild(Widget::Select(
-				"{$order}", $values
-			));
+			$label->appendChild(Widget::Select('text-size', $values));
 			
 			$group->appendChild($label);
 			
@@ -195,22 +192,17 @@
 			Text Formatter
 		---------------------------------------------------------------------*/
 			
-			$group->appendChild($this->buildFormatterSelect(
-				$this->get('text-formatter'),
-				"{$order}",
-				'Text Formatter'
-			));
-			$wrapper->appendChild($group);
+			$this->appendFormatterSelect(
+				$group, $this->properties()->{'text-formatter'}, 'text-formatter'
+			);
 			
 		/*---------------------------------------------------------------------
 			Validator
 		---------------------------------------------------------------------*/
 			
-			$div = $document->createElement('div');
-			$this->buildValidationSelect(
-				$div, $this->get('text-validator'), "{$order}"
+			$this->appendValidationSelect(
+				$wrapper, $this->properties()->{'text-validator'}, 'text-validator'
 			);
-			$wrapper->appendChild($div);
 			
 		/*---------------------------------------------------------------------
 			Limiting
@@ -221,10 +213,7 @@
 			
 			$label = Widget::Label(__('Limit'));
 			$label->appendChild($document->createElement('i', __('Number of characters')));
-			$input = Widget::Input(
-				"{$order}",
-				(integer)$this->get('text-length')
-			);
+			$input = Widget::Input('text-length', $this->properties()->{'text-length'});
 			$label->appendChild($input);
 			$group->appendChild($label);
 			
@@ -234,10 +223,7 @@
 			
 			$label = Widget::Label(__('Preview'));
 			$label->appendChild($document->createElement('i', __('Number of characters')));
-			$input = Widget::Input(
-				"{$order}",
-				(integer)$this->get('column-length')
-			);
+			$input = Widget::Input('column-length', $this->properties()->{'column-length'});
 			$label->appendChild($input);
 			$group->appendChild($label);
 			$wrapper->appendChild($group);
@@ -252,7 +238,7 @@
 			$label = Widget::Label(__('Output with handles'));
 			$input = Widget::Input('text-handle', 'yes', 'checkbox');
 			
-			if ($this->get('text-handle') == 'yes') {
+			if ($this->properties()->{'text-handle'} == 'yes') {
 				$input->setAttribute('checked', 'checked');
 			}
 
@@ -264,7 +250,7 @@
 			$label = Widget::Label(__('Output as CDATA'));			
 			$input = Widget::Input("text-cdata", 'yes', 'checkbox');
 			
-			if ($this->get('text-cdata') == 'yes') {
+			if ($this->properties()->{'text-cdata'} == 'yes') {
 				$input->setAttribute('checked', 'checked');
 			}
 			
@@ -286,20 +272,20 @@
 			
 			if ($propogate == self::DISABLE_PROPOGATION) return true;
 			
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 			$handle = $this->handle();
 			
 			if ($field_id === false) return false;
 			
 			$fields = array(
 				'field_id'			=> $field_id,
-				'column-length'		=> max((integer)$this->get('text-length'), 25),
-				'text-size'			=> $this->get('text-size'),
-				'text-formatter'	=> $this->get('text-formatter'),
-				'text-validator'	=> $this->get('text-validator'),
-				'text-length'		=> max((integer)$this->get('text-length'), 0),
-				'text-cdata'		=> $this->get('text-cdata'),
-				'text-handle'		=> $this->get('text-handle')
+				'column-length'		=> max((integer)$this->properties()->{'text-length'}, 25),
+				'text-size'			=> $this->properties()->{'text-size'},
+				'text-formatter'	=> $this->properties()->{'text-formatter'},
+				'text-validator'	=> $this->properties()->{'text-validator'},
+				'text-length'		=> max((integer)$this->properties()->{'text-length'}, 0),
+				'text-cdata'		=> $this->properties()->{'text-cdata'},
+				'text-handle'		=> $this->properties()->{'text-handle'}
 			);
 			
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -316,15 +302,15 @@
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data = null, $error = null, $entry_id = null) {
 			$this->_driver->addPublishHeaders($this->_engine->Page);
 			
-			$sortorder = $this->get('sortorder');
-			$element_name = $this->get('element_name');
+			$sortorder = $this->properties()->{'sortorder'};
+			$element_name = $this->properties()->{'element-name'};
 			$classes = array();
 			
-			$label = Widget::Label($this->get('label'));
+			$label = Widget::Label($this->properties()->{'label'});
 			$optional = '';
 			
-			if ($this->get('required') != 'yes') {
-				if ((integer)$this->get('text-length') > 0) {
+			if ($this->properties()->{'required'} != 'yes') {
+				if ((integer)$this->properties()->{'text-length'} > 0) {
 					$optional = __('$1 of $2 remaining &ndash; Optional');
 				}
 				
@@ -333,7 +319,7 @@
 				}
 			}
 			
-			else if ((integer)$this->get('text-length') > 0) {
+			else if ((integer)$this->properties()->{'text-length'} > 0) {
 				$optional = __('$1 of $2 remaining');
 			}
 			
@@ -342,7 +328,7 @@
 			}
 			
 			// Input box:
-			if ($this->get('text-size') == 'single') {
+			if ($this->properties()->{'text-size'} == 'single') {
 				$input = Widget::Input(
 					"fields{$prefix}[$element_name]{$postfix}", General::sanitize($data['value'])
 				);
@@ -366,14 +352,14 @@
 			}
 			
 			// Add classes:
-			$classes[] = 'size-' . $this->get('text-size');
+			$classes[] = 'size-' . $this->properties()->{'text-size'};
 			
-			if ($this->get('text-formatter') != 'none') {
-				$classes[] = $this->get('text-formatter');
+			if ($this->properties()->{'text-formatter'} != 'none') {
+				$classes[] = $this->properties()->{'text-formatter'};
 			}
 			
 			$input->setAttribute('class', implode(' ', $classes));
-			$input->setAttribute('length', (integer)$this->get('text-length'));
+			$input->setAttribute('length', (integer)$this->properties()->{'text-length'});
 			
 			$this->_engine->ExtensionManager->notifyMembers(
 				$delegate, '/backend/',
@@ -400,7 +386,7 @@
 	-------------------------------------------------------------------------*/
 		
 		public function applyFormatting($data) {
-			if ($this->get('text-formatter') != 'none') {
+			if ($this->properties()->{'text-formatter'} != 'none') {
 				if (isset($this->_ParentCatalogue['entrymanager'])) {
 					$tfm = $this->_ParentCatalogue['entrymanager']->formatterManager;
 				}
@@ -409,7 +395,7 @@
 					$tfm = new TextformatterManager($this->_engine);
 				}
 				
-				$formatter = $tfm->create($this->get('text-formatter'));
+				$formatter = $tfm->create($this->properties()->{'text-formatter'});
 				$formatted = $formatter->run($data);
 			 	$formatted = preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $formatted);
 			 	
@@ -420,19 +406,19 @@
 		}
 		
 		public function applyValidationRules($data) {			
-			$rule = $this->get('text-validator');
+			$rule = $this->properties()->{'text-validator'};
 			
 			return ($rule ? General::validateString($data, $rule) : true);
 		}
 		
 		public function checkPostFieldData($data, &$message, $entry_id = null) {
-			$length = (integer)$this->get('text-length');
+			$length = (integer)$this->properties()->{'text-length'};
 			$message = null;
 			
-			if ($this->get('required') == 'yes' and strlen(trim($data)) == 0) {
+			if ($this->properties()->{'required'} == 'yes' and strlen(trim($data)) == 0) {
 				$message = __(
 					"'%s' is a required field.", array(
-						$this->get('label')
+						$this->properties()->{'label'}
 					)
 				);
 				
@@ -444,7 +430,7 @@
 			if (!$this->applyValidationRules($data)) {
 				$message = __(
 					"'%s' contains invalid data. Please check the contents.", array(
-						$this->get('label')
+						$this->properties()->{'label'}
 					)
 				);
 				
@@ -454,7 +440,7 @@
 			if ($length > 0 and $length < strlen($data)) {
 				$message = __(
 					"'%s' must be no longer than %s characters.", array(
-						$this->get('label'),
+						$this->properties()->{'label'},
 						$length
 					)
 				);
@@ -465,7 +451,7 @@
 			if (!General::validateXML($this->applyFormatting($data), $errors, false, new XsltProcess)) {
 				$message = __(
 					"'%1\$s' contains invalid XML. The following error was returned: <code>%2\$s</code>", array(
-						$this->get('label'),
+						$this->properties()->{'label'},
 						$errors[0]['message']
 					)
 				);
@@ -495,8 +481,8 @@
 		
 		public function fetchIncludableElements() {
 			return array(
-				$this->get('element_name') . ': formatted',
-				$this->get('element_name') . ': unformatted'
+				$this->properties()->{'element-name'} . ': formatted',
+				$this->properties()->{'element-name'} . ': unformatted'
 			);
 		}
 		
@@ -510,7 +496,7 @@
 				$value = trim($data['value_formatted']);
 			}
 			
-			if ($mode == 'unformatted' or $this->get('text-cdata') == 'yes') {
+			if ($mode == 'unformatted' or $this->properties()->{'text-cdata'} == 'yes') {
 				$value = '<![CDATA[' . $value . ']]>';
 			}
 			
@@ -529,19 +515,19 @@
 				'word-count'	=> $data['word_count']
 			);
 			
-			if ($this->get('text-handle') != 'yes') {
+			if ($this->properties()->{'text-handle'} != 'yes') {
 				unset($attributes['handle']);
 			}
 			
 			$wrapper->appendChild(new XMLElement(
-				$this->get('element_name'), $value, $attributes
+				$this->properties()->{'element-name'}, $value, $attributes
 			));
 		}
 		
 		public function prepareTableValue($data, XMLElement $link = null) {
 			if (empty($data) or strlen(trim($data['value'])) == 0) return;
 			
-			$max_length = (integer)$this->get('column-length');
+			$max_length = (integer)$this->properties()->{'column-length'};
 			$max_length = ($max_length ? $max_length : 75);
 			
 			$value = strip_tags($data['value']);
@@ -578,12 +564,12 @@
 		
 		public function displayDatasourceFilterPanel(&$wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
 			$this->_driver->addFilteringHeaders($this->_engine->Page);
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 			
 			$wrapper->appendChild(new XMLElement(
 				'h4', sprintf(
 					__('%s <i>%s</i>'),
-					$this->get('label'),
+					$this->properties()->{'label'},
 					$this->name()
 				)
 			));
@@ -678,7 +664,7 @@
 		}
 		
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 			
 			if (preg_match('/^(not-)?regexp:\s*/', $data[0], $matches)) {
 				$data = trim(array_pop(explode(':', $data[0], 2)));
@@ -803,7 +789,7 @@
 	-------------------------------------------------------------------------*/
 		
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order = 'ASC') {
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 			
 			$joins .= "LEFT OUTER JOIN `tbl_entries_data_{$field_id}` AS ed ON (e.id = ed.entry_id) ";
 			$sort = 'ORDER BY ' . (strtolower($order) == 'random' ? 'RAND()' : "ed.value {$order}");
@@ -817,15 +803,15 @@
 			if (!is_array($records) or empty($records)) return;
 			
 			$groups = array(
-				$this->get('element_name') => array()
+				$this->properties()->{'element-name'} => array()
 			);
 			
 			foreach ($records as $record) {
-				$data = $record->getData($this->get('id'));
+				$data = $record->getData($this->properties()->{'id'});
 				
 				$value = $data['value_formatted'];
 				$handle = $data['handle'];
-				$element = $this->get('element_name');
+				$element = $this->properties()->{'element-name'};
 				
 				if (!isset($groups[$element][$handle])) {
 					$groups[$element][$handle] = array(

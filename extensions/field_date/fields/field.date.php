@@ -29,11 +29,11 @@
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
-			$name = $this->get('element_name');
+			$name = $this->properties()->{'element-name'};
 			$value = null;
 
 			// New entry:
-			if (is_null($data) && $this->get('pre-populate') == 'yes') {
+			if (is_null($data) && $this->properties()->{'pre-populate'} == 'yes') {
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, null);
 			}
 
@@ -42,7 +42,7 @@
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data['gmt']);
 			}
 
-			$label = Widget::Label($this->get('label'), Widget::Input("fields[{$name}]", $value), array(
+			$label = Widget::Label($this->properties()->{'label'}, Widget::Input("fields[{$name}]", $value), array(
 				'class' => 'date')
 			);
 
@@ -60,7 +60,7 @@
 			$message = NULL;
 
 			if(!self::__isValidDateString($data)){
-				$message = __("The date specified in '%s' is invalid.", array($this->get('label')));
+				$message = __("The date specified in '%s' is invalid.", array($this->properties()->{'label'}));
 				return self::ERROR_INVALID_FIELDS;
 			}
 
@@ -72,7 +72,7 @@
 			$timestamp = null;
 
 			if (is_null($data) || $data == '') {
-				if ($this->get('pre-populate') == 'yes') {
+				if ($this->properties()->{'pre-populate'} == 'yes') {
 					$timestamp = strtotime(DateTimeObj::get(__SYM_DATETIME_FORMAT__, null));
 				}
 			}
@@ -98,7 +98,7 @@
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->get('element_name')));
+				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->properties()->{'element-name'}));
 			}
 		}
 
@@ -123,7 +123,7 @@
 			$groups = array('year' => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->get('id'));
+				$data = $r->getData($this->properties()->{'id'});
 
 				$info = getdate($data['local']);
 
@@ -151,7 +151,7 @@
 
 
 		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->get('id')."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`gmt` $order");
 		}
 
@@ -191,7 +191,7 @@
 
 		protected function __buildSimpleFilterSQL($data, &$joins, &$where, $andOperation=false){
 
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 
 			if($andOperation):
 
@@ -215,7 +215,7 @@
 
 		protected function __buildRangeFilterSQL($data, &$joins, &$where, $andOperation=false){
 
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 
 			if(empty($data)) return;
 
@@ -354,14 +354,14 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->get('id');
+			$field_id = $this->properties()->{'id'};
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'pre-populate' => ($this->get('pre-populate') ? $this->get('pre-populate') : 'no')
+				'pre-populate' => ($this->properties()->{'pre-populate'} ? $this->properties()->{'pre-populate'} : 'no')
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -384,7 +384,7 @@
 			$label = Widget::Label(__('Pre-populate this field with today\'s date'));
 			$input = Widget::Input('pre-populate', 'yes', 'checkbox');
 			
-			if ($this->get('pre-populate') == 'yes') {
+			if ($this->properties()->{'pre-populate'} == 'yes') {
 				$input->setAttribute('checked', 'checked');
 			}
 
@@ -411,8 +411,8 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
 					)',
-					$this->get('section'),
-					$this->get('element_name')
+					$this->properties()->{'section'},
+					$this->properties()->{'element-name'}
 				)
 			);
 		}
