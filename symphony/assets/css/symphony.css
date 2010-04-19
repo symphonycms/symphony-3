@@ -315,11 +315,11 @@
 -----------------------------------------------------------------------------*/
 
 	#layout {
-		border-spacing: 20px 0;
+		border-spacing: 30px 0;
 		display: table;
-		margin: 0 10px;
-		max-width: 1200px;
+		margin: 0 0;
 		table-layout: fixed;
+		width: 100%;
 	}
 	#layout > .column {
 		display: table-cell;
@@ -330,6 +330,10 @@
 	}
 	#layout > .large {
 		width: 70%;
+	}
+	
+	#layout.type-lll > .column {
+		width: 33.3%;
 	}
 	
 /*-----------------------------------------------------------------------------
@@ -563,9 +567,6 @@
 	form fieldset:first-child {
 		margin-top: 0;
 	}
-	form fieldset:last-child {
-		margin-bottom: 0;
-	}
 	
 	form h3 {
 		color: #666666;
@@ -608,7 +609,13 @@
 	}
 	form label {
 		display: block;
-		margin-bottom: 15px;
+		margin: 10px 0;
+	}
+	form label:first-child {
+		margin-top: 0;
+	}
+	form label:last-child {
+		margin-top: 0;
 	}
 	form label i {
 		float: right;
@@ -655,10 +662,14 @@
 	}
 	
 	form .group {
+		border-spacing: 0;
 		display: table;
+		margin: 10px 0;
 		table-layout: fixed;
 		width: 100%;
-		margin-bottom: 15px;
+	}
+	form .group:first-child {
+		margin-top: 0;
 	}
 	form label:last-child,
 	form .group:last-child,
@@ -668,11 +679,8 @@
 	form .group > label,
 	form .group > div {
 		display: table-cell;
-		padding-left: 20px;
-		margin-top: 0;
-	}
-	.group > div.small {
-		width: 35%;
+		margin: 0;
+		padding: 0 10px;
 	}
 	form .group > div > label {
 		display: block;
@@ -682,10 +690,13 @@
 	form .group > div > label:first-child {
 		margin-top: 0;
 	}
-	form .group > label:first-child,
-	form .group > div:first-child label,
-	form .group > div:first-child {
+	form .group > *:first-child,
+	form .group > *:first-child label {
 		padding-left: 0;
+	}
+	form .group > *:last-child,
+	form .group > *:last-child label {
+		padding-right: 0;
 	}
 
 /*-----------------------------------------------------------------------------

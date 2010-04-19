@@ -5,9 +5,15 @@
 		border: 1px solid #bbbbbb;
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
-		margin: 20px 0;
+		margin: 10px 0;
 		padding: 0;
 		position: relative;
+	}
+	.layout-widget:first-child {
+		margin-top: 0;
+	}
+	.layout-widget:last-child {
+		margin-bottom: 0;
 	}
 	.layout-widget .size-small {
 		-moz-box-flex: 1;

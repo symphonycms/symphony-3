@@ -562,17 +562,16 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 		
-		public function displayDatasourceFilterPanel(&$wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
-			$this->_driver->addFilteringHeaders($this->_engine->Page);
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
+			//$this->_driver->addFilteringHeaders($this->_engine->Page);
 			$field_id = $this->properties()->{'id'};
+			$document = $wrapper->ownerDocument;
 			
-			$wrapper->appendChild(new XMLElement(
-				'h4', sprintf(
-					__('%s <i>%s</i>'),
-					$this->properties()->{'label'},
-					$this->name()
-				)
+			$header = $document->createElement('h4', __($this->properties()->{'label'}));
+			$header->appendChild($document->createElement(
+				'i', $this->name()
 			));
+			$wrapper->appendChild($header);
 			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-textbox');
 			
 			$prefix = ($prefix ? "[{$prefix}]" : '');
@@ -585,6 +584,7 @@
 			));	
 			$wrapper->appendChild($label);
 			
+			/*
 			$filters = array(
 				array(
 					'name'				=> 'boolean',
@@ -661,6 +661,7 @@
 			
 			$wrapper->appendChild($list);
 			$wrapper->appendChild($help);
+			*/
 		}
 		
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {

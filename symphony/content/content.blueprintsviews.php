@@ -226,7 +226,9 @@
 
 			$this->appendViewOptions($viewoptions);
 			
-			$layout = new Layout(Layout::MEDIUM, Layout::SMALL);
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 			if(!empty($_POST)){
 				$view->template = $_POST['fields']['template'];
@@ -248,7 +250,7 @@
 			}
 
 			$fieldset->appendChild($label);
-			$layout->appendToColumn(1, $fieldset);
+			$left->appendChild($fieldset);
 
 			$utilities = new UtilityIterator;
 
@@ -268,10 +270,10 @@
 				}
 
 				$fieldset->appendChild($ul);
-				$layout->appendToColumn(2, $fieldset);
+				$right->appendChild($fieldset);
 			}
 			
-			$this->Form->appendChild($layout->generate());
+			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
@@ -360,7 +362,10 @@
 		}
 
 		public function __form() {
-			$layout = new Layout(Layout::MEDIUM, Layout::MEDIUM, Layout::MEDIUM);
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::LARGE);
+			$center = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::LARGE);
 
 			$fields = array();
 
@@ -502,7 +507,7 @@
 			$container->appendChild($tags);
 			$fieldset->appendChild($container);
 
-			$layout->appendToColumn(1, $fieldset);
+			$left->appendChild($fieldset);
 
 		// Fieldset -----------------------------------------------------------
 
@@ -553,7 +558,7 @@
 			));
 
 			$fieldset->appendChild($label);
-			$layout->appendToColumn(2, $fieldset);
+			$center->appendChild($fieldset);
 
 		// Fieldset -----------------------------------------------------------
 
@@ -593,9 +598,9 @@
 
 			$label->appendChild(Widget::Select('fields[data-sources][]', $options, array('multiple' => 'multiple')));
 			$fieldset->appendChild($label);
-			$layout->appendToColumn(3, $fieldset);
-
-			$this->Form->appendChild($layout->generate());
+			$right->appendChild($fieldset);
+			
+			$layout->appendTo($this->Form);
 
 		// Controls -----------------------------------------------------------
 

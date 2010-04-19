@@ -72,7 +72,10 @@
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
 
-			$layout = new Layout(Layout::SMALL, Layout::MEDIUM, Layout::SMALL);
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::LARGE);
+			$center = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::LARGE);
 
 		//	Essentials --------------------------------------------------------
 
@@ -109,7 +112,7 @@
 			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'context')));
 
 			$fieldset->appendChild($label);
-			$layout->appendToColumn(1, $fieldset);
+			$left->appendChild($fieldset);
 
 		//	Conditions ---------------------------------------------------------
 
@@ -201,7 +204,7 @@
 			$conditionals_container->appendChild($ol);
 			$fieldset->appendChild($conditionals_container);
 
-			$layout->appendToColumn(2, $fieldset);
+			$center->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
@@ -234,7 +237,7 @@
 			$label->setValue(__('Redirect to 404 page when no results are found'));
 			$fieldset->appendChild($label);
 
-			$layout->appendToColumn(2, $fieldset);
+			$center->appendChild($fieldset);
 
 
 		//	Sorting -----------------------------------------------------------
@@ -259,7 +262,7 @@
 			$group->appendChild($label);
 
 			$fieldset->appendChild($group);
-			$layout->appendToColumn(2, $fieldset);
+			$center->appendChild($fieldset);
 
 		//	Limiting ----------------------------------------------------------
 
@@ -286,7 +289,7 @@
 
 			$fieldset->appendChild($label);
 
-			$layout->appendToColumn(3, $fieldset);
+			$right->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 
@@ -335,8 +338,9 @@
 			$label->setValue(__('HTML-encode text'));
 			$fieldset->appendChild($label);
 
-			$layout->appendToColumn(3, $fieldset);
-			$wrapper->appendChild($layout->generate());
+			$right->appendChild($fieldset);
+			
+			$layout->appendTo($wrapper);
 
 		//	Build contexts ----------------------------------------------------
 
