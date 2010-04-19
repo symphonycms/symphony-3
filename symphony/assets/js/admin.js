@@ -410,11 +410,13 @@ var Symphony;
 
 		$('textarea').blur();
 
-		// Fields duplicator: 
+		// Fields duplicator:
 		// TODO: Reimplement symphonyCollapsedDuplicator
+		/*
 		$('.section-duplicator[id]').symphonyCollapsedDuplicator({
 			orderable:		true
 		});
+		*/
 		$('.section-duplicator:not([id])').symphonyDuplicator({
 			orderable:		true
 		});
