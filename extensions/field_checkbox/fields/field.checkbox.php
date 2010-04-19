@@ -179,33 +179,36 @@
 			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
 		}
 
-		public function displaySettingsPanel(&$wrapper, $errors = null) {
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
-
-			## Long Description
+			
+			$document = $wrapper->ownerDocument;
+			
+			// Long Description
 			$label = Widget::Label(__('Long Description'));
-			$label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
+			$label->appendChild($document->createElement('i', __('Optional')));
 			$label->appendChild(Widget::Input('description', $this->get('description')));
 			$wrapper->appendChild($label);
 
-			$options_list = Symphony::Parent()->Page->createElement('ul');
+			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-
-			## Checkbox Default State
-			$label = Widget::Label();
+			
+			// Default State
+			$label = Widget::Label(__('Checked by default'));
 			$input = Widget::Input('default-state', 'on', 'checkbox');
-			if($this->get('default-state') == 'on') $input->setAttribute('checked', 'checked');
-			$label->appendChild($input);
-			$label->setValue(__('Checked by default'));
-			$item = $wrapper->ownerDocument->createElement('li');
+			
+			if ($this->get('default-state') == 'on') {
+				$input->setAttribute('checked', 'checked');
+			}
+
+			$label->prependChild($input);
+			$item = $document->createElement('li');
 			$item->appendChild($label);
 			$options_list->appendChild($item);
 
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
-
-
 		}
 
 		public function createTable(){
