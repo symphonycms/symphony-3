@@ -147,7 +147,10 @@
 
 		private function __form(){
 
-			$layout = new Layout(Layout::SMALL, Layout::MEDIUM, Layout::SMALL);
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::SMALL);
+			$center = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 			require_once(TOOLKIT . '/class.field.php');
 
@@ -226,7 +229,7 @@
 			$label->appendChild(Widget::Input('fields[email]', $user->get('email')));
 			$fieldset->appendChild((isset($this->_errors['email']) ? Widget::wrapFormElementWithError($label, $this->_errors['email']) : $label));
 
-			$layout->appendToColumn(1, $fieldset);
+			$left->appendChild($fieldset);
 			###
 
 			### Login Details ###
@@ -280,7 +283,7 @@
 
 			$fieldset->appendChild($label);
 
-			$layout->appendToColumn(2, $fieldset);
+			$center->appendChild($fieldset);
 
 			###
 
@@ -306,9 +309,9 @@
 				$label->appendChild($select);
 				$fieldset->appendChild($label);
 
-				$layout->appendToColumn(3, $fieldset);
+				$right->appendChild($fieldset);
 
-				$this->Form->appendChild($layout->generate());
+				$layout->appendTo($this->Form);
 			}
 			###
 
