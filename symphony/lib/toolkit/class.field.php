@@ -179,7 +179,7 @@
 			$this->_fields = array();
 		}
 
-		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL, $entry_id = null){
+		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $entry_id = null){
 		}
 
 		public function canPrePopulate(){
@@ -389,7 +389,7 @@
 		function fetchAssociatedEntryIDs($value){
 		}
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 
 			$h4 = Symphony::Parent()->Page->createElement('h4', $this->get('label'));
 			$h4->appendChild(
@@ -400,16 +400,16 @@
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
 				'fields[filter]'
-				. (!is_null($fieldnamePrefix) ? "[{$fieldnamePrefix}]" : NULL)
-				. '[' . $this->get('element_name') . ']'
-				. (!is_null($fieldnamePostfix) ? "[{$fieldnamePostfix}]" : NULL),
+				//. (!is_null($fieldnamePrefix) ? "[{$fieldnamePrefix}]" : NULL)
+				. '[' . $this->get('element_name') . ']',
+				//. (!is_null($fieldnamePostfix) ? "[{$fieldnamePostfix}]" : NULL),
 				(!is_null($data) ? General::sanitize($data) : NULL)
 			));
 			$wrapper->appendChild($label);
 		}
 
-		public function displayImportPanel(SymphonyDOMElement &$wrapper, $data = null, $errors = null, $fieldnamePrefix = null, $fieldnamePostfix = null) {
-			$this->displayDatasourceFilterPanel($wrapper, $data, $errors, $fieldnamePrefix, $fieldnamePostfix);
+		public function displayImportPanel(SymphonyDOMElement &$wrapper, $data = null, $errors = null) {
+			$this->displayDatasourceFilterPanel($wrapper, $data, $errors);
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors=NULL){

@@ -43,7 +43,7 @@
 			return $groups;
 		}
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){ //, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 			$h4 = Symphony::Parent()->Page->createElement('h4', $this->get('label'));
 			$h4->appendChild(
 				Symphony::Parent()->Page->createElement('i', $this->Name())
@@ -83,11 +83,11 @@
 			$wrapper->appendChild($group);
 		}
 
-		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
 			$value = General::sanitize($data['value']);
 			$label = Widget::Label($this->get('label'));
 			if($this->get('required') != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
-			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix, (strlen($value) != 0 ? $value : NULL)));
+			$label->appendChild(Widget::Input('fields['.$this->get('element_name').']', (strlen($value) != 0 ? $value : NULL)));
 
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);

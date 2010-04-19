@@ -20,12 +20,12 @@
 			return true;
 		}
 
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
 			$label = Widget::Label($this->get('label'));
 			if($this->get('required') != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
 
 			$textarea = Widget::Textarea(
-				'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix,
+				'fields['.$this->get('element_name').']',
 				(strlen($data['value']) != 0 ? General::sanitize($data['value']) : NULL),
 				array(
 					'rows' => $this->get('size'),

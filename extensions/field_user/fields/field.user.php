@@ -46,7 +46,7 @@
 			return $result;
 		}
 
-		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL){
+		public function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
 
 			$value = (isset($data['user_id']) ? $data['user_id'] : NULL);
 
@@ -68,7 +68,7 @@
 				$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
 			}
 
-			$fieldname = 'fields'.$fieldnamePrefix.'['.$this->get('element_name').']'.$fieldnamePostfix;
+			$fieldname = 'fields['.$this->get('element_name').']';
 			if($this->get('allow_multiple_selection') == 'yes') $fieldname .= '[]';
 
 			$attr = array();
