@@ -20,9 +20,9 @@
 			$this->_driver = ExtensionManager::instance()->create('field_textbox');
 			
 			// Set defaults:
-			$this->set('show_column', 'yes');
-			$this->set('size', 'medium');
-			$this->set('required', 'yes');
+			$this->properties()->{'show_column'} = 'yes';
+			$this->properties()->{'size'} = 'medium';
+			$this->properties()->{'required'} = 'yes';
 			
 			$this->_sizes = array(
 				array('single', false, __('Single Line')),
