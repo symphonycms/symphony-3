@@ -228,7 +228,7 @@
 		## Do not overload this function if you are creating a custom data source. It is only
 		## used by the data source editor
 		public function allowEditorToParse(){
-			return false;
+			return true;
 		}
 
 		## This function is required in order to identify what type of data source this is for

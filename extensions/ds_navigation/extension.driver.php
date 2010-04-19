@@ -44,9 +44,9 @@
 			);
 		}
 
-		public function prepare(array $data=NULL) {
+		public function prepare(array $data = null, NavigationDataSource $datasource = null) {
 
-			$datasource = new NavigationDataSource;
+			if(is_null($datasource)) $datasource = new NavigationDataSource;
 
 			if(!is_null($data)){
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
@@ -54,27 +54,10 @@
 				if(isset($data['type'])) $datasource->parameters()->type = $data['type'];
 			}
 
-			// Load defaults:
-			/*if (!$datasource instanceof NavigationDataSource) {
-				$datasource = new NavigationDataSource(Administration::instance());
-			}
-
-			$context['fields']['filters'] = $datasource->getFilters();
-			$context['fields']['required_url_param'] = $datasource->getRequiredURLParam();
-			$context['fields']['can_redirect_on_empty'] = 'no';
-
-			if ($datasource->canRedirectOnEmpty()) {
-				$context['fields']['can_redirect_on_empty'] = 'yes';
-			}*/
-
 			return $datasource;
 		}
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
-			//throw new Exception('Fix me to work with Views');
-			/*$fields = $context['fields'];
-			$errors = $context['errors'];
-			$wrapper = $context['wrapper'];*/
 			$admin = Administration::instance()->Page;
 
 		//	Essentials --------------------------------------------------------

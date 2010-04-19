@@ -24,9 +24,9 @@
 			);
 		}
 
-		public function prepare(array $data=NULL) {
+		public function prepare(array $data=NULL, UsersDataSource $datasource) {
 
-			$datasource = new UsersDataSource;
+			if(is_null($datasource)) $datasource = new UsersDataSource;
 
 			if(!is_null($data)){
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
