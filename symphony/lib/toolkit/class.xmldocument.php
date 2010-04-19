@@ -61,7 +61,16 @@
 
 	##	Convenience Methods for DOMElement
 	Class SymphonyDOMElement extends DOMElement {
-
+		public function prependChild(DOMNode $node) {
+			if (is_null($this->firstChild)) {
+				$this->appendChild($node);
+			}
+			
+			else {
+				$this->insertBefore($node, $this->firstChild);
+			}
+		}
+		
 		public function setValue($value) {
 			//	TODO: Possibly might need to Remove existing Children before adding..
 			if($value instanceof DOMElement || $value instanceof DOMDocumentFragment) {

@@ -376,20 +376,23 @@
 
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
-
-			$options_list = Symphony::Parent()->Page->createElement('ul');
+			
+			$document = $wrapper->ownerDocument;
+			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
 
-			$label = Widget::Label();
+			$label = Widget::Label(__('Pre-populate this field with today\'s date'));
 			$input = Widget::Input('pre-populate', 'yes', 'checkbox');
-			if($this->get('pre-populate') == 'yes') $input->setAttribute('checked', 'checked');
+			
+			if ($this->get('pre-populate') == 'yes') {
+				$input->setAttribute('checked', 'checked');
+			}
 
-			$label->appendChild($input);
-			$label->setValue(__('Pre-populate this field with today\'s date'));
-			$item = $wrapper->ownerDocument->createElement('li');
+			$label->prependChild($input);
+			$item = $document->createElement('li');
 			$item->appendChild($label);
 			$options_list->appendChild($item);
-
+			
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
