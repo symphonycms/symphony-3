@@ -16,6 +16,8 @@
 		protected $status;
 		protected $type;
 
+		protected static $_loaded_views;
+
 		public function __construct(){
 			parent::__construct();
 
@@ -45,7 +47,7 @@
 			$dsTableHead = array(
 				array(__('Name'), 'col'),
 				array(__('Source'), 'col'),
-				// TODO: Implement Pages array(__('Pages'), 'col'),
+				array(__('Views'), 'col'),
 				array(__('Type'), 'col'),
 				array(__('Author'), 'col')
 			);
@@ -68,6 +70,20 @@
 			}
 
 			else {
+
+				//	Load Views so we can determine what Datasources are attached
+				if(!self::$_loaded_views) {
+					foreach (new ViewIterator as $view) {
+						self::$_loaded_views[$view->guid] = array(
+							'title' => $view->title,
+							'handle' => $view->handle,
+							'data-sources' => $view->{'data-sources'}
+						);
+					}
+				}
+
+				//var_dump(self::$_loaded_views);
+
 				foreach ($datasources as $pathname) {
 					$ds = DataSource::load($pathname);
 
@@ -82,13 +98,32 @@
 					);
 					$col_name->appendChild(Widget::Input("items[{$handle}]", NULL, 'checkbox'));
 
-
 					// Source
-					if(is_null($ds->parameters()->section)){
+					if(!method_exists($ds, 'prepareSourceColumnValue')) {
 						$col_source = Widget::TableData(__('None'), array('class' => 'inactive'));
 					}
-					else{
+					else {
 						$col_source = $ds->prepareSourceColumnValue();
+					}
+
+					// Views that have this datasource Attached
+					$fragment_views = $this->createDocumentFragment();
+
+					foreach(self::$_loaded_views as $view) {
+						if(is_array($view['data-sources']) && in_array(preg_replace('/.php$/i', NULL, $pathname), $view['data-sources'])) {
+							if($fragment_views->hasChildNodes()) $fragment_views->appendChild(new DOMText(', '));
+
+							$fragment_views->appendChild(
+								Widget::Anchor($view['title'], URL . "/symphony/blueprints/views/edit/{$view['handle']}/")
+							);
+						}
+					}
+
+					if(!$fragment_views->hasChildNodes()) {
+						$col_views = Widget::TableData(__('None'), array('class' => 'inactive'));
+					}
+					else{
+						$col_views = Widget::TableData($fragment_views);
 					}
 
 					// Type
@@ -107,7 +142,6 @@
 							General::validateURL($ds->about()->author->website)
 						));
 					}
-
 					else if (isset($ds->about()->author->email)) {
 						$col_author = Widget::TableData(Widget::Anchor(
 							$ds->about()->author->name,
@@ -120,7 +154,7 @@
 					}
 
 					$dsTableBody[] = Widget::TableRow(array(
-						$col_name, $col_source, $col_type, $col_author
+						$col_name, $col_source, $col_views, $col_type, $col_author
 					));
 				}
 			}

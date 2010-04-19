@@ -126,7 +126,9 @@
 			}
 
 			else {
-				return Widget::TableData(__('None'), 'inactive');
+				return Widget::TableData(__('None'), array(
+					'class' => 'inactive'
+				));
 			}
 		}
 	}

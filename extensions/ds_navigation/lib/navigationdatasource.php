@@ -121,4 +121,14 @@
 			return $xView;
 
 		}
+
+		public function prepareSourceColumnValue() {
+
+			return Widget::TableData(
+				Widget::Anchor("Views", URL . '/symphony/blueprints/views/', array(
+					'title' => 'Views'
+				))
+			);
+
+		}
 	}
