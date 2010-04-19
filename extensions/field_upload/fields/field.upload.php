@@ -221,7 +221,7 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(&$wrapper, $data = null, $error = null, $prefix = null, $postfix = null, $entry_id = null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=null, $error=null, $entry_id=null) {
 			if (!$error and !is_writable(DOCROOT . $this->get('destination') . '/')) {
 				$error = 'Destination folder, <code>'.$this->get('destination').'</code>, is not writable. Please check permissions.';
 			}
@@ -282,7 +282,7 @@
 			$upload = Symphony::Parent()->Page->createElement('div');
 			$upload->setAttribute('class', 'upload');
 			$upload->appendChild(Widget::Input(
-				"fields{$prefix}[{$handle}]{$postfix}",
+				"fields[{$handle}]",
 				$data['file'], ($data['file'] ? 'hidden' : 'file')
 			));
 			$container->appendChild($upload);
@@ -317,14 +317,14 @@
 				if ($this->get('required') == 'yes') {
 					$message = "'{$label}' is a required field.";
 
-					return self::__MISSING_FIELDS__;
+					return self::ERROR_MISSING_FIELDS;
 				}
 
-				return self::__OK__;
+				return self::STATUS_OK;
 			}
 
 			// Its not an array, so just retain the current data and return
-			if (!is_array($data)) return self::__OK__;
+			if (!is_array($data)) return self::STATUS_OK;
 
 			if (!is_writable(DOCROOT . $this->get('destination') . '/')) {
 				$message = __(
@@ -332,7 +332,7 @@
 					array($this->get('destination'))
 				);
 
-				return self::__ERROR__;
+				return self::STATUS_ERROR;
 			}
 
 			if ($data['error'] != UPLOAD_ERR_NO_FILE and $data['error'] != UPLOAD_ERR_OK) {
@@ -380,7 +380,7 @@
 						break;
 				}
 
-				return self::__ERROR_CUSTOM__;
+				return self::ERROR_CUSTOM;
 			}
 
 			// Sanitize the filename:
@@ -397,7 +397,7 @@
 						array($label)
 					);
 
-					return self::__INVALID_FIELDS__;
+					return self::ERROR_INVALID_FIELDS;
 				}
 			}
 
@@ -426,14 +426,14 @@
 					array($data['name'], $this->get('destination'))
 				);
 
-				return self::__INVALID_FIELDS__;
+				return self::ERROR_INVALID_FIELDS;
 			}
 
-			return self::__OK__;
+			return self::STATUS_OK;
 		}
 
 		public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null) {
-			$status = self::__OK__;
+			$status = self::STATUS_OK;
 
 			// Recal existing data:
 			$existing = Symphony::Database()->query("
@@ -499,7 +499,7 @@
 					'There was an error while trying to upload the file <code>%s</code> to the target directory <code>workspace/%s</code>.',
 					array($data['name'], $path)
 				);
-				$status = self::__ERROR_CUSTOM__;
+				$status = self::ERROR_CUSTOM;
 				return;
 			}
 
@@ -611,4 +611,4 @@
 		}
 	}
 
-?>
+	return 'FieldUpload';

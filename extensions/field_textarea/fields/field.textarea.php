@@ -1,9 +1,8 @@
 <?php
 
 	Class fieldTextarea extends Field {
-		function __construct(&$parent){
-
-			parent::__construct($parent);
+		function __construct(){
+			parent::__construct();
 			$this->_name = __('Textarea');
 			$this->_required = true;
 
@@ -20,7 +19,7 @@
 			return true;
 		}
 
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
+		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 			$label = Widget::Label($this->get('label'));
 			if($this->get('required') != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
 
@@ -71,29 +70,29 @@
 			$field_id = $this->get('id');
 
 			if (self::isFilterRegex($data[0])) {
-				$this->_key++;
+				self::$key++;
 				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
-					AND t{$field_id}_{$this->_key}.value REGEXP '{$pattern}'
+					AND t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
 				";
 
 			} else {
 				if (is_array($data)) $data = $data[0];
 
 				$data = $this->escape($data);
-				$this->_key++;
+				self::$key++;
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
-					AND MATCH (t{$field_id}_{$this->_key}.value) AGAINST ('{$data}' IN BOOLEAN MODE)
+					AND MATCH (t{$field_id}_{self::$key}.value) AGAINST ('{$data}' IN BOOLEAN MODE)
 				";
 			}
 
@@ -106,20 +105,20 @@
 
 			if($this->get('required') == 'yes' && strlen($data) == 0){
 				$message = __("'%s' is a required field.", array($this->get('label')));
-				return self::__MISSING_FIELDS__;
+				return self::ERROR_MISSING_FIELDS;
 			}
 
 			if($this->__applyFormatting($data, true, $errors) === false){
 				$message = __('"%1$s" contains invalid XML. The following error was returned: <code>%2$s</code>', array($this->get('label'), $errors[0]['message']));
-				return self::__INVALID_FIELDS__;
+				return self::ERROR_INVALID_FIELDS;
 			}
 
-			return self::__OK__;
+			return self::STATUS_OK;
 
 		}
 
 		public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null) {
-			$status = self::__OK__;
+			$status = self::STATUS_OK;
 
 			$result = array(
 				'value' => $data
@@ -288,3 +287,5 @@
 		}
 
 	}
+	
+	return 'fieldTextarea';

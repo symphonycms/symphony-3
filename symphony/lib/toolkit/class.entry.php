@@ -87,7 +87,7 @@
 
 				if($ignore_missing_fields && !isset($data[$field->get('element_name')])) continue;
 
-				if(Field::__OK__ != $field->checkPostFieldData((isset($data[$info['element_name']]) ? $data[$info['element_name']] : NULL), $message, $this->get('id'))){
+				if(Field::STATUS_OK != $field->checkPostFieldData((isset($data[$info['element_name']]) ? $data[$info['element_name']] : NULL), $message, $this->get('id'))){
 					$strict = false;
 					$status = __ENTRY_FIELD_ERROR__;
 
@@ -142,7 +142,7 @@
 					(isset($data[$info['element_name']]) ? $data[$info['element_name']] : NULL), $s, $simulate, $this->get('id')
 				);
 
-				if($s != Field::__OK__){
+				if($s != Field::STATUS_OK){
 					$status = __ENTRY_FIELD_ERROR__;
 					$error = array('field_id' => $info['id'], 'message' => $m);
 				}

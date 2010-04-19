@@ -7,12 +7,9 @@
 		const RANGE = 3;
 		const ERROR = 4;
 
-		private $key;
-
-		function __construct(&$parent){
-			parent::__construct($parent);
+		function __construct(){
+			parent::__construct();
 			$this->_name = __('Date');
-			$this->key = 1;
 		}
 
 		function allowDatasourceOutputGrouping(){
@@ -31,7 +28,7 @@
 			return true;
 		}
 
-		function displayPublishPanel(&$wrapper, $data = null, $error = null, $prefix = null, $postfix = null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 			$name = $this->get('element_name');
 			$value = null;
 
@@ -45,7 +42,7 @@
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data['gmt']);
 			}
 
-			$label = Widget::Label($this->get('label'), Widget::Input("fields{$prefix}[{$name}]", $value), array(
+			$label = Widget::Label($this->get('label'), Widget::Input("fields[{$name}]", $value), array(
 				'class' => 'date')
 			);
 
@@ -58,20 +55,20 @@
 
 		function checkPostFieldData($data, &$message, $entry_id=NULL){
 
-			if(empty($data)) return self::__OK__;
+			if(empty($data)) return self::STATUS_OK;
 
 			$message = NULL;
 
 			if(!self::__isValidDateString($data)){
 				$message = __("The date specified in '%s' is invalid.", array($this->get('label')));
-				return self::__INVALID_FIELDS__;
+				return self::ERROR_INVALID_FIELDS;
 			}
 
-			return self::__OK__;
+			return self::STATUS_OK;
 		}
 
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-			$status = self::__OK__;
+			$status = self::STATUS_OK;
 			$timestamp = null;
 
 			if (is_null($data) || $data == '') {
@@ -199,17 +196,17 @@
 			if($andOperation):
 
 				foreach($data as $date){
-					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".$this->key."` ON `e`.`id` = `t$field_id".$this->key."`.entry_id ";
-					$where .= " AND DATE_FORMAT(`t$field_id".$this->key."`.value, '%Y-%m-%d') = '".DateTimeObj::get('Y-m-d', strtotime($date))."' ";
+					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".self::$key."` ON `e`.`id` = `t$field_id".self::$key."`.entry_id ";
+					$where .= " AND DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') = '".DateTimeObj::get('Y-m-d', strtotime($date))."' ";
 
-					$this->key++;
+					self::$key++;
 				}
 
 			else:
 
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".$this->key."` ON `e`.`id` = `t$field_id".$this->key."`.entry_id ";
-				$where .= " AND DATE_FORMAT(`t$field_id".$this->key."`.value, '%Y-%m-%d %H:%i:%s') IN ('".@implode("', '", $data)."') ";
-				$this->key++;
+				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".self::$key."` ON `e`.`id` = `t$field_id".self::$key."`.entry_id ";
+				$where .= " AND DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d %H:%i:%s') IN ('".@implode("', '", $data)."') ";
+				self::$key++;
 
 			endif;
 
@@ -225,11 +222,11 @@
 			if($andOperation):
 
 				foreach($data as $date){
-					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".$this->key."` ON `e`.`id` = `t$field_id".$this->key."`.entry_id ";
-					$where .= " AND (DATE_FORMAT(`t$field_id".$this->key."`.value, '%Y-%m-%d') >= '".DateTimeObj::get('Y-m-d', strtotime($date['start']))."'
-								     AND DATE_FORMAT(`t$field_id".$this->key."`.value, '%Y-%m-%d') <= '".DateTimeObj::get('Y-m-d', strtotime($date['end']))."') ";
+					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".self::$key."` ON `e`.`id` = `t$field_id".self::$key."`.entry_id ";
+					$where .= " AND (DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') >= '".DateTimeObj::get('Y-m-d', strtotime($date['start']))."'
+								     AND DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') <= '".DateTimeObj::get('Y-m-d', strtotime($date['end']))."') ";
 
-					$this->key++;
+					self::$key++;
 				}
 
 			else:
@@ -238,14 +235,14 @@
 
 				foreach($data as $date){
 
-					$tmp[] = "(DATE_FORMAT(`t$field_id".$this->key."`.value, '%Y-%m-%d') >= '".DateTimeObj::get('Y-m-d', strtotime($date['start']))."'
-								     AND DATE_FORMAT(`t$field_id".$this->key."`.value, '%Y-%m-%d') <= '".DateTimeObj::get('Y-m-d', strtotime($date['end']))."') ";
+					$tmp[] = "(DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') >= '".DateTimeObj::get('Y-m-d', strtotime($date['start']))."'
+								     AND DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') <= '".DateTimeObj::get('Y-m-d', strtotime($date['end']))."') ";
 				}
 
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".$this->key."` ON `e`.`id` = `t$field_id".$this->key."`.entry_id ";
+				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".self::$key."` ON `e`.`id` = `t$field_id".self::$key."`.entry_id ";
 				$where .= " AND (".@implode(' OR ', $tmp).") ";
 
-				$this->key++;
+				self::$key++;
 
 			endif;
 
@@ -417,3 +414,5 @@
 			);
 		}
 	}
+	
+	return 'fieldDate';

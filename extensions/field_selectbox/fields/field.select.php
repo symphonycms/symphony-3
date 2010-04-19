@@ -1,8 +1,8 @@
 <?php
 
 	Class fieldSelect extends Field {
-		function __construct(&$parent){
-			parent::__construct($parent);
+		function __construct(){
+			parent::__construct();
 			$this->_name = __('Select Box');
 
 			// Set default
@@ -122,7 +122,7 @@
 			return $data;
 		}
 
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL){
+		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 			$states = $this->getToggleStates();
 			natsort($states);
 
@@ -197,7 +197,7 @@
 
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 
-			$status = self::__OK__;
+			$status = self::STATUS_OK;
 
 			if(!is_array($data)) return array('value' => $data, 'handle' => Lang::createHandle($data));
 
@@ -217,33 +217,33 @@
 			$field_id = $this->get('id');
 
 			if (self::isFilterRegex($data[0])) {
-				$this->_key++;
+				self::$key++;
 				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
 					AND (
-						t{$field_id}_{$this->_key}.value REGEXP '{$pattern}'
-						OR t{$field_id}_{$this->_key}.handle REGEXP '{$pattern}'
+						t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
+						OR t{$field_id}_{self::$key}.handle REGEXP '{$pattern}'
 					)
 				";
 
 			} elseif ($andOperation) {
 				foreach ($data as $value) {
-					$this->_key++;
+					self::$key++;
 					$value = $this->escape($value);
 					$joins .= "
 						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+							ON (e.id = t{$field_id}_{self::$key}.entry_id)
 					";
 					$where .= "
 						AND (
-							t{$field_id}_{$this->_key}.value = '{$value}'
-							OR t{$field_id}_{$this->_key}.handle = '{$value}'
+							t{$field_id}_{self::$key}.value = '{$value}'
+							OR t{$field_id}_{self::$key}.handle = '{$value}'
 						)
 					";
 				}
@@ -255,17 +255,17 @@
 					$value = $this->escape($value);
 				}
 
-				$this->_key++;
+				self::$key++;
 				$data = implode("', '", $data);
 				$joins .= "
 					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
+						ON (e.id = t{$field_id}_{self::$key}.entry_id)
 				";
 				$where .= "
 					AND (
-						t{$field_id}_{$this->_key}.value IN ('{$data}')
-						OR t{$field_id}_{$this->_key}.handle IN ('{$data}')
+						t{$field_id}_{self::$key}.value IN ('{$data}')
+						OR t{$field_id}_{self::$key}.handle IN ('{$data}')
 					)
 				";
 			}
@@ -443,3 +443,4 @@
 
 	}
 
+	return 'fieldSelect';

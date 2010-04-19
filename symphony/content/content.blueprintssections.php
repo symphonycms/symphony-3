@@ -400,11 +400,10 @@
 
 			$fields = $this->section->fields;
 			$types = array();
-
-			foreach (FieldManager::instance()->fetchTypes() as $type){
-				if ($field = FieldManager::instance()->create($type)){
-					$types[$type] = $field;
-				}
+			
+			foreach (new FieldIterator as $pathname){
+				$type = preg_replace(array('/^field\./', '/\.php$/'), NULL, basename($pathname));
+				$types[$type] = Field::load($pathname);
 			}
 
 			// To Do: Sort this list based on how many times a field has been used across the system
@@ -886,7 +885,7 @@
 
 						$errors = array();
 
-						if(Field::__OK__ != $field->checkFields($errors, false, false) && !empty($errors)){
+						if(Field::STATUS_OK != $field->checkFields($errors, false, false) && !empty($errors)){
 							$this->errors[$position] = $errors;
 							$canProceed = false;
 							break;
@@ -1025,7 +1024,7 @@
 
 							$errors = array();
 
-							if(Field::__OK__ != $field->checkFields($errors, false, false) && !empty($errors)){
+							if(Field::STATUS_OK != $field->checkFields($errors, false, false) && !empty($errors)){
 								$this->errors[$position] = $errors;
 								$canProceed = false;
 								break;
