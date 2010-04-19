@@ -301,7 +301,7 @@
 
 		}
 
-		function checkFields(&$errors, $checkForDuplicates=true){
+		public function checkFields(&$errors, $checkForDuplicates=true){
 
 			if(!is_array($errors)) $errors = array();
 

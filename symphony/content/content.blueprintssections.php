@@ -413,7 +413,9 @@
 				$defaults = array();
 				
 				$field->findDefaults($defaults);
-				$field->setArray($defaults);
+				foreach($defaults as $key => $value){
+					$field->properties()->$key = $value;
+				}
 				
 				$item = $this->createElement('li');
 				
@@ -431,12 +433,12 @@
 			}
 			
 			if (is_array($fields)) foreach($fields as $position => $field) {
-				$field->set('sortorder', $position);
+				$field->properties()->sortorder = $position;
 
 				$item = $this->createElement('li');
 				$field->displaySettingsPanel($item, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
 				$item->appendChild(
-					Widget::Input('type', $field->get('type'), 'hidden')
+					Widget::Input('type', $field->properties()->type, 'hidden')
 				);
 				
 				$instances->appendChild($item);

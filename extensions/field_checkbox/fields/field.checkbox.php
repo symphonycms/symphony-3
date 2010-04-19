@@ -131,7 +131,7 @@
 			if(!$data){
 				## TODO: Don't rely on $_POST
 				if(isset($_POST) && !empty($_POST)) $value = 'no';
-				elseif($this->get('default-state') == 'on') $value = 'yes';
+				elseif($this->properties()->default-state == 'on') $value = 'yes';
 				else $value = 'no';
 			}
 
@@ -165,8 +165,8 @@
 
 			$fields = array(
 				'field_id' => $field_id,
-				'default-state' => ($this->get('default-state') ? $this->get('default-state') : 'off'),
-				'description' => (trim($this->get('description')) != '') ? $this->get('description') : NULL
+				'default-state' => ($this->properties()->default-state ? $this->properties()->default-state : 'off'),
+				'description' => (trim($this->properties()->description) != '') ? $this->properties()->description : NULL
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -194,7 +194,7 @@
 			## Checkbox Default State
 			$label = Widget::Label();
 			$input = Widget::Input('default-state', 'on', 'checkbox');
-			if($this->get('default-state') == 'on') $input->setAttribute('checked', 'checked');
+			if($this->properties()->default-state == 'on') $input->setAttribute('checked', 'checked');
 			$label->appendChild($input);
 			$label->setValue(__('Checked by default'));
 			$item = $wrapper->ownerDocument->createElement('li');
@@ -219,16 +219,16 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
 					) TYPE=MyISAM;",
-					$this->get('section'),
-					$this->get('element_name'),
-					($this->get('default-state') == 'on' ? 'yes' : 'no')
+					$this->properties()->section,
+					$this->properties()->element_name,
+					($this->properties()->default-state == 'on' ? 'yes' : 'no')
 				)
 			);
 		}
 
 		public function getExampleFormMarkup(){
-			$label = Widget::Label($this->get('label'));
-			$label->appendChild(Widget::Input('fields['.$this->get('element_name').']', NULL, 'checkbox', ($this->get('default-state') == 'on' ? array('checked' => 'checked') : array())));
+			$label = Widget::Label($this->properties()->label);
+			$label->appendChild(Widget::Input('fields['.$this->properties()->element_name.']', NULL, 'checkbox', ($this->properties()->default-state == 'on' ? array('checked' => 'checked') : array())));
 
 			return $label;
 		}
