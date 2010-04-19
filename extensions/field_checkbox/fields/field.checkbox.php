@@ -18,19 +18,19 @@
 
 			if(!is_array($records) || empty($records)) return;
 
-			$groups = array($this->properties()->element_name => array());
+			$groups = array($this->properties()->{'element-name'} => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->properties()->id);
+				$data = $r->getData($this->properties()->{'id'});
 
 				$value = $data['value'];
 
-				if(!isset($groups[$this->properties()->element_name][$handle])){
-					$groups[$this->properties()->element_name][$handle] = array('attr' => array('value' => $value),
+				if(!isset($groups[$this->properties()->{'element-name'}][$handle])){
+					$groups[$this->properties()->{'element-name'}][$handle] = array('attr' => array('value' => $value),
 																		 'records' => array(), 'groups' => array());
 				}
 
-				$groups[$this->properties()->element_name][$value]['records'][] = $r;
+				$groups[$this->properties()->{'element-name'}][$value]['records'][] = $r;
 
 			}
 
@@ -65,13 +65,13 @@
 		}
 
 		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`value` $order");
 		}
 
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->properties()->id;
+			$field_id = $this->properties()->{'id'};
 
 			if ($andOperation) {
 				foreach ($data as $value) {
@@ -131,17 +131,17 @@
 			if(!$data){
 				## TODO: Don't rely on $_POST
 				if(isset($_POST) && !empty($_POST)) $value = 'no';
-				elseif($this->properties()->default-state == 'on') $value = 'yes';
+				elseif($this->properties()->{'default-state'} == 'on') $value = 'yes';
 				else $value = 'no';
 			}
 
 			else $value = ($data['value'] == 'yes' ? 'yes' : 'no');
 
 			$label = Widget::Label();
-			$input = Widget::Input('fields['.$this->properties()->element_name.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
+			$input = Widget::Input('fields['.$this->properties()->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
 
 			$label->appendChild($input);
-			$label->appendChild(new DOMText(($this->properties()->description != NULL ? $this->properties()->description : $this->properties()->label)));
+			$label->appendChild(new DOMText(($this->properties()->{'description'} != NULL ? $this->properties()->{'description'} : $this->properties()->{'label'})));
 
 			$wrapper->appendChild($label);
 		}
@@ -158,15 +158,15 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->properties()->{'id'};
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'default-state' => ($this->properties()->default-state ? $this->properties()->default-state : 'off'),
-				'description' => (trim($this->properties()->description) != '') ? $this->properties()->description : NULL
+				'default-state' => ($this->properties()->{'default-state'} ? $this->properties()->{'default-state'} : 'off'),
+				'description' => (trim($this->properties()->{'description'}) != '') ? $this->properties()->{'description'} : NULL
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -179,33 +179,36 @@
 			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
 		}
 
-		public function displaySettingsPanel(&$wrapper, $errors = null) {
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
-
-			## Long Description
+			
+			$document = $wrapper->ownerDocument;
+			
+			// Long Description
 			$label = Widget::Label(__('Long Description'));
-			$label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
-			$label->appendChild(Widget::Input('description', $this->properties()->description));
+			$label->appendChild($document->createElement('i', __('Optional')));
+			$label->appendChild(Widget::Input('description', $this->properties()->{'description'}));
 			$wrapper->appendChild($label);
 
-			$options_list = Symphony::Parent()->Page->createElement('ul');
+			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-
-			## Checkbox Default State
-			$label = Widget::Label();
+			
+			// Default State
+			$label = Widget::Label(__('Checked by default'));
 			$input = Widget::Input('default-state', 'on', 'checkbox');
-			if($this->properties()->default-state == 'on') $input->setAttribute('checked', 'checked');
-			$label->appendChild($input);
-			$label->setValue(__('Checked by default'));
-			$item = $wrapper->ownerDocument->createElement('li');
+			
+			if ($this->properties()->{'default-state'} == 'on') {
+				$input->setAttribute('checked', 'checked');
+			}
+
+			$label->prependChild($input);
+			$item = $document->createElement('li');
 			$item->appendChild($label);
 			$options_list->appendChild($item);
 
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
-
-
 		}
 
 		public function createTable(){
@@ -219,16 +222,16 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
 					) TYPE=MyISAM;",
-					$this->properties()->section,
-					$this->properties()->element_name,
-					($this->properties()->default-state == 'on' ? 'yes' : 'no')
+					$this->properties()->{'section'},
+					$this->properties()->{'element-name'},
+					($this->properties()->{'default-state'} == 'on' ? 'yes' : 'no')
 				)
 			);
 		}
 
 		public function getExampleFormMarkup(){
-			$label = Widget::Label($this->properties()->label);
-			$label->appendChild(Widget::Input('fields['.$this->properties()->element_name.']', NULL, 'checkbox', ($this->properties()->default-state == 'on' ? array('checked' => 'checked') : array())));
+			$label = Widget::Label($this->properties()->{'label'});
+			$label->appendChild(Widget::Input('fields['.$this->properties()->{'element-name'}.']', NULL, 'checkbox', ($this->properties()->{'default-state'} == 'on' ? array('checked' => 'checked') : array())));
 
 			return $label;
 		}

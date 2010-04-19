@@ -577,13 +577,13 @@
 			$wrapper->appendChild($item);
 		}
 
-		public function buildFormatterSelect($selected=NULL, $name='fields[format]', $label_value){
-
+		public function appendFormatterSelect(SymphonyDOMElement $wrapper, $selected=NULL, $name='fields[format]', $label_value = null){
 			require_once(TOOLKIT . '/class.textformatter.php');
-
-			if(!$label_value) $label_value = __('Formatting');
+			
+			if (!$label_value) $label_value = __('Text Formatter');
+			
 			$label = Widget::Label($label_value);
-
+			$document = $wrapper->ownerDocument;
 			$options = array();
 
 			$options[] = array(NULL, false, __('None'));
@@ -599,26 +599,29 @@
 			}
 
 			$label->appendChild(Widget::Select($name, $options));
-
-			return $label;
+			$wrapper->appendChild($label);
 		}
 
-		public function buildValidationSelect(&$wrapper, $selected=NULL, $name='fields[validator]', $type='input'){
-
+		public function appendValidationSelect(SymphonyDOMElement $wrapper, $selected=NULL, $name='fields[validator]', $label_value = null, $type='input'){
 			include(TOOLKIT . '/util.validators.php');
+			
+			if (!$label_value) $label_value = __('Validation Rule');
+			
+			$label = Widget::Label($label_value);
+			$document = $wrapper->ownerDocument;
 			$rules = ($type == 'upload' ? $upload : $validators);
 
-			$label = Widget::Label(__('Validation Rule'));
-			$label->setValue(Symphony::Parent()->Page->createElement('i', __('Optional')));
+			$label->setValue($document->createElement('i', __('Optional')));
 			$label->appendChild(Widget::Input($name, $selected));
 			$wrapper->appendChild($label);
 
-			$ul = Symphony::Parent()->Page->createElement('ul', NULL, array('class' => 'tags singular'));
+			$ul = $document->createElement('ul', NULL, array('class' => 'tags singular'));
+			
 			foreach($rules as $name => $rule) $ul->appendChild(
-				Symphony::Parent()->Page->createElement('li', $name, array('class' => $rule))
+				$document->createElement('li', $name, array('class' => $rule))
 			);
+			
 			$wrapper->appendChild($ul);
-
 		}
 
 		public function groupRecords($records){

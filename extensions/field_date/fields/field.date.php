@@ -29,7 +29,7 @@
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
-			$name = $this->properties()->element_name;
+			$name = $this->properties()->{'element-name'};
 			$value = null;
 
 			// New entry:
@@ -42,7 +42,7 @@
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data['gmt']);
 			}
 
-			$label = Widget::Label($this->properties()->label, Widget::Input("fields[{$name}]", $value), array(
+			$label = Widget::Label($this->properties()->{'label'}, Widget::Input("fields[{$name}]", $value), array(
 				'class' => 'date')
 			);
 
@@ -60,7 +60,7 @@
 			$message = NULL;
 
 			if(!self::__isValidDateString($data)){
-				$message = __("The date specified in '%s' is invalid.", array($this->properties()->label));
+				$message = __("The date specified in '%s' is invalid.", array($this->properties()->{'label'}));
 				return self::ERROR_INVALID_FIELDS;
 			}
 
@@ -98,7 +98,7 @@
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->properties()->element_name));
+				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->properties()->{'element-name'}));
 			}
 		}
 
@@ -123,7 +123,7 @@
 			$groups = array('year' => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->properties()->id);
+				$data = $r->getData($this->properties()->{'id'});
 
 				$info = getdate($data['local']);
 
@@ -151,7 +151,7 @@
 
 
 		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`gmt` $order");
 		}
 
@@ -191,7 +191,7 @@
 
 		protected function __buildSimpleFilterSQL($data, &$joins, &$where, $andOperation=false){
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->properties()->{'id'};
 
 			if($andOperation):
 
@@ -215,7 +215,7 @@
 
 		protected function __buildRangeFilterSQL($data, &$joins, &$where, $andOperation=false){
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->properties()->{'id'};
 
 			if(empty($data)) return;
 
@@ -354,7 +354,7 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->properties()->{'id'};
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
@@ -383,7 +383,10 @@
 
 			$label = Widget::Label(__('Pre-populate this field with today\'s date'));
 			$input = Widget::Input('pre-populate', 'yes', 'checkbox');
-			if($this->properties()->{'pre-populate'} == 'yes') $input->setAttribute('checked', 'checked');
+			
+			if ($this->properties()->{'pre-populate'} == 'yes') {
+				$input->setAttribute('checked', 'checked');
+			}
 
 			$label->prependChild($input);
 			$item = $document->createElement('li');
@@ -409,8 +412,8 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
 					)',
-					$this->properties()->section,
-					$this->properties()->element_name
+					$this->properties()->{'section'},
+					$this->properties()->{'element-name'}
 				)
 			);
 		}
