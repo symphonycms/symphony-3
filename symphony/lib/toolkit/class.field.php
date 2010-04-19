@@ -170,7 +170,7 @@
 			$doc->appendChild($root);
 
 			//$root->appendChild($doc->createElement('name', General::sanitize($this->name)));
-			foreach($this->get() as $name => $value){
+			foreach($this->properties() as $name => $value){
 				$root->appendChild($doc->createElement($name, General::sanitize($value)));
 			}
 
@@ -550,7 +550,7 @@
 			$label = Widget::Label(__('Make this a required field'));
 			$input = Widget::Input('required', 'yes', 'checkbox');
 
-			if ($this->get('required') == 'yes') {
+			if ($this->properties()->required == 'yes') {
 				$input->setAttribute('checked', 'checked');
 			}
 			
