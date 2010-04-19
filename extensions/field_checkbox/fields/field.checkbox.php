@@ -131,7 +131,7 @@
 			if(!$data){
 				## TODO: Don't rely on $_POST
 				if(isset($_POST) && !empty($_POST)) $value = 'no';
-				elseif($this->get('default_state') == 'on') $value = 'yes';
+				elseif($this->get('default-state') == 'on') $value = 'yes';
 				else $value = 'no';
 			}
 
@@ -165,7 +165,7 @@
 
 			$fields = array(
 				'field_id' => $field_id,
-				'default_state' => ($this->get('default_state') ? $this->get('default_state') : 'off'),
+				'default-state' => ($this->get('default-state') ? $this->get('default-state') : 'off'),
 				'description' => (trim($this->get('description')) != '') ? $this->get('description') : NULL
 			);
 
@@ -176,7 +176,7 @@
 		}
 
 		function findDefaults(&$fields){
-			if(!isset($fields['default_state'])) $fields['default_state'] = 'off';
+			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
 		}
 
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
@@ -193,12 +193,13 @@
 
 			## Checkbox Default State
 			$label = Widget::Label();
-			$input = Widget::Input('default_state', 'on', 'checkbox');
-			if($this->get('default_state') == 'on') $input->setAttribute('checked', 'checked');
+			$input = Widget::Input('default-state', 'on', 'checkbox');
+			if($this->get('default-state') == 'on') $input->setAttribute('checked', 'checked');
 			$label->appendChild($input);
 			$label->setValue(__('Checked by default'));
-
-			$options_list->appendChild($label);
+			$item = $wrapper->ownerDocument->createElement('li');
+			$item->appendChild($label);
+			$options_list->appendChild($item);
 
 			$this->appendShowColumnCheckbox($options_list);
 
@@ -220,14 +221,14 @@
 					) TYPE=MyISAM;",
 					$this->get('section'),
 					$this->get('element_name'),
-					($this->get('default_state') == 'on' ? 'yes' : 'no')
+					($this->get('default-state') == 'on' ? 'yes' : 'no')
 				)
 			);
 		}
 
 		public function getExampleFormMarkup(){
 			$label = Widget::Label($this->get('label'));
-			$label->appendChild(Widget::Input('fields['.$this->get('element_name').']', NULL, 'checkbox', ($this->get('default_state') == 'on' ? array('checked' => 'checked') : array())));
+			$label->appendChild(Widget::Input('fields['.$this->get('element_name').']', NULL, 'checkbox', ($this->get('default-state') == 'on' ? array('checked' => 'checked') : array())));
 
 			return $label;
 		}

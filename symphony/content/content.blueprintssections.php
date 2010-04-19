@@ -439,14 +439,11 @@
 				$field->set('sortorder', $position);
 
 				$item = $this->createElement('li');
-				
-				$wrapper = $this->createElement('fieldset');
-				$field->displaySettingsPanel($wrapper, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
-				$wrapper->appendChild(
+				$field->displaySettingsPanel($item, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
+				$item->appendChild(
 					Widget::Input('type', $field->get('type'), 'hidden')
 				);
 				
-				$item->appendChild($wrapper);
 				$instances->appendChild($item);
 			}
 			

@@ -417,23 +417,6 @@
 			$wrapper->appendChild($this->buildSummaryBlock($errors));
 		}
 
-		public function buildWidthSelect(){
-
-			$label = Widget::Label(__('Width'));
-			$label->setAttribute('class', 'field-flex');
-
-			$label->appendChild(Widget::Select(
-				'width',
-				array(
-					array(1, $this->get('width') == 1, 'Small'),
-					array(2, $this->get('width') == 2, 'Medium'),
-					array(3, $this->get('width') == 3, 'Large'),
-				)
-			));
-
-			return $label;
-		}
-
 		public function buildSummaryBlock($errors=NULL){
 
 			$div = Symphony::Parent()->Page->createElement('div');
@@ -462,9 +445,10 @@
 			$label->appendChild($input);
 			$label->setValue(__('Make this a required field'));
 
-			$wrapper->appendChild($label);
+			$item = $wrapper->ownerDocument->createElement('li');
+			$item->appendChild($label);
+			$wrapper->appendChild($item);
 		}
-
 
 		public function appendShowColumnCheckbox(SymphonyDOMElement &$wrapper) {
 			if (!$this->_showcolumn) return;
@@ -480,7 +464,9 @@
 			$label->appendChild($input);
 			$label->setValue(__('Show column'));
 
-			$wrapper->appendChild($label);
+			$item = $wrapper->ownerDocument->createElement('li');
+			$item->appendChild($label);
+			$wrapper->appendChild($item);
 		}
 
 		public function buildFormatterSelect($selected=NULL, $name='fields[format]', $label_value){

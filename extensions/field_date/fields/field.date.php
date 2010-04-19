@@ -389,12 +389,13 @@
 
 			$label->appendChild($input);
 			$label->setValue(__('Pre-populate this field with today\'s date'));
-			$options_list->appendChild($label);
+			$item = $wrapper->ownerDocument->createElement('li');
+			$item->appendChild($label);
+			$options_list->appendChild($item);
 
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
-
 		}
 
 		public function createTable(){

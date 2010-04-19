@@ -614,7 +614,8 @@
 		margin-bottom: 15px;
 	}
 	form label i {
-		margin-left: .25em;
+		float: right;
+		opacity: 0.5;
 	}
 	form label input,
 	form .label input,
