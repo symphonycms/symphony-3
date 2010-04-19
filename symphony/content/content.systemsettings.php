@@ -39,7 +39,10 @@
 		    }
 
 		// SETUP PAGE
-			$layout = new Layout(Layout::SMALL, Layout::SMALL, Layout::SMALL);
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::LARGE);
+			$center = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::LARGE);
 		
 		// SITE SETUP
 			$helptext = 'Symphony version: ' . Symphony::Configuration()->get('version', 'symphony');
@@ -71,7 +74,7 @@
 				// Append language selection
 				$fieldset->appendChild($label);
 			}
-			$layout->appendToColumn(1, $fieldset);
+			$left->appendChild($fieldset);
 
 		// REGIONAL SETTINGS
 
@@ -99,7 +102,7 @@
 			$label->appendChild($select);
 			$fieldset->appendChild($label);
 
-			$layout->appendToColumn(2, $fieldset);
+			$center->appendChild($fieldset);
 
 		// PERMISSIONS
 
@@ -140,14 +143,14 @@
 			$label->appendChild($select);
 			$fieldset->appendChild($label);
 
-			$layout->appendToColumn(3, $fieldset);
+			$right->appendChild($fieldset);
 
 			###
 			# Delegate: AddCustomPreferenceFieldsets
 			# Description: Add Extension custom preferences. Use the $wrapper reference to append objects.
 			ExtensionManager::instance()->notifyMembers('AddCustomPreferenceFieldsets', '/system/settings/', array('wrapper' => &$this->Form));
 
-			$this->Form->appendChild($layout->generate());
+			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
