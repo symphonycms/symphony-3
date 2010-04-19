@@ -142,9 +142,9 @@
 		protected $_about;
 		protected $_parameters;
 
-		protected $_env;
+		protected $_env; // DELETE?
 		protected $_Parent; // DELETE?
-		protected $_param_output_only;
+		protected $_param_output_only; // DELETE?
 		protected $_dependencies;
 		protected $_force_empty_result; // DELETE?
 
@@ -370,9 +370,9 @@
 		}
 
 		protected function __appendIncludedElements(&$wrapper, $fields){
-			if(!isset($this->dsParamINCLUDEDELEMENTS) || !is_array($this->dsParamINCLUDEDELEMENTS) || empty($this->dsParamINCLUDEDELEMENTS)) return;
+			if(!isset($this->parameters()->{'included-elements'}) || !is_array($this->parameters()->{'included-elements'}) || empty($this->parameters()->{'included-elements'})) return;
 
-			foreach($this->dsParamINCLUDEDELEMENTS as $index) {
+			foreach($this->parameters()->{'included-elements'} as $index) {
 
 				if(!is_object($fields[$index])){
 					trigger_error(__('%s is not a valid object. Failed to append to XML.', array($index)), E_USER_WARNING);

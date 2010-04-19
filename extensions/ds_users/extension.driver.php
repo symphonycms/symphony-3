@@ -1,6 +1,7 @@
 <?php
 
 	require_once('lib/usersdatasource.php');
+	require_once(TOOLKIT . '/class.section.php');
 
 	Class Extension_DS_Users extends Extension {
 		public function about() {
@@ -42,12 +43,13 @@
 		}
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
+			$page = Administration::instance()->Page;
 
 		//	Essentials --------------------------------------------------------
 
-			$fieldset = Symphony::Parent()->Page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(Symphony::Parent()->Page->createElement('legend', __('Essentials')));
+			$fieldset = Widget::Fieldset(__('Essentials'), null, array(
+				'class' => 'settings'
+			));
 
 			// Name:
 			$label = Widget::Label(__('Name'));
@@ -63,19 +65,16 @@
 
 		//	Filtering ---------------------------------------------------------
 
-			$fieldset = Symphony::Parent()->Page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(Symphony::Parent()->Page->createElement('legend', __('Filtering')));
-			$fieldset->appendChild(
-				Symphony::Parent()->Page->createElement('p', __('{$param} or Value'), array('class' => 'help'))
-			);
+			$fieldset = Widget::Fieldset(__('Filtering'), '<code>{$param}</code> or <code>Value</code>', array(
+				'class' => 'settings'
+			));
 
-			$div = Symphony::Parent()->Page->createElement('div');
+			$div = $page->createElement('div');
 			$div->appendChild(
-				Symphony::Parent()->Page->createElement('h3', __('Filter Users by'), array('class' => 'label'))
+				$page->createElement('h3', __('Filter Users by'), array('class' => 'label'))
 			);
 
-			$ol = Symphony::Parent()->Page->createElement('ol');
+			$ol = $page->createElement('ol');
 			$ol->setAttribute('class', 'filters-duplicator');
 
 			$this->appendFilter($ol, __('ID'), 'id', $datasource->parameters()->filters['id']);
@@ -91,15 +90,15 @@
 
 		//	Output options ----------------------------------------------------
 
-			$fieldset = Symphony::Parent()->Page->createElement('fieldset');
+			$fieldset = $page->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(Symphony::Parent()->Page->createElement('legend', __('Output Options')));
+			$fieldset->appendChild($page->createElement('legend', __('Output Options')));
 
-			$ul = Symphony::Parent()->Page->createElement('ul');
+			$ul = $page->createElement('ul');
 			$ul->setAttribute('class', 'group');
 
-			$li = Symphony::Parent()->Page->createElement('li');
-			$li->appendChild(Symphony::Parent()->Page->createElement('h3', __('XML Output')));
+			$li = $page->createElement('li');
+			$li->appendChild($page->createElement('h3', __('XML Output')));
 
 			$select = Widget::Select('fields[included-elements][]', array(
 				array('username', in_array('username', $datasource->parameters()->{"included-elements"}), 'username'),
@@ -122,10 +121,12 @@
 		}
 
 		protected function appendFilter(&$wrapper, $name, $handle, $value=NULL) {
+			$page = Administration::instance()->Page;
+
 			if (!is_null($value)) {
-				$li = Symphony::Parent()->Page->createElement('li');
+				$li = $page->createElement('li');
 				$li->setAttribute('class', 'unique');
-				$li->appendChild(Symphony::Parent()->Page->createElement('h4', $name));
+				$li->appendChild($page->createElement('h4', $name));
 				$label = Widget::Label(__('Value'));
 				$label->appendChild(Widget::Input(
 					'fields[filters][' . $handle . ']',
@@ -135,9 +136,9 @@
 			 	$wrapper->appendChild($li);
 			}
 
-			$li = Symphony::Parent()->Page->createElement('li');
+			$li = $page->createElement('li');
 			$li->setAttribute('class', 'unique template');
-			$li->appendChild(Symphony::Parent()->Page->createElement('h4', $name));
+			$li->appendChild($page->createElement('h4', $name));
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input('fields[filters][' . $handle . ']'));
 			$li->appendChild($label);
