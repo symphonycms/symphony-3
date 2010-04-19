@@ -413,16 +413,16 @@
 			General::rmdirr(VIEWS . '/' . trim($path, '/'));
 
 		}
-		
+
 		public function render(Register &$Parameters, XMLDocument &$Document=NULL){
-			
+
 			$DataSourceParameterOutput = new Register;
-			
+
 			if(is_null($Document)){
 				$Document = new XMLDocument;
 				$Document->appendChild($Document->createElement('data'));
 			}
-			
+
 			$root = $Document->documentElement;
 
 			if(is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})){
@@ -430,22 +430,22 @@
 					$ds = Datasource::loadFromName($handle);
 					$fragment = $ds->render($DataSourceParameterOutput);
 
-					if($fragment instanceof DOMDocument){
+					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
 						$node = $Document->importNode($fragment->documentElement, true);
 						$root->appendChild($node);
 					}
-					
+
 				}
 			}
-			
-			
+
+
 			$Events = $Document->createElement('events');
 			$root->appendChild($Events);
-			
+
 			/*
 			$this->processEvents($page['events'], $events);
 			$this->processDatasources($page['data_sources'], $xml);
-			
+
 			if(is_array($this->_env['pool']) && !empty($this->_env['pool'])){
 				foreach($this->_env['pool'] as $handle => $p){
 
@@ -467,13 +467,13 @@
 				}
 			}
 			*/
-			
+
 			if($DataSourceParameterOutput->length() > 0){
 				foreach($DataSourceParameterOutput as $p){
 					$Parameters->{$p->key} = $p->value;
 				}
 			}
-			
+
 			####
 			# Delegate: FrontendParamsPostResolve
 			# Description: Access to the resolved param pool, including additional parameters provided by Data Source outputs
@@ -482,7 +482,7 @@
 
 			$element = $Document->createElement('parameters');
 			$root->appendChild($element);
-			
+
 			foreach($Parameters as $key => $parameter){
 				$element->appendChild($Document->createElement($key, (string)$parameter));
 			}
@@ -496,14 +496,14 @@
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');
 			}
-			
+
 			/*
 			header('Content-Type: text/plain');
 			$Document->formatOutput = true;
 			print $Document->saveXML();
 			die();
 			*/
-			
+
 			return $output;
 		}
 	}

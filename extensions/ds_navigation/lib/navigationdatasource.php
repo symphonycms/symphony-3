@@ -1,9 +1,7 @@
 <?php
-	/*
-	**	No DOMDocument or DBC integration has been done this class as yet 
-	*/
+
 	Class NavigationDataSource extends DataSource {
-		
+
 		public function __construct(){
 			// Set Default Values
 			$this->_about = new StdClass;
@@ -13,118 +11,114 @@
 				'type' => NULL
 			);
 		}
-		
+
 		final public function type(){
 			return 'ds_navigation';
 		}
-		
+
 		public function template(){
 			return EXTENSIONS . '/ds_navigation/templates/datasource.php';
 		}
-		
-		protected function buildParentFilter($parent) {
-			$parent_paths = preg_split('/,\s*/', $parent, -1, PREG_SPLIT_NO_EMPTY);			
-			$parent_paths = array_map(create_function('$a', 'return trim($a, " /");'), $parent_paths);
-			
-			return (is_array($parent_paths) && !empty($parent_paths) ? "`path` IN ('".implode("', '", $parent_paths)."')" : NULL);
+
+		public function save(MessageStack &$errors){
+			return parent::save($errors);
 		}
-		
-		protected function buildTypeFilter($filter, $filtertype = DS_FILTER_OR) {
-			$database = Symphony::Database();
-			$types = preg_split('/'.($filtertype == DS_FILTER_AND ? '\+' : ',').'\s*/', $filter, -1, PREG_SPLIT_NO_EMPTY);			
-			$types = array_map('trim', $types);
-			
-			switch ($filtertype) {
-				case DS_FILTER_AND:
-					$sql = "SELECT `a`.`id`
-							FROM (
-	
-								SELECT `tbl_pages`.id, COUNT(`tbl_pages`.id) AS `count` 
-								FROM  `tbl_pages`, `tbl_pages_types` 
-								WHERE `tbl_pages_types`.type IN ('".implode("', '", $types)."')
-								AND `tbl_pages`.`id` = `tbl_pages_types`.page_id
-								GROUP BY `tbl_pages`.`id`
-				
-							) AS `a` 
-							WHERE `a`.`count` >= " . count($types);
-			
-					break;
-			
-				case DS_FILTER_OR:
-					$sql = "SELECT `page_id` AS `id` FROM `tbl_pages_types` WHERE `type` IN ('".implode("', '", $types)."')";		
-					break;
-		
-			}
-			
-			$pages = $database->fetchCol('id', $sql);
-			
-			return (is_array($pages) && !empty($pages) ? $pages : NULL);
-		}
-		
-		protected function buildPageXML($page) {
-			$oPage = new XMLElement('page');
-			$oPage->setAttribute('handle', $page['handle']);
-			$oPage->setAttribute('id', $page['id']);
-			$oPage->appendChild(new XMLElement('name', General::sanitize($page['title'])));
-	
-			$types = Symphony::Database()->fetchCol('type', "SELECT `type` FROM `tbl_pages_types` WHERE `page_id` = '".$page['id']."'");
-			if(is_array($types) && !empty($types)){
-				$xTypes = new XMLElement('types');
-				foreach($types as $type) $xTypes->appendChild(new XMLElement('type', $type));
-				$oPage->appendChild($xTypes);
-			}
-			
-			if($children = Symphony::Database()->fetch("SELECT * FROM `tbl_pages` WHERE `parent` = '".$page['id']."' ORDER BY `sortorder` ASC")){
-				foreach($children as $c) $oPage->appendChild($this->buildPageXML($c));
-			}
-	
-			return $oPage;
-		}
-		
+
 		public function render(Register &$ParameterOutput){
-			throw new Exception('TODO: Fix navigation datasource template.');
-			
-			$result = new XMLElement($this->getRootElement());
-			
+			$result = new XMLDocument;
+			$root = $result->createElement($this->parameters()->{'root-element'});
+
 			try {
-				$result = new XMLElement($this->getRootElement());
-				$filters = $this->getFilters();
-				
-				if (trim($filters['type']) != '') {
-					$types = $this->buildTypeFilter(
-						$filters['type'],
-						$this->__determineFilterType($filters['type'])
-					);
-				}
-				
-				$sql = "SELECT * FROM `tbl_pages` 
-						WHERE ".(NULL != ($parent_sql = $this->buildParentFilter($filters['parent'])) ? $parent_sql : '`parent` IS NULL') . "
-						".($types != NULL ? " AND `id` IN ('" . @implode("', '", $types) . "') " : NULL) . "
-					 	ORDER BY `sortorder` ASC";
-				
-				$pages = Symphony::Database()->fetch($sql);
-				
-				if((!is_array($pages) || empty($pages))){
-					if ($this->canRedirectOnEmpty()) {
-						throw new FrontendPageNotFoundException;
+				$filter_parent = (isset($this->parameters()->parent) && $this->parameters()->parent != "");
+				$filter_type = (isset($this->parameters()->type) && $this->parameters()->type != "");
+
+				if ($filter_parent && $filter_type) {
+					$filtered_by_parent = new ViewIterator('/' . $this->parameters()->parent . '/');
+
+					$iterator = array();
+					foreach($filtered_by_parent as $v) if(@in_array($type, $v->types)) {
+						$iterator[$v->guid] = $v;
 					}
-					
-					$result->appendChild($this->__noRecordsFound());
 				}
-				
-				else foreach($pages as $p) $result->appendChild($this->buildPageXML($p));
+
+				else if ($filter_parent) {
+					$iterator = new ViewIterator('/' . $this->parameters()->parent . '/', false);
+				}
+
+				else if ($filter_type) {
+					$iterator = View::findFromType($this->parameters()->type);
+				}
+
+				else {
+					$iterator = new ViewIterator(null, false);
+				}
+
+				if(count($iterator) <= 0) {
+					throw new DatasourceException("No views found.");
+				}
+
+				else foreach ($iterator as $index => $view) {
+
+					if($filter_parent) $view = $view->parent();
+
+					$node = $this->__buildPageXML($view);
+
+					if(!is_null($node)) {
+						$root->appendChild(
+							$result->importNode($node, true)
+						);
+					}
+				}
 			}
-			
+
 			catch (FrontendPageNotFoundException $error) {
 				FrontendPageNotFoundExceptionHandler::render($error);
 			}
-			
+
 			catch (Exception $error) {
-				$result->appendChild(new XMLElement(
+				$root->appendChild($result->createElement(
 					'error', General::sanitize($error->getMessage())
 				));
-			}	
-			
+			}
+
+			$result->appendChild($root);
+
 			return $result;
+		}
+
+		public function __buildPageXML($view, View $parent = null) {
+			$result = new XMLDocument;
+
+			$xView = $result->createElement('view');
+			$xView->setAttribute('handle', $view->handle);
+
+			$xView->appendChild(
+				$result->createElement('title', $view->title)
+			);
+
+			##	Types
+			if(is_array($view->types) && count($view->types) > 0){
+				$types = $result->createElement('types');
+				foreach($view->types as $t){
+					$types->appendChild(
+						$result->createElement('item', General::sanitize($t))
+					);
+				}
+				$xView->appendChild($types);
+			}
+
+			##	Children
+			foreach($view->children() as $child) {
+				$node = $this->__buildPageXML($child, $view);
+
+				if(!is_null($node)) {
+					$xView->appendChild(
+						$result->importNode($node, true)
+					);
+				}
+			};
+
+			return $xView;
+
 		}
 	}

@@ -22,8 +22,8 @@
 			);
 		}
 
-		public function prepare(array $data=NULL) {
-			$datasource = new DynamicXMLDataSource;
+		public function prepare(array $data = null, DynamicXMLDataSource $datasource = null) {
+			if(is_null($datasource)) $datasource = new DynamicXMLDataSource;
 
 			if(!is_null($data)){
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
@@ -96,45 +96,48 @@
 			$ol = Symphony::Parent()->Page->createElement('ol');
 			$ol->setAttribute('class', 'filters-duplicator');
 
-			if(is_array($datasource->parameters()->namespaces)){
-				foreach($datasource->parameters()->namespaces as $index => $namespace){
+			if(is_array($datasource->parameters()->namespaces))	foreach($datasource->parameters()->namespaces as $name => $uri) {
 
-					$li = Symphony::Parent()->Page->createElement('li');
-					$li->appendChild(Symphony::Parent()->Page->createElement('h4', 'Namespace'));
+				$li = Symphony::Parent()->Page->createElement('li');
+				$li->appendChild(Symphony::Parent()->Page->createElement('h4', 'Namespace'));
 
-					$group = Symphony::Parent()->Page->createElement('div');
-					$group->setAttribute('class', 'group');
+				$group = Symphony::Parent()->Page->createElement('div');
+				$group->setAttribute('class', 'group');
 
-					$label = Widget::Label(__('Name'));
-					$label->appendChild(Widget::Input("fields[namespaces][name][{$index}]", General::sanitize($namespace['name'])));
-					$group->appendChild($label);
+				$label = Widget::Label(__('Name'));
+				$label->appendChild(Widget::Input("fields[namespaces][name][{$index}]", General::sanitize($name)));
+				$group->appendChild($label);
 
-					$label = Widget::Label(__('URI'));
-					$label->appendChild(Widget::Input("fields[namespaces][uri][{$index}]", General::sanitize($namespace['uri'])));
-					$group->appendChild($label);
+				$label = Widget::Label(__('URI'));
+				$label->appendChild(Widget::Input("fields[namespaces][uri][{$index}]", General::sanitize($uri)));
+				$group->appendChild($label);
 
-					$li->appendChild($group);
-					$ol->appendChild($li);
-				}
+				$li->appendChild($group);
+				$ol->appendChild($li);
+
 			}
 
-			$li = Symphony::Parent()->Page->createElement('li');
-			$li->setAttribute('class', 'template');
-			$li->appendChild(Symphony::Parent()->Page->createElement('h4', __('Namespace')));
+			else {
 
-			$group = Symphony::Parent()->Page->createElement('div');
-			$group->setAttribute('class', 'group');
+				$li = Symphony::Parent()->Page->createElement('li');
+				$li->setAttribute('class', 'template');
+				$li->appendChild(Symphony::Parent()->Page->createElement('h4', __('Namespace')));
 
-			$label = Widget::Label(__('Name'));
-			$label->appendChild(Widget::Input('fields[namespaces][name][]'));
-			$group->appendChild($label);
+				$group = Symphony::Parent()->Page->createElement('div');
+				$group->setAttribute('class', 'group');
 
-			$label = Widget::Label(__('URI'));
-			$label->appendChild(Widget::Input('fields[namespaces][uri][]'));
-			$group->appendChild($label);
+				$label = Widget::Label(__('Name'));
+				$label->appendChild(Widget::Input('fields[namespaces][name][]'));
+				$group->appendChild($label);
 
-			$li->appendChild($group);
-			$ol->appendChild($li);
+				$label = Widget::Label(__('URI'));
+				$label->appendChild(Widget::Input('fields[namespaces][uri][]'));
+				$group->appendChild($label);
+
+				$li->appendChild($group);
+				$ol->appendChild($li);
+
+			}
 
 			$div->appendChild($ol);
 			$fieldset->appendChild($div);

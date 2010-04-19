@@ -387,7 +387,7 @@
 
 		private function __form(Section $existing=NULL){
 			$layout = new Layout(Layout::MEDIUM, Layout::LARGE);
-			
+
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 			if(isset($callback['flag']) && !is_null($callback['flag'])){

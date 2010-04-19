@@ -1,6 +1,7 @@
 <?php
 
 	require_once('lib/navigationdatasource.php');
+	require_once(TOOLKIT . '/class.view.php');
 
 	class Extension_DS_Navigation extends Extension {
 		public function about() {
@@ -43,9 +44,9 @@
 			);
 		}
 
-		public function prepare(array $data=NULL) {
+		public function prepare(array $data = null, NavigationDataSource $datasource = null) {
 
-			$datasource = new NavigationDataSource;
+			if(is_null($datasource)) $datasource = new NavigationDataSource;
 
 			if(!is_null($data)){
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
@@ -53,42 +54,10 @@
 				if(isset($data['type'])) $datasource->parameters()->type = $data['type'];
 			}
 
-			// Load defaults:
-			/*if (!$datasource instanceof NavigationDataSource) {
-				$datasource = new NavigationDataSource(Administration::instance());
-			}
-
-			$context['fields']['filters'] = $datasource->getFilters();
-			$context['fields']['required_url_param'] = $datasource->getRequiredURLParam();
-			$context['fields']['can_redirect_on_empty'] = 'no';
-
-			if ($datasource->canRedirectOnEmpty()) {
-				$context['fields']['can_redirect_on_empty'] = 'yes';
-			}*/
-
 			return $datasource;
 		}
 
-	/*	public function action($context = array()) {
-			if ($context['template'] != 'ds_navigation') return;
-
-			$fields = $context['fields'];
-
-			// Send back template to save:
-			$context['template_file'] = EXTENSIONS . '/ds_navigation/templates/datasource.php';
-			$context['template_data'] = array(
-				$fields['can_redirect_on_empty'] == 'yes',
-				(array)$fields['filters'],
-				$fields['required_url_param'],
-				Lang::createHandle($fields['about']['name'])
-			);
-		}*/
-
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
-			throw new Exception('Fix me to work with Views');
-			/*$fields = $context['fields'];
-			$errors = $context['errors'];
-			$wrapper = $context['wrapper'];*/
 			$admin = Administration::instance()->Page;
 
 		//	Essentials --------------------------------------------------------
@@ -114,8 +83,15 @@
 			$fieldset = $admin->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild($admin->createElement('legend', __('Filtering')));
-			$p = $admin->createElement('p', __('<code>{$param}</code> or <code>Value</code>'));
+			$p = $admin->createElement('p');
 			$p->setAttribute('class', 'help');
+			$p->appendChild(
+				$admin->createElement('code', '{$param}')
+			);
+			$p->setValue(' or ');
+			$p->appendChild(
+				$admin->createElement('code', 'Value')
+			);
 			$fieldset->appendChild($p);
 
 			$group = $admin->createElement('div');
@@ -215,7 +191,8 @@
 			$label->appendChild(Widget::Input('fields[type]'));
 			$li->appendChild($label);
 			$li->appendChild($ul);
-			$ol->appendChild($li);*/
+			$ol->appendChild($li);
+*/
 
 
 			$fieldset->appendChild($group);

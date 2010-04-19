@@ -23,8 +23,8 @@
 			);
 		}
 		
-		public function prepare(array $data=NULL) {
-			$datasource = new StaticXMLDataSource;
+		public function prepare(array $data = null, StaticXMLDataSource $datasource = null) {
+			if(is_null($datasource)) $datasource = new StaticXMLDataSource;
 
 			if(!is_null($data)){
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];

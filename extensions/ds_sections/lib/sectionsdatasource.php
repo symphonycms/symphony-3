@@ -23,6 +23,14 @@
 			);
 		}
 
+		final public function type(){
+			return 'ds_sections';
+		}
+
+		public function template(){
+			return EXTENSIONS . '/ds_sections/templates/datasource.php';
+		}
+
 		public function save(MessageStack &$errors){
 
 			if (strlen(trim($this->parameters()->limit)) == 0 || (is_numeric($this->parameters()->limit) && $this->parameters()->limit < 1)) {
@@ -96,20 +104,12 @@
 			return 'desc';
 		}*/
 
-		final public function type(){
-			return 'ds_sections';
-		}
-
-		public function template(){
-			return EXTENSIONS . '/ds_sections/templates/datasource.php';
-		}
-
 		public function render(Register &$ParameterOutput){
 			$doc = new XMLDocument;
 			$doc->appendChild($doc->createElement($this->parameters()->{'root-element'}));
-			
+
 			$ParameterOutput->{'ds-fred-title'} = "I am the most awesome";
-			
+
 			return $doc;
 		}
 

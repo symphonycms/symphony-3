@@ -71,7 +71,7 @@
 
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
-			
+
 			$layout = new Layout(Layout::SMALL, Layout::MEDIUM, Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------

@@ -159,6 +159,7 @@
 			$this->editing = isset($this->_context[1]);
 
 			if (!$this->editing) {
+
 				$this->type = $_REQUEST['type'];
 
 				if (is_null($this->type)){
