@@ -7,11 +7,16 @@
 
 	Class contentBlueprintsSections extends AdministrationPage{
 
-		public $errors;
 		private $section;
 
 		public function __viewIndex(){
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
+			// This is the 'correct' way to append a string containing an entity
+			$title = $this->createElement('title');
+			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
+			$title->appendChild($this->createEntityReference('ndash'));
+			$title->appendChild($this->createTextNode(' ' . __('Sections')));
+			$this->insertNodeIntoHead($title);
+			
 			$this->appendSubheading(__('Sections'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', array(
 					'title' => __('Create a new section'),
@@ -393,22 +398,6 @@
 
 						$this->pageAlert(
 							__(
-								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
-								array(
-									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									ADMIN_URL . '/blueprints/sections/new/',
-									ADMIN_URL . '/blueprints/sections/',
-								)
-							),
-							Alert::SUCCESS);
-
-						break;
-
-					case 'created':
-
-						$this->pageAlert(
-							__(
-								'Section created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',
@@ -422,16 +411,12 @@
 				}
 			}
 
+			$layout = new Layout('small', 'large');
+
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
 
-			$fieldset = $this->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(
-				$this->createElement('h3', __('Essentials'))
-			);
-
-			//$namediv = $this->createElement('div');
+			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			$label = Widget::Label('Name');
 			$label->appendChild(Widget::Input('essentials[name]', $this->section->name));
@@ -446,14 +431,10 @@
 				($this->section->{'hidden-from-publish-menu'} == 'yes') ? array('checked' => 'checked') : array()
 			);
 
-			$label = Widget::Label(null);
-			$label->appendChild($input);
-			$label->setValue(__('Hide this section from the Publish menu'));
-
+			$label = Widget::Label(null, $input);
+			$label->setValue(__('%s Hide this section from the Publish menu', array($input)));
+			
 			$fieldset->appendChild($label);
-			//$namediv->appendChild($label);
-
-			//$navgroupdiv = $this->createElement('div');
 
 			$label = Widget::Label(__('Navigation Group'));
 			$label->setValue($this->createElement('i', __('Created if does not exist')));
@@ -474,25 +455,21 @@
 				$fieldset->appendChild($ul);
 			}
 
-			//$fieldset->appendChild($navgroupdiv);
-
 			$layout->appendToColumn(1, $fieldset);
+
+			//$fieldset->appendChild($div);
 
 			// Fields
 
+			$fieldset = Widget::Fieldset(__('Fields'));
 
-			$fieldset = $this->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($this->createElement('h3', __('Fields')));
-
-			/*
-			$layout = $this->createElement('div');
-			$layout->setAttribute('class', 'layout');
+			$fields_div = $this->createElement('div');
+			$fields_div->setAttribute('class', 'layout');
 
 			$templates = $this->createElement('ol');
 			$templates->setAttribute('class', 'templates');
 
-			/ *
+			/*
 			$div = new XMLElement('div');
 			$h3 = new XMLElement('h3', __('Fields'));
 			$h3->setAttribute('class', 'label');
@@ -515,7 +492,7 @@
 
 				}
 			}
-			* /
+			*/
 
 
 
@@ -544,7 +521,7 @@
 			}
 
 
-			$layout->appendChild($templates);
+			$fields_div->appendChild($templates);
 
 
 			// Existing Fields
@@ -659,11 +636,12 @@
 				}
 			}
 
-			$layout->appendChild($content);
+			$fields_div->appendChild($content);
 
-			$fieldset->appendChild($layout);
-			*/
+			$fieldset->appendChild($fields_div);
 
+			$layout->appendToColumn(2, $fieldset);
+			
 			$this->Form->appendChild($layout->generate());
 
 			/*

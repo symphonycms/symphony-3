@@ -14,7 +14,12 @@
 		}
 
 		public function __viewIndex(){
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Users'))));
+			// This is the 'correct' way to append a string containing an entity
+			$title = $this->createElement('title');
+			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
+			$title->appendChild($this->createEntityReference('ndash'));
+			$title->appendChild($this->createTextNode(' ' . __('Users')));
+			$this->insertNodeIntoHead($title);
 
 			$this->appendSubheading(__('Users'), Widget::Anchor(
 				__('Add a User'), Administration::instance()->getCurrentPageURL() . 'new/', array(
@@ -141,7 +146,8 @@
 		}
 
 		private function __form(){
-			$layout = new Layout(Layout::MEDIUM, Layout::MEDIUM, Layout::MEDIUM);
+
+			$layout = new Layout(Layout::SMALL, Layout::MEDIUM, Layout::SMALL);
 
 			require_once(TOOLKIT . '/class.field.php');
 

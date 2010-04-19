@@ -210,23 +210,20 @@
 
 			if(isset($_POST['fields'])) $fields = $_POST['fields'];
 
+			$layout = new Layout('small', 'small', 'medium');
+			
 			$this->setTitle(__(($isEditing ? '%1$s &ndash; %2$s &ndash; %3$s' : '%1$s &ndash; %2$s'), array(__('Symphony'), __('Events'), $about['name'])));
 			$this->appendSubheading(($isEditing ? $about['name'] : __('Untitled')));
 
 			if(!$readonly):
 
-				$fieldset = $this->createElement('fieldset');
-				$fieldset->setAttribute('class', 'settings');
-				$fieldset->appendChild($this->createElement('legend', __('Essentials')));
-
-				$div = $this->createElement('div');
-				$div->setAttribute('class', 'group');
+				$fieldset = Widget::Fieldset(__('Essentials'));
 
 				$label = Widget::Label(__('Name'));
 				$label->appendChild(Widget::Input('fields[name]', General::sanitize($fields['name'])));
 
-				if(isset($this->_errors['name'])) $div->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['name']));
-				else $div->appendChild($label);
+				if(isset($this->_errors['name'])) $fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['name']));
+				else $fieldset->appendChild($label);
 
 				$label = Widget::Label(__('Source'));
 
@@ -237,16 +234,10 @@
 				}
 
 				$label->appendChild(Widget::Select('fields[source]', $options, array('id' => 'event-context-selector')));
-				$div->appendChild($label);
+				$fieldset->appendChild($label);
+				$layout->appendtoColumn(1, $fieldset);
 
-				$fieldset->appendChild($div);
-
-				$this->Form->appendChild($fieldset);
-
-				$fieldset = $this->createElement('fieldset');
-				$fieldset->setAttribute('class', 'settings');
-				$fieldset->appendChild($this->createElement('legend', __('Processing Options')));
-
+				$fieldset = Widget::Fieldset(__('Processing Options'));
 				$label = Widget::Label(__('Filter Rules'));
 
 				if(!is_array($fields['filters'])) $fields['filters'] = array($fields['filters']);
@@ -274,15 +265,12 @@
 				$label->appendChild($input);
 				$label->setValue(__('Add entry ID to the parameter pool in the format of <code>$event-name-id</code> when saving is successful.'));
 				$fieldset->appendChild($label);
-
-				$this->Form->appendChild($fieldset);
+				$layout->appendToColumn(2, $fieldset);
+				
 			endif;
 
 
-			$fieldset = $this->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($this->createElement('legend', __('Overrides &amp; Defaults')));
-			$fieldset->appendChild($this->createElement('p', __('{$param}'), array('class' => 'help')));
+			$fieldset = Widget::Fieldset(__('Overrides &amp; Defaults'), '{$param}');
 
 			$div = $this->createElement('div');
 
@@ -304,11 +292,12 @@
 			*/
 
 			$fieldset->appendChild($div);
-			$this->Form->appendChild($fieldset);
+			$layout->appendToColumn(3, $fieldset);
+			
+			$this->Form->appendChild($layout->generate());
 
 			if($isEditing):
-				$fieldset = $this->createElement('fieldset');
-				$fieldset->setAttribute('class', 'settings');
+				$fieldset = Widget::Fieldset(__('Description'));
 
 				$doc = $existing->documentation();
 				$fieldset->appendChild($this->createElement('legend', __('Description')));

@@ -84,8 +84,9 @@
 		}
 
 		public function __viewEdit() {
-			$layout = new Layout(Layout::LARGE, Layout::MEDIUM);
 
+			$layout = new Layout(Layout::MEDIUM, Layout::SMALL);
+			
 			$this->_existing_file = (isset($this->_context[1]) ? $this->_context[1] . '.xsl' : NULL);
 
 			## Handle unknown context
@@ -188,7 +189,7 @@
 						$li->setAttribute('class', 'odd');
 					}
 
-					$li->appendChild(Widget::Anchor($util, URL . '/symphony/blueprints/utilities/edit/' . str_replace('.xsl', '', $util) . '/', NULL));
+					$li->appendChild(Widget::Anchor($util, URL . '/symphony/blueprints/utilities/edit/' . str_replace('.xsl', '', $util) . '/', array()));
 					$ul->appendChild($li);
 				}
 

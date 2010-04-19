@@ -45,7 +45,12 @@
 		*/
 
 		public function __viewIndex() {
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Views'))));
+			// This is the 'correct' way to append a string containing an entity
+			$title = $this->createElement('title');
+			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
+			$title->appendChild($this->createEntityReference('ndash'));
+			$title->appendChild($this->createTextNode(' ' . __('Views')));
+			$this->insertNodeIntoHead($title);
 
 			$nesting = (Symphony::Configuration()->get('pages_table_nest_children', 'symphony') == 'yes');
 
@@ -220,18 +225,14 @@
 			);
 
 			$this->appendViewOptions($viewoptions);
+			
+			$layout = new Layout(Layout::MEDIUM, Layout::SMALL);
 
 			if(!empty($_POST)){
 				$view->template = $_POST['fields']['template'];
 			}
 
-			$fieldset = $this->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-
-			$group = $this->createElement('div');
-			$group->setAttribute('class', 'group');
-
-			$div = $this->createElement('div');
+			$fieldset = Widget::Fieldset();
 
 			$label = Widget::Label(__('Template'));
 			$label->appendChild(
@@ -246,21 +247,14 @@
 				$label = Widget::wrapFormElementWithError($label, $this->_errors->template);
 			}
 
-			$div->appendChild($label);
-			$group->appendChild($div);
-			$fieldset->appendChild($group);
-
-			$this->Form->appendChild($fieldset);
+			$fieldset->appendChild($label);
+			$layout->appendToColumn(1, $fieldset);
 
 			$utilities = new UtilityIterator;
 
 			if($utilities->length() > 0){
-				$div = $this->createElement('div');
-				$div->setAttribute('class', 'small');
 
-				$div->appendChild(
-					$this->createElement('h3', __('Utilities'), array('class' => 'label'))
-				);
+				$fieldset = Widget::Fieldset(__('Utilities'));
 
 				$ul = $this->createElement('ul');
 				$ul->setAttribute('id', 'utilities');
@@ -273,9 +267,11 @@
 					$ul->appendChild($li);
 				}
 
-				$div->appendChild($ul);
-				$group->appendChild($div);
+				$fieldset->appendChild($ul);
+				$layout->appendToColumn(2, $fieldset);
 			}
+			
+			$this->Form->appendChild($layout->generate());
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');

@@ -11,16 +11,11 @@
 			switch($name){
 
 				case '__viewIndex':
-				case '__viewAll':
-					$this->buildTable(
-						ExtensionManager::instance()->listAll(),
-						true
+				case '__viewOverview':
+					$this->buildOverview(
+						ExtensionManager::instance()->listAll()
 					);
 					return;
-					break;
-
-				case '__viewCore':
-					$type = 'Core';
 					break;
 
 				case '__viewDatasources':
@@ -42,7 +37,7 @@
 
 			if($type == 'Other'){
 				$this->buildTable(
-					ExtensionManager::instance()->listOthers(array('Core', 'Data Source', 'Field'))
+					ExtensionManager::instance()->listOthers(array('Data Source', 'Field'))
 				);
 			}
 			else {
@@ -51,8 +46,9 @@
 				);
 			}
 		}
+		
+		function prepPage(){
 
-		function buildTable($extensions, $prefixes=false){
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Extensions'))));
 			$this->appendSubheading(__('Extensions'));
 
@@ -61,16 +57,75 @@
 
 			$viewoptions = array(
 				'subnav'	=> array(
-					'All'				=>	$path,
-					'Core'				=>	$path . 'core/',
-					'Data Sources'	=>	$path . 'datasources/',
+					'Overview'			=>	$path,
+					'Data Sources'		=>	$path . 'datasources/',
 					'Fields'			=>	$path . 'fields/',
 					'Other'				=>	$path . 'other/'
 				)
 			);
 
 			$this->appendViewOptions($viewoptions);
+		}
+		
+		function buildOverview($extensions){
+			$this->prepPage();
+			
+			$layout = new Layout('small', 'large');
+			
+			## Build lists of extensions by status
+			$lists = array();
+			foreach($extensions as $e){
+				switch($e['status']){
+					case Extension::ENABLED:
+						$lists['enabled'][] = $e;
+						break;
+							
+					case Extension::DISABLED:
+						$lists['disabled'][] = $e;
+						break;
+						
+					case Extension::NOT_INSTALLED:
+						$lists['installable'][] = $e;
+						break;
+						
+					case Extension::REQUIRES_UPDATE:
+						$lists['updateable'][] = $e;
+				}
+			}
+			
+			## First column: Summary of extensions
+			$fieldset = Widget::Fieldset(__('Stats'));
+			
+			$ul = $this->createElement('ul', NULL, array('id' => 'extension_stats'));
+			
+			foreach($lists as $list => $extensions){
+				if(!empty($extensions)){
+					$li = $this->createElement('li');
+					$h4 = $this->createElement('h4', ucwords($list));
+					$p = $this->createElement('p', count($extensions));
+					
+					$li->appendChild($h4);
+					$li->appendChild($p);
+					
+					$ul->appendChild($li);
+				}
+			}
+			
+			$fieldset->appendChild($ul);
+			$layout->appendToColumn(1, $fieldset);
+			
+			## Second column: Lists w actions
+			$fieldset = Widget::Fieldset(__('Available Actions'));
+			
+			$layout->appendToColumn(2, $fieldset);
+			
+			$this->Form->appendChild($layout->generate());
+		}
 
+		function buildTable($extensions, $prefixes=false){
+			
+			$this->prepPage();
+			
 			## Sort by extensions name:
 			uasort($extensions, array('ExtensionManager', 'sortByName'));
 
