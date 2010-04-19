@@ -82,7 +82,7 @@
 			$wrapper->appendChild($group);
 		}
 
-		public function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 			$value = General::sanitize($data['value']);
 			$label = Widget::Label($this->properties()->label);
 			if($this->properties()->required != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));

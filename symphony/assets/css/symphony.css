@@ -1,8 +1,3 @@
-/* @override
-	http://symphony-21.local/symphony/assets/css/symphony.css
-	http://localhost/projects/symphony-21/symphony/assets/css/symphony.css
-*/
-
 /*-----------------------------------------------------------------------------
 	Symphony Global
 -----------------------------------------------------------------------------*/
@@ -316,6 +311,28 @@
 	}
 
 /*-----------------------------------------------------------------------------
+	Layout
+-----------------------------------------------------------------------------*/
+
+	#layout {
+		border-spacing: 20px 0;
+		display: table;
+		margin: 0 10px;
+		max-width: 1200px;
+		table-layout: fixed;
+	}
+	#layout > .column {
+		display: table-cell;
+		vertical-align: top;
+	}
+	#layout > .small {
+		width: 30%;
+	}
+	#layout > .large {
+		width: 70%;
+	}
+	
+/*-----------------------------------------------------------------------------
 	Content
 -----------------------------------------------------------------------------*/
 
@@ -525,7 +542,7 @@
 		display: block;
 		margin: 0 auto;
 	}
-
+	
 /*-----------------------------------------------------------------------------
 	Content: Form
 -----------------------------------------------------------------------------*/
@@ -533,43 +550,23 @@
 	form {
 		margin-bottom: 20px;
 	}
-	form #layout {
-		display: -moz-box;
-		display: -webkit-box;
-		-moz-box-orient: horizontal;
-		-webkit-box-orient: horizontal;
-		width: 100%;
-		max-width: 1200px;
-		padding: 0 15px;
-	}
-	form #layout .column {
-		padding: 15px;
-	}
-		.small {
-			width: 210px;
-			-moz-box-flex: 1;
-			-webkit-box-flex: 1;
-		}
-		.medium {
-			width: 420px;
-			-moz-box-flex: 2;
-			-webkit-box-flex: 2;
-		}
-		.large {
-			width: 630px;
-			-moz-box-flex: 3;
-			-webkit-box-flex: 3;
-		}
 
 	form fieldset {
-		position: relative;
 		border: none;
-		margin-bottom: 25px;
+		-webkit-margin-bottom-collapse: separate;
+		margin: 20px 0;
+		position: relative;
 	}
-	form h2 + fieldset {
+	form fieldsets + fieldset {
+		margin-top: 25px;
 	}
-	form fieldset legend {
+	form fieldset:first-child {
+		margin-top: 0;
 	}
+	form fieldset:last-child {
+		margin-bottom: 0;
+	}
+	
 	form h3 {
 		color: #666666;
 		font-size: 10pt;
@@ -614,7 +611,8 @@
 		margin-bottom: 15px;
 	}
 	form label i {
-		margin-left: .25em;
+		float: right;
+		opacity: 0.5;
 	}
 	form label input,
 	form .label input,
@@ -655,6 +653,7 @@
 		width: auto;
 		margin: 0 auto;
 	}
+	
 	form .group {
 		display: table;
 		table-layout: fixed;

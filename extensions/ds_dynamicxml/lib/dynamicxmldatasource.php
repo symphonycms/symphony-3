@@ -227,7 +227,6 @@
 				}
 
 				else{
-
 					if($writeToCache) $cache->write($cache_id, $xml);
 
 					$fragment = $result->createDocumentFragment();
@@ -236,7 +235,6 @@
 					$root->appendChild($fragment);
 					$root->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
 					$root->setAttribute('creation', $creation);
-
 				}
 
 				$result->appendChild($root);

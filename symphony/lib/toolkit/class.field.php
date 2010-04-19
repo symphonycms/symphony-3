@@ -91,7 +91,7 @@
 		const FLAG_ALL = 1000;
 		
 		// Abstract functions
-		abstract public function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL);
+		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL);
 		
 		public function __construct(){
 			if(is_null(self::$key)) self::$key = 0;
@@ -520,26 +520,8 @@
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors=NULL){
-			$wrapper->appendChild(Symphony::Parent()->Page->createElement('h3', ucwords($this->name())));
+			//$wrapper->appendChild(Symphony::Parent()->Page->createElement('h3', ucwords($this->name())));
 			$wrapper->appendChild($this->buildSummaryBlock($errors));
-			$wrapper->appendChild($this->buildWidthSelect());
-		}
-
-		public function buildWidthSelect(){
-
-			$label = Widget::Label(__('Width'));
-			$label->setAttribute('class', 'field-flex');
-
-			$label->appendChild(Widget::Select(
-				'width',
-				array(
-					array(1, $this->properties()->width == 1, 'Small'),
-					array(2, $this->properties()->width == 2, 'Medium'),
-					array(3, $this->properties()->width == 3, 'Large'),
-				)
-			));
-
-			return $label;
 		}
 
 		public function buildSummaryBlock($errors=NULL){
@@ -570,9 +552,10 @@
 			$label->appendChild($input);
 			$label->setValue(__('Make this a required field'));
 
-			$wrapper->appendChild($label);
+			$item = $wrapper->ownerDocument->createElement('li');
+			$item->appendChild($label);
+			$wrapper->appendChild($item);
 		}
-
 
 		public function appendShowColumnCheckbox(SymphonyDOMElement &$wrapper) {
 			if (!$this->_showcolumn) return;
@@ -588,7 +571,9 @@
 			$label->appendChild($input);
 			$label->setValue(__('Show column'));
 
-			$wrapper->appendChild($label);
+			$item = $wrapper->ownerDocument->createElement('li');
+			$item->appendChild($label);
+			$wrapper->appendChild($item);
 		}
 
 		public function buildFormatterSelect($selected=NULL, $name='fields[format]', $label_value){

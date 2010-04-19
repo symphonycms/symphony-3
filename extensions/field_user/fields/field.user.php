@@ -46,7 +46,7 @@
 			return $result;
 		}
 
-		public function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 
 			$value = (isset($data['user_id']) ? $data['user_id'] : NULL);
 

@@ -28,8 +28,8 @@
 			return true;
 		}
 
-		public function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
-			$name = $this->properties()->element_name;
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+			$name = $this->get('element_name');
 			$value = null;
 
 			// New entry:
@@ -386,12 +386,13 @@
 
 			$label->appendChild($input);
 			$label->setValue(__('Pre-populate this field with today\'s date'));
-			$options_list->appendChild($label);
+			$item = $wrapper->ownerDocument->createElement('li');
+			$item->appendChild($label);
+			$options_list->appendChild($item);
 
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
-
 		}
 
 		public function createTable(){

@@ -126,12 +126,12 @@
 
 		}
 
-		function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 
 			if(!$data){
 				## TODO: Don't rely on $_POST
 				if(isset($_POST) && !empty($_POST)) $value = 'no';
-				elseif($this->properties()->default_state == 'on') $value = 'yes';
+				elseif($this->get('default-state') == 'on') $value = 'yes';
 				else $value = 'no';
 			}
 
@@ -165,8 +165,8 @@
 
 			$fields = array(
 				'field_id' => $field_id,
-				'default_state' => ($this->properties()->default_state ? $this->properties()->default_state : 'off'),
-				'description' => (trim($this->properties()->description) != '') ? $this->properties()->description : NULL
+				'default-state' => ($this->get('default-state') ? $this->get('default-state') : 'off'),
+				'description' => (trim($this->get('description')) != '') ? $this->get('description') : NULL
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -175,8 +175,8 @@
 			return ($field_id == 0 || !$field_id) ? false : true;
 		}
 
-		public function findDefaults(array &$fields){
-			if(!isset($fields['default_state'])) $fields['default_state'] = 'off';
+		function findDefaults(&$fields){
+			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
 		}
 
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
@@ -193,12 +193,13 @@
 
 			## Checkbox Default State
 			$label = Widget::Label();
-			$input = Widget::Input('default_state', 'on', 'checkbox');
-			if($this->properties()->default_state == 'on') $input->setAttribute('checked', 'checked');
+			$input = Widget::Input('default-state', 'on', 'checkbox');
+			if($this->get('default-state') == 'on') $input->setAttribute('checked', 'checked');
 			$label->appendChild($input);
 			$label->setValue(__('Checked by default'));
-
-			$options_list->appendChild($label);
+			$item = $wrapper->ownerDocument->createElement('li');
+			$item->appendChild($label);
+			$options_list->appendChild($item);
 
 			$this->appendShowColumnCheckbox($options_list);
 
@@ -218,16 +219,16 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
 					) TYPE=MyISAM;",
-					$this->properties()->section,
-					$this->properties()->element_name,
-					($this->properties()->default_state == 'on' ? 'yes' : 'no')
+					$this->get('section'),
+					$this->get('element_name'),
+					($this->get('default-state') == 'on' ? 'yes' : 'no')
 				)
 			);
 		}
 
 		public function getExampleFormMarkup(){
-			$label = Widget::Label($this->properties()->label);
-			$label->appendChild(Widget::Input('fields['.$this->properties()->element_name.']', NULL, 'checkbox', ($this->properties()->default_state == 'on' ? array('checked' => 'checked') : array())));
+			$label = Widget::Label($this->get('label'));
+			$label->appendChild(Widget::Input('fields['.$this->get('element_name').']', NULL, 'checkbox', ($this->get('default-state') == 'on' ? array('checked' => 'checked') : array())));
 
 			return $label;
 		}

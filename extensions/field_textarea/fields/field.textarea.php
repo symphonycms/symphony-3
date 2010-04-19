@@ -19,9 +19,9 @@
 			return true;
 		}
 
-		function displayPublishPanel(DOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
-			$label = Widget::Label($this->properties()->label);
-			if($this->properties()->required != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
+		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+			$label = Widget::Label($this->get('label'));
+			if($this->get('required') != 'yes') $label->appendChild(Symphony::Parent()->Page->createElement('i', __('Optional')));
 
 			$textarea = Widget::Textarea(
 				'fields['.$this->properties()->element_name.']',
