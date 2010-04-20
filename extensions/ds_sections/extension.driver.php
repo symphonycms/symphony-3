@@ -72,7 +72,9 @@
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
 
-			$layout = new Layout(Layout::SMALL, Layout::MEDIUM, Layout::SMALL);
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::SMALL);
+			$right = $layout->createColumn(Layout::LARGE);
 
 		//	Essentials --------------------------------------------------------
 
@@ -109,99 +111,35 @@
 			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'context')));
 
 			$fieldset->appendChild($label);
-			$layout->appendToColumn(1, $fieldset);
+			$left->appendChild($fieldset);
 
 		//	Conditions ---------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Conditions'), '<code>$param</code>');
 
-			$conditionals_container = $page->createElement('div');
-			$ol = $page->createElement('ol');
-			$ol->setAttribute('class', 'filters-duplicator');
-
+			$container = $page->createElement('div');
+			$container->setAttribute('class', 'conditions-duplicator');
+			
+			$templates = $page->createElement('ol');
+			$templates->setAttribute('class', 'templates');
+			
+			$instances = $page->createElement('ol');
+			$instances->setAttribute('class', 'instances');
+			
+			// Templates:
+			$this->appendCondition($templates);
+			
+			// Instances:
 			if(is_array($datasource->parameters()->conditions) && !empty($datasource->parameters()->conditions)){
 				foreach($datasource->parameters()->conditions as $condition){
-					$li = $page->createElement('li');
-					$li->setAttribute('class', 'unique');
-
-					$li->appendChild($page->createElement('h4', 'When'));
-					$group = $page->createElement('div');
-					$group->setAttribute('class', 'group triple');
-
-					// Parameter
-					$label = $page->createElement('label', 'Parameter');
-					$label->appendChild(Widget::input('fields[conditions][parameter][]', $condition['parameter']));
-					$group->appendChild($label);
-
-					// Logic
-					$label = $page->createElement('label', 'Logic');
-					$label->appendChild(Widget::select('fields[conditions][logic][]', array(
-						array('set', ($condition['logic'] == 'set'), 'is set'),
-						array('not-set', ($condition['logic'] == 'not-set'), 'is not set'),
-					), array('class' => 'filtered')));
-					$group->appendChild($label);
-
-					// Action
-					$label = $page->createElement('label', 'Action');
-					$label->appendChild(Widget::select('fields[conditions][action][]', array(
-						//array('label' => 'Execution', 'options' => array(
-							array('execute', ($condition['action'] == 'execute'), 'Execute'),
-							array('do-not-execute', ($condition['action'] == 'do-not-execute'), 'Do not Execute'),
-						//)),
-						//array('label' => 'Redirect', 'options' => array(
-						//	array('redirect:404', false, '404'),
-						//	array('redirect:/about/me/', false, '/about/me/'),
-						//)),
-					), array('class' => 'filtered')));
-
-					$group->appendChild($label);
-					$li->appendChild($group);
-					$ol->appendChild($li);
+					$this->appendCondition($instances, $condition);
 				}
 			}
-
-			// Conditionals Template:
-			$li = $page->createElement('li');
-			$li->setAttribute('class', 'unique template');
-
-			$li->appendChild($page->createElement('h4', 'When'));
-			$group = $page->createElement('div');
-			$group->setAttribute('class', 'group triple');
-
-			// Parameter
-			$label = $page->createElement('label', 'Parameter');
-			$label->appendChild(Widget::input('fields[conditions][parameter][]'));
-			$group->appendChild($label);
-
-			// Logic
-			$label = $page->createElement('label', 'Logic');
-			$label->appendChild(Widget::select('fields[conditions][logic][]', array(
-				array('set', false, 'is set'),
-				array('not-set', false, 'is not set'),
-			), array('class' => 'filtered')));
-			$group->appendChild($label);
-
-			// Action
-			$label = $page->createElement('label', 'Action');
-			$label->appendChild(Widget::select('fields[conditions][action][]', array(
-				//array('label' => 'Execution', 'options' => array(
-					array('execute', false, 'Execute'),
-					array('do-not-execute', false, 'Do not Execute'),
-				//)),
-				//array('label' => 'Redirect', 'options' => array(
-				//	array('redirect:404', false, '404'),
-				//	array('redirect:/about/me/', false, '/about/me/'),
-				//)),
-			), array('class' => 'filtered')));
-
-			$group->appendChild($label);
-			$li->appendChild($group);
-			$ol->appendChild($li);
-
-			$conditionals_container->appendChild($ol);
-			$fieldset->appendChild($conditionals_container);
-
-			$layout->appendToColumn(2, $fieldset);
+			
+			$container->appendChild($templates);
+			$container->appendChild($instances);
+			$fieldset->appendChild($container);
+			$right->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
@@ -220,22 +158,7 @@
 			$p->setAttribute('class', 'help');
 			$fieldset->appendChild($p);
 		*/
-			// Can redirect on empty:
-			$fieldset->appendChild(Widget::Input('fields[redirect-404-on-empty]', 'no', 'hidden'));
-
-			$label = Widget::Label();
-			$input = Widget::Input('fields[redirect-404-on-empty]', 'yes', 'checkbox');
-
-			if ($datasource->parameters()->{'redirect-404-on-empty'} == true) {
-				$input->setAttribute('checked', 'checked');
-			}
-
-			$label->appendChild($input);
-			$label->setValue(__('Redirect to 404 page when no results are found'));
-			$fieldset->appendChild($label);
-
-			$layout->appendToColumn(2, $fieldset);
-
+			$right->appendChild($fieldset);
 
 		//	Sorting -----------------------------------------------------------
 
@@ -259,34 +182,54 @@
 			$group->appendChild($label);
 
 			$fieldset->appendChild($group);
-			$layout->appendToColumn(2, $fieldset);
+			$left->appendChild($fieldset);
 
 		//	Limiting ----------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Limiting'), '<code>{$param}</code> or <code>Value</code>');
-
-			$label = Widget::Label();
-			$input = Widget::Input('fields[limit]', $datasource->parameters()->limit, NULL, array('size' => '6'));
-			$label->setValue(__('Show a maximum of %s results', array((string)$input)));
-
-			if (isset($errors->limit)) {
-				$label = Widget::wrapFormElementWithError($label, $errors->limit);
-			}
-
-			$fieldset->appendChild($label);
-
-			$label = Widget::Label();
-			$input = Widget::Input('fields[page]', $datasource->parameters()->page, NULL, array('size' => '6'));
-
-			$label->setValue(__('Show page %s of results', array((string)$input)));
+			
+			$group = $page->createElement('div');
+			$group->setAttribute('class', 'group');
+			
+			// Show page # of results:
+			$label = Widget::Label(__('Show page of results'));
+			$input = Widget::Input('fields[page]', $datasource->parameters()->page);
+			
+			$label->appendChild($input);
 
 			if (isset($errors->page)) {
 				$label = Widget::wrapFormElementWithError($label, $errors->page);
 			}
+			
+			$group->appendChild($label);
+			
+			// Show a maximum of # results
+			$label = Widget::Label(__('Limit results per page'));
+			$input = Widget::Input('fields[limit]', $datasource->parameters()->page);
+			
+			$label->appendChild($input);
 
+			if (isset($errors->limit)) {
+				$label = Widget::wrapFormElementWithError($label, $errors->limit);
+			}
+			
+			$group->appendChild($label);
+			
+			$fieldset->appendChild($group);
+			
+			// Can redirect on empty:
+			$fieldset->appendChild(Widget::Input('fields[redirect-404-on-empty]', 'no', 'hidden'));
+
+			$label = Widget::Label(__('Redirect to 404 page when no results are found'));
+			$input = Widget::Input('fields[redirect-404-on-empty]', 'yes', 'checkbox');
+
+			if ($datasource->parameters()->{'redirect-404-on-empty'} == true) {
+				$input->setAttribute('checked', 'checked');
+			}
+
+			$label->prependChild($input);
 			$fieldset->appendChild($label);
-
-			$layout->appendToColumn(3, $fieldset);
+			$left->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 
@@ -300,43 +243,41 @@
 
 			$fieldset->appendChild(Widget::Input('fields[append-pagination]', 'no', 'hidden'));
 
-			$label = Widget::Label();
+			$label = Widget::Label(__('Append pagination data'));
 			$input = Widget::Input('fields[append-pagination]', 'yes', 'checkbox');
 
 			if ($datasource->parameters()->{'append-pagination'} == true) {
 				$input->setAttribute('checked', 'checked');
 			}
 
-			$label->appendChild($input);
-			$label->setValue(__('Append pagination data'));
+			$label->prependChild($input);
 			$fieldset->appendChild($label);
 
 			$fieldset->appendChild(Widget::Input('fields[append-associated-entry-count]', 'no', 'hidden'));
 
-			$label = Widget::Label();
+			$label = Widget::Label(__('Append entry count'));
 			$input = Widget::Input('fields[append-associated-entry-count]', 'yes', 'checkbox');
 
 			if ($datasource->parameters()->{'append-associated-entry-count'} == true) {
 				$input->setAttribute('checked', 'checked');
 			}
 
-			$label->appendChild($input);
-			$label->setValue(__('Append entry count'));
+			$label->prependChild($input);
 			$fieldset->appendChild($label);
 
-			$label = Widget::Label();
+			$label = Widget::Label(__('HTML-encode text'));
 			$input = Widget::Input('fields[html-encode]', 'yes', 'checkbox');
 
 			if ($datasource->parameters()->{'html-encode'} == true) {
 				$input->setAttribute('checked', 'checked');
 			}
 
-			$label->appendChild($input);
-			$label->setValue(__('HTML-encode text'));
+			$label->prependChild($input);
 			$fieldset->appendChild($label);
 
-			$layout->appendToColumn(3, $fieldset);
-			$wrapper->appendChild($layout->generate());
+			$left->appendChild($fieldset);
+			
+			$layout->appendTo($wrapper);
 
 		//	Build contexts ----------------------------------------------------
 
@@ -347,32 +288,39 @@
 
 				// Filters:
 				$context = $page->createElement('div');
-				$context->setAttribute('class', 'context context-' . $section_handle);
+				$context->setAttribute('class', 'filters-duplicator context context-' . $section_handle);
 
-				$ol =$page->createElement('ol');
-				$ol->setAttribute('class', 'filters-duplicator');
+				$templates = $page->createElement('ol');
+				$templates->setAttribute('class', 'templates');
+
+				$instances = $page->createElement('ol');
+				$instances->setAttribute('class', 'instances');
 
 				if (isset($filter_data['id'])) {
 					$li = $page->createElement('li');
-					$li->setAttribute('class', 'unique');
-					$li->appendChild($page->createElement('h4', __('System ID')));
+					
+					$name = $page->createElement('span', __('System ID'));
+					$name->setAttribute('class', 'name');
+					$li->appendChild($name);
 
 					$label = Widget::Label(__('Value'));
 					$label->appendChild(Widget::Input(
 						"fields[filter][id]", General::sanitize($filter_data['id'])
 					));
 					$li->appendChild($label);
-					$ol->appendChild($li);
+					$templates->appendChild($li);
 				}
 
 				$li = $page->createElement('li');
-				$li->setAttribute('class', 'unique template');
-				$li->appendChild($page->createElement('h4', __('System ID')));
-
+				
+				$name = $page->createElement('span', __('System ID'));
+				$name->setAttribute('class', 'name');
+				$li->appendChild($name);
+				
 				$label = Widget::Label(__('Value'));
 				$label->appendChild(Widget::Input('fields[filter][id]'));
 				$li->appendChild($label);
-				$ol->appendChild($li);
+				$templates->appendChild($li);
 
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
 					foreach ($section_data['fields'] as $input) {
@@ -383,22 +331,21 @@
 
 						if (isset($filter_data[$element_name])) {
 							$filter = $page->createElement('li');
-							$filter->setAttribute('class', 'unique');
 							$input->displayDatasourceFilterPanel(
 								$filter, $filter_data[$element_name],
 								$errors->$element_name//, $section->get('id')
 							);
-							$ol->appendChild($filter);
+							$instances->appendChild($filter);
 						}
 
 						$filter = $page->createElement('li');
-						$filter->setAttribute('class', 'unique template');
 						$input->displayDatasourceFilterPanel($filter, null, null); //, $section->get('id'));
-						$ol->appendChild($filter);
+						$templates->appendChild($filter);
 					}
 				}
 
-				$context->appendChild($ol);
+				$context->appendChild($templates);
+				$context->appendChild($instances);
 				$container_filter_results->appendChild($context);
 
 				// Select boxes:
@@ -483,7 +430,10 @@
 				$select->setAttribute('multiple', 'multiple');
 
 				$label->appendChild($select);
-				$container_parameter_output->appendChild($label);
+				
+				$container_parameter_output->parentNode->insertBefore(
+					$label, $container_parameter_output
+				);
 
 				$label = Widget::Label(__('Included XML Elements'));
 				$label->setAttribute('class', 'context context-' . $section_handle);
@@ -493,9 +443,58 @@
 				$select->setAttribute('multiple', 'multiple');
 
 				$label->appendChild($select);
-				$container_xml_output->appendChild($label);
-
+				
+				$container_xml_output->parentNode->insertBefore(
+					$label, $container_xml_output
+				);
 			}
+			
+			// Cleanup placeholders:
+			$container_parameter_output->remove();
+			$container_xml_output->remove();
+		}
+		
+		protected function appendCondition(SymphonyDOMElement $wrapper, $condition = array()) {
+			$document = $wrapper->ownerDocument;
+			
+			$li = $document->createElement('li');
+			
+			$name = $document->createElement('span', __('When'));
+			$name->setAttribute('class', 'name');
+			$li->appendChild($name);
+			
+			$group = $document->createElement('div');
+			$group->setAttribute('class', 'group triple');
+			
+			// Parameter
+			$label = $document->createElement('label', 'Parameter');
+			$label->appendChild(Widget::input('fields[conditions][parameter][]', $condition['parameter']));
+			$group->appendChild($label);
+			
+			// Logic
+			$label = $document->createElement('label', 'Logic');
+			$label->appendChild(Widget::select('fields[conditions][logic][]', array(
+				array('set', ($condition['logic'] == 'set'), 'is set'),
+				array('not-set', ($condition['logic'] == 'not-set'), 'is not set'),
+			), array('class' => 'filtered')));
+			$group->appendChild($label);
+			
+			// Action
+			$label = $document->createElement('label', 'Action');
+			$label->appendChild(Widget::select('fields[conditions][action][]', array(
+				//array('label' => 'Execution', 'options' => array(
+					array('execute', ($condition['action'] == 'execute'), 'Execute'),
+					array('do-not-execute', ($condition['action'] == 'do-not-execute'), 'Do not Execute'),
+				//)),
+				//array('label' => 'Redirect', 'options' => array(
+				//	array('redirect:404', false, '404'),
+				//	array('redirect:/about/me/', false, '/about/me/'),
+				//)),
+			), array('class' => 'filtered')));
+			
+			$group->appendChild($label);
+			$li->appendChild($group);
+			$wrapper->appendChild($li);
 		}
 	}
 

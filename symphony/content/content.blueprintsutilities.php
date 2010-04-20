@@ -85,7 +85,9 @@
 
 		public function __viewEdit() {
 
-			$layout = new Layout(Layout::MEDIUM, Layout::SMALL);
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 			
 			$this->_existing_file = (isset($this->_context[1]) ? $this->_context[1] . '.xsl' : NULL);
 
@@ -169,7 +171,7 @@
 
 			$fieldset->appendChild((isset($this->_errors['body']) ? Widget::wrapFormElementWithError($label, $this->_errors['body']) : $label));
 
-			$layout->appendToColumn(1, $fieldset);
+			$left->appendChild($fieldset);
 
 			$utilities = General::listStructure(UTILITIES, array('xsl'), false, 'asc', UTILITIES);
 			$utilities = $utilities['filelist'];
@@ -195,10 +197,10 @@
 
 				$fieldset->appendChild($ul);
 
-				$layout->appendToColumn(2, $fieldset);
+				$right->appendChild($fieldset);
 			}
-
-			$this->Form->appendChild($layout->generate());
+			
+			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');

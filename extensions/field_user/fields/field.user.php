@@ -7,7 +7,7 @@
 		}
 
 		public function canToggle(){
-			return ($this->properties()->{'allow-multiple-selection'} == 'yes' ? false : true);
+			return ($this->properties()->allow_multiple_selection == 'yes' ? false : true);
 		}
 
 		public function allowDatasourceOutputGrouping(){
@@ -52,7 +52,7 @@
 
 			$callback = Administration::instance()->getPageCallback();
 
-			if ($this->properties()->{'default-to_current_user'} == 'yes' && empty($data) && empty($_POST)) {
+			if ($this->properties()->default_to_current_user == 'yes' && empty($data) && empty($_POST)) {
 				$value = array(Administration::instance()->User->id);
 			}
 
@@ -68,20 +68,20 @@
 				$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
 			}
 
-			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
-			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
+			$fieldname = 'fields['.$this->properties()->element_name.']';
+			if($this->properties()->allow_multiple_selection == 'yes') $fieldname .= '[]';
 
 			$attr = array();
 
-			if($this->properties()->{'allow-multiple-selection'} == 'yes') $attr['multiple'] = 'multiple';
+			if($this->properties()->allow_multiple_selection == 'yes') $attr['multiple'] = 'multiple';
 
-			$label = Widget::Label($this->properties()->{'label'});
+			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(Widget::Select($fieldname, $options, $attr));
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
 		}
 
-		public function prepareTableValue($data, SymphonyDOMElement $link=NULL){
+		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
 
 			if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
 
@@ -120,7 +120,7 @@
 		}
 
 		public function isSortable(){
-			return ($this->properties()->{'allow-multiple-selection'} == 'yes' ? false : true);
+			return ($this->properties()->allow_multiple_selection == 'yes' ? false : true);
 		}
 
 		public function canFilter(){
@@ -132,12 +132,12 @@
 		}
 
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`user_id` $order");
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->properties()->id;
 
 			if (self::isFilterRegex($data[0])) {
 				self::$key++;
@@ -191,15 +191,15 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->properties()->id;
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'allow_multiple_selection' => ($this->properties()->{'allow-multiple-selection'} ? $this->properties()->{'allow-multiple-selection'} : 'no'),
-				'default_to_current_user' => ($this->properties()->{'default-to_current_user'} ? $this->properties()->{'default-to_current_user'} : 'no')
+				'allow_multiple_selection' => ($this->properties()->allow_multiple_selection ? $this->properties()->allow_multiple_selection : 'no'),
+				'default_to_current_user' => ($this->properties()->default_to_current_user ? $this->properties()->default_to_current_user : 'no')
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -211,7 +211,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 	        if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
 
-	        $list = Symphony::Parent()->Page->createElement($this->properties()->{'element-name'});
+	        $list = Symphony::Parent()->Page->createElement($this->properties()->element_name);
 	        foreach($data['user_id'] as $user_id){
 	            $user = new User($user_id);
 	            $list->appendChild(
@@ -268,8 +268,8 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `user_id` (`user_id`)
 					)',
-					$this->properties()->{'section'},
-					$this->properties()->{'element-name'}
+					$this->properties()->section,
+					$this->properties()->element_name
 				)
 			);
 		}
@@ -284,14 +284,14 @@
 				$options[] = array($u->id, NULL, $u->getFullName());
 			}
 
-			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
-			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
+			$fieldname = 'fields['.$this->properties()->element_name.']';
+			if($this->properties()->allow_multiple_selection == 'yes') $fieldname .= '[]';
 
 			$attr = array();
 
-			if($this->properties()->{'allow-multiple-selection'} == 'yes') $attr['multiple'] = 'multiple';
+			if($this->properties()->allow_multiple_selection == 'yes') $attr['multiple'] = 'multiple';
 
-			$label = Widget::Label($this->properties()->{'label'});
+			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(Widget::Select($fieldname, $options, $attr));
 
 			return $label;

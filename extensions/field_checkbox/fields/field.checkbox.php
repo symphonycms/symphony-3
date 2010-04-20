@@ -146,7 +146,7 @@
 			$wrapper->appendChild($label);
 		}
 
-		function prepareTableValue($data, SymphonyDOMElement $link=NULL){
+		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
 			return ($data['value'] == 'yes' ? __('Yes') : __('No'));
 		}
 

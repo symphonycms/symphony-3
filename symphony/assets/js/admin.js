@@ -423,11 +423,11 @@ var Symphony;
 		//console.log(fields[0].collapsible.collapseAll());
 
 		// Filters duplicator:
-		$('.filters-duplicator, .events-duplicator').symphonyDuplicator();
+		//$('.filters-duplicator, .events-duplicator').symphonyDuplicator();
 
-		$('.events-duplicator').each(function() {
+		//$('.events-duplicator').each(function() {
 
-		});
+		//});
 
 		// Repeating sections
 		$('div.subsection').each(function() {

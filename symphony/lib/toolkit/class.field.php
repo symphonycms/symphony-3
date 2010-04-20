@@ -1,5 +1,7 @@
 <?php
-
+	
+	require_once(TOOLKIT . '/class.textformatter.php');
+	
 	Class FieldException extends Exception {}
 
 	Class FieldFilterIterator extends FilterIterator{
@@ -73,22 +75,22 @@
 		protected $_showcolumn;
 		
 		// Status codes
-		const STATUS_OK = 100;
-		const STATUS_ERROR = 150;
+		const STATUS_OK = 'ok';
+		const STATUS_ERROR = 'error';
 		
 		// Error codes
-		const ERROR_MISSING_FIELDS = 200;
-		const ERROR_INVALID_FIELDS = 220;
-		const ERROR_DUPLICATE = 300;
-		const ERROR_CUSTOM = 400;
-		const ERROR_INVALID_QNAME = 500;
+		const ERROR_MISSING = 'missing';
+		const ERROR_INVALID = 'invalid';
+		const ERROR_DUPLICATE = 'duplicate';
+		const ERROR_CUSTOM = 'custom';
+		const ERROR_INVALID_QNAME = 'invalid qname';
 		
 		// Filtering Flags
-		const FLAG_TOGGLEABLE = 600;
-		const FLAG_UNTOGGLEABLE = 700;
-		const FLAG_FILTERABLE = 800;
-		const FLAG_UNFILTERABLE = 900;
-		const FLAG_ALL = 1000;
+		const FLAG_TOGGLEABLE = 'toggeable';
+		const FLAG_UNTOGGLEABLE = 'untoggleable';
+		const FLAG_FILTERABLE = 'filterable';
+		const FLAG_UNFILTERABLE = 'unfilterable';
+		const FLAG_ALL = 'all';
 		
 		// Abstract functions
 		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL);
@@ -426,16 +428,22 @@
 
 			return true;
 		}
-
-		public function checkPostFieldData($data, &$message, $entry_id=NULL){
-			$message = NULL;
-
-			if ($this->properties()->required == 'yes' && strlen($data) == 0){
-				$message = __("'%s' is a required field.", array($this->properties()->label));
-
-				return self::ERROR_MISSING_FIELDS;
+		
+		// TO DO: Support an array of data objects. This is important for 
+		// fields like Select box or anything that allows mutliple values		
+		 public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){}
+		
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
+			if ($this->properties()->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
+				$errors->append(
+					$this->properties()->{'element_name'}, 
+					array(
+					 	'message' => __("'%s' is a required field.", array($this->properties()->label)),
+						'code' => self::ERROR_MISSING
+					)
+				);
+				return self::STATUS_ERROR;
 			}
-
 			return self::STATUS_OK;
 		}
 
@@ -457,19 +465,18 @@
 			);
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL) {
+		public function prepareTableValue(StdClass $data, DOMElement $link=NULL) {
 			$max_length = Symphony::Configuration()->get('cell-truncation-length', 'symphony');
 			$max_length = ($max_length ? $max_length : 75);
 
-			$value = strip_tags($data['value']);
+			$value = strip_tags($data->value);
 			$value = (strlen($value) <= $max_length ? $value : substr($value, 0, $max_length) . '...');
 
 			if (strlen($value) == 0) $value = __('None');
 
 			if (!is_null($link)) {
 				$link->setValue($value);
-
-				return $link->generate();
+				return $link;
 			}
 
 			return $value;
@@ -497,13 +504,13 @@
 		}
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+			$document = $wrapper->ownerDocument;
+			
+			$name = $document->createElement('span', $this->properties()->label);
+			$name->setAttribute('class', 'name');
+			$name->appendChild($document->createElement('i', $this->name()));
+			$wrapper->appendChild($name);
 
-			$h4 = Symphony::Parent()->Page->createElement('h4', $this->properties()->label);
-			$h4->appendChild(
-				Symphony::Parent()->Page->createElement('i', $this->Name())
-			);
-
-			$wrapper->appendChild($h4);
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
 				'fields[filter]'
@@ -513,10 +520,6 @@
 				(!is_null($data) ? General::sanitize($data) : NULL)
 			));
 			$wrapper->appendChild($label);
-		}
-
-		public function displayImportPanel(SymphonyDOMElement &$wrapper, $data = null, $errors = null) {
-			$this->displayDatasourceFilterPanel($wrapper, $data, $errors);
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors=NULL){

@@ -385,24 +385,43 @@
 		Input:
 	-------------------------------------------------------------------------*/
 		
-		public function applyFormatting($data) {
-			if ($this->properties()->{'text-formatter'} != 'none') {
-				if (isset($this->_ParentCatalogue['entrymanager'])) {
-					$tfm = $this->_ParentCatalogue['entrymanager']->formatterManager;
-				}
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
+			$data->entry_id = $entry->id;
+			if(!isset($data->id)) $data->id = NULL;
+			
+			$data->value_formatted = $this->applyFormatting($data->value);
+			
+			try{
+				Symphony::Database()->insert(
+					sprintf('tbl_data_%s_%s', $entry->section, $this->properties()->{'element_name'}),
+					(array)$data,
+					Database::UPDATE_ON_DUPLICATE
+				);
+			}
+			catch(DatabaseException $e){
 				
-				else {
-					$tfm = new TextformatterManager($this->_engine);
-				}
+			}
+			catch(Exception $e){
 				
-				$formatter = $tfm->create($this->properties()->{'text-formatter'});
-				$formatted = $formatter->run($data);
-			 	$formatted = preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $formatted);
-			 	
-			 	return $formatted;
+			}
+		}
+		
+		public function applyFormatting($value) {
+			if (isset($this->properties()->{'text-formatter'}) && $this->properties()->{'text-formatter'} != TextFormatter::NONE) {
+				
+				try{
+					$formatter = TextFormatter::loadFromHandle($this->properties()->{'text-formatter'});
+					$result = $formatter->run($value);
+					$result = preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $result);
+					return $result;
+				}
+				catch(Exception $e){
+					// Problem loading the formatter
+					// TO DO: Decide is we should be handling this better.
+				}
 			}
 			
-			return General::sanitize($data);	
+			return General::sanitize($value);
 		}
 		
 		public function applyValidationRules($data) {			
@@ -524,13 +543,13 @@
 			));
 		}
 		
-		public function prepareTableValue($data, XMLElement $link = null) {
-			if (empty($data) or strlen(trim($data['value'])) == 0) return;
+		public function prepareTableValue(StdClass $data, DOMElement $link = null) {
+			if (empty($data) or strlen(trim($data->value)) == 0) return;
 			
 			$max_length = (integer)$this->properties()->{'column-length'};
 			$max_length = ($max_length ? $max_length : 75);
 			
-			$value = strip_tags($data['value']);
+			$value = strip_tags($data->value);
 			
 			if ($max_length < strlen($value)) {
 				$lines = explode("\n", wordwrap($value, $max_length - 1, "\n"));
@@ -545,10 +564,9 @@
 				$value = wordwrap($value, 75, '<br />');
 			}
 			
-			if ($link) {
+			if(!is_null($link)) {
 				$link->setValue($value);
-				
-				return $link->generate();
+				return $link;
 			}
 			
 			return $value;
@@ -562,18 +580,17 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 		
-		public function displayDatasourceFilterPanel(&$wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
-			$this->_driver->addFilteringHeaders($this->_engine->Page);
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
+			//$this->_driver->addFilteringHeaders($this->_engine->Page);
 			$field_id = $this->properties()->{'id'};
+			$document = $wrapper->ownerDocument;
 			
-			$wrapper->appendChild(new XMLElement(
-				'h4', sprintf(
-					__('%s <i>%s</i>'),
-					$this->properties()->{'label'},
-					$this->name()
-				)
-			));
-			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-textbox');
+			$wrapper->setAttribute('class', trim($wrapper->getAttribute('class') . ' field-textbox'));
+			
+			$name = $document->createElement('span', $this->properties()->label);
+			$name->setAttribute('class', 'name');
+			$name->appendChild($document->createElement('i', $this->name()));
+			$wrapper->appendChild($name);
 			
 			$prefix = ($prefix ? "[{$prefix}]" : '');
 			$postfix = ($postfix ? "[{$postfix}]" : '');
@@ -585,6 +602,7 @@
 			));	
 			$wrapper->appendChild($label);
 			
+			/*
 			$filters = array(
 				array(
 					'name'				=> 'boolean',
@@ -661,6 +679,7 @@
 			
 			$wrapper->appendChild($list);
 			$wrapper->appendChild($help);
+			*/
 		}
 		
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
@@ -832,4 +851,3 @@
 	
 	return 'FieldTextBox';
 	
-?>

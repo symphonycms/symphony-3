@@ -7,8 +7,14 @@
 		border: 1px solid #bbbbbb;
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
-		margin: 20px 0;
+		margin: 10px 0;
 		position: relative;
+	}
+	.duplicator-widget:first-child {
+		margin-top: 0;
+	}
+	.duplicator-widget:last-child {
+		margin-bottom: 0;
 	}
 	
 	.duplicator-widget > .content {
@@ -50,6 +56,10 @@
 		text-indent: 20px;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+	.duplicator-widget > .content > .tabs > * i {
+		margin: 0 0 0 1ex;
+		opacity: 0.5;
 	}
 	.duplicator-widget > .content > .tabs > :first-child {
 		border-top: 1px solid hsla(0, 0%, 0%, 0.1);
@@ -197,9 +207,9 @@
 			float: left;
 			margin: 5px;
 			padding: 4px;
-			width: 120px;
+			width: 240px;
 		}
-		.duplicator-widget > .templates > li > fieldset {
+		.duplicator-widget > .templates > li > * {
 			display: none;
 		}
 		.duplicator-widget > .templates > li:hover {
@@ -233,14 +243,11 @@
 			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
 			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
 		}
+		.duplicator-widget > .templates > li > .name i {
+			float: right;
+			opacity: 0.5;
+		}
 		
 	/* @end */
-	
-	.options-list {
-		-moz-column-count: 3;
-		-moz-column-width: 200px;
-		-moz-column-gap: 40px;
-		-moz-column-rule: 1px dotted hsla(0, 0%, 0%, 0.2);
-	}
 	
 /*---------------------------------------------------------------------------*/
