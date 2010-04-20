@@ -79,6 +79,25 @@
 			return Symphony::Database()->query("SELECT * FROM `tbl_entries` WHERE `id` = {$id} LIMIT 1", array(), 'EntryResult')->current();
 		}
 		
+		public function setFieldDataFromFormArray(array $data){
+			// Load the section
+			try{
+				$section = Section::loadFromHandle($this->section);
+			}
+			catch(SectionException $e){
+				throw new EntryException('Section specified, "'.$this->section.'", in Entry object is invalid.');
+			}
+			catch(Exception $e){
+				throw new EntryException('The following error occurred during saving: ' . $e->getMessage());
+			}
+			
+			foreach($section->fields as $field){
+				$field_handle = $field->properties()->{'element-name'};
+				if(!isset($data[$field_handle])) continue;
+				$this->data()->$field_handle = $field->processFormData($data[$field_handle]);
+			}
+		}
+		
 		public static function save(self $entry, MessageStack &$errors){
 			
 			if(!isset($entry->section) || strlen(trim($entry->section)) == 0){

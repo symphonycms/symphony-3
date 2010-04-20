@@ -429,6 +429,10 @@
 			return true;
 		}
 		
+		public function processFormData($data){
+			return (object)array('value' => $data);
+		}
+		
 		// TO DO: Support an array of data objects. This is important for 
 		// fields like Select box or anything that allows mutliple values
 		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
