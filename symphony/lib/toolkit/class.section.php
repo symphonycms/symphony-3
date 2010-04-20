@@ -168,7 +168,7 @@
 				$field->setFromPOST($data);
 			}
 
-			$this->fields[] = $field;
+			$this->fields[$field->properties()->{'element-name'}] = $field;
 			
 			return $field;
 		}
@@ -226,28 +226,33 @@
 
 					}
 				}
-
-				elseif($name == 'layout' && isset($value->fieldset)){
-					$section->layout = (object)array(
-						'fieldsets' => array()
-					);
-
-					foreach($value->fieldset as $fieldset){
-						$array = (object)array(
-							'label' => (string)$fieldset->label,
-							'rows' => array()
+				
+				elseif($name == 'layout' && isset($value->column)){
+					$data = array();
+					
+					foreach ($value->column as $column) {
+						$data_column = (object)array(
+							'size'		=> (string)$column->size,
+							'fieldsets'	=> array()
 						);
-
-						foreach($fieldset->row as $row){
-							$new_row = array();
-							foreach($row->fields->item as $field){
-								$new_row[] = (string)$field;
+						
+						foreach ($column->fieldset as $fieldset) {
+							$data_fieldset = (object)array(
+								'name'		=> $fieldset->name,
+								'fields'	=> array()
+							);
+							
+							foreach ($fieldset->field as $field) {
+								$data_fieldset->fields[] = (string)$field;
 							}
-							$array->rows[] = $new_row;
+							
+							$data_column->fieldsets[] = $data_fieldset;
 						}
-
-						$section->layout->fieldsets[] = $array;
+						
+						$data[] = $data_column;
 					}
+					
+					$section->layout = $data;
 				}
 
 				elseif(isset($value->item)){
@@ -396,7 +401,8 @@
 
 			$root->appendChild($name);
 			$root->appendChild($doc->createElement('hidden-from-publish-menu', (
-				isset($this->{'hidden-from-publish-menu'}) && strtolower(trim($this->{'hidden-from-publish-menu'})) == 'yes'
+				isset($this->{'hidden-from-publish-menu'})
+				&& strtolower(trim($this->{'hidden-from-publish-menu'})) == 'yes'
 					? 'yes'
 					: 'no'
 			)));

@@ -290,7 +290,7 @@
 		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, $entry_id=NULL) {
 			$wrapper->appendChild(
 				Symphony::Parent()->Page->createElement(
-					$this->properties()->element_name,
+					$this->properties()->{'element-name'},
 					($encode ? General::sanitize($this->prepareTableValue($data)) : $this->prepareTableValue($data))
 				)
 			);
@@ -305,8 +305,8 @@
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates = true) {
-			$parent_section = $this->properties()->parent_section;
-			$element_name = $this->properties()->element_name;
+			$parent_section = $this->properties()->{'parent-section'};
+			$element_name = $this->properties()->{'element-name'};
 
 			//echo $this->properties()->id, ': ', $this->properties()->required, '<br />';
 
@@ -316,10 +316,10 @@
 				$errors['label'] = __('This is a required field.');
 			}
 
-			if ($this->properties()->element_name == '') {
+			if ($this->properties()->{'element-name'} == '') {
 				$errors['element_name'] = __('This is a required field.');
 
-			} elseif (!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->properties()->element_name)) {
+			} elseif (!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->properties()->{'element-name'})) {
 				$errors['element_name'] = __('Invalid element name. Must be valid QName.');
 
 			} elseif($checkForDuplicates) {
@@ -477,13 +477,13 @@
 
 		public function getExampleFormMarkup(){
 			$label = Widget::Label($this->properties()->label);
-			$label->appendChild(Widget::Input('fields['.$this->properties()->element_name.']'));
+			$label->appendChild(Widget::Input('fields['.$this->properties()->{'element-name'}.']'));
 
 			return $label;
 		}
 
 		public function fetchIncludableElements(){
-			return array($this->properties()->element_name);
+			return array($this->properties()->{'element-name'});
 		}
 
 		public function fetchAssociatedEntrySearchValue($data, $field_id=NULL, $parent_entry_id=NULL){
@@ -508,7 +508,7 @@
 			$label->appendChild(Widget::Input(
 				'fields[filter]'
 				//. (!is_null($fieldnamePrefix) ? "[{$fieldnamePrefix}]" : NULL)
-				. '[' . $this->properties()->element_name . ']',
+				. '[' . $this->properties()->{'element-name'} . ']',
 				//. (!is_null($fieldnamePostfix) ? "[{$fieldnamePostfix}]" : NULL),
 				(!is_null($data) ? General::sanitize($data) : NULL)
 			));
@@ -576,7 +576,7 @@
 			$label->setAttribute('class', 'meta');
 			$input = Widget::Input('show_column', 'yes', 'checkbox');
 
-			if ($this->properties()->show_column == 'yes') $input->setAttribute('checked', 'checked');
+			if ($this->properties()->{'show-column'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->prependChild($input);
 			$item->appendChild($label);
@@ -642,10 +642,10 @@
 			if(is_numeric($fields['element_name']{0})) $fields['element_name'] = 'field-' . $fields['element_name'];
 
 			$fields['label'] = $this->properties()->label;
-			$fields['parent_section'] = $this->properties()->parent_section;
+			$fields['parent_section'] = $this->properties()->{'parent-section'};
 			$fields['required'] = $this->properties()->required;
 			$fields['type'] = $this->_handle;
-			$fields['show_column'] = $this->properties()->show_column;
+			$fields['show_column'] = $this->properties()->{'show-column'};
 			$fields['sortorder'] = (string)$this->properties()->sortorder;
 
 			if($id = $this->properties()->id){
@@ -674,7 +674,7 @@
 					KEY `value` (`value`)
 					)',
 					$this->properties()->section,
-					$this->properties()->element_name
+					$this->properties()->{'element-name'}
 				)
 			);
 		}

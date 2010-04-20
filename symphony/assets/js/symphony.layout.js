@@ -8,11 +8,7 @@
 	/*-----------------------------------------------------------------------*/
 		
 		objects = objects.map(function() {
-			var object = this;
-			
-			if (object instanceof jQuery === false) {
-				object = jQuery(object);
-			}
+			var object = jQuery(this).addClass('layout-widget');
 			
 			var get_columns = function(filter) {
 				var data = object.find('> .columns > *');
@@ -209,7 +205,6 @@
 				
 				fieldset.find('.fields').sortable({
 					connectWith:	'.fields',
-					containment:	columns,
 					cursorAt:		{ top: 15, left: 30 },
 					distance:		10,
 					items:			'li',
@@ -244,6 +239,10 @@
 			object.find('*').live('fieldset-remove', function() {
 				var fieldset = jQuery(this);
 				var siblings = fieldset.siblings('fieldset');
+				
+				// Move fields back to templates:
+				fieldset.find('ol.fields > li')
+					.appendTo(object.find('> .templates'));
 				
 				if (siblings.length) {
 					fieldset.remove();
@@ -323,9 +322,11 @@
 			object.find('*').live('fieldset-menu-hide', function() {
 				var fieldset = jQuery(this);
 				var menu = object.find('> .menu');
-				var templates = menu.find('ol:first > li');
 				
-				templates.appendTo(object.find('> .templates'));
+				if (menu.find('ol').length == 2) {
+					menu.find('ol:first > li')
+						.appendTo(object.find('> .templates'));
+				}
 				
 				menu.remove();
 			});
@@ -423,10 +424,6 @@
 			});
 		});
 	};
-	
-	jQuery(document).ready(function() {
-		jQuery('.layout-widget').symphonyLayout();
-	});
 	
 /*---------------------------------------------------------------------------*/
 /**

@@ -16,16 +16,12 @@
 		margin-bottom: 0;
 	}
 	.layout-widget .size-small {
-		-moz-box-flex: 1;
-		-webkit-box-flex: 1;
-	}
-	.layout-widget .size-medium {
-		-moz-box-flex: 2;
-		-webkit-box-flex: 2;
+		-moz-box-flex: 1.33;
+		-webkit-box-flex: 1.33;
 	}
 	.layout-widget .size-large {
-		-moz-box-flex: 4;
-		-webkit-box-flex: 4;
+		-moz-box-flex: 3;
+		-webkit-box-flex: 3;
 	}
 	.layout-widget > .templates {
 		display: none;
@@ -126,6 +122,10 @@
 		.layout-widget > .menu ol li:hover {
 			background: hsla(0, 0%, 100%, 0.1);
 		}
+		.layout-widget > .menu ol li i {
+			margin: 0 0 0 1ex;
+			opacity: 0.5;
+		}
 		
 	/* @end */
 	
@@ -189,14 +189,19 @@
 		.layout-widget > .columns > li > fieldset > .fields {
 			list-style: none;
 			margin: -20px 0;
-			min-height: 47px;
+			min-height: 67px;
 			padding: 10px 0;
+		}
+		.layout-widget > .columns > li > fieldset > .fields > * > .name i {
+			margin: 0 0 0 1ex;
+			opacity: 0.5;
 		}
 		
 		.layout-widget > .columns > li > fieldset > .fields > .ui-sortable-helper {
 			-moz-box-shadow: 1px 1px 6px hsla(0, 0%, 0%, 0.2);
 			-webkit-box-shadow: 1px 1px 6px hsla(0, 0%, 0%, 0.2);
 			opacity: 0.9;
+			max-width: 300px;
 		}
 		.layout-widget > .columns > li > fieldset > .fields > .ui-sortable-highlight {
 			background: hsla(0, 0%, 0%, 0.1);

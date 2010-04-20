@@ -208,39 +208,110 @@ var Symphony;
 
 	jQuery(document).ready(function() {
 		var duplicator = jQuery('#section-duplicator');
+		var layout = jQuery('#section-layout');
 		
-		if (duplicator.length == 0) return;
+		if (duplicator.length == 0 && layout.length == 0) return;
 		
-		duplicator.symphonyFieldsDuplicator({
-			multiselect:	true,
-			orderable:		true
-		});
+		if (duplicator.length) {
+			duplicator.symphonyFieldsDuplicator({
+				multiselect:	true,
+				orderable:		true
+			});
 		
-		// Update input names before submit:
-		$('form').submit(function() {
-			var expression = /^fields\[[0-9]+\]\[(.*)]$/;
-			
-			duplicator.find('> .content > .instances > li').each(function(index) {
-				var instance = $(this);
+			// Update input names before submit:
+			$('form').submit(function() {
+				var expression = /^fields\[[0-9]+\]\[(.*)]$/;
 				
-				instance.find('[name]').each(function() {
-					var input = $(this);
-					var name = input.attr('name');
-					var match = null;
+				duplicator.find('> .content > .instances > li').each(function(index) {
+					var instance = $(this);
 					
-					// Extract name:
-					if (match = name.match(expression)) name = match[1];
+					instance.find('[name]').each(function() {
+						var input = $(this);
+						var name = input.attr('name');
+						var match = null;
+						
+						// Extract name:
+						if (match = name.match(expression)) name = match[1];
+						
+						input.attr(
+							'name',
+							'fields['
+							+ index
+							+ ']['
+							+ name
+							+ ']'
+						);
+					});
+				});
+			});
+		}
+		
+		if (layout.length) {
+			layout.symphonyLayout();
+		
+			// Update input names before submit:
+			$('form').submit(function() {
+				var expression = /^layout\[[0-9]+\]\[fieldsets\]\[[0-9]+\]\[fields\]\[(.*)]$/;
+				
+				layout.find('> .columns > .column').each(function(column) {
+					var input = $('<input />')
+						.attr('name', 'size')
+						.attr('type', 'hidden');
+					
+					input.val(this.className.match(/size-([a-z]+)/)[1]);
 					
 					input.attr(
 						'name',
-						'fields['
-						+ index
-						+ ']['
-						+ name
-						+ ']'
+						'layout['
+						+ column
+						+ '][size]'
 					);
+					
+					$(this).find('> input').remove();
+					$(this).append(input);
+					
+					$(this).find('> fieldset').each(function(fieldset) {
+						var input = $(this).find('> h3 > input');
+						
+						input.attr(
+							'name',
+							'layout['
+							+ column
+							+ '][fieldsets]['
+							+ fieldset
+							+ '][name]'
+						);
+						
+						$(this).find('> .fields > .field input').each(function(field) {
+							var input = $(this);
+							
+							input.attr(
+								'name',
+								'layout['
+								+ column
+								+ '][fieldsets]['
+								+ fieldset
+								+ '][fields]['
+								+ field
+								+ ']'
+							);
+						});
+					});
 				});
 			});
+		}
+		
+		// Save before changing tabs:
+		$('#tab a').bind('click', function() {
+			var link = $(this);
+			var index = link.parent().prevAll().length;
+			var form = $('form');
+			
+			//form.attr('action', form.attr('action') + '?redirect=' + index);
+			
+			//form.submit();
+			
+			//return false;
 		});
 	});
 
@@ -283,13 +354,6 @@ var Symphony;
 					}
 				}
 			}
-/*
-			else {
-				$('<span />')
-					.html('&#x21b5;')
-					.prependTo(cell);
-			}
-*/
 
 			cell.wrapInner('<div />');
 		});
