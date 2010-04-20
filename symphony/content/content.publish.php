@@ -86,14 +86,14 @@
 			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
 			$entry->id = 3;
-
+/*
 			$entry->data()->name = (object)array(
 				'handle' => 'an-entry',
 				'value' => 'An & Entry',
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
-/*
+
 			$entry->data()->date = (object)array(
 				'gmt' => strtotime(DateTimeObj::getGMT('c')),
 				'local' => strtotime(DateTimeObj::get('c')),
@@ -113,13 +113,13 @@
 				'entry_id' => $entry->id,
 				'user_id' => 1
 			);
-
+*/
 			$entry->data()->published = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
 				'value' => 'yes'
 			);
-
+/*
 			$entry->data()->{'tag-list'} = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,

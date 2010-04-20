@@ -14,6 +14,18 @@
 			return true;
 		}
 
+		function isSortable(){
+			return true;
+		}
+
+		function canFilter(){
+			return true;
+		}
+
+		public function canImport(){
+			return true;
+		}
+
 		function groupRecords($records){
 
 			if(!is_array($records) || empty($records)) return;
@@ -37,14 +49,6 @@
 			return $groups;
 		}
 
-		function canFilter(){
-			return true;
-		}
-
-		public function canImport(){
-			return true;
-		}
-
 		function getToggleStates(){
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
@@ -52,16 +56,6 @@
 		function toggleFieldData($data, $newState){
 			$data['value'] = $newState;
 			return $data;
-		}
-
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-
-			$status = self::STATUS_OK;
-
-			return array(
-				'value' => (strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no')
-			);
-
 		}
 
 		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
@@ -150,8 +144,26 @@
 			return ($data->value == 'yes' ? __('Yes') : __('No'));
 		}
 
-		function isSortable(){
-			return true;
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return self::STATUS_OK;
+		}
+
+		/*	Possibly could be removed.. */
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return parent::saveData($data, $errors, $entry);
+		}
+
+
+/*		Deprecated
+
+		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
+
+			$status = self::STATUS_OK;
+
+			return array(
+				'value' => (strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no')
+			);
+
 		}
 
 		function commit(){
@@ -175,15 +187,16 @@
 			return ($field_id == 0 || !$field_id) ? false : true;
 		}
 
-		function findDefaults(&$fields){
+*/
+		public function findDefaults(&$fields){
 			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
-			
+
 			$document = $wrapper->ownerDocument;
-			
+
 			// Long Description
 			$label = Widget::Label(__('Long Description'));
 			$label->appendChild($document->createElement('i', __('Optional')));
@@ -192,11 +205,11 @@
 
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-			
+
 			// Default State
 			$label = Widget::Label(__('Checked by default'));
 			$input = Widget::Input('default-state', 'on', 'checkbox');
-			
+
 			if ($this->{'default-state'} == 'on') {
 				$input->setAttribute('checked', 'checked');
 			}
@@ -231,7 +244,9 @@
 
 		public function getExampleFormMarkup(){
 			$label = Widget::Label($this->{'label'});
-			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']', NULL, 'checkbox', ($this->{'default-state'} == 'on' ? array('checked' => 'checked') : array())));
+			$label->appendChild(
+				Widget::Input('fields['.$this->{'element-name'}.']', NULL, 'checkbox', ($this->{'default-state'} == 'on' ? array('checked' => 'checked') : array()))
+			);
 
 			return $label;
 		}
