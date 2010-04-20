@@ -343,10 +343,8 @@
 			array_shift($context);
 			$view_pathname = implode('/', $context);
 			$view_options = array(
-				'subnav'	=> array(
-					__('Configuration')			=>	ADMIN_URL . '/blueprints/sections/edit/' . $view_pathname . '/',
-					__('Layout')				=>	ADMIN_URL . '/blueprints/sections/layout/' . $view_pathname . '/',
-				)
+				__('Configuration')			=>	ADMIN_URL . '/blueprints/sections/edit/' . $view_pathname . '/',
+				__('Layout')				=>	ADMIN_URL . '/blueprints/sections/layout/' . $view_pathname . '/',
 			);
 			
 			parent::appendViewOptions($view_options);
@@ -458,7 +456,7 @@
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
 			
-			//$this->appendViewOptions();
+			$this->appendViewOptions();
 			
 			$widget = $this->createElement('div');
 			$widget->setAttribute('id', 'section-layout');

@@ -217,14 +217,10 @@
 			));
 			$this->appendSubheading(__($filename ? $filename : __('Untitled')));
 
-			$viewoptions = array(
-				'subnav'	=> array(
-					__('Configuration')			=>	ADMIN_URL . '/blueprints/views/edit/' . $view_pathname . '/',
-					__('Template')				=>	Administration::instance()->getCurrentPageURL()
-				)
-			);
-
-			$this->appendViewOptions($viewoptions);
+			$this->appendViewOptions(array(
+				__('Configuration')			=>	ADMIN_URL . '/blueprints/views/edit/' . $view_pathname . '/',
+				__('Template')				=>	Administration::instance()->getCurrentPageURL()
+			));
 			
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::LARGE);
@@ -450,20 +446,19 @@
 				)
 			));
 
-			if($existing instanceof View){
+			if ($existing instanceof View) {
 				$template_name = $fields['handle'];
 				$this->appendSubheading(
 					__($title ? $title : __('Untitled'))
 				);
 				$viewoptions = array(
-					'subnav'	=> array(
-						__('Configuration')		=>	Administration::instance()->getCurrentPageURL(),
-						__('Template')			=>	sprintf('%s/blueprints/views/template/%s/', ADMIN_URL, $view_pathname)
-				)
-			);
-
-			$this->appendViewOptions($viewoptions);
+					__('Configuration')		=>	Administration::instance()->getCurrentPageURL(),
+					__('Template')			=>	sprintf('%s/blueprints/views/template/%s/', ADMIN_URL, $view_pathname)
+				);
+				
+				$this->appendViewOptions($viewoptions);
 			}
+			
 			else {
 				$this->appendSubheading(($title ? $title : __('Untitled')));
 			}

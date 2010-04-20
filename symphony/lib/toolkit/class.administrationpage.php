@@ -503,26 +503,22 @@
 		}
 
 		public function appendViewOptions(array $options) {
-			$div = $this->createElement('div', NULL, array('id' => 'tab'));
-
-			if(array_key_exists('subnav', $options)){
-				$ul = $this->createElement('ul');
-				foreach($options['subnav'] as $name => $link){
-					$li = $this->createElement('li');
-					$li->appendChild(
-						Widget::Anchor($name, $link, array(
-							'class' => (Administration::instance()->getCurrentPageURL() == $link ? 'active' : NULL)
-						))
-					);
-					$ul->appendChild($li);
-				}
-				$div->appendChild($ul);
+			$div = $this->createElement('div');
+			$div->setAttribute('id', 'tab');
+			$list = $this->createElement('ul');
+			
+			foreach ($options as $name => $link) {
+				$item = $this->createElement('li');
+				$item->appendChild(
+					Widget::Anchor($name, $link, array(
+						'class' => (Administration::instance()->getCurrentPageURL() == $link ? 'active' : null)
+					))
+				);
+				
+				$list->appendChild($item);
 			}
-
-			foreach($options as $item){
-				$div->setValue($item);
-			}
-
+			
+			$div->appendChild($list);
 			$this->Form->appendChild($div);
 		}
 

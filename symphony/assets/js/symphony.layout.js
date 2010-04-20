@@ -343,11 +343,6 @@
 						.text('×')
 						.appendTo(field);
 				}
-				
-				// Ignore mouse clicks:
-				field.bind('mousedown', function() {
-				//	return false;
-				});
 			});
 			
 			object.find('*').live('field-remove', function() {

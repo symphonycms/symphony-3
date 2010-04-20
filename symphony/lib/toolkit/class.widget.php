@@ -219,7 +219,8 @@
 		public static function Anchor($value, $href, array $attributes = array()){
 			if(!self::$Symphony) Widget::init();
 
-			$a = Widget::$Symphony->createElement('a', $value, $attributes);
+			$a = Widget::$Symphony->createElement('a', $value);
+			$a->setAttributeArray($attributes);
 			$a->setAttribute('href', $href);
 
 			return $a;
