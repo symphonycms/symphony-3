@@ -20,12 +20,16 @@
 					Widget::$Symphony->createElement('h3',$value)
 				);
 			}
+			
 			if(!is_null($help)){
-				$fieldset->appendChild(
-					Widget::$Symphony->createElement('p', $help, array(
-							'class' => 'help'
-					))
-				);
+				$para = Widget::$Symphony->createElement('p');
+				$para->setAttribute('class', 'help');
+				
+				$frag = Widget::$Symphony->createDocumentFragment();
+				$frag->appendXML($help);
+				
+				$para->appendChild($frag);
+				$fieldset->appendChild($para);
 			}
 
 			return $fieldset;

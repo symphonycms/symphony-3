@@ -567,12 +567,12 @@
 			$field_id = $this->properties()->{'id'};
 			$document = $wrapper->ownerDocument;
 			
-			$header = $document->createElement('h4', __($this->properties()->{'label'}));
-			$header->appendChild($document->createElement(
-				'i', $this->name()
-			));
-			$wrapper->appendChild($header);
-			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-textbox');
+			$wrapper->setAttribute('class', trim($wrapper->getAttribute('class') . ' field-textbox'));
+			
+			$name = $document->createElement('span', $this->properties()->label);
+			$name->setAttribute('class', 'name');
+			$name->appendChild($document->createElement('i', $this->name()));
+			$wrapper->appendChild($name);
 			
 			$prefix = ($prefix ? "[{$prefix}]" : '');
 			$postfix = ($postfix ? "[{$postfix}]" : '');

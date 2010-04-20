@@ -9,4 +9,16 @@ jQuery(document).ready(function() {
 	jQuery('form').bind('submit', function() {
 		jQuery('.context:not(:visible)').remove();
 	});
+	
+	// Conditions duplicator:
+	jQuery('.conditions-duplicator').symphonyDuplicator({
+		multiselect:	true,
+		orderable:		true
+	});
+	
+	// Filters duplicator:
+	jQuery('.filters-duplicator').symphonyDuplicator({
+		multiselect:	true,
+		orderable:		true
+	});
 });

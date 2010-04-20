@@ -87,6 +87,10 @@
 				foreach($attributes as $key => $val) $this->setAttribute($key, $val);
 			}
 		}
+		
+		public function remove() {
+			$this->parentNode->removeChild($this);
+		}
 
 		public function __toString(){
 			$doc = new DOMDocument('1.0', 'UTF-8');

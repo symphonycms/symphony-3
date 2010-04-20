@@ -54,13 +54,13 @@
 			object.find('*').live('duplicator-template-insert', function() {
 				var template = jQuery(this);
 				var intance = jQuery('<li />')
-					.append(template.find('fieldset > *').clone())
+					.append(template.find('> :not(.name)').clone())
 					.appendTo(object.find('> .content > .instances'));
 				var tab = jQuery('<li />')
 					.append(
 						jQuery('<span />')
 							.addClass('name')
-							.text(template.find('input:first').val())
+							.html(template.find('> .name').html())
 					)
 					.appendTo(object.find('> .content > .tabs'))
 					.trigger('duplicator-tab-initialize')
@@ -277,9 +277,11 @@
 					}
 				});
 			
-			// Hide templates pallet:
-			find(select.template_parent)
-				.trigger('duplicator-templates-hide');
+			// Hide templates pallet when not empty:
+			if (find(select.instances).length > 0) {
+				find(select.template_parent)
+					.trigger('duplicator-templates-hide');
+			}
 		});
 		
 		return objects;

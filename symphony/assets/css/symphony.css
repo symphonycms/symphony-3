@@ -595,7 +595,7 @@
 		padding: 2px 2px;
 	}
 	form .help {
-		color: #aaa;
+		opacity: 0.5;
 	}
 	form fieldset h3 + .help {
 		position: absolute;
@@ -615,7 +615,7 @@
 		margin-top: 0;
 	}
 	form label:last-child {
-		margin-top: 0;
+		margin-bottom: 0;
 	}
 	form label i {
 		float: right;
@@ -706,12 +706,18 @@
 	.options-list {
 		border-top: 1px dotted #dddddd;
 		border-top-color: hsla(0, 0%, 0%, 0.2);
+		-moz-column-count: 3;
+		-webkit-column-count: 3;
+		-moz-column-width: 200px;
+		-webkit-column-width: 200px;
+		-moz-column-gap: 40px;
+		-webkit-column-gap: 40px;
+		-moz-column-rule: 1px dotted hsla(0, 0%, 0%, 0.2);
+		-webkit-column-rule: 1px dotted hsla(0, 0%, 0%, 0.2);
 		line-height: 2;
 		list-style: none;
 		margin: 20px 0 0 0;
 		padding: 20px 0 0 0;
-	}
-	.options-list li {
 	}
 	.options-list li label {
 		margin: 0;

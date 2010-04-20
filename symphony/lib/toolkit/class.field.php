@@ -497,13 +497,13 @@
 		}
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+			$document = $wrapper->ownerDocument;
+			
+			$name = $document->createElement('span', $this->properties()->label);
+			$name->setAttribute('class', 'name');
+			$name->appendChild($document->createElement('i', $this->name()));
+			$wrapper->appendChild($name);
 
-			$h4 = Symphony::Parent()->Page->createElement('h4', $this->properties()->label);
-			$h4->appendChild(
-				Symphony::Parent()->Page->createElement('i', $this->Name())
-			);
-
-			$wrapper->appendChild($h4);
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
 				'fields[filter]'
@@ -513,10 +513,6 @@
 				(!is_null($data) ? General::sanitize($data) : NULL)
 			));
 			$wrapper->appendChild($label);
-		}
-
-		public function displayImportPanel(SymphonyDOMElement &$wrapper, $data = null, $errors = null) {
-			$this->displayDatasourceFilterPanel($wrapper, $data, $errors);
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors=NULL){
