@@ -81,11 +81,13 @@
 				else */
 				$aTableHead[] = array($label, 'col');
 			}
+			/*
+			$entry = Entry::loadFromID(3);
 
 			$entry = new Entry;
 			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
-			$entry->id = 1;
+			$entry->id = 3;
 
 			$entry->data()->name = (object)array(
 				'handle' => 'an-entry',
@@ -101,7 +103,6 @@
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
-
 			$entry->data()->category = (object)array(
 				'handle' => 'blah',
 				'value' => 'Blah &',
@@ -137,12 +138,15 @@
 				'mimetype' => 'image/jpeg',
 				'meta' => 'blah'
 			);
-		//$messages = new MessageStack;
-		//Entry::save($entry, $messages);
-		//var_dump($messages); die();
 
+		$messages = new MessageStack;
+		Entry::save($entry, $messages);
+		var_dump($messages); die();
+		
+		
 			$entries = array($entry);
-
+		*/
+		
 			## Table Body
 			$aTableBody = array();
 			$colspan = count($aTableHead);
@@ -728,7 +732,13 @@
 		function __actionNew(){
 
 			if(array_key_exists('save', $_POST['action']) || array_key_exists("done", $_POST['action'])) {
-
+				
+				$section = Section::loadFromHandle($this->_context['section_handle']);
+				$entry = new Entry;
+				
+				$post = General::getPostData();
+				var_dump($post); die();
+				
 				$section = Section::loadFromHandle($this->_context['section_handle']);
 
 				$entry =& EntryManager::instance()->create();

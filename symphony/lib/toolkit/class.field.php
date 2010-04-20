@@ -430,8 +430,46 @@
 		}
 		
 		// TO DO: Support an array of data objects. This is important for 
-		// fields like Select box or anything that allows mutliple values		
-		 public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){}
+		// fields like Select box or anything that allows mutliple values
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
+
+			$data->entry_id = $entry->id;
+			if(!isset($data->id)) $data->id = NULL;
+			
+			try{
+				Symphony::Database()->insert(
+					sprintf('tbl_data_%s_%s', $entry->section, $this->properties()->{'element_name'}),
+					(array)$data,
+					Database::UPDATE_ON_DUPLICATE
+				);
+				
+				return self::STATUS_OK;
+			}
+			catch(DatabaseException $e){
+				
+			}
+			catch(Exception $e){
+				
+			}
+			
+			return self::STATUS_ERROR;
+		}
+		
+		public function loadDataFromDatabase(Entry $entry){
+			try{
+				return Symphony::Database()->query(
+					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s LIMIT 1", 
+					array(
+						$entry->section, 
+						$this->properties()->{'element_name'}, 
+						$entry->id
+					)
+				)->current();
+			}
+			catch(DatabaseException $e){
+				// Oh oh....no data. oh well, have a smoke and then return
+			}
+		}
 		
 		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
 			if ($this->properties()->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
