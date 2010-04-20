@@ -54,7 +54,7 @@
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
-			if($this->properties()->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
+			if($this->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
 		}
 
 		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
@@ -64,14 +64,14 @@
 				$value = (is_array($data['value']) ? self::__tagArrayToString($data['value']) : $data['value']);
 			}
 
-			$label = Widget::Label($this->properties()->label);
+			$label = Widget::Label($this->label);
 
 			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']', (strlen($value) != 0 ? $value : NULL)));
 
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
 
-			if($this->properties()->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
+			if($this->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
 		}
 
 		function prepopulateSource(&$wrapper) {
@@ -91,11 +91,11 @@
 
 		function findAllTags(){
 
-			if(!is_array($this->properties()->{'pre-populate-source'})) return;
+			if(!is_array($this->{'pre-populate-source'})) return;
 
 			$values = array();
 
-			foreach($this->properties()->{'pre-populate-source'} as $item){
+			foreach($this->{'pre-populate-source'} as $item){
 
 				$result = Symphony::Database()->query("
 					SELECT
@@ -105,7 +105,7 @@
 					ORDER BY
 						`value` ASC
 					",
-					($item == 'existing') ? $this->properties()->id : $item
+					($item == 'existing') ? $this->id : $item
 				);
 
 				if(!$result->valid()) continue;
@@ -163,15 +163,15 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->id;
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'pre-populate-source' => (is_null($this->properties()->{'pre-populate-source'})) ? NULL : implode(',', $this->properties()->{'pre-populate-source'}),
-				'validator' => ($fields['validator'] == 'custom' ? NULL : $this->properties()->validator)
+				'pre-populate-source' => (is_null($this->{'pre-populate-source'})) ? NULL : implode(',', $this->{'pre-populate-source'}),
+				'validator' => ($fields['validator'] == 'custom' ? NULL : $this->validator)
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -193,7 +193,7 @@
 
 			$label = Widget::Label(__('Suggestion List'));
 
-			$suggestion_list_source = $this->properties()->{'suggestion-list-source'};
+			$suggestion_list_source = $this->{'suggestion-list-source'};
 
 			$options = array(
 				array('existing', (is_array($suggestion_list_source) && in_array('existing', $suggestion_list_source)), __('Existing Values')),
@@ -213,11 +213,11 @@
 				$fields = array();
 				
 				foreach($group['fields'] as $field) {
-					if($field->properties()->id != $this->properties()->id && $field->canPrePopulate()) {
+					if($field->id != $this->id && $field->canPrePopulate()) {
 						$fields[] = array(
-							$field->properties()->id, 
-							(in_array($field->properties()->id, $this->properties()->{'pre-populate-source'})), 
-							$field->properties()->label
+							$field->id, 
+							(in_array($field->id, $this->{'pre-populate-source'})), 
+							$field->label
 						);
 						
 					}
@@ -234,7 +234,7 @@
 			$label->appendChild(Widget::Select('suggestion-list-source', $options, array('multiple' => 'multiple')));
 			$wrapper->appendChild($label);
 
-			$this->appendValidationSelect($wrapper, $this->properties()->validator, 'validator');
+			$this->appendValidationSelect($wrapper, $this->validator, 'validator');
 
 			$options_list = Symphony::Parent()->Page->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
@@ -255,14 +255,14 @@
 						KEY `handle` (`handle`),
 						KEY `value` (`value`)
 					)',
-					$this->properties()->section,
+					$this->section,
 					$this->{'element-name'}
 				)
 			);
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->properties()->id;
+			$field_id = $this->id;
 
 			if (self::isFilterRegex($data[0])) {
 				self::$key++;

@@ -387,7 +387,7 @@
 			$item = $document->createElement('li');
 			$item->setAttribute('class', 'field');
 			
-			$name = $document->createElement('span', $field->properties()->label);
+			$name = $document->createElement('span', $field->label);
 			$name->setAttribute('class', 'name');
 			$name->appendChild($document->createElement('i', $field->name()));
 			$item->appendChild($name);
@@ -665,7 +665,7 @@
 				
 				$field->findDefaults($defaults);
 				foreach($defaults as $key => $value){
-					$field->properties()->$key = $value;
+					$field->$key = $value;
 				}
 				
 				$item = $this->createElement('li');
@@ -676,12 +676,12 @@
 			}
 			
 			if (is_array($fields)) foreach($fields as $position => $field) {
-				$field->properties()->sortorder = $position;
+				$field->sortorder = $position;
 
 				$item = $this->createElement('li');
 				$field->displaySettingsPanel($item, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
 				$item->appendChild(
-					Widget::Input('type', $field->properties()->type, 'hidden')
+					Widget::Input('type', $field->type, 'hidden')
 				);
 				
 				$instances->appendChild($item);

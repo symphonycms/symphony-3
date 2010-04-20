@@ -33,7 +33,7 @@
 			$value = null;
 
 			// New entry:
-			if (is_null($data) && $this->properties()->{'pre-populate'} == 'yes') {
+			if (is_null($data) && $this->{'pre-populate'} == 'yes') {
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, null);
 			}
 
@@ -42,7 +42,7 @@
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data['gmt']);
 			}
 
-			$label = Widget::Label($this->properties()->label, Widget::Input("fields[{$name}]", $value), array(
+			$label = Widget::Label($this->label, Widget::Input("fields[{$name}]", $value), array(
 				'class' => 'date')
 			);
 
@@ -60,7 +60,7 @@
 			$message = NULL;
 
 			if(!self::__isValidDateString($data)){
-				$message = __("The date specified in '%s' is invalid.", array($this->properties()->label));
+				$message = __("The date specified in '%s' is invalid.", array($this->label));
 				return self::ERROR_INVALID;
 			}
 
@@ -72,7 +72,7 @@
 			$timestamp = null;
 
 			if (is_null($data) || $data == '') {
-				if ($this->properties()->{'pre-populate'} == 'yes') {
+				if ($this->{'pre-populate'} == 'yes') {
 					$timestamp = strtotime(DateTimeObj::get(__SYM_DATETIME_FORMAT__, null));
 				}
 			}
@@ -123,7 +123,7 @@
 			$groups = array('year' => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->properties()->id);
+				$data = $r->getData($this->id);
 
 				$info = getdate($data['local']);
 
@@ -151,7 +151,7 @@
 
 
 		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`gmt` $order");
 		}
 
@@ -191,7 +191,7 @@
 
 		protected function __buildSimpleFilterSQL($data, &$joins, &$where, $andOperation=false){
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->id;
 
 			if($andOperation):
 
@@ -215,7 +215,7 @@
 
 		protected function __buildRangeFilterSQL($data, &$joins, &$where, $andOperation=false){
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->id;
 
 			if(empty($data)) return;
 
@@ -354,14 +354,14 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->id;
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'pre-populate' => ($this->properties()->{'pre-populate'} ? $this->properties()->{'pre-populate'} : 'no')
+				'pre-populate' => ($this->{'pre-populate'} ? $this->{'pre-populate'} : 'no')
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -384,7 +384,7 @@
 
 			$label = Widget::Label(__('Pre-populate this field with today\'s date'));
 			$input = Widget::Input('pre-populate', 'yes', 'checkbox');
-			if($this->properties()->{'pre-populate'} == 'yes') $input->setAttribute('checked', 'checked');
+			if($this->{'pre-populate'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->prependChild($input);
 			$item = $document->createElement('li');
@@ -410,7 +410,7 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
 					)',
-					$this->properties()->section,
+					$this->section,
 					$this->{'element-name'}
 				)
 			);
@@ -424,7 +424,7 @@
 			);
 			
 			if(is_null($data) || strlen(trim($data)) == 0){
-				if ($this->properties()->{'pre-populate'} == 'yes') {
+				if ($this->{'pre-populate'} == 'yes') {
 					$timestamp = strtotime(DateTimeObj::get('c', null));
 				}
 			}

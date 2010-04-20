@@ -326,7 +326,7 @@
 					foreach ($section_data['fields'] as $input) {
 						if (!$input->canFilter()) continue;
 
-						//$field_id = $input->properties()->id;
+						//$field_id = $input->id;
 						$element_name = $input->{'element-name'};
 
 						if (isset($filter_data[$element_name])) {
@@ -387,7 +387,7 @@
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
 					foreach ($section_data['fields'] as $field) {
 						$field_handle = $field->{'element-name'};
-						$field_label = $field->properties()->label;
+						$field_label = $field->label;
 						$modes = $field->fetchIncludableElements();
 
 						if ($field->isSortable()) {

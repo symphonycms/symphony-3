@@ -13,13 +13,13 @@
 			$this->_required = true;
 
 			// Set default
-			$this->properties()->{'show-column'} = 'no';
-			$this->properties()->{'required'} = 'yes';
-			$this->properties()->{'limit'} = 20;
+			$this->{'show-column'} = 'no';
+			$this->{'required'} = 'yes';
+			$this->{'limit'} = 20;
 		}
 
 		public function canToggle(){
-			return ($this->properties()->{'allow-multiple-selection'} == 'yes' ? false : true);
+			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
 
 		public function getToggleStates(){
@@ -59,7 +59,7 @@
 
 		public function setArray($array){
 			if(empty($array) || !is_array($array)) return;
-			foreach($array as $field => $value) $this->properties()->{$field} = $value;
+			foreach($array as $field => $value) $this->{$field} = $value;
 		}
 
 		public function groupRecords($records){
@@ -68,7 +68,7 @@
 			$groups = array($this->{'element-name'} => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->properties()->{'id'});
+				$data = $r->getData($this->{'id'});
 				$value = $data['relation_id'];
 				$primary_field = $this->__findPrimaryFieldValueFromRelationID($data['relation_id']);
 
@@ -203,11 +203,11 @@
 		}
 
 		public function fetchAssociatedEntryCount($value){
-			return Symphony::Database()->fetchVar('count', 0, "SELECT count(*) AS `count` FROM `tbl_entries_data_".$this->properties()->{'id'}."` WHERE `relation_id` = '$value'");
+			return Symphony::Database()->fetchVar('count', 0, "SELECT count(*) AS `count` FROM `tbl_entries_data_".$this->{'id'}."` WHERE `relation_id` = '$value'");
 		}
 
 		public function fetchAssociatedEntryIDs($value){
-			return Symphony::Database()->fetchCol('entry_id', "SELECT `entry_id` FROM `tbl_entries_data_".$this->properties()->{'id'}."` WHERE `relation_id` = '$value'");
+			return Symphony::Database()->fetchCol('entry_id', "SELECT `entry_id` FROM `tbl_entries_data_".$this->{'id'}."` WHERE `relation_id` = '$value'");
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
@@ -254,7 +254,7 @@
 				$field_id = Symphony::Database()->fetchVar('field_id', 0, "SELECT f.`id` AS `field_id`
 					FROM `tbl_fields` AS `f`
 					LEFT JOIN `tbl_sections` AS `s` ON f.parent_section = s.id
-					WHERE `s`.id = {$section_id} AND f.id IN ('".@implode("', '", $this->properties()->{'related-field-id'})."') LIMIT 1");
+					WHERE `s`.id = {$section_id} AND f.id IN ('".@implode("', '", $this->{'related-field-id'})."') LIMIT 1");
 			}
 			catch(Exception $e){
 				return NULL;
@@ -267,13 +267,13 @@
 
 		public function findOptions(array $existing_selection=NULL){
 			$values = array();
-			$limit = $this->properties()->{'limit'};
+			$limit = $this->{'limit'};
 			
 			// find the sections of the related fields
 			$sections = Symphony::Database()->fetch("SELECT DISTINCT (s.id), s.name, f.id as `field_id`
 				 								FROM `tbl_sections` AS `s` 
 												LEFT JOIN `tbl_fields` AS `f` ON `s`.id = `f`.parent_section
-												WHERE `f`.id IN ('" . implode("','", $this->properties()->{'related-field-id'}) . "')
+												WHERE `f`.id IN ('" . implode("','", $this->{'related-field-id'}) . "')
 												ORDER BY s.sortorder ASC");
 
 			if(is_array($sections) && !empty($sections)){
@@ -285,7 +285,7 @@
 					$entries = EntryManager::instance()->fetch(NULL, $section['id'], $limit, 0);
 
 					$results = array();
-					foreach($entries as $entry) $results[] = $entry->properties()->{'id'};
+					foreach($entries as $entry) $results[] = $entry->{'id'};
 
 					// if a value is already selected, ensure it is added to the list (if it isn't in the available options)
 					if(!is_null($existing_selection) && !empty($existing_selection)){
@@ -326,7 +326,7 @@
 			$states = $this->findOptions($entry_ids);
 			$options = array();
 
-			if($this->properties()->{'required'} != 'yes') $options[] = array(NULL, false, NULL);
+			if($this->{'required'} != 'yes') $options[] = array(NULL, false, NULL);
 
 			if(!empty($states)){
 				foreach($states as $s){
@@ -339,10 +339,10 @@
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
-			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
+			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
-			$label = Widget::Label($this->properties()->{'label'});
-			$label->appendChild(Widget::Select($fieldname, $options, ($this->properties()->{'allow-multiple-selection'} == 'yes' ? array('multiple' => 'multiple') : NULL)));
+			$label = Widget::Label($this->{'label'});
+			$label->appendChild(Widget::Select($fieldname, $options, ($this->{'allow-multiple-selection'} == 'yes' ? array('multiple' => 'multiple') : NULL)));
 
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
@@ -351,28 +351,28 @@
 		public function commit(){
 			if(!parent::commit()) return false;
 
-			$id = $this->properties()->{'id'};
+			$id = $this->{'id'};
 
 			if($id === false) return false;
 
 			$fields = array();
 			$fields['field_id'] = $id;
-			if($this->properties()->{'related-field-id'} != '') $fields['related-field-id'] = $this->properties()->{'related-field-id'};
-			$fields['allow-multiple-selection'] = ($this->properties()->{'allow-multiple-selection'} ? $this->properties()->{'allow-multiple-selection'} : 'no');
-			$fields['limit'] = max(1, (int)$this->properties()->{'limit'});
-			$fields['related-field-id'] = implode(',', $this->properties()->{'related-field-id'});
+			if($this->{'related-field-id'} != '') $fields['related-field-id'] = $this->{'related-field-id'};
+			$fields['allow-multiple-selection'] = ($this->{'allow-multiple-selection'} ? $this->{'allow-multiple-selection'} : 'no');
+			$fields['limit'] = max(1, (int)$this->{'limit'});
+			$fields['related-field-id'] = implode(',', $this->{'related-field-id'});
 
 			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id'");
 
 			if(!Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle())) return false;
 
-			//$sections = $this->properties()->{'related-field-id'};
+			//$sections = $this->{'related-field-id'};
 
 			$this->removeSectionAssociation($id);
 
 			//$section_id = Symphony::Database()->fetchVar('parent_section', 0, "SELECT `parent_section` FROM `tbl_fields` WHERE `id` = '".$fields['related-field-id']."' LIMIT 1");
 
-			foreach($this->properties()->{'related-field-id'} as $field_id){
+			foreach($this->{'related-field-id'} as $field_id){
 				$this->createSectionAssociation(NULL, $id, $field_id);
 			}
 
@@ -380,12 +380,12 @@
 		}
 
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "INNER JOIN `tbl_entries_data_".$this->properties()->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "INNER JOIN `tbl_entries_data_".$this->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`relation_id` $order");
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false){
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->{'id'};
 
 			if(preg_match('/^sql:\s*/', $data[0], $matches)) {
 				$data = trim(array_pop(explode(':', $data[0], 2)));
@@ -413,7 +413,7 @@
 					// of course, this is not entirely true, but I find it good enough.
 					if(!is_numeric($value)){
 
-						$related_field_id = $this->properties()->{'related-field-id'};
+						$related_field_id = $this->{'related-field-id'};
 
 						if(is_array($related_field_id) && !empty($related_field_id)) {
 							$return = Symphony::Database()->fetchCol("id", sprintf(
@@ -471,7 +471,7 @@
 			$field_groups = array();
 
 			if(is_array($sections) && !empty($sections)){
-				foreach($sections as $section) $field_groups[$section->properties()->{'id'}] = array('fields' => $section->fetchFields(), 'section' => $section);
+				foreach($sections as $section) $field_groups[$section->{'id'}] = array('fields' => $section->fetchFields(), 'section' => $section);
 			}
 
 
@@ -481,12 +481,12 @@
 				$fields = array();
 
 				foreach($group['fields'] as $f){
-					if($f->properties()->{'id'} != $this->properties()->{'id'} && $f->canPrePopulate()){
-						$fields[] = array($f->properties()->{'id'}, @in_array($f->properties()->{'id'}, $this->properties()->{'related-field-id'}), $f->properties()->{'label'});
+					if($f->{'id'} != $this->{'id'} && $f->canPrePopulate()){
+						$fields[] = array($f->{'id'}, @in_array($f->{'id'}, $this->{'related-field-id'}), $f->{'label'});
 					}
 				}
 
-				if(is_array($fields) && !empty($fields)) $options[] = array('label' => $group['section']->properties()->{'name'}, 'options' => $fields);
+				if(is_array($fields) && !empty($fields)) $options[] = array('label' => $group['section']->{'name'}, 'options' => $fields);
 			}
 */
 			$label->appendChild(Widget::Select('related-field-id][', $options, array('multiple' => 'multiple')));
@@ -497,7 +497,7 @@
 
 			## Maximum entries
 			$label = Widget::Label();
-			$input = Widget::Input('limit', $this->properties()->{'limit'});
+			$input = Widget::Input('limit', $this->{'limit'});
 			$input->setAttribute('size', '3');
 			
 			$label->appendChild(new DOMText(__('Limit to the ')));
@@ -514,7 +514,7 @@
 			$label = Widget::Label();
 			$input = Widget::Input('allow-multiple-selection', 'yes', 'checkbox');
 
-			if($this->properties()->{'allow-multiple-selection'} == 'yes') $input->setAttribute('checked', 'checked');
+			if($this->{'allow-multiple-selection'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->appendChild($input);
 			$label->appendChild(new DOMText(__('Allow selection of multiple options')));
@@ -528,7 +528,7 @@
 
 		public function createTable(){
 			return Symphony::Database()->query(
-				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->properties()->{'id'} . "` (
+				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->{'id'} . "` (
 				`id` int(11) unsigned NOT NULL auto_increment,
 				`entry_id` int(11) unsigned NOT NULL,
 				`relation_id` int(11) unsigned DEFAULT NULL,

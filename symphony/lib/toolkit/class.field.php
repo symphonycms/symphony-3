@@ -108,9 +108,6 @@
 
 		}
 		
-		public function &properties(){
-			return $this->properties;
-		}
 		public function __isset($name){
 			return isset($this->properties->$name);
 		}
@@ -241,7 +238,7 @@
 		}
 
 		public function entryDataCleanup($entry_id, $data=NULL){
-			Symphony::Database()->delete('tbl_entries_data_' . $this->properties()->id, array($entry_id), "`entry_id` = %d ");
+			Symphony::Database()->delete('tbl_entries_data_' . $this->id, array($entry_id), "`entry_id` = %d ");
 
 			return true;
 		}
@@ -250,7 +247,7 @@
 			$data['required'] = (isset($data['required']) && $data['required'] == 'yes' ? 'yes' : 'no');
 			$data['show-column'] = (isset($data['show-column']) && $data['show-column'] == 'yes' ? 'yes' : 'no');
 			foreach($data as $key => $value){
-				$this->properties()->$key = $value;
+				$this->$key = $value;
 			}
 		}
 		
@@ -263,14 +260,14 @@
 			}
 
 			if($field == 'element_name'
-				&& (isset($this->properties()->label) && strlen(trim($this->properties()->label)) > 0)
-					&& (!isset($this->properties()->$field) || strlen(trim($this->properties()->$field)) == 0)){
-						$this->properties()->$field = Lang::createHandle(
-							$this->properties()->label, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL)
+				&& (isset($this->label) && strlen(trim($this->label)) > 0)
+					&& (!isset($this->$field) || strlen(trim($this->$field)) == 0)){
+						$this->$field = Lang::createHandle(
+							$this->label, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL)
 						);
 			}
 
-			return (isset($this->properties()->$field) ? $this->properties()->$field : NULL);
+			return (isset($this->$field) ? $this->$field : NULL);
 		}*/
 
 
@@ -324,13 +321,13 @@
 		}
 
 		public function checkFields(&$errors, $checkForDuplicates = true) {
-			$parent_section = $this->properties()->{'parent-section'};
+			$parent_section = $this->{'parent-section'};
 
-			//echo $this->properties()->id, ': ', $this->properties()->required, '<br />';
+			//echo $this->id, ': ', $this->required, '<br />';
 
 			if (!is_array($errors)) $errors = array();
 
-			if ($this->properties()->label == '') {
+			if ($this->label == '') {
 				$errors['label'] = __('This is a required field.');
 			}
 
@@ -343,7 +340,7 @@
 			}
 			
 			elseif($checkForDuplicates) {
-				$sql_id = ($this->properties()->id ? " AND f.id != '".$this->properties()->id."' " : '');
+				$sql_id = ($this->id ? " AND f.id != '".$this->id."' " : '');
 
 				$query = sprintf("
 						SELECT
@@ -384,7 +381,7 @@
 		}
 
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`value` $order");
 		}
 
@@ -393,7 +390,7 @@
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->properties()->id;
+			$field_id = $this->id;
 
 			if (self::isFilterRegex($data[0])){
 				self::$key++;
@@ -492,11 +489,11 @@
 		}
 		
 		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
-			if ($this->properties()->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
+			if ($this->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
 				$errors->append(
 					$this->{'element-name'}, 
 					array(
-					 	'message' => __("'%s' is a required field.", array($this->properties()->label)),
+					 	'message' => __("'%s' is a required field.", array($this->label)),
 						'code' => self::ERROR_MISSING
 					)
 				);
@@ -541,7 +538,7 @@
 		}
 
 		public function getExampleFormMarkup(){
-			$label = Widget::Label($this->properties()->label);
+			$label = Widget::Label($this->label);
 			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']'));
 
 			return $label;
@@ -564,7 +561,7 @@
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 			$document = $wrapper->ownerDocument;
 			
-			$name = $document->createElement('span', $this->properties()->label);
+			$name = $document->createElement('span', $this->label);
 			$name->setAttribute('class', 'name');
 			$name->appendChild($document->createElement('i', $this->name()));
 			$wrapper->appendChild($name);
@@ -588,8 +585,8 @@
 		public function appendSummaryBlock(SymphonyDOMElement $wrapper, $errors=NULL) {
 			$document = $wrapper->ownerDocument;
 			
-			if ($this->properties()->label) {
-				$name = $document->createElement('span', $this->properties()->label);
+			if ($this->label) {
+				$name = $document->createElement('span', $this->label);
 				$name->appendChild($document->createElement('i', $this->name()));
 			}
 			
@@ -602,7 +599,7 @@
 			
 			$label = Widget::Label(__('Label'));
 			$label->setAttribute('class', 'field-label');
-			$label->appendChild(Widget::Input('label', $this->properties()->label));
+			$label->appendChild(Widget::Input('label', $this->label));
 			
 			if (isset($errors['label'])) {
 				$label = Widget::wrapFormElementWithError($label, $errors['label']);
@@ -621,7 +618,7 @@
 			$label = Widget::Label(__('Make this a required field'));
 			$input = Widget::Input('required', 'yes', 'checkbox');
 
-			if ($this->properties()->required == 'yes') {
+			if ($this->required == 'yes') {
 				$input->setAttribute('checked', 'checked');
 			}
 			
@@ -641,7 +638,7 @@
 			$label->setAttribute('class', 'meta');
 			$input = Widget::Input('show-column', 'yes', 'checkbox');
 
-			if ($this->properties()->{'show-column'} == 'yes') $input->setAttribute('checked', 'checked');
+			if ($this->{'show-column'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->prependChild($input);
 			$item->appendChild($label);
@@ -696,29 +693,29 @@
 		}
 
 		public function groupRecords($records){
-			trigger_error(__('Data source output grouping is not supported by the <code>%s</code> field', array($this->properties()->label)), E_USER_ERROR);
+			trigger_error(__('Data source output grouping is not supported by the <code>%s</code> field', array($this->label)), E_USER_ERROR);
 		}
 /*
 		public function commit(){
 
 			$fields = array();
 
-			$fields['element_name'] = Lang::createHandle($this->properties()->label);
+			$fields['element_name'] = Lang::createHandle($this->label);
 			if(is_numeric($fields['element_name']{0})) $fields['element_name'] = 'field-' . $fields['element_name'];
 
-			$fields['label'] = $this->properties()->label;
-			$fields['parent_section'] = $this->properties()->{'parent-section'};
-			$fields['required'] = $this->properties()->required;
+			$fields['label'] = $this->label;
+			$fields['parent_section'] = $this->{'parent-section'};
+			$fields['required'] = $this->required;
 			$fields['type'] = $this->_handle;
-			$fields['show_column'] = $this->properties()->{'show-column'};
-			$fields['sortorder'] = (string)$this->properties()->sortorder;
+			$fields['show_column'] = $this->{'show-column'};
+			$fields['sortorder'] = (string)$this->sortorder;
 
-			if($id = $this->properties()->id){
+			if($id = $this->id){
 				return FieldManager::instance()->edit($id, $fields);
 			}
 
 			elseif($id = FieldManager::instance()->add($fields)){
-				$this->properties()->id = $id;
+				$this->id = $id;
 				$this->createTable();
 				return true;
 			}
@@ -738,7 +735,7 @@
 					KEY `entry_id` (`entry_id`),
 					KEY `value` (`value`)
 					)',
-					$this->properties()->section,
+					$this->section,
 					$this->{'element-name'}
 				)
 			);

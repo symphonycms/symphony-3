@@ -179,7 +179,7 @@
 
 		public function removeField($name){
 			foreach($this->fields as $index => $f){
-				if($f->properties()->label == $name || $f->{'element-name'} == $name){
+				if($f->label == $name || $f->{'element-name'} == $name){
 					unset($this->fields[$index]);
 				}
 			}
@@ -532,7 +532,7 @@
 
 			if(is_numeric($retVal) && $retVal !== false){
 				for($ii = 0; $ii < count($this->_fields); $ii++){
-					$this->_fields[$ii]->properties()->parent_section = $retVal;
+					$this->_fields[$ii]->parent_section = $retVal;
 					$this->_fields[$ii]->commit();
 				}
 			}

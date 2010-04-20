@@ -43,8 +43,8 @@
 				)
 			);
 
-			$this->properties()->{'show-column'} = 'yes';
-			$this->properties()->required = 'yes';
+			$this->{'show-column'} = 'yes';
+			$this->required = 'yes';
 		}
 
 		public function createTable(){
@@ -64,7 +64,7 @@
 						FULLTEXT KEY `name` (`name`),
 						FULLTEXT KEY `file` (`file`)
 					)',
-					$this->properties()->section,
+					$this->section,
 					$this->{'element-name'}
 				)
 			);
@@ -85,7 +85,7 @@
 		public function getExampleFormMarkup() {
 			$handle = $this->{'element-name'};
 
-			$label = Widget::Label($this->properties()->label);
+			$label = Widget::Label($this->label);
 			$label->appendChild(Widget::Input('fields[{$handle}]', null, 'file'));
 
 			return $label;
@@ -124,7 +124,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function checkFields(&$errors, $checkForDuplicates = true) {
-			if (!is_writable(DOCROOT . $this->properties()->destination . '/')) {
+			if (!is_writable(DOCROOT . $this->destination . '/')) {
 				$errors['destination'] = 'Folder is not writable. Please check permissions.';
 			}
 
@@ -134,7 +134,7 @@
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$order = $this->properties()->sortorder;
+			$order = $this->sortorder;
 
 		// Destination --------------------------------------------------------
 
@@ -158,7 +158,7 @@
 					$d = '/' . trim($d, '/');
 
 					if (!in_array($d, $ignore)) {
-						$options[] = array($d, ($this->properties()->destination == $d), $d);
+						$options[] = array($d, ($this->destination == $d), $d);
 					}
 				}
 			}
@@ -173,7 +173,7 @@
 
 		// Validator ----------------------------------------------------------
 
-			$this->appendValidationSelect($wrapper, $this->properties()->validator, 'validator', 'upload');
+			$this->appendValidationSelect($wrapper, $this->validator, 'validator', 'upload');
 
 
 
@@ -187,7 +187,7 @@
 					'serialise', 'yes', 'checkbox'
 				);
 
-				if ($this->properties()->serialise == 'yes') $input->setAttribute('checked', 'checked');
+				if ($this->serialise == 'yes') $input->setAttribute('checked', 'checked');
 
 				$label->prependChild($input);
 				$options_list->appendChild($label);
@@ -201,14 +201,14 @@
 		public function commit() {
 			if (!parent::commit() or $field_id === false) return false;
 
-			$field_id = $this->properties()->id;
+			$field_id = $this->id;
 			$handle = $this->handle();
 
 			$fields = array(
 				'field_id'		=> $field_id,
-				'destination'	=> $this->properties()->destination,
-				'validator'		=> $this->properties()->validator,
-				'serialise'		=> ($this->properties()->serialise == 'yes' ? 'yes' : 'no')
+				'destination'	=> $this->destination,
+				'validator'		=> $this->validator,
+				'serialise'		=> ($this->serialise == 'yes' ? 'yes' : 'no')
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -222,17 +222,17 @@
 	-------------------------------------------------------------------------*/
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=null, $error=null, $entry_id=null) {
-			if (!$error and !is_writable(DOCROOT . $this->properties()->destination . '/')) {
-				$error = 'Destination folder, <code>'.$this->properties()->destination.'</code>, is not writable. Please check permissions.';
+			if (!$error and !is_writable(DOCROOT . $this->destination . '/')) {
+				$error = 'Destination folder, <code>'.$this->destination.'</code>, is not writable. Please check permissions.';
 			}
 
 			$handle = $this->{'element-name'};
 
 		// Preview ------------------------------------------------------------
 
-			$label = Widget::Label($this->properties()->label);
+			$label = Widget::Label($this->label);
 
-			if ($this->properties()->required != 'yes') {
+			if ($this->required != 'yes') {
 				$label->appendChild(Symphony::Parent()->Page->createElement('i', 'Optional'));
 			}
 
@@ -251,7 +251,7 @@
 					'/publish/', array(
 						'data'		=> $data,
 						'entry_id'	=> $entry_id,
-						'field_id'	=> $this->properties()->id,
+						'field_id'	=> $this->id,
 						'wrapper'	=> $container
 					)
 				);
@@ -310,11 +310,11 @@
 		}
 
 		public function checkPostFieldData($data, &$message, $entry_id = null) {
-			$label = $this->properties()->label;
+			$label = $this->label;
 			$message = null;
 
 			if (empty($data) or $data['error'] == UPLOAD_ERR_NO_FILE) {
-				if ($this->properties()->required == 'yes') {
+				if ($this->required == 'yes') {
 					$message = "'{$label}' is a required field.";
 
 					return self::ERROR_MISSING;
@@ -326,10 +326,10 @@
 			// Its not an array, so just retain the current data and return
 			if (!is_array($data)) return self::STATUS_OK;
 
-			if (!is_writable(DOCROOT . $this->properties()->destination . '/')) {
+			if (!is_writable(DOCROOT . $this->destination . '/')) {
 				$message = __(
 					'Destination folder, <code>%s</code>, is not writable. Please check permissions.',
-					array($this->properties()->destination)
+					array($this->destination)
 				);
 
 				return self::STATUS_ERROR;
@@ -384,12 +384,12 @@
 			}
 
 			// Sanitize the filename:
-			if ($this->properties()->serialise == 'yes' and is_array($data) and isset($data['name'])) {
+			if ($this->serialise == 'yes' and is_array($data) and isset($data['name'])) {
 				$data['name'] = $this->getHashedFilename($data['name']);
 			}
 
-			if ($this->properties()->validator != null) {
-				$rule = $this->properties()->validator;
+			if ($this->validator != null) {
+				$rule = $this->validator;
 
 				if (!General::validateString($data['name'], $rule)) {
 					$message = __(
@@ -401,12 +401,12 @@
 				}
 			}
 
-			$abs_path = DOCROOT . '/' . trim($this->properties()->destination, '/');
+			$abs_path = DOCROOT . '/' . trim($this->destination, '/');
 			$new_file = $abs_path . '/' . $data['name'];
 			$existing_file = null;
 
 			if ($entry_id) {
-				$field_id = $this->properties()->id;
+				$field_id = $this->id;
 				$row = Symphony::Database()->query("
 					SELECT
 						f.*
@@ -423,7 +423,7 @@
 			if (($existing_file != $new_file) and file_exists($new_file)) {
 				$message = __(
 					'A file with the name %s already exists in %s. Please rename the file first, or choose another.',
-					array($data['name'], $this->properties()->destination)
+					array($data['name'], $this->destination)
 				);
 
 				return self::ERROR_INVALID;
@@ -444,7 +444,7 @@
 					f.mimetype,
 					f.meta
 				FROM
-					`tbl_entries_data_{$this->properties()->id}` AS f
+					`tbl_entries_data_{$this->id}` AS f
 				WHERE
 					f.entry_id = '{$entry_id}'
 				LIMIT 1
@@ -482,16 +482,16 @@
 				}
 			}
 
-			$path = rtrim(preg_replace('%^/workspace%', '', $this->properties()->destination), '/');
+			$path = rtrim(preg_replace('%^/workspace%', '', $this->destination), '/');
 			$name = $data['name'];
 
 			// Sanitize the filename:
-			if ($this->properties()->serialise == 'yes') {
+			if ($this->serialise == 'yes') {
 				$data['name'] = $this->getHashedFilename($data['name']);
 			}
 
 			if (!General::uploadFile(
-				DOCROOT . '/' . trim($this->properties()->destination, '/'),
+				DOCROOT . '/' . trim($this->destination, '/'),
 				$data['name'], $data['tmp_name'],
 				$this->Symphony->Configuration->get('write_mode', 'file')
 			)) {
@@ -524,7 +524,7 @@
 				'/publish/', array(
 					'data'		=> $data,
 					'entry_id'	=> $entry_id,
-					'field_id'	=> $this->properties()->id
+					'field_id'	=> $this->id
 				)
 			);
 
@@ -587,7 +587,7 @@
 				'/frontend/', array(
 					'data'		=> $data,
 					'entry_id'	=> $entry_id,
-					'field_id'	=> $this->properties()->id,
+					'field_id'	=> $this->id,
 					'wrapper'	=> $item
 				)
 			);

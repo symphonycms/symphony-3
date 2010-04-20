@@ -21,7 +21,7 @@
 			$groups = array($this->{'element-name'} => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->properties()->{'id'});
+				$data = $r->getData($this->{'id'});
 
 				$value = $data['value'];
 
@@ -65,13 +65,13 @@
 		}
 
 		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`value` $order");
 		}
 
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->{'id'};
 
 			if ($andOperation) {
 				foreach ($data as $value) {
@@ -131,7 +131,7 @@
 			if(!$data){
 				## TODO: Don't rely on $_POST
 				if(isset($_POST) && !empty($_POST)) $value = 'no';
-				elseif($this->properties()->{'default-state'} == 'on') $value = 'yes';
+				elseif($this->{'default-state'} == 'on') $value = 'yes';
 				else $value = 'no';
 			}
 
@@ -141,7 +141,7 @@
 			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
 
 			$label->appendChild($input);
-			$label->appendChild(new DOMText(($this->properties()->{'description'} != NULL ? $this->properties()->{'description'} : $this->properties()->{'label'})));
+			$label->appendChild(new DOMText(($this->{'description'} != NULL ? $this->{'description'} : $this->{'label'})));
 
 			$wrapper->appendChild($label);
 		}
@@ -158,15 +158,15 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->{'id'};
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'default-state' => ($this->properties()->{'default-state'} ? $this->properties()->{'default-state'} : 'off'),
-				'description' => (trim($this->properties()->{'description'}) != '') ? $this->properties()->{'description'} : NULL
+				'default-state' => ($this->{'default-state'} ? $this->{'default-state'} : 'off'),
+				'description' => (trim($this->{'description'}) != '') ? $this->{'description'} : NULL
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -187,7 +187,7 @@
 			// Long Description
 			$label = Widget::Label(__('Long Description'));
 			$label->appendChild($document->createElement('i', __('Optional')));
-			$label->appendChild(Widget::Input('description', $this->properties()->{'description'}));
+			$label->appendChild(Widget::Input('description', $this->{'description'}));
 			$wrapper->appendChild($label);
 
 			$options_list = $document->createElement('ul');
@@ -197,7 +197,7 @@
 			$label = Widget::Label(__('Checked by default'));
 			$input = Widget::Input('default-state', 'on', 'checkbox');
 			
-			if ($this->properties()->{'default-state'} == 'on') {
+			if ($this->{'default-state'} == 'on') {
 				$input->setAttribute('checked', 'checked');
 			}
 
@@ -222,16 +222,16 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
 					) TYPE=MyISAM;",
-					$this->properties()->{'section'},
+					$this->{'section'},
 					$this->{'element-name'},
-					($this->properties()->{'default-state'} == 'on' ? 'yes' : 'no')
+					($this->{'default-state'} == 'on' ? 'yes' : 'no')
 				)
 			);
 		}
 
 		public function getExampleFormMarkup(){
-			$label = Widget::Label($this->properties()->{'label'});
-			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']', NULL, 'checkbox', ($this->properties()->{'default-state'} == 'on' ? array('checked' => 'checked') : array())));
+			$label = Widget::Label($this->{'label'});
+			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']', NULL, 'checkbox', ($this->{'default-state'} == 'on' ? array('checked' => 'checked') : array())));
 
 			return $label;
 		}
