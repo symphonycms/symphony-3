@@ -144,16 +144,6 @@
 			return ($data->value == 'yes' ? __('Yes') : __('No'));
 		}
 
-		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return self::STATUS_OK;
-		}
-
-		/*	Possibly could be removed.. */
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return parent::saveData($data, $errors, $entry);
-		}
-
-
 /*		Deprecated
 
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
@@ -222,6 +212,15 @@
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
+		}
+
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return self::STATUS_OK;
+		}
+
+		/*	Possibly could be removed.. */
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function createTable(){

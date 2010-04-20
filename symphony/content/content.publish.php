@@ -117,16 +117,16 @@
 			$entry->data()->published = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
-				'value' => 'yes'
+				'value' => 'no'
 			);
-/*
+
 			$entry->data()->{'tag-list'} = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
 				'handle' => 'tag',
 				'value' => 'Tag'
 			);
-
+/*
 			$entry->data()->upload = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,

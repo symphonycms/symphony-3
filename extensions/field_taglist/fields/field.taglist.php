@@ -6,11 +6,6 @@
 			$this->_name = __('Tag List');
 		}
 
-		public function set($field, $value){
-			if($field == 'pre_populate_source' && !is_array($value)) $value = preg_split('/\s*,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY);
-			$this->_fields[$field] = $value;
-		}
-
 		public function requiresSQLGrouping() {
 			return true;
 		}
@@ -19,12 +14,25 @@
 			return true;
 		}
 
-		public function canFilter() {
+		function allowDatasourceOutputGrouping(){
+			return true;
+		}
+
+		function canFilter(){
 			return true;
 		}
 
 		public function canImport(){
 			return true;
+		}
+
+		function canPrePopulate(){
+			return true;
+		}
+
+		public function set($field, $value){
+			if($field == 'pre_populate_source' && !is_array($value)) $value = preg_split('/\s*,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY);
+			$this->_fields[$field] = $value;
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
@@ -116,11 +124,14 @@
 			return array_unique($values);
 		}
 
+/*
+		Deprecated
+
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 
 			$status = self::STATUS_OK;
 
-			$data = preg_split('/\,\s*/i', $data, -1, PREG_SPLIT_NO_EMPTY);
+			$data = preg_split('/\,\s/i', $data, -1, PREG_SPLIT_NO_EMPTY);
 			$data = array_map('trim', $data);
 
 			if(empty($data)) return;
@@ -137,26 +148,6 @@
 			}
 
 			return $result;
-		}
-
-		static private function __tagArrayToString(array $tags){
-
-			if(empty($tags)) return NULL;
-
-			sort($tags);
-
-			return implode(', ', $tags);
-
-		}
-
-		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
-			$value = NULL;
-			
-			if(!is_null($data->value)){
-				$value = (is_array($data->value) ? self::__tagArrayToString($data->value) : $data->value);
-			}
-
-			return parent::prepareTableValue((object)array('value' => General::sanitize($value)), $link);
 		}
 
 		function commit(){
@@ -180,12 +171,29 @@
 			return ($field_id == 0 || !$field_id) ? false : true;
 		}
 
+*/
 		public function findDefaults(array &$fields){
 			if(!isset($fields['pre-populate-source'])) $fields['pre-populate-source'] = array('existing');
 		}
+		
+		static private function __tagArrayToString(array $tags){
 
-		function canPrePopulate(){
-			return true;
+			if(empty($tags)) return NULL;
+
+			sort($tags);
+
+			return implode(', ', $tags);
+
+		}
+
+		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
+			$value = NULL;
+
+			if(!is_null($data->value)){
+				$value = (is_array($data->value) ? self::__tagArrayToString($data->value) : $data->value);
+			}
+
+			return parent::prepareTableValue((object)array('value' => General::sanitize($value)), $link);
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors = null) {
@@ -198,37 +206,37 @@
 			$options = array(
 				array('existing', (is_array($suggestion_list_source) && in_array('existing', $suggestion_list_source)), __('Existing Values')),
 			);
-			
+
 			foreach (new SectionIterator as $section) {
 				$field_groups[$section->handle] = array(
 					'fields'	=> $section->fields,
 					'section'	=> $section
 				);
 			}
-			
+
 			foreach($field_groups as $group) {
-				
+
 				if(!is_array($group['fields'])) continue;
 
 				$fields = array();
-				
+
 				foreach($group['fields'] as $field) {
 					if($field->id != $this->id && $field->canPrePopulate()) {
 						$fields[] = array(
-							$field->id, 
-							(in_array($field->id, $this->{'pre-populate-source'})), 
+							$field->id,
+							(in_array($field->id, $this->{'pre-populate-source'})),
 							$field->label
 						);
-						
+
 					}
 				}
 
 				if(!empty($fields)) {
 					$options[] = array(
-						'label' => $group['section']->name, 
+						'label' => $group['section']->name,
 						'options' => $fields
 					);
-				}				
+				}
 			}
 
 			$label->appendChild(Widget::Select('suggestion-list-source', $options, array('multiple' => 'multiple')));
@@ -240,6 +248,34 @@
 			$options_list->setAttribute('class', 'options-list');
 			$this->appendShowColumnCheckbox($options_list);
 			$wrapper->appendChild($options_list);
+		}
+
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			var_dump($data);
+			return self::STATUS_OK;
+		}
+
+		/*	Possibly could be removed.. */
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			var_dump($data);
+						
+			$data = preg_split('/\,\s*/i', $data, -1, PREG_SPLIT_NO_EMPTY);
+			$data = array_map('trim', $data);
+
+			if(empty($data)) return;
+
+			// Do a case insensitive removal of duplicates
+			$data = General::array_remove_duplicates($data, true);
+
+			sort($data);
+
+			$result = array();
+			foreach($data as $value){
+				$result['value'][] = $value;
+				$result['handle'][] = Lang::createHandle($value);
+			}			
+			
+			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function createTable(){

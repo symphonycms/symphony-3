@@ -137,6 +137,8 @@
 				Symphony::Database()->insert('tbl_entries', (array)$entry->meta(), Database::UPDATE_ON_DUPLICATE);
 
 				foreach($section->fields as $field){
+					var_dump($field);
+
 					if(!isset($entry->data()->{$field->{'element-name'}})) continue;
 
 					$status = $field->saveData($entry->data()->{$field->{'element-name'}}, $errors, $entry);
