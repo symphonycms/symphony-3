@@ -392,7 +392,7 @@
 			$name->appendChild($document->createElement('i', $field->name()));
 			$item->appendChild($name);
 			
-			$input = Widget::Input('name', $field->properties()->{'element-name'}, 'hidden');
+			$input = Widget::Input('name', $field->{'element-name'}, 'hidden');
 			$item->appendChild($input);
 			
 			$wrapper->appendChild($item);

@@ -29,7 +29,7 @@
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
-			$name = $this->properties()->{'element-name'};
+			$name = $this->{'element-name'};
 			$value = null;
 
 			// New entry:
@@ -98,7 +98,7 @@
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->properties()->{'element-name'}));
+				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->{'element-name'}));
 			}
 		}
 
@@ -411,7 +411,7 @@
 						KEY `value` (`value`)
 					)',
 					$this->properties()->section,
-					$this->properties()->{'element-name'}
+					$this->{'element-name'}
 				)
 			);
 		}

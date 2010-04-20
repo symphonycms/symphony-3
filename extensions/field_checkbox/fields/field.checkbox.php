@@ -18,19 +18,19 @@
 
 			if(!is_array($records) || empty($records)) return;
 
-			$groups = array($this->properties()->{'element-name'} => array());
+			$groups = array($this->{'element-name'} => array());
 
 			foreach($records as $r){
 				$data = $r->getData($this->properties()->{'id'});
 
 				$value = $data['value'];
 
-				if(!isset($groups[$this->properties()->{'element-name'}][$handle])){
-					$groups[$this->properties()->{'element-name'}][$handle] = array('attr' => array('value' => $value),
+				if(!isset($groups[$this->{'element-name'}][$handle])){
+					$groups[$this->{'element-name'}][$handle] = array('attr' => array('value' => $value),
 																		 'records' => array(), 'groups' => array());
 				}
 
-				$groups[$this->properties()->{'element-name'}][$value]['records'][] = $r;
+				$groups[$this->{'element-name'}][$value]['records'][] = $r;
 
 			}
 
@@ -138,7 +138,7 @@
 			else $value = ($data['value'] == 'yes' ? 'yes' : 'no');
 
 			$label = Widget::Label();
-			$input = Widget::Input('fields['.$this->properties()->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
+			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
 
 			$label->appendChild($input);
 			$label->appendChild(new DOMText(($this->properties()->{'description'} != NULL ? $this->properties()->{'description'} : $this->properties()->{'label'})));
@@ -223,7 +223,7 @@
 						KEY `value` (`value`)
 					) TYPE=MyISAM;",
 					$this->properties()->{'section'},
-					$this->properties()->{'element-name'},
+					$this->{'element-name'},
 					($this->properties()->{'default-state'} == 'on' ? 'yes' : 'no')
 				)
 			);
@@ -231,7 +231,7 @@
 
 		public function getExampleFormMarkup(){
 			$label = Widget::Label($this->properties()->{'label'});
-			$label->appendChild(Widget::Input('fields['.$this->properties()->{'element-name'}.']', NULL, 'checkbox', ($this->properties()->{'default-state'} == 'on' ? array('checked' => 'checked') : array())));
+			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']', NULL, 'checkbox', ($this->properties()->{'default-state'} == 'on' ? array('checked' => 'checked') : array())));
 
 			return $label;
 		}

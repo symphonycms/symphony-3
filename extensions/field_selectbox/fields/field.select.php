@@ -41,7 +41,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (!is_array($data) or empty($data)) return;
 
-			$list = Symphony::Parent()->Page->createElement($this->properties()->{'element-name'});
+			$list = Symphony::Parent()->Page->createElement($this->{'element-name'});
 
 			if (!is_array($data['handle']) and !is_array($data['value'])) {
 				$data = array(
@@ -134,7 +134,7 @@
 				$options[] = array(General::sanitize($v), in_array($v, $data['value']), General::sanitize($v));
 			}
 
-			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
+			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
 			$label = Widget::Label($this->properties()->label);
@@ -391,7 +391,7 @@
 
 			if(!is_array($records) || empty($records)) return;
 
-			$groups = array($this->properties()->{'element-name'} => array());
+			$groups = array($this->{'element-name'} => array());
 
 			foreach($records as $r){
 				$data = $r->getData($this->properties()->id);
@@ -399,12 +399,12 @@
 				$value = $data['value'];
 				$handle = Lang::createHandle($value);
 
-				if(!isset($groups[$this->properties()->{'element-name'}][$handle])){
-					$groups[$this->properties()->{'element-name'}][$handle] = array('attr' => array('handle' => $handle, 'value' => $value),
+				if(!isset($groups[$this->{'element-name'}][$handle])){
+					$groups[$this->{'element-name'}][$handle] = array('attr' => array('handle' => $handle, 'value' => $value),
 																		 'records' => array(), 'groups' => array());
 				}
 
-				$groups[$this->properties()->{'element-name'}][$handle]['records'][] = $r;
+				$groups[$this->{'element-name'}][$handle]['records'][] = $r;
 
 			}
 
@@ -425,7 +425,7 @@
 						KEY `value` (`value`)
 					)',
 					$this->properties()->section,
-					$this->properties()->{'element-name'}
+					$this->{'element-name'}
 				)
 			);
 		}
@@ -439,7 +439,7 @@
 				$options[] = array($v, NULL, $v);
 			}
 
-			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
+			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
 			$label = Widget::Label($this->properties()->label);

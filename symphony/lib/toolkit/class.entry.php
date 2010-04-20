@@ -92,7 +92,7 @@
 			}
 			
 			foreach($section->fields as $field){
-				$field_handle = $field->properties()->{'element-name'};
+				$field_handle = $field->{'element-name'};
 				if(!isset($data[$field_handle])) continue;
 				$this->data()->$field_handle = $field->processFormData($data[$field_handle]);
 			}
@@ -126,7 +126,7 @@
 			
 			// Check the data
 			foreach($section->fields as $field){
-				$data = $entry->data()->{$field->properties()->{'element-name'}};
+				$data = $entry->data()->{$field->{'element-name'}};
 				$field->validateData($data, $errors, $entry);
 			}
 
@@ -137,7 +137,7 @@
 				Symphony::Database()->insert('tbl_entries', (array)$entry->meta(), Database::UPDATE_ON_DUPLICATE);
 				
 				foreach($section->fields as $field){
-					$status = $field->saveData($entry->data()->{$field->properties()->{'element-name'}}, $errors, $entry);
+					$status = $field->saveData($entry->data()->{$field->{'element-name'}}, $errors, $entry);
 					
 					// Cannot continue if a field failed to save
 					if($status != Field::STATUS_OK){
@@ -308,7 +308,7 @@
 			$section = Section::loadFromHandle($entry->get('section'));
 
 			foreach($section->fields as $field){
-				$element = $field->properties()->{'element-name'};
+				$element = $field->{'element-name'};
 				
 				if(isset($this->data()->$element)) continue;
 

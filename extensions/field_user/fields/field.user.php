@@ -68,7 +68,7 @@
 				$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
 			}
 
-			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
+			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
 			$attr = array();
@@ -217,7 +217,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 	        if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
 
-	        $list = Symphony::Parent()->Page->createElement($this->properties()->{'element-name'});
+	        $list = Symphony::Parent()->Page->createElement($this->{'element-name'});
 	        foreach($data['user_id'] as $user_id){
 	            $user = new User($user_id);
 	            $list->appendChild(
@@ -273,7 +273,7 @@
 						KEY `user_id` (`user_id`)
 					)',
 					$this->properties()->section,
-					$this->properties()->{'element-name'}
+					$this->{'element-name'}
 				)
 			);
 		}
@@ -288,7 +288,7 @@
 				$options[] = array($u->id, NULL, $u->getFullName());
 			}
 
-			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
+			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
 			$attr = array();

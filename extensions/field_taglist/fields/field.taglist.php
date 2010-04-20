@@ -30,7 +30,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (!is_array($data) or empty($data)) return;
 
-			$list = Symphony::Parent()->Page->createElement($this->properties()->{'element-name'});
+			$list = Symphony::Parent()->Page->createElement($this->{'element-name'});
 
 			if (!is_array($data['handle']) and !is_array($data['value'])) {
 				$data = array(
@@ -66,7 +66,7 @@
 
 			$label = Widget::Label($this->properties()->label);
 
-			$label->appendChild(Widget::Input('fields['.$this->properties()->{'element-name'}.']', (strlen($value) != 0 ? $value : NULL)));
+			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']', (strlen($value) != 0 ? $value : NULL)));
 
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
@@ -256,7 +256,7 @@
 						KEY `value` (`value`)
 					)',
 					$this->properties()->section,
-					$this->properties()->{'element-name'}
+					$this->{'element-name'}
 				)
 			);
 		}

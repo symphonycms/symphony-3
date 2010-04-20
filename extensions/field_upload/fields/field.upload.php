@@ -65,7 +65,7 @@
 						FULLTEXT KEY `file` (`file`)
 					)',
 					$this->properties()->section,
-					$this->properties()->{'element-name'}
+					$this->{'element-name'}
 				)
 			);
 		}
@@ -83,7 +83,7 @@
 		}
 
 		public function getExampleFormMarkup() {
-			$handle = $this->properties()->{'element-name'};
+			$handle = $this->{'element-name'};
 
 			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(Widget::Input('fields[{$handle}]', null, 'file'));
@@ -226,7 +226,7 @@
 				$error = 'Destination folder, <code>'.$this->properties()->destination.'</code>, is not writable. Please check permissions.';
 			}
 
-			$handle = $this->properties()->{'element-name'};
+			$handle = $this->{'element-name'};
 
 		// Preview ------------------------------------------------------------
 
@@ -563,7 +563,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode = false, $mode = null, $entry_id = null) {
 			if (!$this->sanitizeDataArray($data)) return null;
 
-			$item = Symphony::Parent()->Page->createElement($this->properties()->{'element-name'});
+			$item = Symphony::Parent()->Page->createElement($this->{'element-name'});
 			$item->setAttributeArray(array(
 				'size'	=> General::formatFilesize($data['size']),
 				'type'	=> General::sanitize($data['mimetype']),

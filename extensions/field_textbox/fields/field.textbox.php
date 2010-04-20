@@ -50,7 +50,7 @@
 					)
 				",
 				$this->properties()->{'section'},
-				$this->properties()->{'element-name'}
+				$this->{'element-name'}
 			));
 		}
 
@@ -306,7 +306,7 @@
 			$this->_driver->addPublishHeaders($this->_engine->Page);
 
 			$sortorder = $this->properties()->{'sortorder'};
-			$element_name = $this->properties()->{'element-name'};
+			$element_name = $this->{'element-name'};
 			$classes = array();
 
 			$label = Widget::Label($this->properties()->{'label'});
@@ -499,8 +499,8 @@
 
 		public function fetchIncludableElements() {
 			return array(
-				$this->properties()->{'element-name'} . ': formatted',
-				$this->properties()->{'element-name'} . ': unformatted'
+				$this->{'element-name'} . ': formatted',
+				$this->{'element-name'} . ': unformatted'
 			);
 		}
 
@@ -538,7 +538,7 @@
 			}
 
 			$wrapper->appendChild(new XMLElement(
-				$this->properties()->{'element-name'}, $value, $attributes
+				$this->{'element-name'}, $value, $attributes
 			));
 		}
 
@@ -819,7 +819,7 @@
 			if (!is_array($records) or empty($records)) return;
 
 			$groups = array(
-				$this->properties()->{'element-name'} => array()
+				$this->{'element-name'} => array()
 			);
 
 			foreach ($records as $record) {
@@ -827,7 +827,7 @@
 
 				$value = $data['value_formatted'];
 				$handle = $data['handle'];
-				$element = $this->properties()->{'element-name'};
+				$element = $this->{'element-name'};
 
 				if (!isset($groups[$element][$handle])) {
 					$groups[$element][$handle] = array(

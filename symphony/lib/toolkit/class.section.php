@@ -179,7 +179,7 @@
 
 		public function removeField($name){
 			foreach($this->fields as $index => $f){
-				if($f->properties()->label == $name || $f->properties()->{'element-name'} == $name){
+				if($f->properties()->label == $name || $f->{'element-name'} == $name){
 					unset($this->fields[$index]);
 				}
 			}

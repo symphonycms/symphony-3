@@ -39,8 +39,6 @@
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
 			$this->Form->setAttribute("class", $section->handle);
 
-		    $users = UserManager::fetch();
-
 			$filter = $filter_value = $where = $joins = NULL;
 			$current_page = (isset($_REQUEST['pg']) && is_numeric($_REQUEST['pg']) ? max(1, intval($_REQUEST['pg'])) : 1);
 
@@ -83,7 +81,7 @@
 			}
 			/*
 			$entry = Entry::loadFromID(3);
-
+*/
 			$entry = new Entry;
 			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
@@ -95,7 +93,7 @@
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
-
+/*
 			$entry->data()->date = (object)array(
 				'gmt' => strtotime(DateTimeObj::getGMT('c')),
 				'local' => strtotime(DateTimeObj::get('c')),
@@ -138,15 +136,14 @@
 				'mimetype' => 'image/jpeg',
 				'meta' => 'blah'
 			);
-
+*/
 		$messages = new MessageStack;
 		Entry::save($entry, $messages);
 		var_dump($messages); die();
-		
-		
+
+
 			$entries = array($entry);
-		*/
-		
+
 			## Table Body
 			$aTableBody = array();
 			$colspan = count($aTableHead);
@@ -181,7 +178,7 @@
 					foreach($section->fields as $column){
 						if($column->properties()->{'show-column'} != 'yes') continue;
 
-						$field_handle = $column->properties()->{'element-name'};
+						$field_handle = $column->{'element-name'};
 						if(!isset($entry->data()->$field_handle)){
 							$cells[] = Widget::TableData(__('None'), array('class' => 'inactive'));
 						}
@@ -435,7 +432,7 @@
 										'%s/symphony/publish/%s/?filter=%s:%s',
 										URL,
 										$as->get('handle'),
-										$field->properties()->{'element-name'},
+										$field->{'element-name'},
 										rawurlencode($search_value)
 									),
 									$entry->get('id'),
@@ -637,7 +634,7 @@
 			// Load all the fields for this section
 			$section_fields = array();
 			foreach($section->fields as $index => $field) {
-				$section_fields[$field->properties()->{'element-name'}] = $field;
+				$section_fields[$field->{'element-name'}] = $field;
 			}
 
 			// Parse the layout
@@ -736,14 +733,14 @@
 				$entry = new Entry;
 				$entry->section = $this->_context['section_handle'];
 				$entry->user_id = Administration::instance()->User->id;
-				
+
 				$post = General::getPostData();
 				$entry->setFieldDataFromFormArray($post['fields']);
-				
+
 				$errors = new MessageStack;
 				Entry::save($entry, $errors);
 				die();
-				
+
 				$section = Section::loadFromHandle($this->_context['section_handle']);
 
 				$entry =& EntryManager::instance()->create();

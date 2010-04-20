@@ -65,15 +65,15 @@
 		public function groupRecords($records){
 			if(!is_array($records) || empty($records)) return;
 
-			$groups = array($this->properties()->{'element-name'} => array());
+			$groups = array($this->{'element-name'} => array());
 
 			foreach($records as $r){
 				$data = $r->getData($this->properties()->{'id'});
 				$value = $data['relation_id'];
 				$primary_field = $this->__findPrimaryFieldValueFromRelationID($data['relation_id']);
 
-				if(!isset($groups[$this->properties()->{'element-name'}][$value])){
-					$groups[$this->properties()->{'element-name'}][$value] = array(
+				if(!isset($groups[$this->{'element-name'}][$value])){
+					$groups[$this->{'element-name'}][$value] = array(
 						'attr' => array(
 							'link-id' => $data['relation_id'],
 							'link-handle' => Lang::createHandle($primary_field['value'])),
@@ -82,7 +82,7 @@
 					);
 				}
 
-				$groups[$this->properties()->{'element-name'}][$value]['records'][] = $r;
+				$groups[$this->{'element-name'}][$value]['records'][] = $r;
 			}
 
 			return $groups;
@@ -213,7 +213,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 			if(!is_array($data) || empty($data) || is_null($data['relation_id'])) return;
 
-			$list = new XMLElement($this->properties()->{'element-name'});
+			$list = new XMLElement($this->{'element-name'});
 
 			if(!is_array($data['relation_id'])) $data['relation_id'] = array($data['relation_id']);
 
@@ -338,7 +338,7 @@
 				}
 			}
 
-			$fieldname = 'fields['.$this->properties()->{'element-name'}.']';
+			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->properties()->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
 			$label = Widget::Label($this->properties()->{'label'});
@@ -540,7 +540,7 @@
 		}
 
 		public function getExampleFormMarkup(){
-			return Widget::Input('fields['.$this->properties()->{'element-name'}.']', '...', 'hidden');
+			return Widget::Input('fields['.$this->{'element-name'}.']', '...', 'hidden');
 		}
 
 	}
