@@ -52,7 +52,7 @@
 
 			$callback = Administration::instance()->getPageCallback();
 
-			if ($this->properties()->{'default-to_current_user'} == 'yes' && empty($data) && empty($_POST)) {
+			if ($this->properties()->{'default-to-current-user'} == 'yes' && empty($data) && empty($_POST)) {
 				$value = array(Administration::instance()->User->id);
 			}
 
@@ -75,21 +75,23 @@
 
 			if($this->properties()->{'allow-multiple-selection'} == 'yes') $attr['multiple'] = 'multiple';
 
-			$label = Widget::Label($this->properties()->{'label'});
+			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(Widget::Select($fieldname, $options, $attr));
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
 		}
 
-		public function prepareTableValue($data, SymphonyDOMElement $link=NULL){
+		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
 
-			if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
+			if(!is_array($data->{'user_id'})) $data->{'user_id'} = array($data->{'user_id'});
 
-			if(empty($data['user_id'])) return __('None');
+			if(empty($data->{'user_id'})) return __('None');
 
 			$value = array();
 
-			foreach($data['user_id'] as $user_id){
+			$fragment = Symphony::Parent()->Page->createDocumentFragment();
+
+			foreach($data->{'user_id'} as $user_id){
 
 				if(is_null($user_id)) continue;
 
@@ -97,26 +99,30 @@
 
 				if($user instanceof User){
 
+					if($fragment->hasChildNodes()) $fragment->appendChild(new DOMText(', '));
+
 					if(is_null($link)){
-						$a = Widget::Anchor(
-							General::sanitize($user->getFullName()),
-							ADMIN_URL . '/system/users/edit/' . $user->get('id') . '/'
+						$fragment->appendChild(
+							Widget::Anchor(
+								General::sanitize($user->getFullName()),
+								ADMIN_URL . '/system/users/edit/' . $user->get('id') . '/'
+							)
 						);
-						$value[] = $a;
 					}
 
 					else{
-						$value[] = $user->getFullName();
+						$link->setValue($user->getFullName());
+						$fragment->appendChild($link);
 					}
 				}
 			}
 
-			if(!is_null($link)){
-				$link->setValue(General::sanitize(implode(', ', $value)));
-				return $link;
+			if(!$fragment->hasChildNodes()) {
+				return __('None');
 			}
-
-			return (empty($value) ? __('None') : implode(', ', $value));
+			else{
+				return $fragment;
+			}
 		}
 
 		public function isSortable(){
@@ -132,12 +138,12 @@
 		}
 
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`user_id` $order");
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->properties()->id;
 
 			if (self::isFilterRegex($data[0])) {
 				self::$key++;
@@ -191,15 +197,15 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->properties()->id;
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
 
 			$fields = array(
 				'field_id' => $field_id,
-				'allow_multiple_selection' => ($this->properties()->{'allow-multiple-selection'} ? $this->properties()->{'allow-multiple-selection'} : 'no'),
-				'default_to_current_user' => ($this->properties()->{'default-to_current_user'} ? $this->properties()->{'default-to_current_user'} : 'no')
+				'allow-multiple-selection' => ($this->properties()->{'allow-multiple-selection'} ? $this->properties()->{'allow-multiple-selection'} : 'no'),
+				'default-to-current-user' => ($this->properties()->{'default-to-current-user'} ? $this->properties()->{'default-to-current-user'} : 'no')
 			);
 
 			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
@@ -225,7 +231,7 @@
 	    }
 
 		public function findDefaults(&$fields){
-			if(!isset($fields['allow_multiple_selection'])) $fields['allow_multiple_selection'] = 'no';
+			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
 		}
 
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
@@ -235,21 +241,19 @@
 			$options_list->setAttribute('class', 'options-list');
 
 			## Allow multiple selection
-			$label = Widget::Label();
+			$label = Widget::Label(__('Allow selection of multiple users'));
 			$input = Widget::Input('allow-multiple-selection', 'yes', 'checkbox');
 			if($this->properties()->{'allow-multiple-selection'} == 'yes') $input->setAttribute('checked', 'checked');
 
-			$label->appendChild($input);
-			$label->setValue(__('Allow selection of multiple users'));
+			$label->prependChild($input);
 			$options_list->appendChild($label);
 
 			## Default to current logged in user
-			$label = Widget::Label();
+			$label = Widget::Label(__('Select current user by default'));
 			$input = Widget::Input('default-to-current-user', 'yes', 'checkbox');
 			if($this->properties()->{'default-to-current-user'} == 'yes') $input->setAttribute('checked', 'checked');
 
-			$label->appendChild($input);
-			$label->setValue(__('Select current user by default'));
+			$label->prependChild($input);
 			$options_list->appendChild($label);
 
 			$this->appendShowColumnCheckbox($options_list);
@@ -268,7 +272,7 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `user_id` (`user_id`)
 					)',
-					$this->properties()->{'section'},
+					$this->properties()->section,
 					$this->properties()->{'element-name'}
 				)
 			);
@@ -291,7 +295,7 @@
 
 			if($this->properties()->{'allow-multiple-selection'} == 'yes') $attr['multiple'] = 'multiple';
 
-			$label = Widget::Label($this->properties()->{'label'});
+			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(Widget::Select($fieldname, $options, $attr));
 
 			return $label;

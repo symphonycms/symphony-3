@@ -5,6 +5,7 @@
 	Class XMLDocument extends DOMDocument{
 
 		protected $errors;
+		protected static $_errorLog;
 
 		public function __construct($version='1.0', $encoding='utf-8'){
 			parent::__construct($version, $encoding);
@@ -65,18 +66,24 @@
 			if (is_null($this->firstChild)) {
 				$this->appendChild($node);
 			}
-			
+
 			else {
 				$this->insertBefore($node, $this->firstChild);
 			}
 		}
-		
+
 		public function setValue($value) {
 			//	TODO: Possibly might need to Remove existing Children before adding..
 			if($value instanceof DOMElement || $value instanceof DOMDocumentFragment) {
 				$this->appendChild($value);
 			}
-			
+
+			elseif(is_array($value) && !empty($value)) {
+				foreach($value as $v) {
+					$this->appendChild($v);
+				}
+			}
+
 			elseif(!is_null($value) && is_string($value)) {
 				$this->nodeValue = $value;
 			}
@@ -87,7 +94,7 @@
 				foreach($attributes as $key => $val) $this->setAttribute($key, $val);
 			}
 		}
-		
+
 		public function remove() {
 			$this->parentNode->removeChild($this);
 		}

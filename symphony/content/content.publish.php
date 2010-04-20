@@ -33,6 +33,7 @@
 		}
 
 		public function __viewIndex(){
+
 			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $this->_context['section_handle']));
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
@@ -57,7 +58,7 @@
 			$aTableHead = array();
 
 			foreach($section->fields as $column){
-				if($column->properties()->show_column != 'yes') continue;
+				if($column->properties()->{'show-column'} != 'yes') continue;
 
 				$label = $column->properties()->label;
 
@@ -80,14 +81,79 @@
 				else */
 				$aTableHead[] = array($label, 'col');
 			}
+			/*
+			$entry = Entry::loadFromID(3);
 
+			$entry = new Entry;
+			$entry->section = 'blog';
+			$entry->user_id = Administration::instance()->User->id;
+			$entry->id = 3;
+
+			$entry->data()->name = (object)array(
+				'handle' => 'an-entry',
+				'value' => 'An & Entry',
+				'id' => 1,
+				'entry_id' => $entry->id
+			);
+
+			$entry->data()->date = (object)array(
+				'gmt' => strtotime(DateTimeObj::getGMT('c')),
+				'local' => strtotime(DateTimeObj::get('c')),
+				'value' => DateTimeObj::get('c'),
+				'id' => 1,
+				'entry_id' => $entry->id
+			);
+			$entry->data()->category = (object)array(
+				'handle' => 'blah',
+				'value' => 'Blah &',
+				'id' => 1,
+				'entry_id' => $entry->id
+			);
+
+			$entry->data()->user = (object)array(
+				'id' => 1,
+				'entry_id' => $entry->id,
+				'user_id' => 1
+			);
+
+			$entry->data()->published = (object)array(
+				'id' => 1,
+				'entry_id' => $entry->id,
+				'value' => 'yes'
+			);
+
+			$entry->data()->{'tag-list'} = (object)array(
+				'id' => 1,
+				'entry_id' => $entry->id,
+				'handle' => 'tag',
+				'value' => 'Tag'
+			);
+
+			$entry->data()->upload = (object)array(
+				'id' => 1,
+				'entry_id' => $entry->id,
+				'name' => 'Image 1',
+				'file' => '/path/to/file',
+				'size' => 2342343,
+				'mimetype' => 'image/jpeg',
+				'meta' => 'blah'
+			);
+
+		$messages = new MessageStack;
+		Entry::save($entry, $messages);
+		var_dump($messages); die();
+		
+		
+			$entries = array($entry);
+		*/
+		
 			## Table Body
 			$aTableBody = array();
 			$colspan = count($aTableHead);
 
-			if(!is_array($entries['records']) || empty($entries['records'])){
+			if(!is_array($entries) || empty($entries)){
 
-				$aTableBody = array(Widget::TableRow(
+				$aTableBody[] = Widget::TableRow(
 					array(
 						Widget::TableData(__('None found.'), array(
 								'class' => 'inactive',
@@ -97,10 +163,43 @@
 					), array(
 						'class' => 'odd'
 					)
-				));
+				);
 			}
 
 			else{
+
+				foreach($entries as $entry){
+					$cells = array();
+
+					$link = Widget::Anchor(
+						'None',
+						Administration::instance()->getCurrentPageURL() . "edit/{$entry->id}/",
+						array('id' => $entry->id, 'class' => 'content')
+					);
+
+					$first = true;
+					foreach($section->fields as $column){
+						if($column->properties()->{'show-column'} != 'yes') continue;
+
+						$field_handle = $column->properties()->{'element-name'};
+						if(!isset($entry->data()->$field_handle)){
+							$cells[] = Widget::TableData(__('None'), array('class' => 'inactive'));
+						}
+						else{
+							$cells[] = Widget::TableData($column->prepareTableValue(
+								$entry->data()->$field_handle,
+								($first == true ? $link : NULL)
+							));
+						}
+
+						$first = false;
+					}
+
+					if(!empty($cells)){
+						$aTableBody[] = Widget::TableRow($cells);
+					}
+				}
+
 			}
 
 			$table = Widget::Table(Widget::TableHead($aTableHead), NULL, Widget::TableBody($aTableBody));
@@ -336,7 +435,7 @@
 										'%s/symphony/publish/%s/?filter=%s:%s',
 										URL,
 										$as->get('handle'),
-										$field->properties()->element_name,
+										$field->properties()->{'element-name'},
 										rawurlencode($search_value)
 									),
 									$entry->get('id'),
@@ -538,7 +637,7 @@
 			// Load all the fields for this section
 			$section_fields = array();
 			foreach($section->fields as $index => $field) {
-				$section_fields[$field->properties()->element_name] = $field;
+				$section_fields[$field->properties()->{'element-name'}] = $field;
 			}
 
 			// Parse the layout
@@ -634,6 +733,14 @@
 
 			if(array_key_exists('save', $_POST['action']) || array_key_exists("done", $_POST['action'])) {
 
+				$entry = new Entry;
+				$entry->section = $this->_context['section_handle'];
+				$entry->user_id = Administration::instance()->User->id;
+				
+				$post = General::getPostData();
+				$entry->setFieldDataFromFormArray($post['fields']);
+				var_dump($entry); die();
+				
 				$section = Section::loadFromHandle($this->_context['section_handle']);
 
 				$entry =& EntryManager::instance()->create();
@@ -645,10 +752,10 @@
 				$post = General::getPostData();
 				$fields = $post['fields'];
 
-				if(__ENTRY_FIELD_ERROR__ == $entry->checkPostData($fields, $this->_errors)):
+				if(Entry::STATUS_ERROR == $entry->checkPostData($fields, $this->_errors)):
 					$this->pageAlert(__('Some errors were encountered while attempting to save.'), Alert::ERROR);
 
-				elseif(__ENTRY_OK__ != $entry->setDataFromPost($fields, $error)):
+				elseif(Entry::STATUS_ERROR != $entry->setDataFromPost($fields, $error)):
 					$this->pageAlert($error['message'], Alert::ERROR);
 
 				else:
@@ -866,10 +973,10 @@
 				$post = General::getPostData();
 				$fields = $post['fields'];
 
-				if(__ENTRY_FIELD_ERROR__ == $entry->checkPostData($fields, $this->_errors)):
+				if(Entry::STATUS_ERROR == $entry->checkPostData($fields, $this->_errors)):
 					$this->pageAlert(__('Some errors were encountered while attempting to save.'), Alert::ERROR);
 
-				elseif(__ENTRY_OK__ != $entry->setDataFromPost($fields, $error)):
+				elseif(Entry::STATUS_ERROR != $entry->setDataFromPost($fields, $error)):
 					$this->pageAlert($error['message'], Alert::ERROR);
 
 				else:

@@ -364,7 +364,7 @@
 		}
 */
 		public function emptyXMLSet(DOMElement $xml=NULL){
-			if(is_null($xml)) $xml = $this->createElement($this->parameters()->{'root-element'});
+			if(is_null($xml)) $xml = Symphony::Parent()->Page->createElement($this->parameters()->{'root-element'});
 			$xml->appendChild($this->__noRecordsFound());
 
 			return $xml;
@@ -388,7 +388,7 @@
 		}
 
 		protected function __noRecordsFound(){
-			return $this->createElement('error', __('No records found.'));
+			return Symphony::Parent()->Page->createElement('error', __('No records found.'));
 		}
 
 		//	TODO: Rewrite __processParametersInString.

@@ -630,6 +630,12 @@
 		width: 100%;
 		padding: 2px;
 	}
+	form select optgroup {
+		font-weight: bold;
+	}
+	form select optgroup > option {
+		font-weight: normal;
+	}
 	form input {
 		cursor: text;
 	}

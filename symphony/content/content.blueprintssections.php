@@ -449,6 +449,7 @@
 
 			$layout = new Layout();
 			$content = $layout->createColumn(Layout::LARGE);
+			$fieldset = Widget::Fieldset(__('Layout'));
 			
 			if(!($this->section instanceof Section)){
 				$this->section = new Section;
@@ -457,7 +458,7 @@
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
 			
-			$this->appendViewOptions();
+			//$this->appendViewOptions();
 			
 			$widget = $this->createElement('div');
 			$widget->setAttribute('id', 'section-layout');
@@ -526,7 +527,8 @@
 			$widget->appendChild($layouts);
 			$widget->appendChild($templates);
 			$widget->appendChild($columns);
-			$content->appendChild($widget);
+			$fieldset->appendChild($widget);
+			$content->appendChild($fieldset);
 			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');

@@ -88,7 +88,7 @@
 			return $groups;
 		}
 
-		public function prepareTableValue($data, XMLElement $link=NULL){
+		public function prepareTableValue(StdClass $data, DOMElement $link=NULL){
 			$result = array();
 
 			if(!is_array($data) || (is_array($data) && !isset($data['relation_id']))) return parent::prepareTableValue(NULL);

@@ -1,5 +1,5 @@
 <?php
-	
+
 	require_once EXTENSIONS . '/ds_dynamicxml/lib/dynamicxmldatasource.php';
 
 	Final Class DataSource%1$s extends DynamicXMLDataSource {
@@ -17,22 +17,23 @@
 					'version'		=> %6$s,
 					'release-date'	=> %7$s
 				);
-		
+
 			$this->_parameters = (object)array(
 				'timeout' => %8$d,
 				'cache-lifetime' => %9$d,
-				'namespaces' => %10$s,
-				'url' => %11$s,
-				'xpath' => %12$s,
-				'root-element' => %13$s
+				'automatically-discover-namespaces' => %10$s,
+				'namespaces' => %11$s,
+				'url' => %12$s,
+				'xpath' => %13$s,
+				'root-element' => %14$s
 			);
-			
+
 		}
-		
+
 		public function allowEditorToParse(){
 			return true;
 		}
-		
+
 	}
 
 	return 'DataSource%1$s';

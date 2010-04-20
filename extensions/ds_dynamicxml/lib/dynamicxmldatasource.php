@@ -3,8 +3,7 @@
 	require_once CORE . '/class.cache.php';
 	require_once TOOLKIT . '/class.xslproc.php';
 	require_once TOOLKIT . '/class.datasource.php';
-
-	require_once 'class.gateway.php';
+	require_once TOOLKIT . '/class.gateway.php';
 
 	Class DynamicXMLDataSource extends DataSource {
 
@@ -12,12 +11,13 @@
 			// Set Default Values
 			$this->_about = new StdClass;
 			$this->_parameters = (object)array(
+				'timeout' => 6,
 				'cache-lifetime' => 60,
+				'automatically-discover-namespaces' => 'yes',
 				'namespaces' => array(),
 				'url' => NULL,
 				'xpath' => '/',
 				'root-element' => NULL,
-				'redirect-on-empty' => false
 			);
 		}
 
@@ -62,6 +62,8 @@
 			if(isset($this->parameters()->url)) $this->parameters()->url = $this->__processParametersInString($this->parameters()->url, $this->_env, true, true);
 			if(isset($this->parameters()->xpath)) $this->parameters()->xpath = $this->__processParametersInString($this->parameters()->xpath, $this->_env);
 */
+
+/*
 			$xsl = $doc->createElement('xsl:stylesheet');
 			$xsl->setAttributeArray(array('version' => '1.0', 'xmlns:xsl' => 'http://www.w3.org/1999/XSL/Transform'));
 
@@ -76,7 +78,9 @@
 
 			## Namespaces
 			if(is_array($this->parameters()->namespaces) && !empty($this->parameters()->namespaces)){
-				foreach($this->parameters()->namespaces as $name => $uri) $instruction->setAttribute('xmlns' . ($name ? ":{$name}" : NULL), $uri);
+				foreach($this->parameters()->namespaces as $index => $namespace) {
+					$instruction->setAttribute($namespace['name'], $namespace['uri']);
+				}
 			}
 
 			## XPath
@@ -85,7 +89,7 @@
 			$template->appendChild($instruction);
 			$xsl->appendChild($template);
 			$doc->appendChild($xsl);
-
+*/
 			$cache_id = md5($this->parameters()->url . serialize($this->parameters()->namespaces) . $this->parameters()->xpath);
 
 			$cache = Cache::instance();
@@ -200,7 +204,7 @@
 
 				$result = new XMLDocument;
 				$root =	$result->createElement($this->parameters()->{'root-element'});
-
+/*
 				$ret = XSLProc::transform($xml, $doc->saveXML());
 
 				if(XSLProc::hasErrors()){
@@ -235,6 +239,56 @@
 					$root->appendChild($fragment);
 					$root->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
 					$root->setAttribute('creation', $creation);
+				}
+*/
+
+				//	XPath Approach, saves Transforming the Document.
+				$xDom = new XMLDocument;
+				$xDom->loadXML($xml);
+
+				if($xDom->hasErrors()) {
+
+					$root->setAttribute('valid', 'false');
+					$root->appendChild(
+						$result->createElement('error', __('XML returned is invalid.'))
+					);
+
+					$messages = $result->createElement('messages');
+
+					foreach($xDom->getErrors() as $e){
+						if(strlen(trim($e->message)) == 0) continue;
+						$messages->appendChild(
+							$result->createElement('item', General::sanitize($e->message))
+						);
+					}
+					$root->appendChild($messages);
+
+				}
+
+				else {
+					if($writeToCache) $cache->write($cache_id, $xml);
+
+					$xpath = new DOMXPath($xDom);
+
+					## Namespaces
+					if(is_array($this->parameters()->namespaces) && !empty($this->parameters()->namespaces)){
+						foreach($this->parameters()->namespaces as $index => $namespace) {
+							$xpath->registerNamespace($namespace['name'], $namespace['uri']);
+						}
+					}
+
+					$xpath_list = $xpath->query($this->parameters()->xpath);
+
+					foreach($xpath_list as $node) {
+						$root->appendChild(
+							$result->importNode($node, true)
+						);
+					}
+
+					$root->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
+					$root->setAttribute('creation', $creation);
+
+					if(!$root->hasChildNodes()) $this->_force_empty_result = true;
 				}
 
 				$result->appendChild($root);

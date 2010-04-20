@@ -42,7 +42,7 @@
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data['gmt']);
 			}
 
-			$label = Widget::Label($this->properties()->{'label'}, Widget::Input("fields[{$name}]", $value), array(
+			$label = Widget::Label($this->properties()->label, Widget::Input("fields[{$name}]", $value), array(
 				'class' => 'date')
 			);
 
@@ -60,8 +60,8 @@
 			$message = NULL;
 
 			if(!self::__isValidDateString($data)){
-				$message = __("The date specified in '%s' is invalid.", array($this->properties()->{'label'}));
-				return self::ERROR_INVALID_FIELDS;
+				$message = __("The date specified in '%s' is invalid.", array($this->properties()->label));
+				return self::ERROR_INVALID;
 			}
 
 			return self::STATUS_OK;
@@ -102,14 +102,14 @@
 			}
 		}
 
-		public function prepareTableValue($data, SymphonyDOMElement $link=NULL) {
+		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL) {
 			$value = null;
 
-			if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data['gmt']);
+			if (isset($data->gmt) && !is_null($data->gmt)) {
+				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data->gmt);
 			}
 
-			return parent::prepareTableValue(array('value' => $value), $link);
+			return parent::prepareTableValue((object)array('value' => $value), $link);
 		}
 
 		public function getParameterPoolValue($data){
@@ -123,7 +123,7 @@
 			$groups = array('year' => array());
 
 			foreach($records as $r){
-				$data = $r->getData($this->properties()->{'id'});
+				$data = $r->getData($this->properties()->id);
 
 				$info = getdate($data['local']);
 
@@ -151,7 +151,7 @@
 
 
 		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
+			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->properties()->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`gmt` $order");
 		}
 
@@ -191,7 +191,7 @@
 
 		protected function __buildSimpleFilterSQL($data, &$joins, &$where, $andOperation=false){
 
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->properties()->id;
 
 			if($andOperation):
 
@@ -215,7 +215,7 @@
 
 		protected function __buildRangeFilterSQL($data, &$joins, &$where, $andOperation=false){
 
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->properties()->id;
 
 			if(empty($data)) return;
 
@@ -354,7 +354,7 @@
 
 			if(!parent::commit()) return false;
 
-			$field_id = $this->properties()->{'id'};
+			$field_id = $this->properties()->id;
 			$handle = $this->handle();
 
 			if($field_id === false) return false;
@@ -376,23 +376,21 @@
 
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
-			
+
 			$document = $wrapper->ownerDocument;
+
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
 
 			$label = Widget::Label(__('Pre-populate this field with today\'s date'));
 			$input = Widget::Input('pre-populate', 'yes', 'checkbox');
-			
-			if ($this->properties()->{'pre-populate'} == 'yes') {
-				$input->setAttribute('checked', 'checked');
-			}
+			if($this->properties()->{'pre-populate'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->prependChild($input);
 			$item = $document->createElement('li');
 			$item->appendChild($label);
 			$options_list->appendChild($item);
-			
+
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
@@ -412,11 +410,11 @@
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
 					)',
-					$this->properties()->{'section'},
+					$this->properties()->section,
 					$this->properties()->{'element-name'}
 				)
 			);
 		}
 	}
-	
+
 	return 'fieldDate';

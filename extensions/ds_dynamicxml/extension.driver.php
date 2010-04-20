@@ -38,6 +38,49 @@
 				if(isset($data['xpath'])) $datasource->parameters()->xpath = $data['xpath'];
 				if(isset($data['cache-lifetime'])) $datasource->parameters()->{'cache-lifetime'} = $data['cache-lifetime'];
 				if(isset($data['timeout'])) $datasource->parameters()->{'timeout'} = $data['timeout'];
+
+				// Namespaces ---------------------------------------------------------
+
+				if(isset($data['automatically-discover-namespaces'])) {
+					$datasource->parameters()->{'automatically-discover-namespaces'} = $data['automatically-discover-namespaces'];
+
+					if ($data['automatically-discover-namespaces'] == 'yes') {
+						$gateway = new Gateway();
+						$gateway->init();
+						$gateway->setopt('URL', $datasource->parameters()->url);
+						$gateway->setopt('TIMEOUT', $datasource->parameters()->timeout);
+						$result = $gateway->exec();
+
+						preg_match_all('/xmlns:([a-z][a-z-0-9\-]*)="([^\"]+)"/i', $result, $matches);
+
+						if (isset($matches[2][0])) {
+							$namespaces = array();
+
+							if (!is_array($data['namespaces'])) {
+								$data['namespaces'] = array();
+							}
+
+							foreach ($data['namespaces'] as $namespace) {
+								$namespaces[] = $namespace['name'];
+								$namespaces[] = $namespace['uri'];
+							}
+
+							foreach ($matches[2] as $index => $uri) {
+								$name = $matches[1][$index];
+
+								if (in_array($name, $namespaces) or in_array($uri, $namespaces)) continue;
+
+								$namespaces[] = $name;
+								$namespaces[] = $uri;
+
+								$datasource->parameters()->namespaces[$index] = array(
+									'name'	=> $name,
+									'uri'	=> $uri
+								);
+							}
+						}
+					}
+				}
 			}
 
 			return $datasource;
@@ -96,7 +139,7 @@
 			$ol = Symphony::Parent()->Page->createElement('ol');
 			$ol->setAttribute('class', 'filters-duplicator');
 
-			if(is_array($datasource->parameters()->namespaces))	foreach($datasource->parameters()->namespaces as $name => $uri) {
+			if(is_array($datasource->parameters()->namespaces))	foreach($datasource->parameters()->namespaces as $index => $namespace) {
 
 				$li = Symphony::Parent()->Page->createElement('li');
 				$li->appendChild(Symphony::Parent()->Page->createElement('h4', 'Namespace'));
@@ -105,11 +148,11 @@
 				$group->setAttribute('class', 'group');
 
 				$label = Widget::Label(__('Name'));
-				$label->appendChild(Widget::Input("fields[namespaces][name][{$index}]", General::sanitize($name)));
+				$label->appendChild(Widget::Input("fields[namespaces][name][{$index}]", General::sanitize($namespace['name'])));
 				$group->appendChild($label);
 
 				$label = Widget::Label(__('URI'));
-				$label->appendChild(Widget::Input("fields[namespaces][uri][{$index}]", General::sanitize($uri)));
+				$label->appendChild(Widget::Input("fields[namespaces][uri][{$index}]", General::sanitize($namespace['uri'])));
 				$group->appendChild($label);
 
 				$li->appendChild($group);
@@ -142,20 +185,19 @@
 			$div->appendChild($ol);
 			$fieldset->appendChild($div);
 
-			$fieldset->appendChild(Widget::Input('automatically_discover_namespaces', 'no', 'hidden'));
+			$input = Widget::Input('fields[automatically-discover-namespaces]', 'yes', 'checkbox');
+			if ($datasource->parameters()->{'automatically-discover-namespaces'} == 'yes') {
+				$input->setAttribute('checked', 'checked');
+			}
 
-			// TODO: Import this feature from the XML importer extension.
-
-			/*
-			$input = Widget::Input('automatically_discover_namespaces', 'yes', 'checkbox');
-			$label = Widget::Label(__('%s Automatically discover namespaces', array($input->generate())));
+			$label = Widget::Label(__('Automatically discover namespaces'));
+			$label->prependChild($input);
 			$fieldset->appendChild($label);
 
-			$help = new XMLElement('p');
+			$help = Symphony::Parent()->Page->createElement('p');
 			$help->setAttribute('class', 'help');
 			$help->setValue(__('Search the source document for namespaces, any that it finds will be added to the declarations above.'));
 			$fieldset->appendChild($help);
-			*/
 
 			$label = Widget::Label(__('Included Elements'));
 			$label->appendChild(Widget::Input('fields[xpath]', General::sanitize($datasource->parameters()->xpath)));
@@ -190,7 +232,7 @@
 			}
 			$fieldset->appendChild($label);
 
-			$input = Widget::Input('fields[timeout]', max(6, intval($datasource->parameters()->{'timeout'})));
+			$input = Widget::Input('fields[timeout]', max(1, intval($datasource->parameters()->{'timeout'})));
 			$input->setAttribute('size', 4);
 
 			$fragment = Symphony::Parent()->Page->createDocumentFragment();

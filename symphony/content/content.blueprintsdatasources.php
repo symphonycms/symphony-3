@@ -47,8 +47,8 @@
 			$dsTableHead = array(
 				array(__('Name'), 'col'),
 				array(__('Source'), 'col'),
-				array(__('Views'), 'col'),
 				array(__('Type'), 'col'),
+				array(__('Views Using'), 'col'),
 				array(__('Author'), 'col')
 			);
 
@@ -81,8 +81,6 @@
 						);
 					}
 				}
-
-				//var_dump(self::$_loaded_views);
 
 				foreach ($datasources as $pathname) {
 					$ds = DataSource::load($pathname);
@@ -154,7 +152,7 @@
 					}
 
 					$dsTableBody[] = Widget::TableRow(array(
-						$col_name, $col_source, $col_views, $col_type, $col_author
+						$col_name, $col_source, $col_type, $col_views, $col_author
 					));
 				}
 			}
