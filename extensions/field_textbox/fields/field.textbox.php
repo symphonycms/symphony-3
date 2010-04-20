@@ -386,24 +386,8 @@
 	-------------------------------------------------------------------------*/
 		
 		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
-			$data->entry_id = $entry->id;
-			if(!isset($data->id)) $data->id = NULL;
-			
 			$data->value_formatted = $this->applyFormatting($data->value);
-			
-			try{
-				Symphony::Database()->insert(
-					sprintf('tbl_data_%s_%s', $entry->section, $this->properties()->{'element_name'}),
-					(array)$data,
-					Database::UPDATE_ON_DUPLICATE
-				);
-			}
-			catch(DatabaseException $e){
-				
-			}
-			catch(Exception $e){
-				
-			}
+			return parent::saveData($data, $errors, $entry);
 		}
 		
 		public function applyFormatting($value) {

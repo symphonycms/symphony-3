@@ -3,6 +3,33 @@
 	**	NO DBC INTEGRATION HAS BEEN DONE ON THIS PAGE
 	*/
 	
+	Class EntryResult extends DBCMySQLResult{
+		public function current(){
+			$record = parent::current();
+			$entry = new Entry;
+			foreach($record as $key => $value){
+				$entry->$key = $value;
+			}
+			
+			// Load the section
+			try{
+				$section = Section::loadFromHandle($entry->section);
+			}
+			catch(SectionException $e){
+				throw new EntryException('Section specified, "'.$entry->section.'", in Entry object is invalid.');
+			}
+			catch(Exception $e){
+				throw new EntryException('The following error occurred during saving: ' . $e->getMessage());
+			}
+			
+			foreach($section->fields as $field){
+				$entry->data()->{$field->properties()->{'element_name'}} = $field->loadDataFromDatabase($entry);
+			}
+			
+			return $entry;
+		}
+	}
+	
 	Class EntryException extends Exception {}
 
 	Class Entry{
@@ -44,6 +71,14 @@
 			return $this->data;
 		}
 		
+		public function meta(){
+			return $this->meta;
+		}
+		
+		public static function loadFromID($id){
+			return Symphony::Database()->query("SELECT * FROM `tbl_entries` WHERE `id` = {$id} LIMIT 1", array(), 'EntryResult')->current();
+		}
+		
 		public static function save(self $entry, MessageStack &$errors){
 			
 			if(!isset($entry->section) || strlen(trim($entry->section)) == 0){
@@ -54,6 +89,10 @@
 			if(!isset($entry->id) || is_null($entry->id)){
 				$entry->id = self::generateID($entry->section, $entry->user_id);
 			}
+			
+			// Update the modification details
+			$entry->modification_date = DateTimeObj::get('c');
+			$entry->modification_date_gmt = DateTimeObj::getGMT('c');
 			
 			// Load the section
 			try{
@@ -74,6 +113,10 @@
 			
 			// Attempt the saving part
 			if($errors->length() == 0){
+				
+				// Update the meta row
+				Symphony::Database()->insert('tbl_entries', (array)$entry->meta(), Database::UPDATE_ON_DUPLICATE);
+				
 				foreach($section->fields as $field){
 					$status = $field->saveData($entry->data()->{$field->properties()->{'element_name'}}, $errors, $entry);
 					
@@ -178,7 +221,7 @@
 				$user_id = Symphony::Database()->query("SELECT `id` FROM `tbl_users` ORDER BY `id` ASC LIMIT 1")->current()->id;
 			}
 			
-			Symphony::Database()->insert('tbl_entries', array(
+			return Symphony::Database()->insert('tbl_entries', array(
 				'section' => $section,
 				'user_id' => $user_id,
 				'creation_date' => DateTimeObj::get('c'),
@@ -186,10 +229,6 @@
 				'modification_date' => DateTimeObj::get('c'),
 				'modification_date_gmt' => DateTimeObj::getGMT('c')	
 			));
-
-			if(!$entry_id = Symphony::Database()->getInsertID()) return null;
-			
-			return $entry_id;
 		}
 
 		public function setDataFromPost($data, &$error, $simulate=false, $ignore_missing_fields=false){

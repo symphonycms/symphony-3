@@ -81,11 +81,13 @@
 				else */
 				$aTableHead[] = array($label, 'col');
 			}
+			/*
+			$entry = Entry::loadFromID(3);
 
 			$entry = new Entry;
 			$entry->section = 'articles';
 			$entry->user_id = Administration::instance()->User->id;
-			$entry->id = 1;
+			$entry->id = 3;
 
 			$entry->data()->title = (object)array(
 				'handle' => 'an-entry',
@@ -105,7 +107,10 @@
 		Entry::save($entry, $messages);
 		var_dump($messages); die();
 		
+		
 			$entries = array($entry);
+		*/
+		
 			
 			## Table Body
 			$aTableBody = array();
