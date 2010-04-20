@@ -5,6 +5,7 @@
 	Class XMLDocument extends DOMDocument{
 
 		protected $errors;
+		protected static $_errorLog;
 
 		public function __construct($version='1.0', $encoding='utf-8'){
 			parent::__construct($version, $encoding);
