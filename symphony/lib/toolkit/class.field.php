@@ -186,7 +186,7 @@
 			$doc->appendChild($root);
 
 			//$root->appendChild($doc->createElement('name', General::sanitize($this->name)));
-			foreach($this->properties() as $name => $value){
+			foreach($this->properties as $name => $value){
 				$root->appendChild($doc->createElement($name, General::sanitize($value)));
 			}
 
