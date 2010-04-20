@@ -292,7 +292,7 @@
 		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, $entry_id=NULL) {
 			$wrapper->appendChild(
 				Symphony::Parent()->Page->createElement(
-					$this->properties()->element_name,
+					$this->properties()->{'element-name'},
 					($encode ? General::sanitize($this->prepareTableValue($data)) : $this->prepareTableValue($data))
 				)
 			);
@@ -308,7 +308,7 @@
 
 		public function checkFields(&$errors, $checkForDuplicates = true) {
 			$parent_section = $this->properties()->parent_section;
-			$element_name = $this->properties()->element_name;
+			$element_name = $this->properties()->{'element-name'};
 
 			//echo $this->properties()->id, ': ', $this->properties()->required, '<br />';
 
@@ -318,10 +318,10 @@
 				$errors['label'] = __('This is a required field.');
 			}
 
-			if ($this->properties()->element_name == '') {
+			if ($element_name == '') {
 				$errors['element_name'] = __('This is a required field.');
 
-			} elseif (!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->properties()->element_name)) {
+			} elseif (!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $element_name)) {
 				$errors['element_name'] = __('Invalid element name. Must be valid QName.');
 
 			} elseif($checkForDuplicates) {
@@ -436,7 +436,7 @@
 		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
 			if ($this->properties()->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
 				$errors->append(
-					$this->properties()->{'element_name'}, 
+					$this->properties()->{'element-name'}, 
 					array(
 					 	'message' => __("'%s' is a required field.", array($this->properties()->label)),
 						'code' => self::ERROR_MISSING
@@ -484,13 +484,13 @@
 
 		public function getExampleFormMarkup(){
 			$label = Widget::Label($this->properties()->label);
-			$label->appendChild(Widget::Input('fields['.$this->properties()->element_name.']'));
+			$label->appendChild(Widget::Input('fields['.$this->properties()->{'element-name'}.']'));
 
 			return $label;
 		}
 
 		public function fetchIncludableElements(){
-			return array($this->properties()->element_name);
+			return array($this->properties()->{'element-name'});
 		}
 
 		public function fetchAssociatedEntrySearchValue($data, $field_id=NULL, $parent_entry_id=NULL){
@@ -515,7 +515,7 @@
 			$label->appendChild(Widget::Input(
 				'fields[filter]'
 				//. (!is_null($fieldnamePrefix) ? "[{$fieldnamePrefix}]" : NULL)
-				. '[' . $this->properties()->element_name . ']',
+				. '[' . $this->properties()->{'element-name'} . ']',
 				//. (!is_null($fieldnamePostfix) ? "[{$fieldnamePostfix}]" : NULL),
 				(!is_null($data) ? General::sanitize($data) : NULL)
 			));
@@ -671,7 +671,7 @@
 					KEY `value` (`value`)
 					)',
 					$this->properties()->section,
-					$this->properties()->element_name
+					$this->properties()->{'element-name'}
 				)
 			);
 		}

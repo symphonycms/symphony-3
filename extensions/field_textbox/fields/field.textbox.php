@@ -555,10 +555,8 @@
 				$lines = explode("\n", wordwrap($value, $max_length - 1, "\n"));
 				$value = array_shift($lines);
 				$value = rtrim($value, "\n\t !?.,:;");
-				$value .= '...';
+				$value .= '&#x2026;';
 			}
-
-			$value = str_replace('...', '&#x2026;', $value);
 
 			if ($max_length > 75) {
 				$value = wordwrap($value, 75, '<br />');

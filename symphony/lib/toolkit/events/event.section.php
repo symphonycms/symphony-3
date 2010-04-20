@@ -18,25 +18,25 @@
 			$filter_results = array();	
 			
 			if(isset($event->eParamOVERRIDES) && is_array($event->eParamOVERRIDES) && !empty($event->eParamOVERRIDES)){
-				foreach($event->eParamOVERRIDES as $element_name => $value){
-					if($element_name == 'system:id' && !is_null($entry_id)){
+				foreach($event->eParamOVERRIDES as $properties()->{'element-name'} => $value){
+					if($properties()->{'element-name'} == 'system:id' && !is_null($entry_id)){
 						$entry_id = (int)$value;
 					}
 					
-					elseif(isset($fields[$element_name])){
-						$fields[$element_name] = $value;
+					elseif(isset($fields[$properties()->{'element-name'}])){
+						$fields[$properties()->{'element-name'}] = $value;
 					}
 				}
 			}
 			
 			if(isset($event->eParamDEFAULTS) && is_array($event->eParamDEFAULTS) && !empty($event->eParamDEFAULTS)){
-				foreach($event->eParamDEFAULTS as $element_name => $value){
-					if($element_name == 'system:id' && is_null($entry_id)){
+				foreach($event->eParamDEFAULTS as $properties()->{'element-name'} => $value){
+					if($properties()->{'element-name'} == 'system:id' && is_null($entry_id)){
 						$entry_id = (int)$value;
 					}
 					
-					elseif(!isset($fields[$element_name]) || strlen(trim($fields[$element_name])) == 0){
-						$fields[$element_name] = $value;
+					elseif(!isset($fields[$properties()->{'element-name'}]) || strlen(trim($fields[$properties()->{'element-name'}])) == 0){
+						$fields[$properties()->{'element-name'}] = $value;
 					}
 				}
 			}
@@ -115,7 +115,7 @@
 
 				foreach($errors as $field_id => $message){
 					$field = FieldManager::instance()->fetch($field_id);
-					$result->appendChild(new XMLElement($field->get('element_name'), NULL, array('type' => ($fields[$field->get('element_name')] == '' ? 'missing' : 'invalid'), 'message' => General::sanitize($message))));
+					$result->appendChild(new XMLElement($field->get('properties()->{'element-name'}'), NULL, array('type' => ($fields[$field->get('properties()->{'element-name'}')] == '' ? 'missing' : 'invalid'), 'message' => General::sanitize($message))));
 				}
 
 				if(isset($post_values) && is_object($post_values)) $result->appendChild($post_values);		
@@ -132,7 +132,7 @@
 
 				foreach($errors as $err){
 					$field = FieldManager::instance()->fetch($err['field_id']);
-					$result->appendChild(new XMLElement($field->get('element_name'), NULL, array('type' => 'invalid')));
+					$result->appendChild(new XMLElement($field->get('properties()->{'element-name'}'), NULL, array('type' => 'invalid')));
 				}		
 
 				if(isset($post_values) && is_object($post_values)) $result->appendChild($post_values);		

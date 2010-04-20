@@ -327,7 +327,7 @@
 						if (!$input->canFilter()) continue;
 
 						//$field_id = $input->properties()->id;
-						$element_name = $input->properties()->element_name;
+						$element_name = $input->properties()->{'element-name'};
 
 						if (isset($filter_data[$element_name])) {
 							$filter = $page->createElement('li');
@@ -386,7 +386,7 @@
 
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
 					foreach ($section_data['fields'] as $field) {
-						$field_handle = $field->properties()->element_name;
+						$field_handle = $field->properties()->{'element-name'};
 						$field_label = $field->properties()->label;
 						$modes = $field->fetchIncludableElements();
 

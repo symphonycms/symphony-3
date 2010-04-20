@@ -1,7 +1,7 @@
 <?php
-	
+
 	require_once('class.field.php');
-	
+
 	Class SectionException extends Exception {}
 
 	Class SectionFilterIterator extends FilterIterator{
@@ -169,7 +169,7 @@
 			}
 
 			$this->fields[] = $field;
-			
+
 			return $field;
 		}
 
@@ -179,7 +179,7 @@
 
 		public function removeField($name){
 			foreach($this->fields as $index => $f){
-				if($f->properties()->label == $name || $f->properties()->element_name == $name){
+				if($f->properties()->label == $name || $f->properties()->{'element-name'} == $name){
 					unset($this->fields[$index]);
 				}
 			}
