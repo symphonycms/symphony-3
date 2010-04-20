@@ -231,7 +231,7 @@
 
 		public function setFromPOST($data) {
 			$data['required'] = (isset($data['required']) && $data['required'] == 'yes' ? 'yes' : 'no');
-			$data['show_column'] = (isset($data['show_column']) && $data['show_column'] == 'yes' ? 'yes' : 'no');
+			$data['show-column'] = (isset($data['show-column']) && $data['show-column'] == 'yes' ? 'yes' : 'no');
 			foreach($data as $key => $value){
 				$this->properties()->$key = $value;
 			}
@@ -567,13 +567,13 @@
 
 			$document = $wrapper->ownerDocument;
 			$item = $document->createElement('li');
-			$item->appendChild(Widget::Input('show_column', 'no', 'hidden'));
+			$item->appendChild(Widget::Input('show-column', 'no', 'hidden'));
 
 			$label = Widget::Label(__('Show column'));
 			$label->setAttribute('class', 'meta');
-			$input = Widget::Input('show_column', 'yes', 'checkbox');
+			$input = Widget::Input('show-column', 'yes', 'checkbox');
 
-			if ($this->properties()->show_column == 'yes') $input->setAttribute('checked', 'checked');
+			if ($this->properties()->{'show-column'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->prependChild($input);
 			$item->appendChild($label);

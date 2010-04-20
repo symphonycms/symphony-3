@@ -147,7 +147,7 @@
 		}
 
 		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
-			return ($data['value'] == 'yes' ? __('Yes') : __('No'));
+			return ($data->value == 'yes' ? __('Yes') : __('No'));
 		}
 
 		function isSortable(){

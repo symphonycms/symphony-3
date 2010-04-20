@@ -33,7 +33,7 @@
 		}
 
 		public function __viewIndex(){
-			
+
 			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $this->_context['section_handle']));
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
@@ -58,7 +58,7 @@
 			$aTableHead = array();
 
 			foreach($section->fields as $column){
-				if($column->properties()->show_column != 'yes') continue;
+				if($column->properties()->{'show-column'} != 'yes') continue;
 
 				$label = $column->properties()->label;
 
@@ -83,13 +83,13 @@
 			}
 
 			$entry = new Entry;
-			$entry->section = 'articles';
+			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
 			$entry->id = 1;
 
-			$entry->data()->title = (object)array(
+			$entry->data()->name = (object)array(
 				'handle' => 'an-entry',
-				'value' => 'An Entry',
+				'value' => 'An & Entry',
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
@@ -101,18 +101,54 @@
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
-		$messages = new MessageStack;
-		Entry::save($entry, $messages);
-		var_dump($messages); die();
-		
+
+			$entry->data()->category = (object)array(
+				'handle' => 'blah',
+				'value' => 'Blah &',
+				'id' => 1,
+				'entry_id' => $entry->id
+			);
+
+			$entry->data()->user = (object)array(
+				'id' => 1,
+				'entry_id' => $entry->id,
+				'user_id' => 1
+			);
+
+			$entry->data()->published = (object)array(
+				'id' => 1,
+				'entry_id' => $entry->id,
+				'value' => 'yes'
+			);
+
+			$entry->data()->{'tag-list'} = (object)array(
+				'id' => 1,
+				'entry_id' => $entry->id,
+				'handle' => 'tag',
+				'value' => 'Tag'
+			);
+
+			$entry->data()->upload = (object)array(
+				'id' => 1,
+				'entry_id' => $entry->id,
+				'name' => 'Image 1',
+				'file' => '/path/to/file',
+				'size' => 2342343,
+				'mimetype' => 'image/jpeg',
+				'meta' => 'blah'
+			);
+		//$messages = new MessageStack;
+		//Entry::save($entry, $messages);
+		//var_dump($messages); die();
+
 			$entries = array($entry);
-			
+
 			## Table Body
 			$aTableBody = array();
 			$colspan = count($aTableHead);
 
 			if(!is_array($entries) || empty($entries)){
-			
+
 				$aTableBody[] = Widget::TableRow(
 					array(
 						Widget::TableData(__('None found.'), array(
@@ -127,22 +163,21 @@
 			}
 
 			else{
-				
+
 				foreach($entries as $entry){
 					$cells = array();
-					
+
 					$link = Widget::Anchor(
 						'None',
 						Administration::instance()->getCurrentPageURL() . "edit/{$entry->id}/",
 						array('id' => $entry->id, 'class' => 'content')
 					);
-					
-					$first = true;
-					
-					foreach($section->fields as $column){
-						if($column->properties()->show_column != 'yes') continue;
 
-						$field_handle = $column->properties()->element_name;
+					$first = true;
+					foreach($section->fields as $column){
+						if($column->properties()->{'show-column'} != 'yes') continue;
+
+						$field_handle = $column->properties()->{'element-name'};
 						if(!isset($entry->data()->$field_handle)){
 							$cells[] = Widget::TableData(__('None'), array('class' => 'inactive'));
 						}
@@ -152,10 +187,10 @@
 								($first == true ? $link : NULL)
 							));
 						}
-						
+
 						$first = false;
 					}
-					
+
 					if(!empty($cells)){
 						$aTableBody[] = Widget::TableRow($cells);
 					}
@@ -396,7 +431,7 @@
 										'%s/symphony/publish/%s/?filter=%s:%s',
 										URL,
 										$as->get('handle'),
-										$field->properties()->element_name,
+										$field->properties()->{'element-name'},
 										rawurlencode($search_value)
 									),
 									$entry->get('id'),
@@ -598,7 +633,7 @@
 			// Load all the fields for this section
 			$section_fields = array();
 			foreach($section->fields as $index => $field) {
-				$section_fields[$field->properties()->element_name] = $field;
+				$section_fields[$field->properties()->{'element-name'}] = $field;
 			}
 
 			// Parse the layout

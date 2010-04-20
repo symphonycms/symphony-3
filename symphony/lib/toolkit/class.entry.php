@@ -68,14 +68,14 @@
 			
 			// Check the data
 			foreach($section->fields as $field){
-				$data = $entry->data()->{$field->properties()->{'element_name'}};
+				$data = $entry->data()->{$field->properties()->{'element-name'}};
 				$field->validateData($data, $errors, $entry);
 			}
 			
 			// Attempt the saving part
 			if($errors->length() == 0){
 				foreach($section->fields as $field){
-					$status = $field->saveData($entry->data()->{$field->properties()->{'element_name'}}, $errors, $entry);
+					$status = $field->saveData($entry->data()->{$field->properties()->{'element-name'}}, $errors, $entry);
 					
 					// Cannot continue if a field failed to save
 					if($status != Field::STATUS_OK){
@@ -250,7 +250,7 @@
 			$section = Section::loadFromHandle($entry->get('section'));
 
 			foreach($section->fields as $field){
-				$element = $field->properties()->{'element_name'};
+				$element = $field->properties()->{'element-name'};
 				
 				if(isset($this->data()->$element)) continue;
 

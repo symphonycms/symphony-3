@@ -43,7 +43,7 @@
 				)
 			);
 
-			$this->properties()->show_column = 'yes';
+			$this->properties()->{'show-column'} = 'yes';
 			$this->properties()->required = 'yes';
 		}
 
@@ -65,7 +65,7 @@
 						FULLTEXT KEY `file` (`file`)
 					)',
 					$this->properties()->section,
-					$this->properties()->element_name
+					$this->properties()->{'element-name'}
 				)
 			);
 		}
@@ -83,7 +83,7 @@
 		}
 
 		public function getExampleFormMarkup() {
-			$handle = $this->properties()->element_name;
+			$handle = $this->properties()->{'element-name'};
 
 			$label = Widget::Label($this->properties()->label);
 			$label->appendChild(Widget::Input('fields[{$handle}]', null, 'file'));
@@ -102,18 +102,18 @@
 		}
 
 		public function sanitizeDataArray(&$data) {
-			if (!isset($data['file']) or $data['file'] == '') return false;
+			if (!isset($data->file) or $data->file == '') return false;
 
-			if (!isset($data['name']) or $data['name'] == '') {
-				$data['name'] = basename($data['file']);
+			if (!isset($data->name) or $data->name == '') {
+				$data->name = basename($data->file);
 			}
 
-			if (!isset($data['size']) or empty($data['size'])) {
-				$data['size'] = 0;
+			if (!isset($data->size) or $data->size == '') {
+				$data->size = 0;
 			}
 
-			if (!isset($data['mimetype']) or $data['mimetype'] == '') {
-				$data['mimetype'] = 'application/octet-stream';
+			if (!isset($data->mimetype) or $data->mimetype == '') {
+				$data->mimetype = 'application/octet-stream';
 			}
 
 			return true;
@@ -173,7 +173,7 @@
 
 		// Validator ----------------------------------------------------------
 
-			$this->buildValidationSelect($wrapper, $this->properties()->validator, 'validator', 'upload');
+			$this->appendValidationSelect($wrapper, $this->properties()->validator, 'validator', 'upload');
 
 
 
@@ -182,15 +182,14 @@
 
 			// Serialise ----------------------------------------------------------
 
-				$label = Widget::Label();
+				$label = Widget::Label(__('Serialise file names'));
 				$input = Widget::Input(
 					'serialise', 'yes', 'checkbox'
 				);
 
 				if ($this->properties()->serialise == 'yes') $input->setAttribute('checked', 'checked');
-				
-				$label->appendChild($input);
-				$label->setValue(__('Serialise file names'));
+
+				$label->prependChild($input);
 				$options_list->appendChild($label);
 
 
@@ -227,7 +226,7 @@
 				$error = 'Destination folder, <code>'.$this->properties()->destination.'</code>, is not writable. Please check permissions.';
 			}
 
-			$handle = $this->properties()->element_name;
+			$handle = $this->properties()->{'element-name'};
 
 		// Preview ------------------------------------------------------------
 
@@ -564,7 +563,7 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode = false, $mode = null, $entry_id = null) {
 			if (!$this->sanitizeDataArray($data)) return null;
 
-			$item = Symphony::Parent()->Page->createElement($this->properties()->element_name);
+			$item = Symphony::Parent()->Page->createElement($this->properties()->{'element-name'});
 			$item->setAttributeArray(array(
 				'size'	=> General::formatFilesize($data['size']),
 				'type'	=> General::sanitize($data['mimetype']),
@@ -600,12 +599,12 @@
 			if (!$this->sanitizeDataArray($data)) return null;
 
 			if ($link) {
-				$link->setValue($data['name']);
+				$link->setValue($data->name);
 
 				return $link;
 
 			} else {
-				$link = Widget::Anchor($data['name'], URL . '/workspace' . $data['file']);
+				$link = Widget::Anchor($data->name, URL . '/workspace' . $data->file);
 
 				return $link;
 			}

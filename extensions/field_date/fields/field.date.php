@@ -29,7 +29,7 @@
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
-			$name = $this->properties()->element_name;
+			$name = $this->properties()->{'element_name'};
 			$value = null;
 
 			// New entry:
@@ -98,7 +98,7 @@
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->properties()->element_name));
+				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->properties()->{'element_name'}));
 			}
 		}
 
@@ -376,8 +376,9 @@
 
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
-			
+
 			$document = $wrapper->ownerDocument;
+
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
 
@@ -389,7 +390,7 @@
 			$item = $document->createElement('li');
 			$item->appendChild($label);
 			$options_list->appendChild($item);
-			
+
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
@@ -410,10 +411,10 @@
 						KEY `value` (`value`)
 					)',
 					$this->properties()->section,
-					$this->properties()->element_name
+					$this->properties()->{'element_name'}
 				)
 			);
 		}
 	}
-	
+
 	return 'fieldDate';

@@ -9,7 +9,7 @@
 			return array(
 				'name'			=> 'Upload',
 				'version'		=> '2.0.0',
-				'release-date'	=> '2010-02-16',
+				'release-date'	=> '2010-04-20',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://rowanlewis.com/',
