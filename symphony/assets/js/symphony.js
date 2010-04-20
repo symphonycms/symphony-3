@@ -211,7 +211,7 @@ var Symphony;
 		
 		if (duplicator.length == 0) return;
 		
-		duplicator.symphonyDuplicatorWithName({
+		duplicator.symphonyFieldsDuplicator({
 			multiselect:	true,
 			orderable:		true
 		});

@@ -419,16 +419,8 @@
 				
 				$item = $this->createElement('li');
 				
-				$name = $this->createElement('span', $field->name());
-				$name->setAttribute('class', 'name');
-				
-				$item->appendChild($name);
-				
-				$wrapper = $this->createElement('fieldset');
-				$field->displaySettingsPanel($wrapper);
-				$wrapper->appendChild(Widget::Input('type', $type, 'hidden'));
-				
-				$item->appendChild($wrapper);
+				$field->displaySettingsPanel($item);
+				$item->appendChild(Widget::Input('type', $type, 'hidden'));
 				$templates->appendChild($item);
 			}
 			

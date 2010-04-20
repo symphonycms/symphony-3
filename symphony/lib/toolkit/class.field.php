@@ -517,26 +517,36 @@
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors=NULL){
 			//$wrapper->appendChild(Symphony::Parent()->Page->createElement('h3', ucwords($this->name())));
-			$wrapper->appendChild($this->buildSummaryBlock($errors));
+			$this->appendSummaryBlock($wrapper, $errors);
 		}
 
-		public function buildSummaryBlock($errors=NULL){
-
-			$div = Symphony::Parent()->Page->createElement('div');
-			$div->setAttribute('class', 'group');
-
+		public function appendSummaryBlock(SymphonyDOMElement $wrapper, $errors=NULL) {
+			$document = $wrapper->ownerDocument;
+			
+			if ($this->properties()->label) {
+				$name = $document->createElement('span', $this->properties()->label);
+				$name->appendChild($document->createElement('i', $this->name()));
+			}
+			
+			else {
+				$name = $document->createElement('span', $this->name());
+			}
+			
+			$name->setAttribute('class', 'name');
+			$wrapper->appendChild($name);
+			
 			$label = Widget::Label(__('Label'));
 			$label->setAttribute('class', 'field-label');
 			$label->appendChild(Widget::Input('label', $this->properties()->label));
-
-			if(isset($errors['label'])) $div->appendChild(Widget::wrapFormElementWithError($label, $errors['label']));
-			else $div->appendChild($label);
-
-			return $div;
-
+			
+			if (isset($errors['label'])) {
+				$label = Widget::wrapFormElementWithError($label, $errors['label']);
+			}
+			
+			$wrapper->appendChild($label);
 		}
 
-		public function appendRequiredCheckbox(SymphonyDOMElement &$wrapper) {
+		public function appendRequiredCheckbox(SymphonyDOMElement $wrapper) {
 			if (!$this->_required) return;
 			
 			$document = $wrapper->ownerDocument;
@@ -555,7 +565,7 @@
 			$wrapper->appendChild($item);
 		}
 
-		public function appendShowColumnCheckbox(SymphonyDOMElement &$wrapper) {
+		public function appendShowColumnCheckbox(SymphonyDOMElement $wrapper) {
 			if (!$this->_showcolumn) return;
 
 			$document = $wrapper->ownerDocument;

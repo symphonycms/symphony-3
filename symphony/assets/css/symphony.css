@@ -729,7 +729,7 @@
 
 	ul.tags {
 		list-style: none;
-		margin: 0;
+		margin: -8px 0 10px 0;
 	}
 	.tags li {
 		color: #888;

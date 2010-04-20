@@ -244,7 +244,7 @@
 			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
 		}
 		.duplicator-widget > .templates > li > .name i {
-			float: right;
+			margin: 0 0 0 1ex;
 			opacity: 0.5;
 		}
 		

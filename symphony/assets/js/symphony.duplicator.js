@@ -208,7 +208,7 @@
 						.append(
 							jQuery('<span />')
 								.addClass('name')
-								.text(jQuery(this).find('input:first').val())
+								.html(jQuery(this).find('> .name').remove().html())
 						)
 						.appendTo(object.find('> .content > .tabs'))
 						.trigger('duplicator-tab-initialize');
@@ -288,10 +288,10 @@
 	};
 	
 /*-----------------------------------------------------------------------------
-	Duplicator With Name plugin
+	Fields Duplicator
 -----------------------------------------------------------------------------*/
 	
-	jQuery.fn.symphonyDuplicatorWithName = function(custom_settings) {
+	jQuery.fn.symphonyFieldsDuplicator = function(custom_settings) {
 		var duplicator = jQuery(this);
 		
 		// Keep track of field name changes:
@@ -299,14 +299,25 @@
 			var tab = jQuery(this);
 			var instance = tab.data('instance');
 			var name = tab.data('name');
+			var type = name.find('i');
+			var input = instance.find('input:first');
 			var rename = function() {
-				name.text(jQuery(this).val());
+				name.text(input.val());
 				tab.trigger('duplicator-tab-refresh');
+				name.append(type);
 			};
 			
-			instance.find('input:first')
+			if (type.length == 0) {
+				type = jQuery('<i />')
+					.text(name.text())
+					.appendTo(name);
+			}
+			
+			input
 				.bind('change', rename)
 				.bind('keyup', rename);
+			
+			rename();
 		});
 		
 		// When a tab is selected, select its first input:
