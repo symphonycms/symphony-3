@@ -698,7 +698,13 @@
 		function __actionNew(){
 
 			if(array_key_exists('save', $_POST['action']) || array_key_exists("done", $_POST['action'])) {
-
+				
+				$section = Section::loadFromHandle($this->_context['section_handle']);
+				$entry = new Entry;
+				
+				$post = General::getPostData();
+				var_dump($post); die();
+				
 				$section = Section::loadFromHandle($this->_context['section_handle']);
 
 				$entry =& EntryManager::instance()->create();

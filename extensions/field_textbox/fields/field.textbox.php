@@ -324,7 +324,7 @@
 			}
 			
 			if ($optional) {
-				$label->appendChild(new XMLElement('i', $optional));
+				$label->appendChild($wrapper->ownerDocument->createElement('i', $optional));
 			}
 			
 			// Input box:
@@ -342,7 +342,7 @@
 			// Text Box:
 			else {
 				$input = Widget::Textarea(
-					"fields{$prefix}[$element_name]{$postfix}", '20', '50', General::sanitize($data['value'])
+					"fields{$prefix}[$element_name]{$postfix}", General::sanitize($data['value']), array('rows' => 20, 'cols' => 50)
 				);
 				
 				###
@@ -361,7 +361,7 @@
 			$input->setAttribute('class', implode(' ', $classes));
 			$input->setAttribute('length', (integer)$this->properties()->{'text-length'});
 			
-			$this->_engine->ExtensionManager->notifyMembers(
+			ExtensionManager::instance()->notifyMembers(
 				$delegate, '/backend/',
 				array(
 					'field'		=> &$this,
