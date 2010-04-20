@@ -33,6 +33,7 @@
 		}
 
 		public function __viewIndex(){
+			
 			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $this->_context['section_handle']));
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
@@ -81,13 +82,38 @@
 				$aTableHead[] = array($label, 'col');
 			}
 
+			$entry = new Entry;
+			$entry->section = 'articles';
+			$entry->user_id = Administration::instance()->User->id;
+			$entry->id = 1;
+
+			$entry->data()->title = (object)array(
+				'handle' => 'an-entry',
+				'value' => 'An Entry',
+				'id' => 1,
+				'entry_id' => $entry->id
+			);
+
+			$entry->data()->date = (object)array(
+				'gmt' => strtotime(DateTimeObj::getGMT('c')),
+				'local' => strtotime(DateTimeObj::get('c')),
+				'value' => DateTimeObj::get('c'),
+				'id' => 1,
+				'entry_id' => $entry->id
+			);
+		$messages = new MessageStack;
+		Entry::save($entry, $messages);
+		var_dump($messages); die();
+		
+			$entries = array($entry);
+			
 			## Table Body
 			$aTableBody = array();
 			$colspan = count($aTableHead);
 
-			if(!is_array($entries['records']) || empty($entries['records'])){
-
-				$aTableBody = array(Widget::TableRow(
+			if(!is_array($entries) || empty($entries)){
+			
+				$aTableBody[] = Widget::TableRow(
 					array(
 						Widget::TableData(__('None found.'), array(
 								'class' => 'inactive',
@@ -97,10 +123,44 @@
 					), array(
 						'class' => 'odd'
 					)
-				));
+				);
 			}
 
 			else{
+				
+				foreach($entries as $entry){
+					$cells = array();
+					
+					$link = Widget::Anchor(
+						'None',
+						Administration::instance()->getCurrentPageURL() . "edit/{$entry->id}/",
+						array('id' => $entry->id, 'class' => 'content')
+					);
+					
+					$first = true;
+					
+					foreach($section->fields as $column){
+						if($column->properties()->show_column != 'yes') continue;
+
+						$field_handle = $column->properties()->element_name;
+						if(!isset($entry->data()->$field_handle)){
+							$cells[] = Widget::TableData(__('None'), array('class' => 'inactive'));
+						}
+						else{
+							$cells[] = Widget::TableData($column->prepareTableValue(
+								$entry->data()->$field_handle,
+								($first == true ? $link : NULL)
+							));
+						}
+						
+						$first = false;
+					}
+					
+					if(!empty($cells)){
+						$aTableBody[] = Widget::TableRow($cells);
+					}
+				}
+
 			}
 
 			$table = Widget::Table(Widget::TableHead($aTableHead), NULL, Widget::TableBody($aTableBody));
@@ -645,10 +705,10 @@
 				$post = General::getPostData();
 				$fields = $post['fields'];
 
-				if(__ENTRY_FIELD_ERROR__ == $entry->checkPostData($fields, $this->_errors)):
+				if(Entry::STATUS_ERROR == $entry->checkPostData($fields, $this->_errors)):
 					$this->pageAlert(__('Some errors were encountered while attempting to save.'), Alert::ERROR);
 
-				elseif(__ENTRY_OK__ != $entry->setDataFromPost($fields, $error)):
+				elseif(Entry::STATUS_ERROR != $entry->setDataFromPost($fields, $error)):
 					$this->pageAlert($error['message'], Alert::ERROR);
 
 				else:
@@ -866,10 +926,10 @@
 				$post = General::getPostData();
 				$fields = $post['fields'];
 
-				if(__ENTRY_FIELD_ERROR__ == $entry->checkPostData($fields, $this->_errors)):
+				if(Entry::STATUS_ERROR == $entry->checkPostData($fields, $this->_errors)):
 					$this->pageAlert(__('Some errors were encountered while attempting to save.'), Alert::ERROR);
 
-				elseif(__ENTRY_OK__ != $entry->setDataFromPost($fields, $error)):
+				elseif(Entry::STATUS_ERROR != $entry->setDataFromPost($fields, $error)):
 					$this->pageAlert($error['message'], Alert::ERROR);
 
 				else:

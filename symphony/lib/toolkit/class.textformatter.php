@@ -61,6 +61,8 @@
 
 	Abstract Class TextFormatter{
 		
+		const NONE = 'none';
+		
 		private static $iterator;
 		private static $formatters;
 		
