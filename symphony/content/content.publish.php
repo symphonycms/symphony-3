@@ -82,11 +82,11 @@
 			/*
 			$entry = Entry::loadFromID(3);
 */
-			$entry = new Entry;
+		/*	$entry = new Entry;
 			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
 			$entry->id = 3;
-/*
+
 			$entry->data()->name = (object)array(
 				'handle' => 'an-entry',
 				'value' => 'An & Entry',
@@ -113,13 +113,13 @@
 				'entry_id' => $entry->id,
 				'user_id' => 1
 			);
-*/
+
 			$entry->data()->published = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
 				'value' => 'yes'
 			);
-/*
+
 			$entry->data()->{'tag-list'} = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
@@ -137,19 +137,22 @@
 				'meta' => 'blah'
 			);
 */
-		$messages = new MessageStack;
-		Entry::save($entry, $messages);
-		var_dump($messages); die();
+		//$messages = new MessageStack;
+		//Entry::save($entry, $messages);
+		//var_dump($messages); die();
 
-
-			$entries = array($entry);
+			$entries = Symphony::Database()->query(
+				"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `id` DESC", array($section->handle), 'EntryResult'
+			);
+			
+			//$entries = array($entry);
 
 			## Table Body
 			$aTableBody = array();
 			$colspan = count($aTableHead);
 
-			if(!is_array($entries) || empty($entries)){
-
+			//if(!is_array($entries) || empty($entries)){
+			if($entries->length() <= 0){
 				$aTableBody[] = Widget::TableRow(
 					array(
 						Widget::TableData(__('None found.'), array(
@@ -636,25 +639,53 @@
 			foreach($section->fields as $index => $field) {
 				$section_fields[$field->{'element-name'}] = $field;
 			}
+			
+			/*
+			Array
+			(
+			    [0] => stdClass Object
+			        (
+			            [size] => large
+			            [fieldsets] => Array
+			                (
+			                    [0] => stdClass Object
+			                        (
+			                            [name] => SimpleXMLElement Object
+			                                (
+			                                    [0] => Untitled
+			                                )
 
+			                            [fields] => Array
+			                                (
+			                                    [0] => title
+			                                    [1] => body
+			                                )
+
+			                        )
+
+			                )
+
+			        )
+			*/
+			
 			// Parse the layout
- 			foreach($section->layout as $a_layout) {
-				foreach($a_layout as $a_fieldset) {
+ 			foreach($section->layout as $o_column) {
+				foreach($o_column->fieldsets as $o_fieldset) {
 
 					$fieldset = $this->createElement('fieldset');
 					$fieldset->appendChild(
-						$this->createElement('h3', $a_fieldset->label, array('class' => 'legend'))
+						$this->createElement('h3', $o_fieldset->name, array('class' => 'legend'))
 					);
 
 					// Got the fieldsets, now lets loop the rows
-					foreach($a_fieldset->rows as $a_row) {
-						$do_grouping = (count($a_row) > 1) ? true : false;
+					foreach($o_fieldset->fields as $o_field) {
+						//$do_grouping = (count($a_row) > 1) ? true : false;
 
-						if($do_grouping) $group = $this->createElement('div', NULL, array('class' => 'group'));
+						//if($do_grouping) $group = $this->createElement('div', NULL, array('class' => 'group'));
 
-						foreach($a_row as $a_field) {
+						//foreach($a_row as $a_field) {
 
-							$field = $section_fields[$a_field];
+							$field = $section_fields[$o_field];
 
 							$div = $this->createElement('div', NULL, array(
 									'class' => trim(sprintf('field field-%s %s %s',
@@ -669,12 +700,13 @@
 								? $this->_errors[$field->id]
 								: NULL)
 							);
+							
+							$fieldset->appendChild($div);
+							//($do_grouping) ? $group->appendChild($div) : $fieldset->appendChild($div);
 
-							($do_grouping) ? $group->appendChild($div) : $fieldset->appendChild($div);
+						//}
 
-						}
-
-						($do_grouping) ? $fieldset->appendChild($group) : NULL;
+						//($do_grouping) ? $fieldset->appendChild($group) : NULL;
 
 					}
 
