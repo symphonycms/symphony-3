@@ -167,7 +167,7 @@
 			if(!is_null($data)){
 				$field->setFromPOST($data);
 			}
-
+			$field->section = $this->handle;
 			$this->fields[] = $field;
 			
 			return $field;
