@@ -433,6 +433,7 @@
 				switch($callback['flag']){
 					case 'saved':
 						$this->pageAlert(
+							'Section layout updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 							__(
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
@@ -556,6 +557,7 @@
 					case 'saved':
 						$this->pageAlert(
 							__(
+								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',

@@ -415,6 +415,31 @@
 				)
 			);
 		}
+		
+		public function processFormData($data, Entry $entry=NULL){
+			$result = (object)array(
+				'value' => null,
+				'local' => null,
+				'gmt' => null
+			);
+			
+			if(is_null($data) || strlen(trim($data)) == 0){
+				if ($this->properties()->{'pre-populate'} == 'yes') {
+					$timestamp = strtotime(DateTimeObj::get('c', null));
+				}
+			}
+			else{
+				$timestamp = strtotime($data);
+			}
+
+			if(!is_null($timestamp)){
+				$result->value = DateTimeObj::get('c', $timestamp);
+				$result->local = strtotime(DateTimeObj::get('c', $timestamp));
+				$result->gmt = strtotime(DateTimeObj::getGMT('c', $timestamp));
+			}
+
+			return $result;
+		}
 	}
 
 	return 'fieldDate';

@@ -69,11 +69,12 @@
 		protected static $loaded;
 				
 		protected $properties;
-		
-		protected $_fields; //DEPRICATED
+
 		protected $_required;
 		protected $_showcolumn;
-		
+		protected $_handle;
+		protected $_name;
+				
 		// Status codes
 		const STATUS_OK = 'ok';
 		const STATUS_ERROR = 'error';
@@ -109,6 +110,22 @@
 		
 		public function &properties(){
 			return $this->properties;
+		}
+		public function __isset($name){
+			return isset($this->properties->$name);
+		}
+
+		public function __get($name){
+
+			if($name == 'element-name'){
+				$this->{'element-name'} = Lang::createHandle($this->properties->label, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
+			}
+			
+			return $this->properties->$name;
+		}
+
+		public function __set($name, $value){
+			$this->properties->$name = $value;
 		}
 		
 		public function __clone(){
@@ -308,7 +325,6 @@
 
 		public function checkFields(&$errors, $checkForDuplicates = true) {
 			$parent_section = $this->properties()->{'parent-section'};
-			$element_name = $this->properties()->{'element-name'};
 
 			//echo $this->properties()->id, ': ', $this->properties()->required, '<br />';
 
@@ -318,13 +334,15 @@
 				$errors['label'] = __('This is a required field.');
 			}
 
-			if ($this->properties()->{'element-name'} == '') {
+			if ($this->{'element-name'} == '') {
 				$errors['element_name'] = __('This is a required field.');
-
-			} elseif (!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->properties()->{'element-name'})) {
+			} 
+			
+			elseif(!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->properties()->{'element-name'})){
 				$errors['element_name'] = __('Invalid element name. Must be valid QName.');
-
-			} elseif($checkForDuplicates) {
+			}
+			
+			elseif($checkForDuplicates) {
 				$sql_id = ($this->properties()->id ? " AND f.id != '".$this->properties()->id."' " : '');
 
 				$query = sprintf("
@@ -429,7 +447,7 @@
 			return true;
 		}
 		
-		public function processFormData($data){
+		public function processFormData($data, Entry $entry=NULL){
 			return (object)array('value' => $data);
 		}
 		
@@ -440,13 +458,12 @@
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;
 			
-			try{
+			try{					
 				Symphony::Database()->insert(
-					sprintf('tbl_data_%s_%s', $entry->section, $this->properties()->{'element_name'}),
+					sprintf('tbl_data_%s_%s', $entry->section, $this->properties()->{'element-name'}),
 					(array)$data,
 					Database::UPDATE_ON_DUPLICATE
 				);
-				
 				return self::STATUS_OK;
 			}
 			catch(DatabaseException $e){
@@ -455,7 +472,6 @@
 			catch(Exception $e){
 				
 			}
-			
 			return self::STATUS_ERROR;
 		}
 		
@@ -465,7 +481,7 @@
 					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s LIMIT 1", 
 					array(
 						$entry->section, 
-						$this->properties()->{'element_name'}, 
+						$this->properties()->{'element-name'}, 
 						$entry->id
 					)
 				)->current();

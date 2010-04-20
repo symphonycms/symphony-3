@@ -129,7 +129,7 @@
 				$data = $entry->data()->{$field->properties()->{'element-name'}};
 				$field->validateData($data, $errors, $entry);
 			}
-			
+
 			// Attempt the saving part
 			if($errors->length() == 0){
 				

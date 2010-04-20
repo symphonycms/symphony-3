@@ -99,7 +99,7 @@
 		}
 
 		public function getCurrentHandle($entry_id) {
-			return $this->_engine->Database->fetchVar('handle', 0, sprintf(
+			return Symphony::Database()->fetchVar('handle', 0, sprintf(
 				"
 					SELECT
 						f.handle
@@ -114,7 +114,7 @@
 		}
 
 		public function isHandleLocked($handle, $entry_id) {
-			return (boolean)$this->_engine->Database->fetchVar('id', 0, sprintf(
+			return (boolean)Symphony::Database()->query(
 				"
 					SELECT
 						f.id
@@ -125,13 +125,15 @@
 						%s
 					LIMIT 1
 				",
-				$this->properties()->{'id'}, $handle,
-				(!is_null($entry_id) ? "AND f.entry_id != '{$entry_id}'" : '')
-			));
+				array(
+					$this->properties()->{'id'}, $handle,
+					(!is_null($entry_id) ? "AND f.entry_id != '{$entry_id}'" : '')
+				)
+			);
 		}
 
 		public function isHandleFresh($handle, $value, $entry_id) {
-			return (boolean)$this->_engine->Database->fetchVar('id', 0, sprintf(
+			return (boolean)Symphony::Database()->fetchVar('id', 0, sprintf(
 				"
 					SELECT
 						f.id
@@ -471,6 +473,18 @@
 
 			$result = array(
 				'handle'			=> $this->createHandle($data, $entry_id),
+				'value'				=> $data,
+				'value_formatted'	=> $this->applyFormatting($data),
+				'word_count'		=> General::countWords($data)
+			);
+
+			return $result;
+		}
+		
+		// TO DO: Fix the createHandle function
+		public function processFormData($data, Entry $entry=NULL){
+			$result = (object)array(
+				'handle'			=> Lang::createHandle($data), //$this->createHandle($data, $entry->id),
 				'value'				=> $data,
 				'value_formatted'	=> $this->applyFormatting($data),
 				'word_count'		=> General::countWords($data)

@@ -168,7 +168,7 @@
 				$field->setFromPOST($data);
 			}
 
-			$this->fields[$field->properties()->{'element-name'}] = $field;
+			$this->fields[] = $field;
 			
 			return $field;
 		}

@@ -739,7 +739,10 @@
 				
 				$post = General::getPostData();
 				$entry->setFieldDataFromFormArray($post['fields']);
-				var_dump($entry); die();
+				
+				$errors = new MessageStack;
+				Entry::save($entry, $errors);
+				die();
 				
 				$section = Section::loadFromHandle($this->_context['section_handle']);
 
