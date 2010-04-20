@@ -195,6 +195,7 @@
 			$this->appendFormatterSelect(
 				$group, $this->properties()->{'text-formatter'}, 'text-formatter'
 			);
+			$wrapper->appendChild($group);
 
 		/*---------------------------------------------------------------------
 			Validator
