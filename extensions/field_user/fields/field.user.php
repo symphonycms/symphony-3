@@ -18,7 +18,7 @@
 			return true;
 		}
 
-		public function canToggle(){
+		public function canToggleData(){
 			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
 
@@ -39,29 +39,9 @@
 			return $states;
 		}
 
-		public function toggleFieldData($data, $newState){
+		public function toggleEntryData(StdClass $data, $value, Entry $entry=NULL){
 			$data['user_id'] = $newState;
 			return $data;
-		}
-
-		// TODO: Fix the createHandle function
-		public function processFormData($data, Entry $entry=NULL){
-
-			if(isset($entry->data()->{$this->{'element-name'}})){
-				$result = $entry->data()->{$this->{'element-name'}};
-			}
-
-			else {
-				$result = (object)array(
-					'user_id' => null
-				);
-			}
-
-			if(!is_null($data)) {
-				$result->user_id = $data;
-			}
-
-			return $result;
 		}
 
 /*
@@ -84,44 +64,37 @@
 */
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 
-			$value = (isset($data->{'user_id'}) ? $data->{'user_id'} : NULL);
+			$value = (isset($data['user_id']) ? $data['user_id'] : NULL);
 
 			$callback = Administration::instance()->getPageCallback();
 
-			if ($this->{'default-to-current-user'} == 'yes' && is_null($data) && empty($_POST)) {
+			if ($this->{'default-to-current-user'} == 'yes' && empty($data) && empty($_POST)) {
 				$value = array(Administration::instance()->User->id);
 			}
 
-			/*
 			if (!is_array($value)) {
 				$value = array($value);
-			}*/
-			if(!isset($value)) $value = $data->value;
+			}
 
 		    $users = UserManager::fetch();
 
 			$options = array();
 
 			foreach($users as $u){
-				//	TODO: Support Multiple
-				//	$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
-
-				$options[] = array($u->id, ($u->id == $value), $u->getFullName());
+				$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
+			$attr = array();
+
+			if($this->{'allow-multiple-selection'} == 'yes') $attr['multiple'] = 'multiple';
+
 			$label = Widget::Label($this->label);
-			$label->appendChild(Widget::Select($fieldname, $options,
-				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
-			));
-
-			if (!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($label, $error['message']);
-			}
-
-			$wrapper->appendChild($label);
+			$label->appendChild(Widget::Select($fieldname, $options, $attr));
+			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
+			else $wrapper->appendChild($label);
 		}
 
 		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
@@ -257,7 +230,7 @@
 	        $wrapper->appendChild($list);
 	    }
 
-		public function findDefaultSettings(&$fields){
+		public function findDefaults(&$fields){
 			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
 		}
 
@@ -286,19 +259,6 @@
 			$this->appendShowColumnCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 
-		}
-		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
-			if ($this->required == 'yes' && (!isset($data->user_id) || strlen(trim($data->user_id)) == 0)){
-				$errors->append(
-					$this->{'element-name'},
-					array(
-					 	'message' => __("'%s' is a required field.", array($this->label)),
-						'code' => self::ERROR_MISSING
-					)
-				);
-				return self::STATUS_ERROR;
-			}
-			return self::STATUS_OK;
 		}
 
 		/*	Possibly could be removed.. */

@@ -188,7 +188,7 @@
 			return $this->_showcolumn;
 		}
 
-		public function canToggle(){
+		public function canToggleData(){
 			return false;
 		}
 
@@ -214,10 +214,6 @@
 
 		public function getToggleStates(){
 			return array();
-		}
-
-		public function toggleFieldData($data, $newState){
-			return $data;
 		}
 
 		public function handle(){

@@ -9,7 +9,7 @@
 			$this->{'show-column'} = 'no';
 		}
 
-		function canToggle(){
+		public function canToggleData(){
 			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
 
@@ -116,7 +116,7 @@
 			return $states;
 		}
 
-		function toggleFieldData($data, $newState){
+		function toggleEntryData(StdClass $data, $value, Entry $entry=NULL){
 			$data['value'] = $newState;
 			$data['handle'] = Lang::createHandle($newState);
 			return $data;
