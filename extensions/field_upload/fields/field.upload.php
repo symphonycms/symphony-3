@@ -243,7 +243,7 @@
 			$wrapper->appendChild($label);
 			$container = Symphony::Parent()->Page->createElement('div');
 
-			if ($error == null and !empty($data['file'])) {
+			if ($error == null and !empty($data->{'file'})) {
 				$details = Symphony::Parent()->Page->createElement('div');
 				$details->setAttribute('class', 'details');
 
@@ -260,7 +260,7 @@
 					)
 				);
 
-				if (!is_file(WORKSPACE . $data['file'])) {
+				if (!is_file(WORKSPACE . $data->{'file'})) {
 					$error = __('Destination file could not be found.');
 				}
 
@@ -269,14 +269,14 @@
 				$item = Symphony::Parent()->Page->createElement('dt', $link, array('class' => 'clear'));
 				$list->appendChild($item);
 
-				$link = Widget::Anchor($data['name'], URL . '/workspace' . $data['file']);
+				$link = Widget::Anchor($data->{'name'}, URL . '/workspace' . $data->{'file'});
 				$item = Symphony::Parent()->Page->createElement('dt', $link, array('class' => 'popup'));
 				$list->appendChild($item);
 
 				$list->appendChild(Symphony::Parent()->Page->createElement('dt', __('Size:')));
-				$list->appendChild(Symphony::Parent()->Page->createElement('dd', General::formatFilesize($data['size'])));
+				$list->appendChild(Symphony::Parent()->Page->createElement('dd', General::formatFilesize($data->{'size'})));
 				$list->appendChild(Symphony::Parent()->Page->createElement('dt', __('Type:')));
-				$list->appendChild(Symphony::Parent()->Page->createElement('dd', General::sanitize($data['mimetype'])));
+				$list->appendChild(Symphony::Parent()->Page->createElement('dd', General::sanitize($data->{'mimetype'})));
 				$details->appendChild($list);
 				$container->appendChild($details);
 			}
@@ -287,7 +287,7 @@
 			$upload->setAttribute('class', 'upload');
 			$upload->appendChild(Widget::Input(
 				"fields[{$handle}]",
-				$data['file'], ($data['file'] ? 'hidden' : 'file')
+				$data->{'file'}, ($data->{'file'} ? 'hidden' : 'file')
 			));
 			$container->appendChild($upload);
 			$wrapper->appendChild($container);
