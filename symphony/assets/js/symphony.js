@@ -220,6 +220,9 @@ var Symphony;
 			'Discard your changes?': false
 		});
 		
+		// Form has errors:
+		changed = form.find('.invalid:first').length == 1;
+		
 		// Listen for changes:
 		form.bind('change', function() {
 			changed = true;
