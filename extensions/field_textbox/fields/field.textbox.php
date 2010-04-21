@@ -166,7 +166,7 @@
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, $errors = null) {
-			$this->_driver->addSettingsHeaders($this->_engine->Page);
+			$this->_driver->addSettingsHeaders($wrapper->ownerDocument);
 
 			parent::displaySettingsPanel($wrapper, $errors);
 
@@ -303,8 +303,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
-
-			$this->_driver->addPublishHeaders($this->_engine->Page);
+			$this->_driver->addPublishHeaders($wrapper->ownerDocument);
 
 			$sortorder = $this->{'sortorder'};
 			$element_name = $this->{'element-name'};
@@ -587,7 +586,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
-			//$this->_driver->addFilteringHeaders($this->_engine->Page);
+			//$this->_driver->addFilteringHeaders($wrapper->ownerDocument);
 			$field_id = $this->{'id'};
 			$document = $wrapper->ownerDocument;
 
