@@ -231,6 +231,10 @@
 						$first = false;
 					}
 
+					$cells[count($cells) - 1]->appendChild(
+						Widget::Input('items['. $entry->id .']', NULL, 'checkbox')
+					);
+
 					if(!empty($cells)){
 						$aTableBody[] = Widget::TableRow($cells);
 					}
