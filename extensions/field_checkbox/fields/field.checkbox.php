@@ -153,7 +153,12 @@
 			return parent::saveData($data, $errors, $entry);
 		}
 
-
+		public function processFormData($data, Entry $entry=NULL){
+			return parent::processFormData(
+				(strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no'), $entry
+			);
+		}
+		
 /*		Deprecated
 
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
