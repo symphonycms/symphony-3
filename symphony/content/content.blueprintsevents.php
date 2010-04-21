@@ -1,9 +1,10 @@
 <?php
 
 	require_once(TOOLKIT . '/class.administrationpage.php');
-	require_once(TOOLKIT . '/class.eventmanager.php');
+	//require_once(TOOLKIT . '/class.eventmanager.php');
 	//require_once(TOOLKIT . '/class.sectionmanager.php');
-
+	require_once(TOOLKIT . '/class.event.php');
+	
 	Class contentBlueprintsEvents extends AdministrationPage{
 
 		public function __viewIndex() {
@@ -16,8 +17,6 @@
 				)
 			));
 
-			$events = eventManager::instance()->listAll();
-
 			$eTableHead = array(
 				array(__('Name'), 'col'),
 				array(__('Source'), 'col'),
@@ -26,8 +25,10 @@
 
 			$eTableBody = array();
 			$colspan = count($eTableHead);
-
-			if(!is_array($events) or empty($events)) {
+			
+			$iterator = new EventIterator;
+			
+			if(!$iterator->valid()) {
 				$eTableBody = array(Widget::TableRow(
 					array(
 						Widget::TableData(__('None found.'), array(
@@ -41,56 +42,64 @@
 				));
 			}
 
-			else foreach($events as $event) {
-				$instance = eventManager::instance()->create($event['handle']);
-				//$section = SectionManager::instance()->fetch($instance->getSource());
+			else{
+			
+				foreach($iterator as $pathname){
+					
+					$event = Event::load($pathname);
+					
+					//$instance = eventManager::instance()->create($event['handle']);
+					//$section = SectionManager::instance()->fetch($instance->getSource());
 
-				$view_mode = ($event['can_parse'] ? 'edit' : 'info');
+					$view_mode = ($event->allowEditorToParse() == true ? 'edit' : 'info');
+					$handle = preg_replace('/.php$/i', NULL, basename($event->parameters()->pathname));
+					
+					$col_name = Widget::TableData(
+						Widget::Anchor($event->about()->name, URL . "/symphony/blueprints/events/{$view_mode}/{$handle}/", array(
+							'title' => $event->parameters()->pathname
+						))
+					);
+					$col_name->appendChild(Widget::Input("items[{$handle}]", null, 'checkbox'));
 
-				$col_name = Widget::TableData(
-					Widget::Anchor($event['name'], URL . '/symphony/blueprints/events/' . $view_mode . '/' . $event['handle'] . '/', array(
-						'title' => 'event.' . $event['handle'] . '.php'
-					))
-				);
-				$col_name->appendChild(Widget::Input("items[{$event['handle']}]", null, 'checkbox'));
+					// Source  
+					if(is_null($event->parameters()->source)){
+						$col_source = Widget::TableData(__('None'), 'inactive');
+					}
+					else{
+						$section = Section::loadFromHandle($event->parameters()->source);
 
-				// Source
-				if(is_null($instance->getSource())){
-					$col_source = Widget::TableData(__('None'), 'inactive');
+						$col_source = Widget::TableData(Widget::Anchor(
+							$section->name,
+							URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/',
+							array('title' => $section->handle)
+						));
+					}
+
+					if (isset($event->about()->author->website)) {
+						$col_author = Widget::TableData(Widget::Anchor(
+							$event->about()->author->name,
+							General::validateURL($event->about()->author->website)
+						));
+					}
+
+					else if (isset($event->about()->author->email)) {
+						$col_author = Widget::TableData(Widget::Anchor(
+							$event->about()->author->name,
+							'mailto:' . $event->about()->author->email
+						));
+					}
+
+					else {
+						$col_author = Widget::TableData($event->about()->author->name);
+					}
+
+					$eTableBody[] = Widget::TableRow(
+						array($col_name, $col_source, $col_author)
+					);
 				}
-				else{
-					$section = Section::loadFromHandle($instance->getSource());
 
-					return Widget::TableData(Widget::Anchor(
-						$section->name,
-						URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/',
-						$section->handle
-					));
-				}
-
-				if (isset($event['author']['website'])) {
-					$col_author = Widget::TableData(Widget::Anchor(
-						$event['author']['name'],
-						General::validateURL($event['author']['website'])
-					));
-				}
-
-				else if (isset($event['author']['email'])) {
-					$col_author = Widget::TableData(Widget::Anchor(
-						$event['author']['name'],
-						'mailto:' . $event['author']['email']
-					));
-				}
-
-				else {
-					$col_author = Widget::TableData($event['author']['name']);
-				}
-
-				$eTableBody[] = Widget::TableRow(
-					array($col_name, $col_source, $col_author)
-				);
 			}
-
+			
 			$table = Widget::Table(
 				Widget::TableHead($eTableHead), null, Widget::TableBody($eTableBody), array(
 					'id' => 'events-list'
@@ -126,9 +135,9 @@
 
 		function __form($readonly=false){
 
-			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
-
-			if($formHasErrors) $this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+			if($this->errors instanceof MessageStack && $this->errors->length() > 0){
+				$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+			}
 
 			if(isset($this->_context[2])){
 				switch($this->_context[2]){
@@ -165,18 +174,17 @@
 			$isEditing = ($readonly ? true : false);
 			$fields = array();
 
-
 			if($this->_context[0] == 'edit' || $this->_context[0] == 'info'){
 				$isEditing = true;
 
 				$handle = $this->_context[1];
 
-				$existing =& EventManager::instance()->create($handle);
+				$existing = Event::loadFromName($handle);
 
 				$about = $existing->about();
-
+				$about=(array)$about;
 				$fields['name'] = $about['name'];
-				$fields['source'] = $existing->getSource();
+				$fields['source'] = $existing->parameters()->source;
 				$fields['filters'] = $existing->eParamFILTERS;
 				$fields['output_id_on_save'] = ($existing->eParamOUTPUT_ID_ON_SAVE === true ? 'yes' : 'no');
 
@@ -210,8 +218,12 @@
 
 			if(isset($_POST['fields'])) $fields = $_POST['fields'];
 
-			$layout = new Layout('small', 'small', 'medium');
+			$layout = new Layout; //('small', 'small', 'medium');
 			
+			$column_1 = $layout->createColumn(Layout::SMALL);
+			$column_2 = $layout->createColumn(Layout::SMALL);
+			$column_3 = $layout->createColumn(Layout::LARGE);
+						
 			$this->setTitle(__(($isEditing ? '%1$s &ndash; %2$s &ndash; %3$s' : '%1$s &ndash; %2$s'), array(__('Symphony'), __('Events'), $about['name'])));
 			$this->appendSubheading(($isEditing ? $about['name'] : __('Untitled')));
 
@@ -222,7 +234,9 @@
 				$label = Widget::Label(__('Name'));
 				$label->appendChild(Widget::Input('fields[name]', General::sanitize($fields['name'])));
 
-				if(isset($this->_errors['name'])) $fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->_errors['name']));
+				if(isset($this->errors->name)){
+					$fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->errors->name));
+				}
 				else $fieldset->appendChild($label);
 
 				$label = Widget::Label(__('Source'));
@@ -235,7 +249,7 @@
 
 				$label->appendChild(Widget::Select('fields[source]', $options, array('id' => 'event-context-selector')));
 				$fieldset->appendChild($label);
-				$layout->appendtoColumn(1, $fieldset);
+				$column_1->appendChild($fieldset);
 
 				$fieldset = Widget::Fieldset(__('Processing Options'));
 				$label = Widget::Label(__('Filter Rules'));
@@ -250,8 +264,13 @@
 
 				###
 				# Delegate: AppendEventFilter
-				# Description: Allows adding of new filter rules to the Event filter rule select box. A reference to the $options array is provided, and selected filters
-				ExtensionManager::instance()->notifyMembers('AppendEventFilter', '/blueprints/events/' . $this->_context[0] . '/', array('selected' => $fields['filters'], 'options' => &$options));
+				# Description: Allows adding of new filter rules to the Event filter 
+				# rule select box. A reference to the $options array is provided, and selected filters
+				ExtensionManager::instance()->notifyMembers(
+					'AppendEventFilter', 
+					'/blueprints/events/' . $this->_context[0] . '/', 
+					array('selected' => $fields['filters'], 'options' => &$options)
+				);
 
 				$label->appendChild(Widget::Select('fields[filters][]', $options, array('multiple' => 'multiple')));
 				$fieldset->appendChild($label);
@@ -265,37 +284,34 @@
 				$label->appendChild($input);
 				$label->setValue(__('Add entry ID to the parameter pool in the format of <code>$event-name-id</code> when saving is successful.'));
 				$fieldset->appendChild($label);
-				$layout->appendToColumn(2, $fieldset);
+				$column_2->appendChild($fieldset);
 				
-			endif;
 
+				$fieldset = Widget::Fieldset(__('Overrides &amp; Defaults'), '{$param}');
 
-			$fieldset = Widget::Fieldset(__('Overrides &amp; Defaults'), '{$param}');
+				//$div = $this->createElement('div');
 
-			$div = $this->createElement('div');
-
-			/*
-			**	TODO: Fix me
-			if(is_array($sections) && !empty($sections)){
-				foreach($sections as $s){
-					$div->appendChild(
+				foreach(new SectionIterator as $s){
+					$fieldset->appendChild(
 						$this->__buildDefaultsAndOverridesDuplicator(
 							$s,
-							($fields['source'] == $s->get('id')
+							($fields['source'] == $s->id
 								? array('overrides' => $fields['overrides'], 'defaults' => $fields['defaults'])
 								: NULL
 							)
 						)
 					);
 				}
-			}
-			*/
+				
+				//$fieldset->appendChild($div);
+				$column_3->appendChild($fieldset);
 
-			$fieldset->appendChild($div);
-			$layout->appendToColumn(3, $fieldset);
-			
-			$this->Form->appendChild($layout->generate());
+				$layout->appendTo($this->Form);
+				
+			endif;
 
+			/*
+			// TO DO: Find new home for Documentation
 			if($isEditing):
 				$fieldset = Widget::Fieldset(__('Description'));
 
@@ -305,31 +321,97 @@
 
 				$this->Form->appendChild($fieldset);
 			endif;
+			*/
 
+			if($readonly != true){
+				
+				$div = $this->createElement('div');
+				$div->setAttribute('class', 'actions');
+				$div->appendChild(Widget::Input('action[save]', ($isEditing ? __('Save Changes') : __('Create Event')), 'submit', array('accesskey' => 's')));
 
-			$div = $this->createElement('div');
-			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', ($isEditing ? __('Save Changes') : __('Create Event')), 'submit', array('accesskey' => 's')));
+				if($isEditing){
+					$div->appendChild(
+						$this->createElement('button', __('Delete'), array(
+							'name' => 'action[delete]',
+							'class' => 'confirm delete',
+							'title' => __('Delete this event')
+						))
+					);
+				}
 
-			if($isEditing){
-				$div->appendChild(
-					$this->createElement('button', __('Delete'), array(
-						'name' => 'action[delete]',
-						'class' => 'confirm delete',
-						'title' => __('Delete this event')
-					))
-				);
+				$this->Form->appendChild($div);
 			}
-
-			if(!$readonly) $this->Form->appendChild($div);
 
 		}
 
 		private function __buildDefaultsAndOverridesDuplicator(Section $section, array $items=NULL){
 
-			//$fields = Symphony::Database()->fetch("SELECT `element_name`, `label` FROM `tbl_fields` WHERE `parent_section` = " . $section->get('id'));
+			$duplicator = $this->createElement('div');
+			$duplicator->setAttribute('id', 'section-duplicator');
 
-			$duplicator = $this->createElement('div', NULL, array('id' => 'event-context-' . $section->get('id')));
+			$templates = $this->createElement('ol');
+			$templates->setAttribute('class', 'templates');
+
+			$instances = $this->createElement('ol');
+			$instances->setAttribute('class', 'instances');
+
+			$ol = new XMLElement('ol');
+			$ol->setAttribute('id', 'section-' . $section->handle);
+			$ol->setAttribute('class', 'section-duplicator');
+		
+			$item = $this->createElement('li');
+			$span = $this->createElement('span', 'Override');
+			$span->setAttribute('class', 'name');
+			$item->appendChild($span);
+
+			$label = Widget::Label(__('Field'));
+			$options = array(array('system:id', false, 'System ID'));
+
+			foreach($section->fields as $f){
+				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
+			}
+
+			$label->appendChild(Widget::Select('fields[overrides][field][]', $options));
+			$item->appendChild($label);
+
+			$label = Widget::Label(__('Replacement'));
+			$label->appendChild(Widget::Input('fields[overrides][replacement][]'));
+			$item->appendChild($label);
+			
+			$templates->appendChild($item);
+			
+			
+			$item = $this->createElement('li');
+			$span = $this->createElement('span', 'Default Value');
+			$span->setAttribute('class', 'name');
+			$item->appendChild($span);
+			
+			$label = Widget::Label(__('Field'));
+			$options = array(array('system:id', false, 'System ID'));
+
+			foreach($section->fields as $f){
+				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
+			}
+
+			$label->appendChild(Widget::Select('fields[defaults][field][]', $options));
+			$item->appendChild($label);
+
+			$label = Widget::Label(__('Replacement'));
+			$label->appendChild(Widget::Input('fields[defaults][replacement][]'));
+			$item->appendChild($label);
+			
+			$templates->appendChild($item);
+			
+			
+			$duplicator->appendChild($templates);
+			$duplicator->appendChild($instances);
+			
+			return $duplicator;
+			
+
+			//$fields = Symphony::Database()->fetch("SELECT `element_name`, `label` FROM `tbl_fields` WHERE `parent_section` = " . $section->get('id'));
+/*
+			$duplicator = $this->createElement('div', NULL, array('id' => 'event-context-' . $section->handle));
 			$h3 = $this->createElement('h3', __('Fields'));
 			$h3->setAttribute('class', 'label');
 			$duplicator->appendChild($h3);
@@ -358,7 +440,7 @@
 					$label = Widget::Label(__('Element Name'));
 					$options = array(array('system:id', false, 'System ID'));
 
-					foreach($fields as $f){
+					foreach($section->fields as $f){
 						$options[] = array(General::sanitize($f['element_name']), $f['element_name'] == $field_names[$ii], General::sanitize($f['label']));
 					}
 
@@ -391,7 +473,7 @@
 					$label = Widget::Label(__('Element Name'));
 					$options = array(array('system:id', false, 'System ID'));
 
-					foreach($fields as $f){
+					foreach($section->fields as $f){
 						$options[] = array(General::sanitize($f['element_name']), $f['element_name'] == $field_names[$ii], General::sanitize($f['label']));
 					}
 
@@ -416,11 +498,11 @@
 			$group = $this->createElement('div');
 			$group->setAttribute('class', 'group');
 
-			$label = Widget::Label(__('Element Name'));
+			$label = Widget::Label(__('Field'));
 			$options = array(array('system:id', false, 'System ID'));
 
-			foreach($fields as $f){
-				$options[] = array(General::sanitize($f['element_name']), false, General::sanitize($f['label']));
+			foreach($section->fields as $f){
+				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
 			}
 
 			$label->appendChild(Widget::Select('fields[overrides][field][]', $options));
@@ -441,11 +523,11 @@
 			$group = $this->createElement('div');
 			$group->setAttribute('class', 'group');
 
-			$label = Widget::Label(__('Element Name'));
+			$label = Widget::Label(__('Field'));
 			$options = array(array('system:id', false, 'System ID'));
 
-			foreach($fields as $f){
-				$options[] = array(General::sanitize($f['element_name']), false, General::sanitize($f['label']));
+			foreach($section->fields as $f){
+				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
 			}
 
 			$label->appendChild(Widget::Select('fields[defaults][field][]', $options));
@@ -461,6 +543,7 @@
 			$duplicator->appendChild($ol);
 
 			return $duplicator;
+			*/
 		}
 
 		function __actionNew(){
