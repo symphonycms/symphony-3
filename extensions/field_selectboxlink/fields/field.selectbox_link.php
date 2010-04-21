@@ -491,8 +491,9 @@
 */
 			$label->appendChild(Widget::Select('related-field-id][', $options, array('multiple' => 'multiple')));
 
-
-			if(isset($errors['related-field-id'])) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $errors['related-field-id']));
+			if(isset($errors->{'related-field-id'})){
+				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $errors->{'related-field-id'}));
+			}
 			else $wrapper->appendChild($label);
 
 			## Maximum entries
