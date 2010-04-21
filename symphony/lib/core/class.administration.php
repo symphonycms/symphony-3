@@ -137,11 +137,11 @@
 				if(!isset($bits[1])) return false;
 
 				$callback = array(
-								'driver' => 'publish',
-								'context' => array('section_handle' => $bits[1], 'page' => NULL, 'entry_id' => NULL, 'flag' => NULL),
-								'pageroot' => '/' . $bits[0] . '/' . $bits[1] . '/',
-								'classname' => 'contentPublish'
-							);
+					'driver' => 'publish',
+					'context' => array('section_handle' => $bits[1], 'page' => NULL, 'entry_id' => NULL, 'flag' => NULL),
+					'pageroot' => '/' . $bits[0] . '/' . $bits[1] . '/',
+					'classname' => 'contentPublish'
+				);
 				
 				if(isset($bits[2])){
 					$extras = preg_split('/\//', $bits[2], -1, PREG_SPLIT_NO_EMPTY);
@@ -149,9 +149,16 @@
 					$callback['context']['page'] = $extras[0];
 					if(isset($extras[1])) $callback['context']['entry_id'] = intval($extras[1]);
 				
-					if(isset($extras[2])) $callback['context']['flag'] = $extras[2];
+					//if(isset($extras[2])) $callback['context']['flag'] = $extras[2];
+					
+					
+					if(preg_match('/\/:([^\/]+)\/?$/', $bits[2], $matches)){
+						$callback['flag'] = $matches[1];
+						$bits[2] = str_replace($matches[0], NULL, $bits[2]);
+					}
 					
 				}
+				
 				
 				else $callback['context']['page'] = 'index';
 				

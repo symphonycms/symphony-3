@@ -629,13 +629,15 @@
 		}
 		
 		public function __form(Entry $existing=NULL){
-
+			
+			$callback = Administration::instance()->getPageCallback();
+			
 			/*if(!$section_id = SectionManager::instance()->fetchIDFromHandle($this->_context['section_handle']))
 				Administration::instance()->customError(E_USER_ERROR, __('Unknown Section'), __('The Section you are looking for, <code>%s</code>, could not be found.', array($this->_context['section_handle'])), false, true);
 
 		    $section = SectionManager::instance()->fetch($section_id);*/
 
-			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $this->_context['section_handle']));
+			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $callback['context']['section_handle']));
 
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
@@ -657,7 +659,7 @@
 				$this->entry = new Entry;
 			}
 
-			$this->entry->section = $this->_context['section_handle'];
+			$this->entry->section = $callback['context']['section_handle'];
 			$this->appendSubheading($subheading);
 			$this->entry->findDefaultFieldData();
 			
@@ -676,6 +678,38 @@
 				);
 			}
 
+			// Status message:
+			if(!is_null($callback['flag'])) {
+				switch($callback['flag']){
+					case 'saved':
+						$this->pageAlert(
+							__(
+								'Entry updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/new/',
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/'
+								)
+							),
+						Alert::SUCCESS);
+						
+						break;
+						
+					case 'created':
+						$this->pageAlert(
+							__(
+								'Entry created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/new/',
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/'
+								)
+							),
+						Alert::SUCCESS);
+						break;
+				}
+			}
+			
 			// Load all the fields for this section
 			$section_fields = array();
 			foreach($section->fields as $index => $field) {
@@ -799,9 +833,9 @@
 */
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', (is_null($existing) ? __('Save Changes') : __('Create Entry')), 'submit', array('accesskey' => 's')));
+			$div->appendChild(Widget::Input('action[save]', (!is_null($existing) ? __('Save Changes') : __('Create Entry')), 'submit', array('accesskey' => 's')));
 			
-			if(is_null($existing)){
+			if(!is_null($existing)){
 				$button = $this->createElement('button', __('Delete'));
 				$button->setAttributeArray(array(
 					'name' => 'action[delete]', 
@@ -816,11 +850,13 @@
 		}
 
 		public function __actionNew(){
+			
+			$callback = Administration::instance()->getPageCallback();
 
 			if(array_key_exists('save', $_POST['action']) || array_key_exists("done", $_POST['action'])) {
 
 				$entry = new Entry;
-				$entry->section = $this->_context['section_handle'];
+				$entry->section = $callback['context']['section_handle'];
 				$entry->user_id = Administration::instance()->User->id;
 
 				$post = General::getPostData();
@@ -851,7 +887,7 @@
 					
 					## WOOT
 					redirect(sprintf(
-						'%s/symphony/publish/%s/edit/%d/created/',
+						'%s/symphony/publish/%s/edit/%d/:created/',
 						URL,
 						$entry->section,
 						$entry->id
@@ -1084,8 +1120,9 @@
 		}
 */
 		public function __actionEdit(){
-
-			$entry_id = intval($this->_context['entry_id']);
+			
+			$callback = Administration::instance()->getPageCallback();
+			$entry_id = (int)$callback['context']['entry_id'];
 
 			if(@array_key_exists('save', $_POST['action']) || @array_key_exists("done", $_POST['action'])){
 
@@ -1118,7 +1155,7 @@
 					
 					## WOOT
 					redirect(sprintf(
-						'%s/symphony/publish/%s/edit/%d/saved/',
+						'%s/symphony/publish/%s/edit/%d/:saved/',
 						URL,
 						$entry->section,
 						$entry->id
@@ -1186,7 +1223,8 @@
 			}
 
 			elseif(@array_key_exists('delete', $_POST['action']) && is_numeric($entry_id)){
-
+				$callback = Administration::instance()->getPageCallback();
+				
 				###
 				# Delegate: Delete
 				# Description: Prior to deleting an entry. Entry ID is provided, as an array to remain compatible with other Delete delegate call
@@ -1195,7 +1233,7 @@
 
 				EntryManager::instance()->delete($entry_id);
 
-				redirect(ADMIN_URL . '/publish/'.$this->_context['section_handle'].'/');
+				redirect(ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/');
 			}
 
 		}
