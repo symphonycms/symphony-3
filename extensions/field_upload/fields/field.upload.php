@@ -225,7 +225,7 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=null, $error=null, $entry_id=null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 			if (!$error and !is_writable(DOCROOT . $this->destination . '/')) {
 				$error = 'Destination folder, <code>'.$this->destination.'</code>, is not writable. Please check permissions.';
 			}

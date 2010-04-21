@@ -302,7 +302,8 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data = null, $error = null, $entry_id = null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
+
 			$this->_driver->addPublishHeaders($this->_engine->Page);
 
 			$sortorder = $this->{'sortorder'};
@@ -333,7 +334,7 @@
 			// Input box:
 			if ($this->{'text-size'} == 'single') {
 				$input = Widget::Input(
-					"fields{$prefix}[$element_name]{$postfix}", General::sanitize($data['value'])
+					"fields[$element_name]", General::sanitize($data->value)
 				);
 
 				###
@@ -345,7 +346,7 @@
 			// Text Box:
 			else {
 				$input = Widget::Textarea(
-					"fields{$prefix}[$element_name]{$postfix}", General::sanitize($data['value']), array('rows' => 20, 'cols' => 50)
+					"fields[$element_name]", General::sanitize($data->value), array('rows' => 20, 'cols' => 50)
 				);
 
 				###

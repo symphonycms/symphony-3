@@ -122,7 +122,7 @@
 			return $data;
 		}
 
-		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 			$states = $this->getToggleStates();
 			natsort($states);
 

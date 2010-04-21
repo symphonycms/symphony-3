@@ -65,7 +65,7 @@
 			if($this->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
 		}
 
-		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 
 			$value = NULL;
 			if(isset($data['value'])){
