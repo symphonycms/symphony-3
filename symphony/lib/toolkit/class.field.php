@@ -163,34 +163,25 @@
 			}
 		    return false;
 	    }
-		
-		public function __toString(){
-
-			/*
-			Array
-			(
-			    [show_column] => yes
-			    [required] => yes
-			    [type] => textarea
-			    [label] => Happy Days
-			    [size] => 12
-			    [formatter] => markdown_with_purifier
-			    [element_name] => happy-days
-			)
-			*/
-
+	    
+	    public function toDoc() {
 			$doc = new DOMDocument('1.0', 'UTF-8');
 			$doc->formatOutput = true;
 
 			$root = $doc->createElement('field');
 			$doc->appendChild($root);
 
-			//$root->appendChild($doc->createElement('name', General::sanitize($this->name)));
 			foreach($this->properties as $name => $value){
-				$root->appendChild($doc->createElement($name, General::sanitize($value)));
+				$root->appendChild($doc->createElement($name, $value));
 			}
+			
+			return $doc;
+	    }
+		
+		public function __toString(){
+			$doc = $this->toDoc();
 
-			return $doc->saveXML();
+			return $doc->saveXML($doc->documentElement);
 		}
 
 		public function canShowTableColumn(){
