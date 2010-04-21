@@ -319,23 +319,20 @@
 		}
 */
 
-		public function checkFields(&$errors, $checkForDuplicates=true){
+		public function validateSettings(MessageStack $messages, $checkForDuplicates=true){
+			if ($this->{'static-options'} == '' && ($this->{'dynamic-options'} == '' || $this->{'dynamic-options'} == 'none')) {
+				$messages->{'dynamic-options'} = __('At least one source must be specified, dynamic or static.');
+			}
 
-			if(!is_array($errors)) $errors = array();
-
-			if($this->{'static-options'} == '' && ($this->{'dynamic-options'} == '' || $this->{'dynamic-options'} == 'none'))
-				$errors['dynamic-options'] = __('At least one source must be specified, dynamic or static.');
-
-			parent::checkFields($errors, $checkForDuplicates);
-
+			return parent::validateSettings($messages, $checkForDuplicates);
 		}
 
-		public function findDefaults(array &$fields){
+		public function findDefaultSettings(array &$fields){
 			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
 		}
 
-		public function displaySettingsPanel(&$wrapper, $errors = null) {
-			parent::displaySettingsPanel($wrapper, $errors);
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
+			parent::displaySettingsPanel($wrapper, $messages);
 
 			$document = $wrapper->ownerDocument;
 

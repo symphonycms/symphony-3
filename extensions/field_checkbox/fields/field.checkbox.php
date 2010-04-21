@@ -173,13 +173,13 @@
 		}
 
 */
-		public function findDefaults(&$fields){
+		public function findDefaultSettings(&$fields){
 			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement $wrapper, $errors = null) {
-			parent::displaySettingsPanel($wrapper, $errors);
-
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
+			parent::displaySettingsPanel($wrapper, $messages);
+			
 			$document = $wrapper->ownerDocument;
 
 			// Long Description

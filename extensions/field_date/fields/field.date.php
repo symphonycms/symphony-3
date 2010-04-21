@@ -373,7 +373,7 @@
 			return ($field_id == 0 || !$field_id) ? false : true;
 		}
 */
-		public function findDefaults(array &$fields){
+		public function findDefaultSettings(array &$fields){
 			if(!isset($fields['pre-populate'])) $fields['pre-populate'] = 'yes';
 		}
 

@@ -327,7 +327,7 @@
 			}
 		}
 
-		public static function save(Section $section, MessageStack &$messages, $simulate=false){
+		public static function save(Section $section, MessageStack $messages, $simulate=false){
 
 			$pathname = sprintf('%s/%s.xml', $section->path, $section->handle);
 
@@ -351,10 +351,11 @@
 			}
 
 			if(is_array($section->fields) && !empty($section->fields)){
-				foreach($section->fields as $index => $field){
-					$errors = NULL;
-					if($field->checkFields($errors, false, false) != Field::STATUS_OK && !empty($errors)){
-						$messages->append("field::{$index}", $errors);
+				foreach ($section->fields as $index => $field) {
+					$field_stack = new MessageStack;
+					
+					if ($field->validateSettings($field_stack, false, false) != Field::STATUS_OK) {
+						$messages->append("field::{$index}", $field_stack);
 					}
 				}
 			}

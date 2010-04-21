@@ -157,19 +157,30 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function findDefaults(&$fields) {
+		public function findDefaultSettings(&$fields) {
 			$fields['column-length'] = 75;
 			$fields['text-size'] = 'medium';
 			$fields['text-length'] = 0;
 			$fields['text-handle'] = 'yes';
 			$fields['text-cdata'] = 'no';
 		}
+		
+		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
+			if (trim((string)$this->{'text-length'}) == '') {
+				$messages->append('text-length', __('This is a required field.'));
+			}
+			
+			if (trim((string)$this->{'column-length'}) == '') {
+				$messages->append('column-length', __('This is a required field.'));
+			}
+			
+			return parent::validateSettings($messages, $checkForDuplicates);
+		}
 
-		public function displaySettingsPanel(SymphonyDOMElement $wrapper, $errors = null) {
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
+			parent::displaySettingsPanel($wrapper, $messages);
+			
 			$this->_driver->addSettingsHeaders($this->_engine->Page);
-
-			parent::displaySettingsPanel($wrapper, $errors);
-
 			$document = $wrapper->ownerDocument;
 
 		/*---------------------------------------------------------------------
@@ -218,6 +229,11 @@
 			$label->appendChild($document->createElement('i', __('Number of characters')));
 			$input = Widget::Input('text-length', $this->{'text-length'});
 			$label->appendChild($input);
+			
+			if ($messages->{'text-length'}) {
+				$label = Widget::wrapFormElementWithError($label, $messages->{'text-length'});
+			}
+			
 			$group->appendChild($label);
 
 		/*---------------------------------------------------------------------
@@ -228,6 +244,11 @@
 			$label->appendChild($document->createElement('i', __('Number of characters')));
 			$input = Widget::Input('column-length', $this->{'column-length'});
 			$label->appendChild($input);
+			
+			if ($messages->{'column-length'}) {
+				$label = Widget::wrapFormElementWithError($label, $messages->{'column-length'});
+			}
+			
 			$group->appendChild($label);
 			$wrapper->appendChild($group);
 

@@ -243,7 +243,7 @@
 	        $wrapper->appendChild($list);
 	    }
 
-		public function findDefaults(&$fields){
+		public function findDefaultSettings(&$fields){
 			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
 		}
 

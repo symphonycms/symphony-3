@@ -559,6 +559,31 @@
 				$this->appendViewOptions();
 			}
 			
+			// Show errors:
+			function appendErrorSummary(SymphonyDOMElement $wrapper, MessageStack $messages) {
+				$document = $wrapper->ownerDocument;
+				$list = $document->createElement('ol');
+				$list->setAttribute('class', 'error-list');
+				
+				foreach ($messages as $key => $message) {
+					if ($message instanceof MessageStack) {
+						$item = $document->createElement('li', $key . ':');
+						
+						appendErrorSummary($item, $message);
+					}
+					
+					else {
+						$item = $document->createElement('li', $key . ': ' . $message);
+					}
+					
+					$list->appendChild($item);
+				}
+				
+				$wrapper->appendChild($list);
+			}
+			
+			appendErrorSummary($this->Form, $this->errors);
+			
 			// Essentials:
 			$fieldset = $this->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
@@ -642,23 +667,32 @@
 			if (is_array($types)) foreach ($types as $type => $field) {
 				$defaults = array();
 				
-				$field->findDefaults($defaults);
-				foreach($defaults as $key => $value){
+				$field->findDefaultSettings($defaults);
+				
+				foreach ($defaults as $key => $value) {
 					$field->$key = $value;
 				}
 				
 				$item = $this->createElement('li');
 				
-				$field->displaySettingsPanel($item);
+				$field->displaySettingsPanel($item, new MessageStack);
 				$item->appendChild(Widget::Input('type', $type, 'hidden'));
 				$templates->appendChild($item);
 			}
 			
 			if (is_array($fields)) foreach($fields as $position => $field) {
 				$field->sortorder = $position;
-
+				
+				if ($this->errors->{"field::{$position}"}) {
+					$messages = $this->errors->{"field::{$position}"};
+				}
+				
+				else {
+					$messages = new MessageStack;
+				}
+				
 				$item = $this->createElement('li');
-				$field->displaySettingsPanel($item, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
+				$field->displaySettingsPanel($item, $messages);
 				$item->appendChild(
 					Widget::Input('type', $field->type, 'hidden')
 				);

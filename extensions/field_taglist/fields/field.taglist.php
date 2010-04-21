@@ -187,7 +187,7 @@
 		}
 
 */
-		public function findDefaults(array &$fields){
+		public function findDefaultSettings(array &$fields){
 			if(!isset($fields['pre-populate-source'])) $fields['pre-populate-source'] = array('existing');
 		}
 

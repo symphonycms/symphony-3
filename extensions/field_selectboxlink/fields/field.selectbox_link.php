@@ -454,12 +454,12 @@
 			return true;
 		}
 
-		public function findDefaults(&$fields){
+		public function findDefaultSettings(&$fields){
 			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
 		}
 
-		public function displaySettingsPanel(&$wrapper, $errors=NULL){
-			parent::displaySettingsPanel($wrapper, $errors);
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
+			parent::displaySettingsPanel($wrapper, $messages);
 
 
 			$label = Widget::Label(__('Options'));
