@@ -25,7 +25,6 @@
 			$this->Driver = ExtensionManager::instance()->create('field_upload');
 
 			$this->_name = 'Upload';
-			$this->_required = true;
 			$this->_mimes = array(
 				'image'	=> array(
 					'image/bmp',
@@ -42,9 +41,6 @@
 					'text/html'
 				)
 			);
-
-			$this->{'show-column'} = 'yes';
-			$this->required = 'yes';
 		}
 
 		public function createTable(){

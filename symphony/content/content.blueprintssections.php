@@ -16,7 +16,7 @@
 			$title->appendChild($this->createEntityReference('ndash'));
 			$title->appendChild($this->createTextNode(' ' . __('Sections')));
 			$this->insertNodeIntoHead($title);
-			
+
 			$this->appendSubheading(__('Sections'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', array(
 					'title' => __('Create a new section'),
@@ -107,15 +107,15 @@
 
 		private function __save(array $essentials = null, array $fields = null, array $layout = null, Section $section = null){
 			$renamed = false;
-			
+
 			if (is_null($section)) {
 				$section = new Section;
 				$section->path = SECTIONS;
 			}
-			
+
 			$this->section = $section;
 			$this->errors = new MessageStack;
-			
+
 			// Resave essentials:
 			if (!is_null($essentials)) {
 				if($essentials['name'] !== $section->name) {
@@ -124,45 +124,45 @@
 						$essentials['name']
 					);
 				}
-				
+
 				$this->section->name = $essentials['name'];
 				$this->section->{'navigation-group'} = $essentials['navigation-group'];
 				$this->section->{'hidden-from-publish-menu'} = (isset($essentials['hidden-from-publish-menu']) && $essentials['hidden-from-publish-menu'] == 'yes' ? 'yes' : 'no');
 			}
-			
+
 			// Resave fields:
 			if (!is_null($fields)) {
 				$this->section->removeAllFields();
-				
+
 				if (is_array($fields) and !empty($fields)) {
 					foreach ($fields as $field) {
 						$this->section->appendField($field['type'], $field);
 					}
 				}
 			}
-			
+
 			// Resave layout:
 			if (!is_null($layout)) {
 				foreach ($layout as &$column) {
 					$column = (object)$column;
-					
+
 					if (is_array($column->fieldsets)) foreach ($column->fieldsets as &$fieldset) {
 						$fieldset = (object)$fieldset;
 					}
 				}
-				
+
 				$this->section->layout = $layout;
 			}
-			
+
 			try {
 				Section::save($this->section, $this->errors);
-				
+
 				// If it's a renamed section, cleanup!
 				if ($renamed !== false) Section::rename($renamed);
-				
+
 				return true;
 			}
-			
+
 			catch (SectionException $e) {
 				switch($e->getCode()){
 					case Section::ERROR_MISSING_OR_INVALID_FIELDS:
@@ -173,7 +173,7 @@
 						break;
 				}
 			}
-			
+
 			catch (Exception $e) {
 				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
 			}
@@ -196,7 +196,7 @@
 				}
 			}
 		}
-		
+
 		public function __actionLayout() {
 			$context = $this->_context;
 			array_shift($context);
@@ -206,7 +206,7 @@
 			if (isset($_POST['action']['save'])) {
 				$layout = (isset($_POST['layout']) ? $_POST['layout'] : null);
 				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
-				
+
 				if ($this->__save(null, null, $layout, $section) == true) {
 					redirect(ADMIN_URL . "/blueprints/sections/layout/{$this->section->handle}/:saved/");
 				}
@@ -230,12 +230,12 @@
 			if(array_key_exists('delete', $_POST['action'])) {
 				$this->__actionDelete(array($section_pathname), ADMIN_URL . '/blueprints/sections/');
 			}
-			
+
 			else if (array_key_exists('save', $_POST['action'])) {
 				$essentials = $_POST['essentials'];
 				$fields = (isset($_POST['fields']) ? $_POST['fields'] : null);
 				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
-				
+
 				if ($this->__save($essentials, $fields, null, $section) == true) {
 					redirect(ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/:saved/");
 				}
@@ -292,7 +292,7 @@
 				);
 			}
 		}
-		
+
 		public function appendViewOptions() {
 			$context = $this->_context;
 			array_shift($context);
@@ -301,65 +301,65 @@
 				__('Configuration')			=>	ADMIN_URL . '/blueprints/sections/edit/' . $view_pathname . '/',
 				__('Layout')				=>	ADMIN_URL . '/blueprints/sections/layout/' . $view_pathname . '/',
 			);
-			
+
 			parent::appendViewOptions($view_options);
 		}
-		
+
 		public function appendColumn(SymphonyDOMElement $wrapper, $size = Layout::LARGE, $fieldsets = array(), &$fields = null) {
 			$document = $wrapper->ownerDocument;
 			$column = $document->createElement('li');
 			$column->setAttribute('class', 'column size-' . $size);
-			
+
 			if (!empty($fieldsets)) foreach ($fieldsets as $data) {
 				$fieldset = $document->createElement('fieldset');
 				$header = $document->createElement('h3');
 				$list = $document->createElement('ol');
 				$list->setAttribute('class', 'fields');
-				
+
 				$input = Widget::Input('name', $data->name);
-				
+
 				$header->appendChild($input);
 				$fieldset->appendChild($header);
-				
+
 				if (!empty($data->fields)) foreach ($data->fields as $data) {
 					if (!isset($fields[$data])) continue;
-					
+
 					$field = $fields[$data];
 					unset($fields[$data]);
-					
+
 					$this->appendField($list, $field);
 				}
-				
+
 				$fieldset->appendChild($list);
 				$column->appendChild($fieldset);
 			}
-			
+
 			$wrapper->appendChild($column);
 		}
-		
+
 		public function appendField(SymphonyDOMElement $wrapper, Field $field) {
 			$document = $wrapper->ownerDocument;
 			$item = $document->createElement('li');
 			$item->setAttribute('class', 'field');
-			
+
 			$name = $document->createElement('span', $field->label);
 			$name->setAttribute('class', 'name');
 			$name->appendChild($document->createElement('i', $field->name()));
 			$item->appendChild($name);
-			
+
 			$input = Widget::Input('name', $field->{'element-name'}, 'hidden');
 			$item->appendChild($input);
-			
+
 			$wrapper->appendChild($item);
 		}
-		
+
 		public function __viewLayout() {
 			$existing = self::__loadExistingSection($this->_context[1]);
-			
+
 			if(!($this->section instanceof Section)){
 				$this->section = $existing;
 			}
-			
+
 			$this->__layout($existing);
 		}
 
@@ -367,20 +367,20 @@
 			if(!($this->section instanceof Section)){
 				$this->section = new Section;
 			}
-			
+
 			$this->__form();
 		}
 
 		public function __viewEdit(){
 			$existing = self::__loadExistingSection($this->_context[1]);
-			
+
 			if(!($this->section instanceof Section)){
 				$this->section = $existing;
 			}
-			
+
 			$this->__form($existing);
 		}
-		
+
 		private function __layout(Section $existing = null) {
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
@@ -405,38 +405,38 @@
 			$layout = new Layout();
 			$content = $layout->createColumn(Layout::LARGE);
 			$fieldset = Widget::Fieldset(__('Layout'));
-			
+
 			if(!($this->section instanceof Section)){
 				$this->section = new Section;
 			}
-			
+
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
-			
+
 			$this->appendViewOptions();
-			
+
 			$widget = $this->createElement('div');
 			$widget->setAttribute('id', 'section-layout');
-			
+
 			$layouts = $this->createElement('ol');
 			$layouts->setAttribute('class', 'layouts');
-			
+
 			$templates = $this->createElement('ol');
 			$templates->setAttribute('class', 'templates');
-			
+
 			$columns = $this->createElement('ol');
 			$columns->setAttribute('class', 'columns');
-			
+
 			// Load fields:
 			$fields = $this->section->fields;
-			
+
 			foreach ($fields as $index => $field) {
 				$name = $field->{'element-name'};
 				$fields[$name] = $field;
-				
+
 				unset($fields[$index]);
 			}
-			
+
 			// Layouts:
 			$layout_options = array(
 				array(Layout::LARGE),
@@ -446,47 +446,47 @@
 				array(Layout::LARGE, Layout::LARGE, Layout::LARGE),
 				array(Layout::LARGE, Layout::LARGE, Layout::LARGE, Layout::LARGE)
 			);
-			
+
 			foreach ($layout_options as $layout_columns) {
 				$item = $this->createElement('li');
 				$div = $this->createElement('div');
-				
+
 				foreach ($layout_columns as $index => $size) {
 					$element = $this->createElement('div');
 					$element->setAttribute('class', 'column size-' . $size);
-					
+
 					$span = $this->createElement('span', chr(97 + $index));
 					$element->appendChild($span);
-					
+
 					$div->appendChild($element);
 				}
-				
+
 				$item->appendChild($div);
 				$layouts->appendChild($item);
 			}
-			
+
 			// Default columns:
 			if (empty($this->section->layout)) {
 				$this->appendColumn($columns, Layout::LARGE);
 				$this->appendColumn($columns, Layout::SMALL);
 			}
-			
+
 			// Current columns:
 			else foreach ($this->section->layout as $column) {
 				if ($column->size == Layout::LARGE) {
 					$this->appendColumn($columns, Layout::LARGE, $column->fieldsets, $fields);
 				}
-				
+
 				else {
 					$this->appendColumn($columns, Layout::SMALL, $column->fieldsets, $fields);
 				}
 			}
-			
+
 			// Templates:
 			if (is_array($fields)) foreach($fields as $position => $field) {
 				$this->appendField($templates, $field);
 			}
-			
+
 			$widget->appendChild($layouts);
 			$widget->appendChild($templates);
 			$widget->appendChild($columns);
@@ -512,11 +512,11 @@
 
 			$this->Form->appendChild($div);
 		}
-		
+
 		private function __form(Section $existing = null){
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
-			
+
 			if (isset($callback['flag']) && !is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
@@ -554,40 +554,40 @@
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
-			
+
 			if ($existing instanceof Section) {
 				$this->appendViewOptions();
 			}
-			
+
 			/*
 			TODO: This code should become MessageStack::appendTo(...)
-			
+
 			// Show errors:
 			function appendErrorSummary(SymphonyDOMElement $wrapper, MessageStack $messages) {
 				$document = $wrapper->ownerDocument;
 				$list = $document->createElement('ol');
 				$list->setAttribute('class', 'error-list');
-				
+
 				foreach ($messages as $key => $message) {
 					if ($message instanceof MessageStack) {
 						$item = $document->createElement('li', $key . ':');
-						
+
 						appendErrorSummary($item, $message);
 					}
-					
+
 					else {
 						$item = $document->createElement('li', $key . ': ' . $message);
 					}
-					
+
 					$list->appendChild($item);
 				}
-				
+
 				$wrapper->appendChild($list);
 			}
-			
+
 			appendErrorSummary($this->Form, $this->errors);
 			*/
-			
+
 			// Essentials:
 			$fieldset = $this->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
@@ -623,7 +623,7 @@
 			));
 
 			$navigation_groups = Section::fetchUsedNavigationGroups();
-			
+
 			if(is_array($navigation_groups) && !empty($navigation_groups)){
 				$ul = $this->createElement('ul', NULL, array('class' => 'tags singular'));
 				foreach($navigation_groups as $g){
@@ -631,19 +631,19 @@
 				}
 				$fieldset->appendChild($ul);
 			}
-			
+
 			$left->appendChild($fieldset);
-			
+
 			// Fields
 			$fieldset = $this->createElement('fieldset');
 			$fieldset->setAttribute('class', 'settings');
 			$fieldset->appendChild($this->createElement('h3', __('Fields')));
 
-			$div = new XMLElement('div');
-			$h3 = new XMLElement('h3', __('Fields'));
+			$div = $this->createElement('div');
+			$h3 = $this->createElement('h3', __('Fields'));
 			$h3->setAttribute('class', 'label');
 			$div->appendChild($h3);
-			
+
 			$duplicator = $this->createElement('div');
 			$duplicator->setAttribute('id', 'section-duplicator');
 
@@ -653,13 +653,13 @@
 			$instances = $this->createElement('ol');
 			$instances->setAttribute('class', 'instances');
 
-			$ol = new XMLElement('ol');
+			$ol = $this->createElement('ol');
 			$ol->setAttribute('id', 'section-' . $section_id);
 			$ol->setAttribute('class', 'section-duplicator');
 
 			$fields = $this->section->fields;
 			$types = array();
-			
+
 			foreach (new FieldIterator as $pathname){
 				$type = preg_replace(array('/^field\./', '/\.php$/'), NULL, basename($pathname));
 				$types[$type] = Field::load($pathname);
@@ -670,45 +670,45 @@
 
 			if (is_array($types)) foreach ($types as $type => $field) {
 				$defaults = array();
-				
+
 				$field->findDefaultSettings($defaults);
-				
+
 				foreach ($defaults as $key => $value) {
 					$field->$key = $value;
 				}
-				
+
 				$item = $this->createElement('li');
-				
+
 				$field->displaySettingsPanel($item, new MessageStack);
 				$item->appendChild(Widget::Input('type', $type, 'hidden'));
 				$templates->appendChild($item);
 			}
-			
+
 			if (is_array($fields)) foreach($fields as $position => $field) {
 				$field->sortorder = $position;
-				
+
 				if ($this->errors->{"field::{$position}"}) {
 					$messages = $this->errors->{"field::{$position}"};
 				}
-				
+
 				else {
 					$messages = new MessageStack;
 				}
-				
+
 				$item = $this->createElement('li');
 				$field->displaySettingsPanel($item, $messages);
 				$item->appendChild(
 					Widget::Input('type', $field->type, 'hidden')
 				);
-				
+
 				$instances->appendChild($item);
 			}
-			
+
 			$duplicator->appendChild($templates);
 			$duplicator->appendChild($instances);
 			$fieldset->appendChild($duplicator);
 			$right->appendChild($fieldset);
-			
+
 			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');

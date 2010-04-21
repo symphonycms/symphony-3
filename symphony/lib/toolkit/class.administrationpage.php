@@ -507,7 +507,7 @@
 			$div->setAttribute('id', 'tab');
 			$list = $this->createElement('ul');
 			
-			foreach ($options as $name => $link) {
+			foreach ($options as $name => $link) {							
 				$item = $this->createElement('li');
 				$item->appendChild(
 					Widget::Anchor($name, $link, array(

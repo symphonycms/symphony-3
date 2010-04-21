@@ -623,9 +623,9 @@
 	form .field:first-child label {
 		margin-top: 0;
 	}
-	form .field:last-child label {
+	/*form .field:last-child label {
 		margin-bottom: 0;
-	}
+	}*/
 	form label i {
 		float: right;
 		opacity: 0.5;

@@ -4,9 +4,6 @@
 		function __construct(){
 			parent::__construct();
 			$this->_name = __('Select Box');
-
-			// Set default
-			$this->{'show-column'} = 'no';
 		}
 
 		public function canToggleData(){
@@ -173,6 +170,7 @@
 		}
 
 		function findAndAddDynamicOptions(&$values){
+			list($section, $field_handle) = explode("::", $this->{'dynamic-options'});
 
 			if(!is_array($values)) $values = array();
 
@@ -180,11 +178,8 @@
 				SELECT
 					DISTINCT `value`
 				FROM
-					`tbl_entries_data_%d`
-				ORDER BY
-					`value` DESC
-				",
-				$this->dynamic-options
+					`tbl_data_%s_%s`
+				", array($section, $field_handle)
 			);
 
 			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
@@ -359,22 +354,15 @@
 			);
 
 			foreach (new SectionIterator as $section) {
-				$field_groups[$section->handle] = array(
-					'fields'	=> $section->fields,
-					'section'	=> $section
-				);
-			}
-
-			foreach($field_groups as $group) {
-				if(!is_array($group['fields'])) continue;
+				if(!is_array($section->fields) || $section->handle == $document->_context[1]) continue;
 
 				$fields = array();
 
-				foreach($group['fields'] as $field) {
-					if($field->id != $this->id && $field->canPrePopulate()) {
+				foreach($section->fields as $field) {
+					if($field->canPrePopulate()) {
 						$fields[] = array(
-							$field->id,
-							(!is_null($this->{'dynamic-options'}) && $this->{'dynamic-options'} == $field->id),
+							$section->handle . '::' .$field->{'element-name'},
+							($this->{'dynamic-options'} == $section->handle . '::' .$field->{'element-name'}),
 							$field->label
 						);
 					}
@@ -382,7 +370,7 @@
 
 				if(!empty($fields)) {
 					$options[] = array(
-						'label' => $group['section']->name,
+						'label' => $section->name,
 						'options' => $fields
 					);
 				}

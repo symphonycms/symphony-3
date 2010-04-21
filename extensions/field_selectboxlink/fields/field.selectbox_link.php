@@ -10,10 +10,8 @@
 		public function __construct(){
 			parent::__construct();
 			$this->_name = __('Select Box Link');
-			$this->_required = true;
 
 			// Set default
-			$this->{'show-column'} = 'no';
 			$this->{'required'} = 'yes';
 			$this->{'limit'} = 20;
 		}

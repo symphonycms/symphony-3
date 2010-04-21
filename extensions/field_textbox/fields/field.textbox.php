@@ -16,13 +16,10 @@
 			parent::__construct();
 
 			$this->_name = 'Text Box';
-			$this->_required = true;
 			$this->_driver = ExtensionManager::instance()->create('field_textbox');
 
 			// Set defaults:
-			$this->{'show-column'} = 'yes';
 			$this->{'size'} = 'medium';
-			$this->{'required'} = 'yes';
 
 			$this->_sizes = array(
 				array('single', false, __('Single Line')),
@@ -424,7 +421,7 @@
 				return self::STATUS_ERROR;
 			}
 
-			if (empty($data)) return self::STATUS_OK;
+			if (!isset($data->value)) return self::STATUS_OK;
 
 			if (!$this->applyValidationRules($data->value)) {
 				$errors->append(

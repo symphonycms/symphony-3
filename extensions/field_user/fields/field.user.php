@@ -6,8 +6,18 @@
 			$this->_name = __('User');
 		}
 
-		public function isSortable(){
+		public function canToggleData(){
 			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
+		}
+
+		public function allowDatasourceOutputGrouping(){
+			## Grouping follows the same rule as toggling.
+			return $this->canToggleData();
+		}
+
+		public function isSortable(){
+			## Grouping follows the same rule as toggling.
+			return $this->canToggleData();
 		}
 
 		public function canFilter(){
@@ -16,15 +26,6 @@
 
 		public function canImport(){
 			return true;
-		}
-
-		public function canToggleData(){
-			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
-		}
-
-		public function allowDatasourceOutputGrouping(){
-			## Grouping follows the same rule as toggling.
-			return $this->canToggle();
 		}
 
 		public function getToggleStates(){
@@ -68,7 +69,7 @@
 
 			$callback = Administration::instance()->getPageCallback();
 
-			if ($this->{'default-to-current-user'} == 'yes' && empty($data) && empty($_POST)) {
+			if ($this->{'default-to-current-user'} == 'yes' && is_null($data)) {
 				$value = array(Administration::instance()->User->id);
 			}
 

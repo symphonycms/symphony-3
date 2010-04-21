@@ -29,10 +29,8 @@
 			));
 
 			$viewoptions = array(
-				'subnav'	=>	array(
-					'Users'	=> URL . '/symphony/system/users/',
-					'Roles' => URL . '/symphony/system/roles/',
-				)
+				'Users'	=> URL . '/symphony/system/users/',
+				'Roles' => URL . '/symphony/system/roles/',
 			);
 
 			$this->appendViewOptions($viewoptions);
