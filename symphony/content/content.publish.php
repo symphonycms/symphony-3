@@ -662,6 +662,7 @@
 							foreach($section->fields as $f){
 								if($f->{'element-name'} == $field_handle){
 									$field = $f;
+									break;
 								}
 							}
 			

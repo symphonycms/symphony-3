@@ -435,13 +435,15 @@
 		}
 
 		public function processFormData($data, Entry $entry=NULL){
-
-			$result = (object)array(
-				'value' => NULL
-			);
 			
 			if(isset($entry->data()->{$this->{'element-name'}})){
 				$result = $entry->data()->{$this->{'element-name'}};
+			}
+			
+			else {
+				$result = (object)array(
+					'value' => NULL
+				);
 			}
 			
 			$result->value = $data;
@@ -511,7 +513,7 @@
 								   will be deleting or adding data outside of the main entry object commit function
 			$entry_id (optionsl) - Useful for identifying the current entry
 
-		*/
+	
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL) {
 
 			$status = self::STATUS_OK;
@@ -520,7 +522,7 @@
 				'value' => $data,
 			);
 		}
-
+		*/
 		public function prepareTableValue(StdClass $data, DOMElement $link=NULL) {
 			$max_length = Symphony::Configuration()->get('cell-truncation-length', 'symphony');
 			$max_length = ($max_length ? $max_length : 75);

@@ -64,7 +64,7 @@
 */
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 
-			$value = (isset($data['user_id']) ? $data['user_id'] : NULL);
+			$value = (isset($data->user_id) ? $data->user_id : NULL);
 
 			$callback = Administration::instance()->getPageCallback();
 
@@ -87,12 +87,10 @@
 			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
-			$attr = array();
-
-			if($this->{'allow-multiple-selection'} == 'yes') $attr['multiple'] = 'multiple';
-
 			$label = Widget::Label($this->label);
-			$label->appendChild(Widget::Select($fieldname, $options, $attr));
+			$label->appendChild(Widget::Select($fieldname, $options,
+				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
+			));
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
 		}
@@ -261,7 +259,37 @@
 
 		}
 
-		/*	Possibly could be removed.. */
+		public function processFormData($data, Entry $entry=NULL){
+
+			if(isset($entry->data()->{$this->{'element-name'}})){
+				$result = $entry->data()->{$this->{'element-name'}};
+			}
+
+			else {
+				$result = (object)array(
+					'user_id' => NULL
+				);
+			}
+
+			$result->user_id = $data;
+
+			return $result;
+		}
+
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
+			if ($this->required == 'yes' && (!isset($data->user_id) || strlen(trim($data->user_id)) == 0)){
+				$errors->append(
+					$this->{'element-name'},
+					array(
+					 	'message' => __("'%s' is a required field.", array($this->label)),
+						'code' => self::ERROR_MISSING
+					)
+				);
+				return self::STATUS_ERROR;
+			}
+			return self::STATUS_OK;
+		}
+
 		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
 			return parent::saveData($data, $errors, $entry);
 		}
