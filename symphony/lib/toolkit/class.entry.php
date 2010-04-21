@@ -123,7 +123,9 @@
 			catch(Exception $e){
 				throw new EntryException('The following error occurred during saving: ' . $e->getMessage());
 			}
-
+			
+			$entry->findDefaultFieldData();
+			
 			// Check the data
 			foreach($section->fields as $field){
 				$data = $entry->data()->{$field->{'element-name'}};
@@ -310,17 +312,16 @@
 			return ($asObject == true ? (object)$this->_data[$field_id] : $this->_data[$field_id]);
 		}
 */
-		public function findDefaultData(){
+		public function findDefaultFieldData(){
 
-			$section = Section::loadFromHandle($entry->get('section'));
+			$section = Section::loadFromHandle($this->section);
 
 			foreach($section->fields as $field){
 				$element = $field->{'element-name'};
 
 				if(isset($this->data()->$element)) continue;
 
-				$field->processRawFieldData(NULL, $result, $status, false, $this->id);
-				$this->data()->$element = $result;
+				$this->data()->$element = $field->processFormData(NULL, $this);
 			}
 
 		}

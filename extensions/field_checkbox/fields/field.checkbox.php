@@ -144,18 +144,22 @@
 			return ($data->value == 'yes' ? __('Yes') : __('No'));
 		}
 
-/*		Deprecated
-
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-
-			$status = self::STATUS_OK;
-
-			return array(
-				'value' => (strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no')
-			);
-
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return self::STATUS_OK;
 		}
 
+		/*	Possibly could be removed.. */
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return parent::saveData($data, $errors, $entry);
+		}
+
+		public function processFormData($data, Entry $entry=NULL){
+			return parent::processFormData(
+				(strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no'), $entry
+			);
+		}
+
+/*		Deprecated
 		function commit(){
 
 			if(!parent::commit()) return false;

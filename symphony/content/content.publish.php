@@ -766,7 +766,7 @@
 			$this->Form->appendChild($div);
 		}
 
-		function __actionNew(){
+		public function __actionNew(){
 
 			if(array_key_exists('save', $_POST['action']) || array_key_exists("done", $_POST['action'])) {
 
@@ -778,9 +778,43 @@
 				$entry->setFieldDataFromFormArray($post['fields']);
 
 				$errors = new MessageStack;
+				
+				###
+				# Delegate: EntryPreCreate
+				# Description: Just prior to creation of an Entry. Entry object provided
+				ExtensionManager::instance()->notifyMembers(
+					'EntryPreCreate', '/publish/new/', 
+					array('entry' => &$entry)
+				);
+				
 				Entry::save($entry, $errors);
-				die();
+				
+				if($errors->length() <= 0){
+					
+					###
+					# Delegate: EntryPostCreate
+					# Description: Creation of an Entry. New Entry object is provided.
+					ExtensionManager::instance()->notifyMembers(
+						'EntryPostCreate', '/publish/new/', 
+						array('entry' => $entry)
+					);
+					
+					## WOOT
+					redirect(sprintf(
+						'%s/symphony/publish/%s/edit/%d/created/',
+						URL,
+						$entry->section,
+						$entry->id
+						//(!is_null($prepopulate_field_id) ? ":{$prepopulate_field_id}:{$prepopulate_value}" : NULL)
+					));
+				}
+				
+				
+				// Oh dear
+				$this->pageAlert(NULL, Alert::ERROR);
+				return;
 
+/*
 				$section = Section::loadFromHandle($this->_context['section_handle']);
 
 				$entry =& EntryManager::instance()->create();
@@ -835,8 +869,9 @@
 					}
 
 				endif;
+				*/
 			}
-
+			
 		}
 
 		function __viewEdit() {
@@ -1080,4 +1115,3 @@
 	}
 
 
-?>
