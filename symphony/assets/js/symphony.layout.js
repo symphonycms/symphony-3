@@ -137,6 +137,7 @@
 				});
 				
 				active_layout_id = layout.data('layout-id');
+				object.trigger('change');
 			})
 			
 		/*-------------------------------------------------------------------*/
@@ -214,6 +215,10 @@
 					
 					sort:			function() {
 						jQuery('.ui-sortable-helper').css('height', 'auto');
+					},
+					
+					stop:			function() {
+						object.trigger('change');
 					}
 				});
 				
@@ -248,12 +253,15 @@
 					fieldset.remove();
 					siblings.trigger('fieldset-refresh');
 				}
+				
+				object.trigger('change');
 			});
 			
 			object.find('*').live('fieldset-change', function() {
 				var fieldset = jQuery(this);
 				
 				fieldset.removeClass('unchanged');
+				object.trigger('change');
 			});
 			
 			object.find('*').live('fieldset-menu-show', function() {
@@ -277,6 +285,8 @@
 					
 					fieldset.siblings().add(fieldset)
 						.trigger('fieldset-refresh');
+					
+					object.trigger('change');
 				};
 				var add_field = function() {
 					jQuery(this).appendTo(fieldset.find('.fields'))
@@ -284,6 +294,7 @@
 						.trigger('field-initialize');
 					
 					fieldset.trigger('fieldset-change');
+					object.trigger('change');
 				};
 				
 				// Append fields:
@@ -356,6 +367,7 @@
 				
 				templates.prepend(field);
 				fieldsets.trigger('fieldset-refresh');
+				object.trigger('change');
 			});
 			
 		/*-------------------------------------------------------------------*/
