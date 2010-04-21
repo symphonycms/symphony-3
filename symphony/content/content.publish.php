@@ -40,6 +40,7 @@
 			$this->Form->setAttribute("class", $section->handle);
 
 			$filter = $filter_value = $where = $joins = NULL;
+
 			$current_page = (isset($_REQUEST['pg']) && is_numeric($_REQUEST['pg']) ? max(1, intval($_REQUEST['pg'])) : 1);
 
 			$this->appendSubheading(
@@ -81,12 +82,12 @@
 			}
 			/*
 			$entry = Entry::loadFromID(3);
-*/
+
 			$entry = new Entry;
 			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
 			$entry->id = 3;
-/*
+
 			$entry->data()->name = (object)array(
 				'handle' => 'an-entry',
 				'value' => 'An & Entry',
@@ -149,17 +150,44 @@
 			//Entry::save($entry, $messages);
 			//var_dump($messages); die();
 
-			$entries = Symphony::Database()->query(
-				"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `id` DESC", array($section->handle), 'EntryResult'
-			);
+			/*
+			**	Pagination, get the total number of entries and work out
+			**	how many pages exist using the Symphony config
+			**	TODO: Work with Ordering
+			*/
+			try {
+				$entry_count = Symphony::Database()->query(
+					"SELECT COUNT(id) as `count` FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `%s` %s", array(
+						$section->handle, 'id', 'DESC'
+					)
+				)->current()->count;
 
-			//$entries = array($entry);
+				$pagination = array(
+					'total-entries' => $entry_count,
+					'entries-per-page' => Symphony::Configuration()->core()->symphony->{'pagination-maximum-rows'},
+					'total-pages' => ceil($entry_count / Symphony::Configuration()->core()->symphony->{'pagination-maximum-rows'}),
+					'current-page' => $current_page
+				);
+				$pagination['start'] = ($current_page != 1) ? ($current_page - 1) * $pagination['entries-per-page'] : 0;
+				$pagination['remaining-entries'] = max(0, $entry_count - ($pagination['start'] + $pagination['entries-per-page']));
+			}
+			catch (DatabaseException $ex) {
+
+			}
+
+			$entries = Symphony::Database()->query(
+				"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `id` DESC LIMIT %d, %d ",
+				array(
+					$section->handle,
+					$pagination['start'],
+					$pagination['entries-per-page']
+				), 'EntryResult'
+			);
 
 			## Table Body
 			$aTableBody = array();
 			$colspan = count($aTableHead);
 
-			//if(!is_array($entries) || empty($entries)){
 			if($entries->length() <= 0){
 				$aTableBody[] = Widget::TableRow(
 					array(
@@ -203,6 +231,10 @@
 						$first = false;
 					}
 
+					$cells[count($cells) - 1]->appendChild(
+						Widget::Input('items['. $entry->id .']', NULL, 'checkbox')
+					);
+
 					if(!empty($cells)){
 						$aTableBody[] = Widget::TableRow($cells);
 					}
@@ -244,6 +276,49 @@
 			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
 
 			$this->Form->appendChild($tableActions);
+
+			if($pagination['total-pages'] > 1){
+				$current_url = Administration::instance()->getCurrentPageURL() . '?pg=';
+				$current_filter = ($filter ? "&amp;filter=$field_handle:$filter_value" : '');
+
+				$ul = $this->createElement('ul');
+				$ul->setAttribute('class', 'page');
+
+				## First
+				$li = $this->createElement('li');
+				if($current_page > 1) $li->appendChild(Widget::Anchor(__('First'), $current_url . '1'));
+				else $li->setValue(__('First'));
+				$ul->appendChild($li);
+
+				## Previous
+				$li = $this->createElement('li');
+				if($current_page > 1) $li->appendChild(Widget::Anchor(__('&larr; Previous'), $current_url . ($current_page - 1)));
+				else $li->setValue(__('&larr; Previous'));
+				$ul->appendChild($li);
+
+				## Summary
+				$li = $this->createElement('li', __('Page %1$s of %2$s', array($current_page, max($current_page, $pagination['total-pages']))));
+				$li->setAttribute('title', __('Viewing %1$s - %2$s of %3$s entries', array(
+					$pagination['start'] + 1,
+					($current_page != $pagination['total-pages']) ? $current_page * $pagination['entries-per-page'] : $pagination['total-entries'],
+					$pagination['total-entries']
+				)));
+				$ul->appendChild($li);
+
+				## Next
+				$li = $this->createElement('li');
+				if($current_page < $pagination['total-pages']) $li->appendChild(Widget::Anchor(__('Next &rarr;'), $current_url . ($current_page + 1)));
+				else $li->setValue(__('Next &rarr;'));
+				$ul->appendChild($li);
+
+				## Last
+				$li = $this->createElement('li');
+				if($current_page < $pagination['total-pages']) $li->appendChild(Widget::Anchor(__('Last'), $current_url . $pagination['total-pages']));
+				else $li->setValue(__('Last'));
+				$ul->appendChild($li);
+
+				$this->Form->appendChild($ul);
+			}
 
 			// TODO: Fix Filtering
 			/*if(isset($_REQUEST['filter'])){
@@ -614,7 +689,7 @@
 				default: return 'small';
 			}
 		}
-		
+
 		public function __viewEdit(){
 			try{
 				$this->__form(Entry::loadFromID($this->_context['entry_id']));
@@ -623,15 +698,15 @@
 				var_dump(Symphony::Database()); die();
 			}
 		}
-			
+
 		public function __viewNew(){
 			$this->__form();
 		}
-		
+
 		public function __form(Entry $existing=NULL){
-			
+
 			$callback = Administration::instance()->getPageCallback();
-			
+
 			/*if(!$section_id = SectionManager::instance()->fetchIDFromHandle($this->_context['section_handle']))
 				Administration::instance()->customError(E_USER_ERROR, __('Unknown Section'), __('The Section you are looking for, <code>%s</code>, could not be found.', array($this->_context['section_handle'])), false, true);
 
@@ -642,19 +717,18 @@
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
 
-			
 			$subheading = __('Untitled');
 			if(!is_null($existing) && $existing instanceof Entry){
-				
+
 				if(is_null($this->entry) || !($this->entry instanceof Entry)){
 					$this->entry = $existing;
 				}
-				
+
 				// Grab the first field in the section
 				$first_field = $section->fields[0];
 				$subheading = $first_field->prepareTableValue($existing->data()->{$first_field->{'element-name'}});
 			}
-			
+
 			if(is_null($this->entry) || !($this->entry instanceof Entry)){
 				$this->entry = new Entry;
 			}
@@ -662,7 +736,6 @@
 			$this->entry->section = $callback['context']['section_handle'];
 			$this->appendSubheading($subheading);
 			$this->entry->findDefaultFieldData();
-			
 			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
 
 			// Check that a layout and fields exist
@@ -692,9 +765,9 @@
 								)
 							),
 						Alert::SUCCESS);
-						
+
 						break;
-						
+
 					case 'created':
 						$this->pageAlert(
 							__(
@@ -709,7 +782,7 @@
 						break;
 				}
 			}
-			
+
 			// Load all the fields for this section
 			$section_fields = array();
 			foreach($section->fields as $index => $field) {
@@ -774,7 +847,7 @@
 
 							$field->displayPublishPanel(
 								$div,
-								 $this->entry->data()->{$field->{'element-name'}}, 
+								 $this->entry->data()->{$field->{'element-name'}},
 								(isset($this->errors->{$field->{'element-name'}})
 									? $this->errors->{$field->{'element-name'}}
 									: NULL),
@@ -834,23 +907,23 @@
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
 			$div->appendChild(Widget::Input('action[save]', (!is_null($existing) ? __('Save Changes') : __('Create Entry')), 'submit', array('accesskey' => 's')));
-			
+
 			if(!is_null($existing)){
 				$button = $this->createElement('button', __('Delete'));
 				$button->setAttributeArray(array(
-					'name' => 'action[delete]', 
-					'class' => 'confirm delete', 
-					'title' => __('Delete this entry'), 
+					'name' => 'action[delete]',
+					'class' => 'confirm delete',
+					'title' => __('Delete this entry'),
 					'type' => 'submit'
 				));
 				$div->appendChild($button);
 			}
-			
+
 			$this->Form->appendChild($div);
 		}
 
 		public function __actionNew(){
-			
+
 			$callback = Administration::instance()->getPageCallback();
 
 			if(array_key_exists('save', $_POST['action']) || array_key_exists("done", $_POST['action'])) {
@@ -863,28 +936,28 @@
 				$entry->setFieldDataFromFormArray($post['fields']);
 
 				$errors = new MessageStack;
-				
+
 				###
 				# Delegate: EntryPreCreate
 				# Description: Just prior to creation of an Entry. Entry object provided
 				ExtensionManager::instance()->notifyMembers(
-					'EntryPreCreate', '/publish/new/', 
+					'EntryPreCreate', '/publish/new/',
 					array('entry' => &$entry)
 				);
-				
+
 				$this->errors->flush();
 				Entry::save($entry, $this->errors);
-				
+
 				if($this->errors->length() <= 0){
-					
+
 					###
 					# Delegate: EntryPostCreate
 					# Description: Creation of an Entry. New Entry object is provided.
 					ExtensionManager::instance()->notifyMembers(
-						'EntryPostCreate', '/publish/new/', 
+						'EntryPostCreate', '/publish/new/',
 						array('entry' => $entry)
 					);
-					
+
 					## WOOT
 					redirect(sprintf(
 						'%s/symphony/publish/%s/edit/%d/:created/',
@@ -894,8 +967,8 @@
 						//(!is_null($prepopulate_field_id) ? ":{$prepopulate_field_id}:{$prepopulate_value}" : NULL)
 					));
 				}
-				
-				
+
+
 				// Oh dear
 				$this->entry = $entry;
 				$this->pageAlert(NULL, Alert::ERROR);
@@ -958,7 +1031,7 @@
 				endif;
 				*/
 			}
-			
+
 		}
 /*
 		function __viewEdit() {
@@ -1120,7 +1193,7 @@
 		}
 */
 		public function __actionEdit(){
-			
+
 			$callback = Administration::instance()->getPageCallback();
 			$entry_id = (int)$callback['context']['entry_id'];
 
@@ -1129,30 +1202,30 @@
 				$entry = Entry::loadFromID($entry_id);
 
 				$post = General::getPostData();
-				
+
 				$entry->setFieldDataFromFormArray($post['fields']);
 
 				###
 				# Delegate: EntryPreEdit
 				# Description: Just prior to editing of an Entry.
 				ExtensionManager::instance()->notifyMembers(
-					'EntryPreEdit', '/publish/edit/', 
+					'EntryPreEdit', '/publish/edit/',
 					array('entry' => &$entry)
 				);
-				
+
 				$this->errors->flush();
 				Entry::save($entry, $this->errors);
 
 				if($this->errors->length() <= 0){
-					
+
 					###
 					# Delegate: EntryPostEdit
 					# Description: Editing an entry. Entry object is provided.
 					ExtensionManager::instance()->notifyMembers(
-						'EntryPostEdit', '/publish/edit/', 
+						'EntryPostEdit', '/publish/edit/',
 						array('entry' => $entry)
 					);
-					
+
 					## WOOT
 					redirect(sprintf(
 						'%s/symphony/publish/%s/edit/%d/:saved/',
@@ -1162,13 +1235,13 @@
 						//(!is_null($prepopulate_field_id) ? ":{$prepopulate_field_id}:{$prepopulate_value}" : NULL)
 					));
 				}
-				
-				
+
+
 				// Oh dear
 				$this->entry = $entry;
 				$this->pageAlert(NULL, Alert::ERROR);
 				return;
-				
+
 
 
 /*
@@ -1224,7 +1297,7 @@
 
 			elseif(@array_key_exists('delete', $_POST['action']) && is_numeric($entry_id)){
 				$callback = Administration::instance()->getPageCallback();
-				
+
 				###
 				# Delegate: Delete
 				# Description: Prior to deleting an entry. Entry ID is provided, as an array to remain compatible with other Delete delegate call
