@@ -1,0 +1,217 @@
+/* @override http://symphony-21.local/symphony/assets/css/peripheral.css */
+
+/*-----------------------------------------------------------------------------
+	Peripheral Global
+-----------------------------------------------------------------------------*/
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+html {
+	height: 100%;	
+	background: -webkit-gradient(
+				 	radial,
+				 	50% 0,
+				 	0,
+				 	50% 0,
+				 	800,
+				 	from(#888),
+				 	to(#444)
+				 );
+}
+body {
+	margin: 50px 10%;
+	font-family: Helvetica, "MS Trebuchet", Arial, sans-serif;
+	font-size: 12px;
+}
+.panel {
+	background: -webkit-gradient(
+					linear,
+					left top,
+					left bottom,
+					from(#f4f4f4),
+					to(#d8d8d8),
+					color-stop(0.04, #ededed)
+				);
+	background: -moz-linear-gradient(
+					top,
+					#f4f4f4 0%,
+					#ededed 1%,
+					#d8d8d8 100%
+				);
+	border: none;
+	background-color: #d8d8d8;
+	-webkit-box-shadow: 0 1px 3px #444;
+	-moz-box-shadow: 0 1px 3px #444;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	padding: 20px 0;
+}
+
+/*-----------------------------------------------------------------------------
+	Typography
+-----------------------------------------------------------------------------*/
+
+h1 {
+	font-size: 20px;
+	font-weight: normal;
+	margin-bottom: 20px;
+}
+h2 { 
+	font-size: 14px;
+	color: #a54665;
+	margin: 0 0 10px 20px;
+	text-shadow: 1px 1px 1px #fff;
+}
+h3 {
+	margin: 20px 0;
+}
+p {
+	padding: 0 20px;
+	margin-bottom: 20px;
+}
+a {
+	color: #69c;
+	text-decoration: none;
+}
+
+/*-----------------------------------------------------------------------------
+	Code Format
+-----------------------------------------------------------------------------*/
+
+code {
+	font-size: 11px;
+	font-family: Monaco, "Courier New", Courier;
+}
+code strong {
+	display: block;
+	font-family: Helvetica, "MS Trebuchet", Arial, sans-serif;
+	margin-top: 5px;
+}
+
+/*-----------------------------------------------------------------------------
+	Lists
+-----------------------------------------------------------------------------*/
+
+ul {
+	list-style: none;
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #fff;
+	background-color: rgba(255,255,255,0.4);
+}
+li {
+	padding: 6px 20px;
+	border-bottom: 1px solid #ccc;
+	border-top: 1px solid #fff;
+}
+li span {
+	color: #888;
+	font-weight: normal;
+	margin-right: 10px;
+	font-size: 11px;
+}
+li.odd {
+	background-color: rgba(255,255,255,0.6);
+}
+li#error,
+li#error span {
+	color: #b9191a;
+}
+li small{
+	font-size: 10px;
+	color: #666;
+}
+
+/*-----------------------------------------------------------------------------
+	Markdown Format
+-----------------------------------------------------------------------------*/
+
+a.markdown {
+	display: block;
+	text-align: right;
+	font-weight: normal;
+	color: #069;
+	text-decoration: underline;
+	padding-bottom: 10px;
+}
+a.markdown:hover {
+	color: #69c;
+}
+pre#markdown {
+	border: 2px dotted #ddd;
+	padding: 10px 0;
+	margin-bottom: 20px;
+	overflow: auto;
+}
+
+/*-----------------------------------------------------------------------------
+	Login Panel
+-----------------------------------------------------------------------------*/
+
+form.panel {
+	width: 300px;
+	margin: 0 auto;
+	overflow: hidden;
+	padding: 10px 0;
+}
+fieldset {
+	border: none;
+	color: #666;
+	padding: 0;
+	margin: 0 30px;
+}
+label {
+	display: block;
+	margin: 10px 0;
+}
+input {
+	display: block;
+	width: 100%;
+	font-size: 10pt;
+	margin-top: 2px;
+	padding: 2px;
+}
+h1 {
+	color: #666;
+	font-size: 1.8em;
+	background: none;
+	padding: 10px 30px;
+	margin-bottom: 0;
+	text-shadow: 1px 1px 2px #fff;
+}
+
+/*-----------------------------------------------------------------------------
+	Actions
+-----------------------------------------------------------------------------*/
+
+div.actions input {
+	width: auto;
+	background-color: #222;
+	background: -moz-linear-gradient(
+		top,
+		#6f6f6f,
+		#222
+	);
+	background: -webkit-gradient(
+		linear,
+		left top,
+		left bottom,
+		from(#6f6f6f),
+		to(#222)
+	);
+	border: 1px solid #5f605e;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	font-size: 9pt;
+	color: #fff;
+	float: right;
+	padding: 3px 8px 4px;
+	margin: 10px 30px;
+	text-decoration: none;
+	text-shadow: 1px 1px 0 hsla(0, 0%, 0%, 0.1);
+}

@@ -19,7 +19,7 @@
 			$meta->setAttribute('http-equiv', 'Content-Type');
 			$meta->setAttribute('content', 'text/html; charset=UTF-8');
 
-			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/login.css'));
+			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/peripheral.css'));
 
 			parent::setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Login'))));
 
@@ -29,6 +29,7 @@
 			$this->Form = $this->createElement('form');
 			$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL());
 			$this->Form->setAttribute('method', 'POST');
+			$this->Form->setAttribute('class', 'panel');
 			$this->Body->appendChild($this->Form);
 
 			$this->Form->appendChild(
@@ -49,7 +50,7 @@
 			if(!$emergency && Administration::instance()->isLoggedIn()) redirect(ADMIN_URL . '/');
 
 			$fieldset = $this->createElement('fieldset');
-
+			
 			if($this->_context[0] == 'retrieve-password'):
 
 				if(isset($this->_email_sent) && $this->_email_sent){
@@ -110,8 +111,6 @@
 				$this->Form->appendChild($div);
 
 			else:
-
-				$fieldset->appendChild($this->createElement('legend', __('Login')));
 
 				$label = Widget::Label(__('Username'));
 				$label->appendChild(Widget::Input('username'));
