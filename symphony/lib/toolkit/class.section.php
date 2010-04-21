@@ -231,14 +231,30 @@
 					$data = array();
 					
 					foreach ($value->column as $column) {
+						if (!isset($column->size)) {
+							$size = Layout::LARGE;
+						}
+						
+						else {
+							$size = (string)$column->size;
+						}
+						
 						$data_column = (object)array(
-							'size'		=> (string)$column->size,
+							'size'		=> $size,
 							'fieldsets'	=> array()
 						);
 						
 						foreach ($column->fieldset as $fieldset) {
+							if (!isset($fieldset->name) or trim((string)$fieldset->name) == '') {
+								$name = __('Untitled');
+							}
+							
+							else {
+								$name = (string)$fieldset->name;
+							}
+							
 							$data_fieldset = (object)array(
-								'name'		=> (string)$fieldset->name,
+								'name'		=> $name,
 								'fields'	=> array()
 							);
 							
@@ -324,7 +340,6 @@
 			if(!isset($section->{'navigation-group'}) || strlen(trim($section->{'navigation-group'})) == 0){
 				$messages->append('navigation-group', __('This is a required field.'));
 			}
-
 
 			if(is_array($section->fields) && !empty($section->fields)){
 				foreach($section->fields as $index => $field){

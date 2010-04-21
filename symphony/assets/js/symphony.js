@@ -210,7 +210,24 @@ var Symphony;
 		var duplicator = jQuery('#section-duplicator');
 		var layout = jQuery('#section-layout');
 		
+		// Not on the section editor:
 		if (duplicator.length == 0 && layout.length == 0) return;
+		
+		var form = $('form');
+		var changed = false;
+		
+		// Listen for changes:
+		form.bind('change', function() {
+			changed = true;
+		});
+		
+		// Save before changing tabs:
+		$('#tab a').bind('click', function() {
+			if (changed == false) return true;
+			
+			// TODO: Translate this.
+			return confirm('Discard your changes?');
+		});
 		
 		if (duplicator.length) {
 			duplicator.symphonyFieldsDuplicator({
@@ -300,19 +317,6 @@ var Symphony;
 				});
 			});
 		}
-		
-		// Save before changing tabs:
-		$('#tab a').bind('click', function() {
-			var link = $(this);
-			var index = link.parent().prevAll().length;
-			var form = $('form');
-			
-			//form.attr('action', form.attr('action') + '?redirect=' + index);
-			
-			//form.submit();
-			
-			//return false;
-		});
 	});
 
 /*-----------------------------------------------------------------------------

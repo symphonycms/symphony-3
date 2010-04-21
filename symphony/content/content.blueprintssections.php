@@ -203,9 +203,15 @@
 
 			$section_pathname = implode('/', $context);
 
-			if(isset($_POST['action']['save'])){
-				if($this->__save(null, null, (isset($_POST['layout']) ? $_POST['layout'] : null), Section::load(SECTIONS . '/' . $this->_context[1] . '.xml')) == true){
-					redirect(ADMIN_URL . "/blueprints/sections/layout/{$this->section->handle}/:created/");
+			if (isset($_POST['action']['save'])) {
+				$layout = (isset($_POST['layout']) ? $_POST['layout'] : null);
+				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
+				$url = ADMIN_URL . "/blueprints/sections/layout/{$this->section->handle}/";
+				
+				if (isset($_POST['redirect'])) $url = $_POST['redirect'];
+				
+				if ($this->__save(null, null, $layout, $section) == true) {
+					redirect($url . ':saved/');
 				}
 			}
 		}
@@ -227,13 +233,17 @@
 			if(array_key_exists('delete', $_POST['action'])) {
 				$this->__actionDelete(array($section_pathname), ADMIN_URL . '/blueprints/sections/');
 			}
-			elseif(array_key_exists('save', $_POST['action'])) {
-				if($this->__save(
-					$_POST['essentials'],
-					(isset($_POST['fields']) ? $_POST['fields'] : null), null,
-					Section::load(SECTIONS . '/' . $this->_context[1] . '.xml')) == true
-				) {
-					redirect(ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/:saved/");
+			
+			else if (array_key_exists('save', $_POST['action'])) {
+				$essentials = $_POST['essentials'];
+				$fields = (isset($_POST['fields']) ? $_POST['fields'] : null);
+				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
+				$url = ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/";
+				
+				if (isset($_POST['redirect'])) $url = $_POST['redirect'];
+				
+				if ($this->__save($essentials, $fields, null, $section) == true) {
+					redirect($url . ':saved/');
 				}
 			}
 		}
@@ -384,15 +394,16 @@
 				switch($callback['flag']){
 					case 'saved':
 						$this->pageAlert(
-							'Section layout updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 							__(
+								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',
 									ADMIN_URL . '/blueprints/sections/',
 								)
 							),
-							Alert::SUCCESS);
+							Alert::SUCCESS
+						);
 						break;
 				}
 			}
@@ -511,7 +522,8 @@
 		private function __form(Section $existing = null){
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
-			if(isset($callback['flag']) && !is_null($callback['flag'])){
+			
+			if (isset($callback['flag']) && !is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
 						$this->pageAlert(
@@ -523,7 +535,21 @@
 									ADMIN_URL . '/blueprints/sections/',
 								)
 							),
-							Alert::SUCCESS);
+							Alert::SUCCESS
+						);
+						break;
+					case 'created':
+						$this->pageAlert(
+							__(
+								'Section created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
+									ADMIN_URL . '/blueprints/sections/new/',
+									ADMIN_URL . '/blueprints/sections/',
+								)
+							),
+							Alert::SUCCESS
+						);
 						break;
 				}
 			}
