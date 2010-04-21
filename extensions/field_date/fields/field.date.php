@@ -28,6 +28,10 @@
 			return true;
 		}
 
+		function isSortable(){
+			return true;
+		}
+
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 			$name = $this->{'element-name'};
 			$value = null;
@@ -346,10 +350,9 @@
 			return true;
 		}
 
-		function isSortable(){
-			return true;
-		}
 
+/*
+		Deprecated
 		function commit(){
 
 			if(!parent::commit()) return false;
@@ -369,7 +372,7 @@
 
 			return ($field_id == 0 || !$field_id) ? false : true;
 		}
-
+*/
 		public function findDefaults(array &$fields){
 			if(!isset($fields['pre-populate'])) $fields['pre-populate'] = 'yes';
 		}
@@ -415,14 +418,14 @@
 				)
 			);
 		}
-		
+
 		public function processFormData($data, Entry $entry=NULL){
 			$result = (object)array(
 				'value' => null,
 				'local' => null,
 				'gmt' => null
 			);
-			
+
 			if(is_null($data) || strlen(trim($data)) == 0){
 				if ($this->{'pre-populate'} == 'yes') {
 					$timestamp = strtotime(DateTimeObj::get('c', null));

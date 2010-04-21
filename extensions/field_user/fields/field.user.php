@@ -6,6 +6,18 @@
 			$this->_name = __('User');
 		}
 
+		public function isSortable(){
+			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
+		}
+
+		public function canFilter(){
+			return true;
+		}
+
+		public function canImport(){
+			return true;
+		}
+
 		public function canToggle(){
 			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
@@ -32,6 +44,9 @@
 			return $data;
 		}
 
+/*
+		Deprecated
+
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 
 			$status = self::STATUS_OK;
@@ -46,6 +61,7 @@
 			return $result;
 		}
 
+*/
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
 
 			$value = (isset($data['user_id']) ? $data['user_id'] : NULL);
@@ -92,13 +108,11 @@
 			$fragment = Symphony::Parent()->Page->createDocumentFragment();
 
 			foreach($data->{'user_id'} as $user_id){
-
 				if(is_null($user_id)) continue;
 
 				$user = new User($user_id);
 
 				if($user instanceof User){
-
 					if($fragment->hasChildNodes()) $fragment->appendChild(new DOMText(', '));
 
 					if(is_null($link)){
@@ -110,31 +124,14 @@
 						);
 					}
 
-					else{
+					else {
 						$link->setValue($user->getFullName());
 						$fragment->appendChild($link);
 					}
 				}
 			}
 
-			if(!$fragment->hasChildNodes()) {
-				return __('None');
-			}
-			else{
-				return $fragment;
-			}
-		}
-
-		public function isSortable(){
-			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
-		}
-
-		public function canFilter(){
-			return true;
-		}
-
-		public function canImport(){
-			return true;
+			return (!$fragment->hasChildNodes()) ? __('None') : $fragment;
 		}
 
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
@@ -193,6 +190,9 @@
 			return true;
 		}
 
+/*
+		Deprecated
+
 		public function commit(){
 
 			if(!parent::commit()) return false;
@@ -213,7 +213,7 @@
 
 			return ($field_id == 0 || !$field_id) ? false : true;
 		}
-
+*/
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 	        if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
 
@@ -259,6 +259,11 @@
 			$this->appendShowColumnCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 
+		}
+
+		/*	Possibly could be removed.. */
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function createTable(){

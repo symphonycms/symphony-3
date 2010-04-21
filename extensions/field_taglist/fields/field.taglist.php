@@ -175,7 +175,7 @@
 		public function findDefaults(array &$fields){
 			if(!isset($fields['pre-populate-source'])) $fields['pre-populate-source'] = array('existing');
 		}
-		
+
 		static private function __tagArrayToString(array $tags){
 
 			if(empty($tags)) return NULL;
@@ -251,15 +251,16 @@
 		}
 
 		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			var_dump($data);
 			return self::STATUS_OK;
 		}
 
-		/*	Possibly could be removed.. */
 		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			var_dump($data);
-						
-			$data = preg_split('/\,\s*/i', $data, -1, PREG_SPLIT_NO_EMPTY);
+/*
+			TODO:	Allow multiple tags
+
+			// Insert a * after \s
+
+			$data = preg_split('/\,\s/i', $data, -1, PREG_SPLIT_NO_EMPTY);
 			$data = array_map('trim', $data);
 
 			if(empty($data)) return;
@@ -273,8 +274,8 @@
 			foreach($data as $value){
 				$result['value'][] = $value;
 				$result['handle'][] = Lang::createHandle($value);
-			}			
-			
+			}
+*/
 			return parent::saveData($data, $errors, $entry);
 		}
 

@@ -60,7 +60,7 @@
 
 				$label = $column->label;
 
-				// TO DO: Fix the ordering links
+				// TODO: Fix the ordering links
 				/*if($column->isSortable()) {
 
 					if($column->id == $section->get('entry_order')){
@@ -86,10 +86,17 @@
 			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
 			$entry->id = 3;
-/*
+
 			$entry->data()->name = (object)array(
 				'handle' => 'an-entry',
 				'value' => 'An & Entry',
+				'id' => 1,
+				'entry_id' => $entry->id
+			);
+
+			$entry->data()->content = (object)array(
+				'handle' => 'an-entry',
+				'value' => 'Look at my copy isn\'t it grand!',
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
@@ -101,6 +108,7 @@
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
+
 			$entry->data()->category = (object)array(
 				'handle' => 'blah',
 				'value' => 'Blah &',
@@ -113,14 +121,14 @@
 				'entry_id' => $entry->id,
 				'user_id' => 1
 			);
-*/
+
 			$entry->data()->published = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
 				'value' => 'no'
 			);
 
-			$entry->data()->{'tag-list'} = (object)array(
+			$entry->data()->tags = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
 				'handle' => 'tag',
@@ -210,7 +218,7 @@
 				array('delete', false, __('Delete'))
 			);
 
-			// TO DO: Add toggable fields back
+			// TODO: Add toggable fields back
 			/*
 			$toggable_fields = $section->fetchToggleableFields();
 
@@ -234,7 +242,7 @@
 
 			$this->Form->appendChild($tableActions);
 
-			// TO DO: Fix Filtering
+			// TODO: Fix Filtering
 			/*if(isset($_REQUEST['filter'])){
 
 				list($field_handle, $filter_value) = explode(':', $_REQUEST['filter'], 2);
@@ -267,7 +275,7 @@
 
 			}*/
 
-			// TO DO: Fix Sorting
+			// TODO: Fix Sorting
 			/*if(isset($_REQUEST['sort']) && is_numeric($_REQUEST['sort'])){
 				$sort = intval($_REQUEST['sort']);
 				$order = ($_REQUEST['order'] ? strtolower($_REQUEST['order']) : 'asc');

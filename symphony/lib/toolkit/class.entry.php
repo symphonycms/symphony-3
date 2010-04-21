@@ -137,13 +137,10 @@
 				Symphony::Database()->insert('tbl_entries', (array)$entry->meta(), Database::UPDATE_ON_DUPLICATE);
 
 				foreach($section->fields as $field){
-					var_dump($field);
-
 					if(!isset($entry->data()->{$field->{'element-name'}})) continue;
 
 					$status = $field->saveData($entry->data()->{$field->{'element-name'}}, $errors, $entry);
-
-					// Cannot continue if a field failed to save
+					// Cannot continue if a field failed to save				
 					if($status != Field::STATUS_OK){
 						break;
 					}
@@ -156,9 +153,11 @@
 				return self::STATUS_ERROR;
 			}
 
-			/*	TODO: 	Implement Cleanup when a Field's value becomes null (ie. clears a field)
-			//			This will arise if you enter a value in a field, save, then come back
-			//			and clear the field.*/
+			/*
+				TODO: 	Implement Cleanup when a Field's value becomes null (ie. clears a field)
+						This will arise if you enter a value in a field, save, then come back
+						and clear the field.
+			*/
 
 			return self::STATUS_OK;
 		}
