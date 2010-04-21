@@ -206,12 +206,9 @@
 			if (isset($_POST['action']['save'])) {
 				$layout = (isset($_POST['layout']) ? $_POST['layout'] : null);
 				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
-				$url = ADMIN_URL . "/blueprints/sections/layout/{$this->section->handle}/";
-				
-				if (isset($_POST['redirect'])) $url = $_POST['redirect'];
 				
 				if ($this->__save(null, null, $layout, $section) == true) {
-					redirect($url . ':saved/');
+					redirect(ADMIN_URL . "/blueprints/sections/layout/{$this->section->handle}/:saved/");
 				}
 			}
 		}
@@ -238,12 +235,9 @@
 				$essentials = $_POST['essentials'];
 				$fields = (isset($_POST['fields']) ? $_POST['fields'] : null);
 				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
-				$url = ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/";
-				
-				if (isset($_POST['redirect'])) $url = $_POST['redirect'];
 				
 				if ($this->__save($essentials, $fields, null, $section) == true) {
-					redirect($url . ':saved/');
+					redirect(ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/:saved/");
 				}
 			}
 		}
