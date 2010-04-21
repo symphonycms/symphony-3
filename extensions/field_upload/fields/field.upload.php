@@ -198,6 +198,9 @@
 			$wrapper->appendChild($options_list);
 		}
 
+/*
+		Deprecated
+
 		public function commit() {
 			if (!parent::commit() or $field_id === false) return false;
 
@@ -216,6 +219,7 @@
 
 			return ($entry_id == 0 || !$entry_id) ? false : true;
 		}
+*/
 
 	/*-------------------------------------------------------------------------
 		Publish:

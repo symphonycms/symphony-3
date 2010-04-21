@@ -482,12 +482,8 @@
 			return ($rule ? General::validateString($data, $rule) : true);
 		}
 
-		public function checkPostFieldData($data, &$message, $entry_id = null) {
-
-		}
-
 /*
-		Deprecated
+		Deprecated [Use processFormData instead]
 
 		public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null) {
 			$status = self::__OK__;

@@ -350,7 +350,7 @@
 			parent::appendViewOptions($view_options);
 		}
 		
-		public function appendColumn(SymphonyDOMElement $wrapper, $size = Layout::LARGE, $fieldsets = array(), &$fields) {
+		public function appendColumn(SymphonyDOMElement $wrapper, $size = Layout::LARGE, $fieldsets = array(), &$fields = null) {
 			$document = $wrapper->ownerDocument;
 			$column = $document->createElement('li');
 			$column->setAttribute('class', 'column size-' . $size);

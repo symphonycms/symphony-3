@@ -23,7 +23,7 @@
 			}
 
 			foreach($section->fields as $field){
-				$entry->data()->{$field->{'element_name'}} = $field->loadDataFromDatabase($entry);
+				$entry->data()->{$field->{'element-name'}} = $field->loadDataFromDatabase($entry);
 			}
 
 			return $entry;
