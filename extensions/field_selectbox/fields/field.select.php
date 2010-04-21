@@ -256,10 +256,17 @@
 		}
 
 		public function processFormData($data, Entry $entry=NULL){
-			$result = (object)array(
-				'value' => null,
-				'handle' => null,
-			);
+
+			if(isset($entry->data()->{$this->{'element-name'}})){
+				$result = $entry->data()->{$this->{'element-name'}};
+			}
+
+			else {
+				$result = (object)array(
+					'value' => null,
+					'handle' => null
+				);
+			}
 
 			if(!is_null($data)){
 				$result->value = $data;

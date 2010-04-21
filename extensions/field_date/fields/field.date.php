@@ -420,11 +420,18 @@
 		}
 
 		public function processFormData($data, Entry $entry=NULL){
-			$result = (object)array(
-				'value' => null,
-				'local' => null,
-				'gmt' => null
-			);
+
+			if(isset($entry->data()->{$this->{'element-name'}})){
+				$result = $entry->data()->{$this->{'element-name'}};
+			}
+
+			else {
+				$result = (object)array(
+					'value' => null,
+					'local' => null,
+					'gmt' => null
+				);
+			}
 
 			if(is_null($data) || strlen(trim($data)) == 0){
 				if ($this->{'pre-populate'} == 'yes') {
