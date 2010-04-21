@@ -123,16 +123,16 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function checkFields(&$errors, $checkForDuplicates = true) {
-			if (!is_writable(DOCROOT . $this->destination . '/')) {
-				$errors['destination'] = 'Folder is not writable. Please check permissions.';
+		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
+			if (!is_writable(DOCROOT . $this->{'destination'} . '/')) {
+				$messages->append('destination', __('Folder is not writable. Please check permissions.'));
 			}
-
-			parent::checkFields($errors, $checkForDuplicates);
+			
+			return parent::validateSettings($messages, $checkForDuplicates);
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors = null) {
-			parent::displaySettingsPanel($wrapper, $errors);
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
+			parent::displaySettingsPanel($wrapper, $messages);
 
 			$order = $this->sortorder;
 
@@ -164,9 +164,9 @@
 			}
 
 			$label->appendChild(Widget::Select('destination', $options));
-
-			if (isset($errors['destination'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['destination']);
+			
+			if ($messages->{'destination'}) {
+				$label = Widget::wrapFormElementWithError($label, $messages->{'destination'});
 			}
 
 			$wrapper->appendChild($label);

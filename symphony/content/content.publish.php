@@ -6,7 +6,7 @@
 
 	Class contentPublish extends AdministrationPage{
 
-		private $_errors = array();
+		private $entry;
 
 		public function __switchboard($type='view'){
 
@@ -82,12 +82,12 @@
 			}
 			/*
 			$entry = Entry::loadFromID(3);
-*/
+
 			$entry = new Entry;
 			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
 			$entry->id = 3;
-/*
+
 			$entry->data()->name = (object)array(
 				'handle' => 'an-entry',
 				'value' => 'An & Entry',
@@ -691,39 +691,51 @@
 		}
 
 		public function __viewEdit(){
-			$this->__form(Entry::loadFromID($this->_context['entry_id']), true);
+			try{
+				$this->__form(Entry::loadFromID($this->_context['entry_id']));
+			}
+			catch(Exception $e){
+				var_dump(Symphony::Database()); die();
+			}
 		}
 
 		public function __viewNew(){
 			$this->__form();
 		}
 
-		public function __form(Entry $entry=NULL, $editing=false){
+		public function __form(Entry $existing=NULL){
+
+			$callback = Administration::instance()->getPageCallback();
 
 			/*if(!$section_id = SectionManager::instance()->fetchIDFromHandle($this->_context['section_handle']))
 				Administration::instance()->customError(E_USER_ERROR, __('Unknown Section'), __('The Section you are looking for, <code>%s</code>, could not be found.', array($this->_context['section_handle'])), false, true);
 
 		    $section = SectionManager::instance()->fetch($section_id);*/
 
-			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $this->_context['section_handle']));
+			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $callback['context']['section_handle']));
 
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
 
 			$subheading = __('Untitled');
-			if(!is_null($entry) && $entry instanceof Entry){
+			if(!is_null($existing) && $existing instanceof Entry){
+
+				if(is_null($this->entry) || !($this->entry instanceof Entry)){
+					$this->entry = $existing;
+				}
+
 				// Grab the first field in the section
 				$first_field = $section->fields[0];
-				$subheading = $first_field->prepareTableValue($entry->data()->{$first_field->{'element-name'}});
-			}
-			else{
-				$entry = new Entry;
+				$subheading = $first_field->prepareTableValue($existing->data()->{$first_field->{'element-name'}});
 			}
 
-			$entry->section = $this->_context['section_handle'];
+			if(is_null($this->entry) || !($this->entry instanceof Entry)){
+				$this->entry = new Entry;
+			}
+
+			$this->entry->section = $callback['context']['section_handle'];
 			$this->appendSubheading($subheading);
-			$entry->findDefaultFieldData();
-
+			$this->entry->findDefaultFieldData();
 			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
 
 			// Check that a layout and fields exist
@@ -737,6 +749,38 @@
 					),
 					Alert::ERROR
 				);
+			}
+
+			// Status message:
+			if(!is_null($callback['flag'])) {
+				switch($callback['flag']){
+					case 'saved':
+						$this->pageAlert(
+							__(
+								'Entry updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/new/',
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/'
+								)
+							),
+						Alert::SUCCESS);
+
+						break;
+
+					case 'created':
+						$this->pageAlert(
+							__(
+								'Entry created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/new/',
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/'
+								)
+							),
+						Alert::SUCCESS);
+						break;
+				}
 			}
 
 			// Load all the fields for this section
@@ -803,11 +847,11 @@
 
 							$field->displayPublishPanel(
 								$div,
-								 $entry->data()->{$field->{'element-name'}},
-								(isset($this->errors->$field->{'element-name'})
-									? $this->errors->$field->{'element-name'}
+								 $this->entry->data()->{$field->{'element-name'}},
+								(isset($this->errors->{$field->{'element-name'}})
+									? $this->errors->{$field->{'element-name'}}
 									: NULL),
-								$entry
+								$this->entry
 							);
 
 							$fieldset->appendChild($div);
@@ -862,9 +906,9 @@
 */
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', __('Create Entry'), 'submit', array('accesskey' => 's')));
+			$div->appendChild(Widget::Input('action[save]', (!is_null($existing) ? __('Save Changes') : __('Create Entry')), 'submit', array('accesskey' => 's')));
 
-			if($editing == true){
+			if(!is_null($existing)){
 				$button = $this->createElement('button', __('Delete'));
 				$button->setAttributeArray(array(
 					'name' => 'action[delete]',
@@ -880,10 +924,12 @@
 
 		public function __actionNew(){
 
+			$callback = Administration::instance()->getPageCallback();
+
 			if(array_key_exists('save', $_POST['action']) || array_key_exists("done", $_POST['action'])) {
 
 				$entry = new Entry;
-				$entry->section = $this->_context['section_handle'];
+				$entry->section = $callback['context']['section_handle'];
 				$entry->user_id = Administration::instance()->User->id;
 
 				$post = General::getPostData();
@@ -899,9 +945,10 @@
 					array('entry' => &$entry)
 				);
 
-				Entry::save($entry, $errors);
+				$this->errors->flush();
+				Entry::save($entry, $this->errors);
 
-				if($errors->length() <= 0){
+				if($this->errors->length() <= 0){
 
 					###
 					# Delegate: EntryPostCreate
@@ -913,7 +960,7 @@
 
 					## WOOT
 					redirect(sprintf(
-						'%s/symphony/publish/%s/edit/%d/created/',
+						'%s/symphony/publish/%s/edit/%d/:created/',
 						URL,
 						$entry->section,
 						$entry->id
@@ -923,6 +970,7 @@
 
 
 				// Oh dear
+				$this->entry = $entry;
 				$this->pageAlert(NULL, Alert::ERROR);
 				return;
 
@@ -1146,7 +1194,8 @@
 */
 		public function __actionEdit(){
 
-			$entry_id = intval($this->_context['entry_id']);
+			$callback = Administration::instance()->getPageCallback();
+			$entry_id = (int)$callback['context']['entry_id'];
 
 			if(@array_key_exists('save', $_POST['action']) || @array_key_exists("done", $_POST['action'])){
 
@@ -1164,10 +1213,10 @@
 					array('entry' => &$entry)
 				);
 
-				$errors = new MessageStack;
-				Entry::save($entry, $errors);
+				$this->errors->flush();
+				Entry::save($entry, $this->errors);
 
-				if($errors->length() <= 0){
+				if($this->errors->length() <= 0){
 
 					###
 					# Delegate: EntryPostEdit
@@ -1179,7 +1228,7 @@
 
 					## WOOT
 					redirect(sprintf(
-						'%s/symphony/publish/%s/edit/%d/saved/',
+						'%s/symphony/publish/%s/edit/%d/:saved/',
 						URL,
 						$entry->section,
 						$entry->id
@@ -1189,6 +1238,7 @@
 
 
 				// Oh dear
+				$this->entry = $entry;
 				$this->pageAlert(NULL, Alert::ERROR);
 				return;
 
@@ -1246,6 +1296,7 @@
 			}
 
 			elseif(@array_key_exists('delete', $_POST['action']) && is_numeric($entry_id)){
+				$callback = Administration::instance()->getPageCallback();
 
 				###
 				# Delegate: Delete
@@ -1255,7 +1306,7 @@
 
 				EntryManager::instance()->delete($entry_id);
 
-				redirect(ADMIN_URL . '/publish/'.$this->_context['section_handle'].'/');
+				redirect(ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/');
 			}
 
 		}

@@ -248,7 +248,6 @@
 
 			$div = Widget::$Symphony->createElement('div');
 			$div->setAttributeArray(array('id' => 'error', 'class' => 'invalid'));
-
 			$div->appendChild($element);
 
 			if(!is_null($message)){
