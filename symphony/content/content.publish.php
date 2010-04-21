@@ -629,9 +629,9 @@
 						#              The array can be manipulated
 						ExtensionManager::instance()->notifyMembers('Delete', '/publish/', array('entry_id' => &$checked));
 
-						$EntryManager = new EntryManager($this->_Parent);
-
-						EntryManager::instance()->delete($checked);
+						foreach($checked as $entry_id){
+							Entry::delete($entry_id);
+						}
 
 					 	redirect($_SERVER['REQUEST_URI']);
 
@@ -639,7 +639,7 @@
 
 						## TODO: Add delegate
 
-						list($option, $field_id, $value) = explode('-', $_POST['with-selected'], 3);
+						/*list($option, $field_id, $value) = explode('-', $_POST['with-selected'], 3);
 
 						if($option == 'toggle'){
 
@@ -653,7 +653,7 @@
 
 							redirect($_SERVER['REQUEST_URI']);
 
-						}
+						}*/
 
 						break;
 				}
@@ -1291,11 +1291,11 @@
 
 				###
 				# Delegate: Delete
-				# Description: Prior to deleting an entry. Entry ID is provided, as an array to remain compatible with other Delete delegate call
+				# Description: Prior to deleting an entry. Entry ID is provided, as an 
+				# array to remain compatible with other Delete delegate call
 				ExtensionManager::instance()->notifyMembers('Delete', '/publish/', array('entry_id' => $entry_id));
 
-
-				EntryManager::instance()->delete($entry_id);
+				Entry::delete($entry_id);
 
 				redirect(ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/');
 			}

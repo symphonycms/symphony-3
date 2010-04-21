@@ -96,7 +96,22 @@
 				$this->data()->$field_handle = $field->processFormData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
 			}
 		}
-
+		
+		public static function delete($id){
+			$entry = self::loadFromID($id);
+			$section = Section::loadFromHandle($entry->section);
+			
+			foreach($section->fields as $field){
+				Symphony::Database()->delete(
+					sprintf('tbl_data_%s_%s', $section->handle, $field->{'element-name'}), 
+					array($entry->id), 
+					'`entry_id` = %d'
+				);
+			}
+			
+			Symphony::Database()->delete('tbl_entries', array($entry->id), " `id` = %d LIMIT 1");
+		}
+		
 		public static function save(self $entry, MessageStack &$errors){
 
 			if(!isset($entry->section) || strlen(trim($entry->section)) == 0){
