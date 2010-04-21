@@ -377,8 +377,8 @@
 
 			$label->appendChild($input);
 
-			if ($error != null) {
-				$label = Widget::wrapFormElementWithError($label, $error);
+			if (!is_null($error)) {
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
 			}
 
 			$wrapper->appendChild($label);

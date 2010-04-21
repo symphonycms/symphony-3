@@ -6,7 +6,7 @@
 
 	Class contentPublish extends AdministrationPage{
 
-		private $_errors = array();
+		private $entry;
 
 		public function __switchboard($type='view'){
 
@@ -616,14 +616,19 @@
 		}
 		
 		public function __viewEdit(){
-			$this->__form(Entry::loadFromID($this->_context['entry_id']), true);
-		}	
+			try{
+				$this->__form(Entry::loadFromID($this->_context['entry_id']));
+			}
+			catch(Exception $e){
+				var_dump(Symphony::Database()); die();
+			}
+		}
 			
 		public function __viewNew(){
 			$this->__form();
 		}
 		
-		public function __form(Entry $entry=NULL, $editing=false){
+		public function __form(Entry $existing=NULL){
 
 			/*if(!$section_id = SectionManager::instance()->fetchIDFromHandle($this->_context['section_handle']))
 				Administration::instance()->customError(E_USER_ERROR, __('Unknown Section'), __('The Section you are looking for, <code>%s</code>, could not be found.', array($this->_context['section_handle'])), false, true);
@@ -634,20 +639,27 @@
 
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
+
 			
 			$subheading = __('Untitled');
-			if(!is_null($entry) && $entry instanceof Entry){
+			if(!is_null($existing) && $existing instanceof Entry){
+				
+				if(is_null($this->entry) || !($this->entry instanceof Entry)){
+					$this->entry = $existing;
+				}
+				
 				// Grab the first field in the section
 				$first_field = $section->fields[0];
-				$subheading = $first_field->prepareTableValue($entry->data()->{$first_field->{'element-name'}});
+				$subheading = $first_field->prepareTableValue($existing->data()->{$first_field->{'element-name'}});
 			}
-			else{
-				$entry = new Entry;
+			
+			if(is_null($this->entry) || !($this->entry instanceof Entry)){
+				$this->entry = new Entry;
 			}
 
-			$entry->section = $this->_context['section_handle'];
+			$this->entry->section = $this->_context['section_handle'];
 			$this->appendSubheading($subheading);
-			$entry->findDefaultFieldData();
+			$this->entry->findDefaultFieldData();
 			
 			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
 
@@ -728,11 +740,11 @@
 
 							$field->displayPublishPanel(
 								$div,
-								 $entry->data()->{$field->{'element-name'}}, 
-								(isset($this->errors->$field->{'element-name'})
-									? $this->errors->$field->{'element-name'}
+								 $this->entry->data()->{$field->{'element-name'}}, 
+								(isset($this->errors->{$field->{'element-name'}})
+									? $this->errors->{$field->{'element-name'}}
 									: NULL),
-								$entry
+								$this->entry
 							);
 
 							$fieldset->appendChild($div);
@@ -787,9 +799,9 @@
 */
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', __('Create Entry'), 'submit', array('accesskey' => 's')));
+			$div->appendChild(Widget::Input('action[save]', (is_null($existing) ? __('Save Changes') : __('Create Entry')), 'submit', array('accesskey' => 's')));
 			
-			if($editing == true){
+			if(is_null($existing)){
 				$button = $this->createElement('button', __('Delete'));
 				$button->setAttributeArray(array(
 					'name' => 'action[delete]', 
@@ -824,9 +836,10 @@
 					array('entry' => &$entry)
 				);
 				
-				Entry::save($entry, $errors);
+				$this->errors->flush();
+				Entry::save($entry, $this->errors);
 				
-				if($errors->length() <= 0){
+				if($this->errors->length() <= 0){
 					
 					###
 					# Delegate: EntryPostCreate
@@ -848,6 +861,7 @@
 				
 				
 				// Oh dear
+				$this->entry = $entry;
 				$this->pageAlert(NULL, Alert::ERROR);
 				return;
 
@@ -1088,11 +1102,11 @@
 					'EntryPreEdit', '/publish/edit/', 
 					array('entry' => &$entry)
 				);
-
-				$errors = new MessageStack;
-				Entry::save($entry, $errors);
 				
-				if($errors->length() <= 0){
+				$this->errors->flush();
+				Entry::save($entry, $this->errors);
+
+				if($this->errors->length() <= 0){
 					
 					###
 					# Delegate: EntryPostEdit
@@ -1114,6 +1128,7 @@
 				
 				
 				// Oh dear
+				$this->entry = $entry;
 				$this->pageAlert(NULL, Alert::ERROR);
 				return;
 				

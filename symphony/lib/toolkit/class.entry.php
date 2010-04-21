@@ -104,7 +104,9 @@
 			}
 
 			// Create a new ID if one is not already set
+			$purge_meta_on_error = false;
 			if(!isset($entry->id) || is_null($entry->id)){
+				$purge_meta_on_error = true;
 				$entry->id = self::generateID($entry->section, $entry->user_id);
 			}
 
@@ -149,7 +151,7 @@
 			}
 
 			// Cleanup due to failure
-			if($errors->length() > 0){
+			if($errors->length() > 0 && $purge_meta_on_error == true){
 				Symphony::Database()->delete('tbl_entries', array(), " `id` = {$entry->id} LIMIT 1");
 				return self::STATUS_ERROR;
 			}
