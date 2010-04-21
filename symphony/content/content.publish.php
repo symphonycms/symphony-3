@@ -55,7 +55,8 @@
 			);
 
 			$aTableHead = array();
-
+			$renderOnlyEntryIDColumn = false;
+			
 			foreach($section->fields as $column){
 				if($column->{'show-column'} != 'yes') continue;
 
@@ -80,6 +81,12 @@
 				else */
 				$aTableHead[] = array($label, 'col');
 			}
+			
+			if(count($aTableHead) <= 0){
+				$renderOnlyEntryIDColumn = true;
+				$aTableHead[] = array('ID', 'col');
+			}
+			
 			/*
 			$entry = Entry::loadFromID(3);
 
@@ -214,23 +221,29 @@
 					);
 
 					$first = true;
-					foreach($section->fields as $column){
-						if($column->{'show-column'} != 'yes') continue;
+					if($renderOnlyEntryIDColumn != true){
+						foreach($section->fields as $column){
+							if($column->{'show-column'} != 'yes') continue;
 
-						$field_handle = $column->{'element-name'};
-						if(!isset($entry->data()->$field_handle)){
-							$cells[] = Widget::TableData(__('None'), array('class' => 'inactive'));
-						}
-						else{
-							$cells[] = Widget::TableData($column->prepareTableValue(
-								$entry->data()->$field_handle,
-								($first == true ? $link : NULL)
-							));
-						}
+							$field_handle = $column->{'element-name'};
+							if(!isset($entry->data()->$field_handle)){
+								$cells[] = Widget::TableData(__('None'), array('class' => 'inactive'));
+							}
+							else{
+								$cells[] = Widget::TableData($column->prepareTableValue(
+									$entry->data()->$field_handle,
+									($first == true ? $link : NULL)
+								));
+							}
 
-						$first = false;
+							$first = false;
+						}
 					}
-
+					else{
+						$link->setValue($entry->id);
+						$cells[] = Widget::TableData($link);
+					}
+					
 					$cells[count($cells) - 1]->appendChild(
 						Widget::Input('items['. $entry->id .']', NULL, 'checkbox')
 					);
@@ -896,10 +909,12 @@
 
 					$column->appendChild($fieldset);
 				}
+				
+				$layout->appendTo($this->Form);
 			}
 
 			else {
-				return $this->pageAlert(
+				$this->pageAlert(
 					__(
 						'You haven\'t set any section layout rules. PERHAPS IF NO LAYOUT IS SET A DEFAULT TWO COLUMN SHOULD BE USED? <a href="%s">Click here to define a layout.</a>',
 						array(
@@ -909,8 +924,6 @@
 					Alert::ERROR
 				);
 			}
-
-			$layout->appendTo($this->Form);
 /*
 			//Check if there is a field to prepopulate
 			if (isset($_REQUEST['prepopulate'])) {
@@ -976,7 +989,9 @@
 				$entry->user_id = Administration::instance()->User->id;
 
 				$post = General::getPostData();
-				$entry->setFieldDataFromFormArray($post['fields']);
+				if(isset($post['fields']) && is_array($post['fields']) && !empty($post['fields'])){
+					$entry->setFieldDataFromFormArray($post['fields']);
+				}
 
 				$errors = new MessageStack;
 
@@ -1022,10 +1037,9 @@
 					));
 				}
 
-
 				// Oh dear
 				$this->entry = $entry;
-				$this->pageAlert(NULL, Alert::ERROR);
+				$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
 				return;
 
 /*
@@ -1309,7 +1323,7 @@
 
 				// Oh dear
 				$this->entry = $entry;
-				$this->pageAlert(NULL, Alert::ERROR);
+				$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
 				return;
 
 
