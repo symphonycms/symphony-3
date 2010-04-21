@@ -77,35 +77,38 @@
 */
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 
-			$value = (isset($data['user_id']) ? $data['user_id'] : NULL);
+			$value = (isset($data->{'user_id'}) ? $data->{'user_id'} : NULL);
 
 			$callback = Administration::instance()->getPageCallback();
 
-			if ($this->{'default-to-current-user'} == 'yes' && empty($data) && empty($_POST)) {
+			if ($this->{'default-to-current-user'} == 'yes' && is_null($data) && empty($_POST)) {
 				$value = array(Administration::instance()->User->id);
 			}
 
+			/*
 			if (!is_array($value)) {
 				$value = array($value);
-			}
+			}*/
+			if(!isset($value)) $value = $data->value;
 
 		    $users = UserManager::fetch();
 
 			$options = array();
 
 			foreach($users as $u){
-				$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
+				//	TODO: Support Multiple
+				//	$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
+
+				$options[] = array($u->id, ($u->id == $value), $u->getFullName());
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
-			$attr = array();
-
-			if($this->{'allow-multiple-selection'} == 'yes') $attr['multiple'] = 'multiple';
-
 			$label = Widget::Label($this->label);
-			$label->appendChild(Widget::Select($fieldname, $options, $attr));
+			$label->appendChild(Widget::Select($fieldname, $options,
+				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
+			));
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
 		}

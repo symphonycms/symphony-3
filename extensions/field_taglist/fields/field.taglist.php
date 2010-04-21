@@ -67,14 +67,21 @@
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 
-			$value = NULL;
-			if(isset($data['value'])){
-				$value = (is_array($data['value']) ? self::__tagArrayToString($data['value']) : $data['value']);
+			if(!isset($data->value)) {
+				$data->value = NULL;
 			}
+			/*	TODO: Support Multiple
+			$value = NULL;
+			if(isset($data->value)){
+				 $value = (is_array($data['value']) ? self::__tagArrayToString($data['value']) : $data['value']);
+
+			}*/
 
 			$label = Widget::Label($this->label);
 
-			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']', (strlen($value) != 0 ? $value : NULL)));
+			$label->appendChild(
+				Widget::Input('fields['.$this->{'element-name'}.']', $data->value)
+			);
 
 			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
 			else $wrapper->appendChild($label);
@@ -123,7 +130,7 @@
 
 			return array_unique($values);
 		}
-		
+
 		//	TODO: Make work with multiple tags!
 		public function processFormData($data, Entry $entry=NULL){
 			$result = (object)array(
