@@ -233,10 +233,12 @@
 		
 		.layout-widget > .columns > li > fieldset > .controls {
 			margin: 0;
+			overflow: hidden;
 			list-style: none;
 		}
 		.layout-widget > .columns > li > fieldset > .controls > * {
 			float: left;
+			margin-bottom: 0;
 		}
 		.layout-widget > .columns > li > fieldset > .controls > .disabled {
 			display: none;

@@ -107,26 +107,24 @@
 
 		private function __save(array $essentials = null, array $fields = null, array $layout = null, Section $section = null){
 			$renamed = false;
-
-			if(is_null($section)){
+			
+			if (is_null($section)) {
 				$section = new Section;
 				$section->path = SECTIONS;
 			}
-			elseif($essentials['name'] !== $section->name) {
-				$renamed = array(
-					$section->handle,
-					$essentials['name']
-				);
-			}
 			
-			$this->errors = new MessageStack;
 			$this->section = $section;
-			
-			// TODO: Most of the followig is in the wrong place,
-			// shouldn't it be in Section as it's parallel to ::load?
+			$this->errors = new MessageStack;
 			
 			// Resave essentials:
 			if (!is_null($essentials)) {
+				if($essentials['name'] !== $section->name) {
+					$renamed = array(
+						$section->handle,
+						$essentials['name']
+					);
+				}
+				
 				$this->section->name = $essentials['name'];
 				$this->section->{'navigation-group'} = $essentials['navigation-group'];
 				$this->section->{'hidden-from-publish-menu'} = (isset($essentials['hidden-from-publish-menu']) && $essentials['hidden-from-publish-menu'] == 'yes' ? 'yes' : 'no');
@@ -134,97 +132,50 @@
 			
 			// Resave fields:
 			if (!is_null($fields)) {
-				try {
-					$this->section->removeAllFields();
-					
-					if (is_array($fields) and !empty($fields)) {
-						foreach ($fields as $field) {
-							$this->section->appendField($field['type'], $field);
-						}
-					}
-					
-					Section::save($this->section, $this->errors);
-					
-					// If it's a renamed section, cleanup!
-					if ($renamed !== false) Section::rename($renamed);
-					
-					return true;
-				}
+				$this->section->removeAllFields();
 				
-				catch(SectionException $e){
-					switch($e->getCode()){
-						case Section::ERROR_MISSING_OR_INVALID_FIELDS:
-							$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
-							break;
-	
-						case Section::ERROR_FAILED_TO_WRITE:
-							$this->pageAlert($e->getMessage(), Alert::ERROR);
-							break;
+				if (is_array($fields) and !empty($fields)) {
+					foreach ($fields as $field) {
+						$this->section->appendField($field['type'], $field);
 					}
-				}
-				
-				catch(Exception $e){
-					// Errors!!
-					// Not sure what happened!!
-					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
 				}
 			}
 			
 			// Resave layout:
 			if (!is_null($layout)) {
-				try {
-					$document = new DOMDocument();
-					$document->formatOutput = true;
-					$root = $document->createElement('layout');
+				foreach ($layout as &$column) {
+					$column = (object)$column;
 					
-					foreach ($layout as $data) {
-						$column = $document->createElement('column');
-						$column->appendChild($document->createElement(
-							'size', $data['size']
-						));
-						
-						if (is_array($data['fieldsets'])) {
-							foreach ($data['fieldsets'] as $data) {
-								$fieldset = $document->createElement('fieldset');
-								$fieldset->appendChild($document->createElement(
-									'name', $data['name']
-								));
-								
-								if (is_array($data['fields'])) {
-									foreach ($data['fields'] as $name) {
-										$field = $document->createElement('field', $name);
-										$fieldset->appendChild($field);
-									}
-								}
-								
-								$column->appendChild($fieldset);
-							}
-						}
-						
-						$root->appendChild($column);
-					}
-					
-					$document->appendChild($root);
-					
-					Section::save($this->section, $this->errors, array($document));
-					
-					return true;
-				}
-				
-				catch (SectionException $e) {
-					switch($e->getCode()){
-						case Section::ERROR_MISSING_OR_INVALID_FIELDS:
-							$this->pageAlert(__('Could not save the layout, there are errors in your field condifurations.'), Alert::ERROR);
-							break;
-						case Section::ERROR_FAILED_TO_WRITE:
-							$this->pageAlert($e->getMessage(), Alert::ERROR);
-							break;
+					if (is_array($column->fieldsets)) foreach ($column->fieldsets as &$fieldset) {
+						$fieldset = (object)$fieldset;
 					}
 				}
 				
-				catch (Exception $e) {
-					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+				$this->section->layout = $layout;
+			}
+			
+			try {
+				Section::save($this->section, $this->errors);
+				
+				// If it's a renamed section, cleanup!
+				if ($renamed !== false) Section::rename($renamed);
+				
+				return true;
+			}
+			
+			catch (SectionException $e) {
+				switch($e->getCode()){
+					case Section::ERROR_MISSING_OR_INVALID_FIELDS:
+						$this->pageAlert(__('Could not save the layout, there are errors in your field condifurations.'), Alert::ERROR);
+						break;
+					case Section::ERROR_FAILED_TO_WRITE:
+						$this->pageAlert($e->getMessage(), Alert::ERROR);
+						break;
 				}
+			}
+			
+			catch (Exception $e) {
+				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
 			}
 
 			return false;
@@ -471,6 +422,16 @@
 			$columns = $this->createElement('ol');
 			$columns->setAttribute('class', 'columns');
 			
+			// Load fields:
+			$fields = $this->section->fields;
+			
+			foreach ($fields as $index => $field) {
+				$name = $field->{'element-name'};
+				$fields[$name] = $field;
+				
+				unset($fields[$index]);
+			}
+			
 			// Layouts:
 			$layout_options = array(
 				array(Layout::LARGE),
@@ -500,8 +461,6 @@
 			}
 			
 			// Default columns:
-			$fields = $this->section->fields;
-			
 			if (empty($this->section->layout)) {
 				$this->appendColumn($columns, Layout::LARGE);
 				$this->appendColumn($columns, Layout::SMALL);

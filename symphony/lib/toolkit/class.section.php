@@ -10,7 +10,7 @@
 		}
 
 		public function accept(){
-			if($this->isDir() == false && preg_match('/^(.+)\.xml$/i', $this->getFilename())){
+			if($this->isDir() == false && preg_match('/^([^.]+)\.xml$/i', $this->getFilename())){
 				return true;
 			}
 			return false;
@@ -239,7 +239,7 @@
 
 						foreach ($column->fieldset as $fieldset) {
 							$data_fieldset = (object)array(
-								'name'		=> $fieldset->name,
+								'name'		=> (string)$fieldset->name,
 								'fields'	=> array()
 							);
 
@@ -311,7 +311,7 @@
 			}
 		}
 
-		public static function save(Section $section, MessageStack &$messages, array $additional_fragments=NULL, $simulate=false){
+		public static function save(Section $section, MessageStack &$messages, $simulate=false){
 
 			$pathname = sprintf('%s/%s.xml', $section->path, $section->handle);
 
@@ -350,8 +350,8 @@
 
 			$section->synchroniseDataTables();
 
-			$doc = $section->toDoc($additional_fragments);
-
+			$doc = $section->toDoc();
+			
 			return ($simulate == true ? true : file_put_contents($pathname, $doc->saveXML()));
 		}
 
@@ -397,7 +397,7 @@
 			return General::deleteFile(SECTIONS . '/' . $handle . '.xml');
 		}
 
-		public function toDoc(array $additional_fragments=NULL){
+		public function toDoc(){
 			$doc = new DOMDocument('1.0', 'UTF-8');
 			$doc->formatOutput = true;
 
@@ -425,29 +425,49 @@
 			if(is_array($this->fields) && !empty($this->fields)){
 				$fields = $doc->createElement('fields');
 				foreach($this->fields as $index => $field){
-
-					// the XML returned will have a declaration. Need to remove that.
-					$string = trim(preg_replace('/<\?xml.*\?>/i', NULL, (string)$field, 1));
-
-					// Prepare indenting by adding an 4 spaces to each line (except the first one)
-					$string = preg_replace('/[\r\n]/', "\n    ", $string);
-
-					$fragment = $doc->createDocumentFragment();
-					$fragment->appendXML($string);
-					$fields->appendChild($fragment);
+					$fields->appendChild($doc->importNode($field->toDoc()->documentElement, true));
 				}
 				$root->appendChild($fields);
 			}
 
-			if(!is_null($additional_fragments)){
-				foreach($additional_fragments as $fragment){
-					if(!($fragment instanceof DOMDocument)) continue;
-
-					$node = $doc->importNode($fragment->documentElement, true);
-					$root->appendChild($node);
+			if (is_array($this->layout)) {
+				$layout = $doc->createElement('layout');
+				
+				foreach ($this->layout as $data) {
+					$column = $doc->createElement('column');
+					
+					if (!isset($data->size) or $data->size != Layout::LARGE) {
+						$data->size = Layout::SMALL;
+					}
+					
+					$size = $doc->createElement('size', $data->size);
+					$column->appendChild($size);
+					
+					if (is_array($data->fieldsets)) foreach ($data->fieldsets as $data) {
+						$fieldset = $doc->createElement('fieldset');
+						
+						if (!isset($data->name) or trim($data->name) == '') {
+							$data->name = __('Untitled');
+						}
+						
+						$name = $doc->createElement('name', $data->name);
+						$fieldset->appendChild($name);
+						
+						if (is_array($data->fields)) foreach ($data->fields as $data) {
+							if (!is_string($data) or trim($data) == '') continue;
+							
+							$fieldset->appendChild($doc->createElement('field', $data));
+						}
+						
+						$column->appendChild($fieldset);
+					}
+					
+					$layout->appendChild($column);
 				}
+				
+				$root->appendChild($layout);
 			}
-
+			
 			return $doc;
 		}
 
