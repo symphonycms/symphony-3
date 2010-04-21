@@ -123,6 +123,21 @@
 
 			return array_unique($values);
 		}
+		
+		//	TODO: Make work with multiple tags!
+		public function processFormData($data, Entry $entry=NULL){
+			$result = (object)array(
+				'value' => null,
+				'handle' => null,
+			);
+
+			if(!is_null($data)){
+				$result->value = $data;
+				$result->handle = Lang::createHandle($data);
+			}
+
+			return $result;
+		}
 
 /*
 		Deprecated
@@ -255,27 +270,6 @@
 		}
 
 		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-/*
-			TODO:	Allow multiple tags
-
-			// Insert a * after \s
-
-			$data = preg_split('/\,\s/i', $data, -1, PREG_SPLIT_NO_EMPTY);
-			$data = array_map('trim', $data);
-
-			if(empty($data)) return;
-
-			// Do a case insensitive removal of duplicates
-			$data = General::array_remove_duplicates($data, true);
-
-			sort($data);
-
-			$result = array();
-			foreach($data as $value){
-				$result['value'][] = $value;
-				$result['handle'][] = Lang::createHandle($value);
-			}
-*/
 			return parent::saveData($data, $errors, $entry);
 		}
 

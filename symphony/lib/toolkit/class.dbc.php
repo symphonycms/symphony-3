@@ -306,7 +306,7 @@
 	        $this->_connection = @mysql_connect($details->host . ':' . $details->port, $details->user, $details->pass);
 
 	        if($this->_connection === false){
-				throw new Exception('There was a problem whilst attempting to establish a database connection. Please check all connection information is correct.');
+				throw new DatabaseException('There was a problem whilst attempting to establish a database connection. Please check all connection information is correct.');
 			}
 
 	        $this->select($details->path);
@@ -317,8 +317,10 @@
 	    }
 
 	    public function close(){
-	        @mysql_close($this->_connection);
-	        $this->_connection = null;
+			if(isset($this->_connection)) {
+				mysql_close($this->_connection);
+		        $this->_connection = null;
+			}
 	    }
 
 		public function escape($string){
@@ -430,7 +432,7 @@
 		public function debug() {
 			// TODO: This function/look at moving it to Profiler based.
 		}
-		
+
 		public function getLastError() {
 			// TODO: This function
 		}

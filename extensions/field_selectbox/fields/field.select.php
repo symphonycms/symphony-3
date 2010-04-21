@@ -255,6 +255,20 @@
 			return true;
 		}
 
+		public function processFormData($data, Entry $entry=NULL){
+			$result = (object)array(
+				'value' => null,
+				'handle' => null,
+			);
+
+			if(!is_null($data)){
+				$result->value = $data;
+				$result->handle = Lang::createHandle($data);
+			}
+
+			return $result;
+		}
+
 /*
 		Deprecated
 
