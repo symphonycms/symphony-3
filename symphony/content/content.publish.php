@@ -1193,8 +1193,13 @@
 				$entry = Entry::loadFromID($entry_id);
 
 				$post = General::getPostData();
-
-				$entry->setFieldDataFromFormArray($post['fields']);
+				$fields = array();
+				
+				if (isset($post['fields']) and !empty($post['fields'])) {
+					$fields = $post['fields'];
+				}
+				
+				$entry->setFieldDataFromFormArray($fields);
 
 				###
 				# Delegate: EntryPreEdit
