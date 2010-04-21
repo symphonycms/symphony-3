@@ -662,6 +662,7 @@
 							foreach($section->fields as $f){
 								if($f->{'element-name'} == $field_handle){
 									$field = $f;
+									break;
 								}
 							}
 			
@@ -771,15 +772,10 @@
 			$this->entry->findDefaultFieldData();
 			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
 
-			//var_dump($_REQUEST, $_POST);die();
 			// Check if there is a field to prepopulate
-			if (isset($_REQUEST['prepopulate'])) {
+			if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {
 				$field_handle = key($_REQUEST['prepopulate']);
 				$value = stripslashes(rawurldecode($_REQUEST['prepopulate'][$field_handle]));
-
-				$this->Form->prependChild(
-					Widget::Input("prepopulate[{$field_handle}]",rawurlencode($value),'hidden')
-				);
 
 				$prepopulate_filter = "?prepopulate[{$field_handle}]=" . rawurlencode($value);
 				$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL() . $prepopulate_filter);
@@ -990,7 +986,7 @@
 				if($this->errors->length() <= 0){
 
 					// Check if there is a field to prepopulate
-					if (isset($_REQUEST['prepopulate'])) {
+					if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {
 						$field_handle = key($_REQUEST['prepopulate']);
 						$value = stripslashes(rawurldecode($_REQUEST['prepopulate'][$field_handle]));
 
@@ -1274,7 +1270,7 @@
 				if($this->errors->length() <= 0){
 
 					// Check if there is a field to prepopulate
-					if (isset($_REQUEST['prepopulate'])) {
+					if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {
 						$field_handle = key($_REQUEST['prepopulate']);
 						$value = stripslashes(rawurldecode($_REQUEST['prepopulate'][$field_handle]));
 
