@@ -144,15 +144,6 @@
 			return ($data->value == 'yes' ? __('Yes') : __('No'));
 		}
 
-		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return self::STATUS_OK;
-		}
-
-		/*	Possibly could be removed.. */
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return parent::saveData($data, $errors, $entry);
-		}
-
 		public function processFormData($data, Entry $entry=NULL){
 			return parent::processFormData(
 				(strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no'), $entry
