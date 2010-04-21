@@ -831,6 +831,8 @@
 					foreach ($data->fields as $handle) {
 						$field = $section_fields[$handle];
 						
+						if (!$field instanceof Field) continue;
+						
 						$div = $this->createElement('div', NULL, array(
 								'class' => trim(sprintf('field field-%s %s %s',
 									$field->handle(),
