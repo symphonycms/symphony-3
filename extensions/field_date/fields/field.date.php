@@ -32,7 +32,7 @@
 			return true;
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 			$name = $this->{'element-name'};
 			$value = null;
 
@@ -42,8 +42,8 @@
 			}
 
 			// Empty entry:
-			else if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data['gmt']);
+			else if (isset($data->gmt) && !is_null($data->gmt)) {
+				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data->gmt);
 			}
 
 			$label = Widget::Label($this->label, Widget::Input("fields[{$name}]", $value), array(
@@ -101,8 +101,8 @@
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
-			if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->{'element-name'}));
+			if (isset($data->gmt) && !is_null($data->gmt)) {
+				$wrapper->appendChild(General::createXMLDateObject($data->local, $this->{'element-name'}));
 			}
 		}
 
@@ -117,7 +117,7 @@
 		}
 
 		public function getParameterPoolValue($data){
-     		return DateTimeObj::get('Y-m-d H:i:s', $data['local']);
+     		return DateTimeObj::get('Y-m-d H:i:s', $data->local);
 		}
 
 		function groupRecords($records){

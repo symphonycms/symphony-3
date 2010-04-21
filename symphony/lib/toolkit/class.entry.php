@@ -125,7 +125,7 @@
 			}
 			
 			$entry->findDefaultFieldData();
-			
+
 			// Check the data
 			foreach($section->fields as $field){
 				$data = $entry->data()->{$field->{'element-name'}};

@@ -614,8 +614,16 @@
 				default: return 'small';
 			}
 		}
-
-		public function __viewNew() {
+		
+		public function __viewEdit(){
+			$this->__form(Entry::loadFromID($this->_context['entry_id']), true);
+		}	
+			
+		public function __viewNew(){
+			$this->__form();
+		}
+		
+		public function __form(Entry $entry=NULL, $editing=false){
 
 			/*if(!$section_id = SectionManager::instance()->fetchIDFromHandle($this->_context['section_handle']))
 				Administration::instance()->customError(E_USER_ERROR, __('Unknown Section'), __('The Section you are looking for, <code>%s</code>, could not be found.', array($this->_context['section_handle'])), false, true);
@@ -626,7 +634,21 @@
 
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
-			$this->appendSubheading(__('Untitled'));
+			
+			$subheading = __('Untitled');
+			if(!is_null($entry) && $entry instanceof Entry){
+				// Grab the first field in the section
+				$first_field = $section->fields[0];
+				$subheading = $first_field->prepareTableValue($entry->data()->{$first_field->{'element-name'}});
+			}
+			else{
+				$entry = new Entry;
+			}
+
+			$entry->section = $this->_context['section_handle'];
+			$this->appendSubheading($subheading);
+			$entry->findDefaultFieldData();
+			
 			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
 
 			// Check that a layout and fields exist
@@ -704,9 +726,13 @@
 								)
 							);
 
-							$field->displayPublishPanel($div, null, (isset($this->_errors[$field->id])
-								? $this->_errors[$field->id]
-								: NULL)
+							$field->displayPublishPanel(
+								$div,
+								 $entry->data()->{$field->{'element-name'}}, 
+								(isset($this->errors->$field->{'element-name'})
+									? $this->errors->$field->{'element-name'}
+									: NULL),
+								$entry
 							);
 
 							$fieldset->appendChild($div);
@@ -762,7 +788,18 @@
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
 			$div->appendChild(Widget::Input('action[save]', __('Create Entry'), 'submit', array('accesskey' => 's')));
-
+			
+			if($editing == true){
+				$button = $this->createElement('button', __('Delete'));
+				$button->setAttributeArray(array(
+					'name' => 'action[delete]', 
+					'class' => 'confirm delete', 
+					'title' => __('Delete this entry'), 
+					'type' => 'submit'
+				));
+				$div->appendChild($button);
+			}
+			
 			$this->Form->appendChild($div);
 		}
 
@@ -873,7 +910,7 @@
 			}
 			
 		}
-
+/*
 		function __viewEdit() {
 
 			$section = Section::loadFromHandle($this->_context['section_handle']);
@@ -1031,7 +1068,7 @@
 			$this->Form->appendChild($div);
 
 		}
-
+*/
 		function __actionEdit(){
 
 			$entry_id = intval($this->_context['entry_id']);

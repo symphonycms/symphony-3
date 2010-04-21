@@ -94,7 +94,7 @@
 		const FLAG_ALL = 'all';
 
 		// Abstract functions
-		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL);
+		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL);
 
 		public function __construct(){
 			if(is_null(self::$key)) self::$key = 0;

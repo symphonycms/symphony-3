@@ -35,7 +35,7 @@
 			foreach($records as $r){
 				$data = $r->getData($this->{'id'});
 
-				$value = $data['value'];
+				$value = $data->value;
 
 				if(!isset($groups[$this->{'element-name'}][$handle])){
 					$groups[$this->{'element-name'}][$handle] = array('attr' => array('value' => $value),
@@ -120,7 +120,7 @@
 
 		}
 
-		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 
 			if(!$data){
 				## TODO: Don't rely on $_POST
@@ -129,7 +129,7 @@
 				else $value = 'no';
 			}
 
-			else $value = ($data['value'] == 'yes' ? 'yes' : 'no');
+			else $value = ($data->value == 'yes' ? 'yes' : 'no');
 
 			$label = Widget::Label();
 			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
