@@ -56,12 +56,10 @@
 			$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL());
 
 			$viewoptions = array(
-				'subnav'	=> array(
-					'Overview'			=>	$path,
-					'Data Sources'		=>	$path . 'datasources/',
-					'Fields'			=>	$path . 'fields/',
-					'Other'				=>	$path . 'other/'
-				)
+				'Overview'			=>	$path,
+				'Data Sources'		=>	$path . 'datasources/',
+				'Fields'			=>	$path . 'fields/',
+				'Other'				=>	$path . 'other/'
 			);
 
 			$this->appendViewOptions($viewoptions);

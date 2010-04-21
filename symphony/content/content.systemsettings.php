@@ -16,10 +16,8 @@
 			$path = URL . '/symphony/system/settings/';
 
 			$viewoptions = array(
-				'subnav'	=> array(
-					'Preferences'		=>	$path,
-					'Tools'				=>	$path . 'tools/'
-				)
+				'Preferences'		=>	$path,
+				'Tools'				=>	$path . 'tools/'
 			);
 
 			$this->appendViewOptions($viewoptions);
