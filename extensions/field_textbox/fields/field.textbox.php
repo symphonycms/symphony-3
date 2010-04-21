@@ -480,14 +480,19 @@
 
 		// TODO: Fix the createHandle function
 		public function processFormData($data, Entry $entry=NULL){
+
 			$result = (object)array(
 				'handle' => null,
 				'value' => null,
 				'value_formatted' => null,
 				'word_count' => null
 			);
-
-			if(!is_null($data)) {
+		
+			if(isset($entry->data()->{$this->{'element-name'}})){
+				$result = $entry->data()->{$this->{'element-name'}};
+			}
+		
+			if(!is_null($data)){
 				$result->handle = Lang::createHandle($data);
 				$result->value = $data;
 				$result->value_formatted = $this->applyFormatting($data);

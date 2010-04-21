@@ -1069,22 +1069,57 @@
 
 		}
 */
-		function __actionEdit(){
+		public function __actionEdit(){
 
 			$entry_id = intval($this->_context['entry_id']);
 
 			if(@array_key_exists('save', $_POST['action']) || @array_key_exists("done", $_POST['action'])){
 
-
-			    if(!$ret = EntryManager::instance()->fetch($entry_id)) Administration::instance()->customError(E_USER_ERROR, __('Unknown Entry'), __('The entry you are looking for could not be found.'), false, true);
-
-				$entry = $ret[0];
-
-				$section = SectionManager::instance()->fetch($entry->get('section_id'));
+				$entry = Entry::loadFromID($entry_id);
 
 				$post = General::getPostData();
-				$fields = $post['fields'];
+				
+				$entry->setFieldDataFromFormArray($post['fields']);
 
+				###
+				# Delegate: EntryPreEdit
+				# Description: Just prior to editing of an Entry.
+				ExtensionManager::instance()->notifyMembers(
+					'EntryPreEdit', '/publish/edit/', 
+					array('entry' => &$entry)
+				);
+
+				$errors = new MessageStack;
+				Entry::save($entry, $errors);
+				
+				if($errors->length() <= 0){
+					
+					###
+					# Delegate: EntryPostEdit
+					# Description: Editing an entry. Entry object is provided.
+					ExtensionManager::instance()->notifyMembers(
+						'EntryPostEdit', '/publish/edit/', 
+						array('entry' => $entry)
+					);
+					
+					## WOOT
+					redirect(sprintf(
+						'%s/symphony/publish/%s/edit/%d/saved/',
+						URL,
+						$entry->section,
+						$entry->id
+						//(!is_null($prepopulate_field_id) ? ":{$prepopulate_field_id}:{$prepopulate_value}" : NULL)
+					));
+				}
+				
+				
+				// Oh dear
+				$this->pageAlert(NULL, Alert::ERROR);
+				return;
+				
+
+
+/*
 				if(Entry::STATUS_ERROR == $entry->checkPostData($fields, $this->_errors)):
 					$this->pageAlert(__('Some errors were encountered while attempting to save.'), Alert::ERROR);
 
@@ -1132,6 +1167,7 @@
 					}
 
 				endif;
+				*/
 			}
 
 			elseif(@array_key_exists('delete', $_POST['action']) && is_numeric($entry_id)){

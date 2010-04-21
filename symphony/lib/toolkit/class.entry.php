@@ -93,8 +93,7 @@
 
 			foreach($section->fields as $field){
 				$field_handle = $field->{'element-name'};
-				if(!isset($data[$field_handle])) continue;
-				$this->data()->$field_handle = $field->processFormData($data[$field_handle]);
+				$this->data()->$field_handle = $field->processFormData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
 			}
 		}
 

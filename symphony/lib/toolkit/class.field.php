@@ -436,7 +436,18 @@
 		}
 
 		public function processFormData($data, Entry $entry=NULL){
-			return (object)array('value' => $data);
+
+			$result = (object)array(
+				'value' => NULL
+			);
+			
+			if(isset($entry->data()->{$this->{'element-name'}})){
+				$result = $entry->data()->{$this->{'element-name'}};
+			}
+			
+			$result->value = $data;
+			
+			return $result;
 		}
 
 		// TODO: Support an array of data objects. This is important for
