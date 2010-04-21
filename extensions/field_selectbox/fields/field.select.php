@@ -7,12 +7,12 @@
 		}
 
 		public function canToggleData(){
-			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
+			return !isset($this->{'allow-multiple-selection'}) ? true : false;
 		}
 
 		function allowDatasourceOutputGrouping(){
 			## Grouping follows the same rule as toggling.
-			return $this->canToggle();
+			return $this->canToggleData();
 		}
 
 		function allowDatasourceParamOutput(){
@@ -124,6 +124,10 @@
 			natsort($states);
 
 			$options = array();
+
+			if($this->{'required'} == 'yes') {
+				$options[] = array(null, false);
+			}
 
 			foreach($states as $handle => $v){
 				//	TODO: Support multiple data Classes
@@ -384,6 +388,9 @@
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
 
+			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
+
 			## Allow selection of multiple items
 			$label = Widget::Label(__('Allow selection of multiple options'));
 
@@ -393,7 +400,6 @@
 			$label->prependChild($input);
 			$options_list->appendChild($label);
 
-			$this->appendShowColumnCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 
 		}
@@ -423,7 +429,7 @@
 		}
 
 		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return self::STATUS_OK;
+			return parent::validateData($data, $errors, $entry);
 		}
 
 		/*	Possibly could be removed.. */

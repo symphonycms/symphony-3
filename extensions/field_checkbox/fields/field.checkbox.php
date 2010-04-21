@@ -7,7 +7,7 @@
 		}
 
 		public function canToggleData(){
-			return true;
+			return ($this->{'required'} == 'no') ? true : false;
 		}
 
 		function allowDatasourceOutputGrouping(){
@@ -116,7 +116,11 @@
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 
-			if(!$data){
+			if(!$data && $this->{'required'} == 'yes') {
+				$value = null;
+			}
+
+			else if(!$data){
 				## TODO: Don't rely on $_POST
 				if(isset($_POST) && !empty($_POST)) $value = 'no';
 				elseif($this->{'default-state'} == 'on') $value = 'yes';
@@ -131,6 +135,10 @@
 			$label->appendChild($input);
 			$label->appendChild(new DOMText(($this->{'description'} != NULL ? $this->{'description'} : $this->{'label'})));
 
+			if (!is_null($error)) {
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
+			}
+
 			$wrapper->appendChild($label);
 		}
 
@@ -139,9 +147,16 @@
 		}
 
 		public function processFormData($data, Entry $entry=NULL){
-			return parent::processFormData(
-				(strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no'), $entry
-			);
+
+			$states = array('on', 'yes');
+
+			if($this->{'required'} == 'yes' && !in_array(strtolower($data), $states)) {
+				$data = null;
+			}
+
+			else $data = (in_array(strtolower($data), $states)) ? 'yes' : 'no';
+
+			return parent::processFormData($data, $entry);
 		}
 
 /*		Deprecated
@@ -185,6 +200,9 @@
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
 
+			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
+
 			// Default State
 			$label = Widget::Label(__('Checked by default'));
 			$input = Widget::Input('default-state', 'on', 'checkbox');
@@ -198,18 +216,7 @@
 			$item->appendChild($label);
 			$options_list->appendChild($item);
 
-			$this->appendShowColumnCheckbox($options_list);
-
 			$wrapper->appendChild($options_list);
-		}
-
-		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return self::STATUS_OK;
-		}
-
-		/*	Possibly could be removed.. */
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function createTable(){

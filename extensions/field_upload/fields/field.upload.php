@@ -123,7 +123,7 @@
 			if (!is_writable(DOCROOT . $this->{'destination'} . '/')) {
 				$messages->append('destination', __('Folder is not writable. Please check permissions.'));
 			}
-			
+
 			return parent::validateSettings($messages, $checkForDuplicates);
 		}
 
@@ -160,7 +160,7 @@
 			}
 
 			$label->appendChild(Widget::Select('destination', $options));
-			
+
 			if ($messages->{'destination'}) {
 				$label = Widget::wrapFormElementWithError($label, $messages->{'destination'});
 			}
@@ -171,26 +171,24 @@
 
 			$this->appendValidationSelect($wrapper, $this->validator, 'validator', 'upload');
 
-
-
-			$options_list = Symphony::Parent()->Page->createElement('ul');
+			$options_list = $wrapper->ownerDocument->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-
-			// Serialise ----------------------------------------------------------
-
-				$label = Widget::Label(__('Serialise file names'));
-				$input = Widget::Input(
-					'serialise', 'yes', 'checkbox'
-				);
-
-				if ($this->serialise == 'yes') $input->setAttribute('checked', 'checked');
-
-				$label->prependChild($input);
-				$options_list->appendChild($label);
-
 
 			$this->appendShowColumnCheckbox($options_list);
 			$this->appendRequiredCheckbox($options_list);
+
+			// Serialise ----------------------------------------------------------
+
+			$label = Widget::Label(__('Serialise file names'));
+			$input = Widget::Input(
+				'serialise', 'yes', 'checkbox'
+			);
+
+			if ($this->serialise == 'yes') $input->setAttribute('checked', 'checked');
+
+			$label->prependChild($input);
+			$options_list->appendChild($label);
+
 			$wrapper->appendChild($options_list);
 		}
 

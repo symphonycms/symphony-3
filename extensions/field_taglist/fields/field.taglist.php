@@ -280,9 +280,12 @@
 			// Validator
 			$this->appendValidationSelect($wrapper, $this->validator, 'validator');
 
-			$options_list = Symphony::Parent()->Page->createElement('ul');
+			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
+
 			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
+
 			$wrapper->appendChild($options_list);
 		}
 
