@@ -732,12 +732,20 @@
 
 			$callback = Administration::instance()->getPageCallback();
 
-			/*if(!$section_id = SectionManager::instance()->fetchIDFromHandle($this->_context['section_handle']))
-				Administration::instance()->customError(E_USER_ERROR, __('Unknown Section'), __('The Section you are looking for, <code>%s</code>, could not be found.', array($this->_context['section_handle'])), false, true);
-
-		    $section = SectionManager::instance()->fetch($section_id);*/
-
 			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $callback['context']['section_handle']));
+
+			// Check that a layout and fields exist
+			if(isset($section->fields)) {
+				return $this->pageAlert(
+					__(
+						'It looks like you\'re trying to create an entry. Perhaps you want fields first? <a href="%s">Click here to create some.</a>',
+						array(
+							ADMIN_URL . '/blueprints/sections/edit/' . $section->handle . '/'
+						)
+					),
+					Alert::ERROR
+				);
+			}
 
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
@@ -763,17 +771,22 @@
 			$this->entry->findDefaultFieldData();
 			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
 
-			// Check that a layout and fields exist
-			if(isset($section->fields)) {
-				return $this->pageAlert(
-					__(
-						'It looks like you\'re trying to create an entry. Perhaps you want fields first? <a href="%s">Click here to create some.</a>',
-						array(
-							ADMIN_URL . '/blueprints/sections/edit/' . $section->handle . '/'
-						)
-					),
-					Alert::ERROR
+			//var_dump($_REQUEST, $_POST);die();
+			// Check if there is a field to prepopulate
+			if (isset($_REQUEST['prepopulate'])) {
+				$field_handle = key($_REQUEST['prepopulate']);
+				$value = stripslashes(rawurldecode($_REQUEST['prepopulate'][$field_handle]));
+
+				$this->Form->prependChild(
+					Widget::Input("prepopulate[{$field_handle}]",rawurlencode($value),'hidden')
 				);
+
+				$prepopulate_filter = "?prepopulate[{$field_handle}]=" . rawurlencode($value);
+				$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL() . $prepopulate_filter);
+
+				if(is_null($existing)) {
+					$this->entry->data()->{$field_handle}->value = $value;
+				}
 			}
 
 			// Status message:
@@ -785,7 +798,7 @@
 								'Entry updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/new/',
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/new/'.$prepopulate_filter,
 									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/'
 								)
 							),
@@ -799,7 +812,7 @@
 								'Entry created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/new/',
+									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/new/'.$prepopulate_filter,
 									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/'
 								)
 							),
@@ -841,21 +854,21 @@
 
 			        )
 			*/
-			
+
 			$layout = new Layout;
-			
-			foreach ($section->layout as $data) {
+
+			if(is_array($section->layout) && !empty($section->layout)) foreach ($section->layout as $data) {
 				$column = $layout->createColumn($data->size);
-				
+
 				foreach ($data->fieldsets as $data) {
 					$fieldset = $this->createElement('fieldset');
-					
+
 					$header = $this->createElement('h3', $data->name);
 					$fieldset->appendChild($header);
-					
+
 					foreach ($data->fields as $handle) {
 						$field = $section_fields[$handle];
-						
+
 						$div = $this->createElement('div', NULL, array(
 								'class' => trim(sprintf('field field-%s %s %s',
 									$field->handle(),
@@ -864,7 +877,7 @@
 								))
 							)
 						);
-						
+
 						$field->displayPublishPanel(
 							$div,
 							 $this->entry->data()->{$field->{'element-name'}},
@@ -873,17 +886,29 @@
 								: NULL),
 							$this->entry
 						);
-						
+
 						$fieldset->appendChild($div);
 					}
-					
+
 					$column->appendChild($fieldset);
 				}
 			}
-			
-			$layout->appendTo($this->Form);
 
-			// Check if there is a field to prepopulate
+			else {
+				return $this->pageAlert(
+					__(
+						'You haven\'t set any section layout rules. PERHAPS IF NO LAYOUT IS SET A DEFAULT TWO COLUMN SHOULD BE USED? <a href="%s">Click here to define a layout.</a>',
+						array(
+							ADMIN_URL . '/blueprints/sections/layout/' . $section->handle . '/'
+						)
+					),
+					Alert::ERROR
+				);
+			}
+
+			$layout->appendTo($this->Form);
+/*
+			//Check if there is a field to prepopulate
 			if (isset($_REQUEST['prepopulate'])) {
 				$field_handle = array_shift(array_keys($_REQUEST['prepopulate']));
 				$value = stripslashes(rawurldecode(array_shift($_REQUEST['prepopulate'])));
@@ -894,18 +919,16 @@
 					'hidden'
 				));
 
-				/* Need FieldManager first.
-				// The actual pre-populating should only happen if there is not existing fields post data
+				 	Need FieldManager first.
+				// 	The actual pre-populating should only happen if there is not existing fields post data
 				if(!isset($_POST['fields']) && $field = FieldManager::instance()->fetch($field_id)) {
 					$entry->setData(
 						$field->id,
 						$field->processRawFieldData($value, $error, true)
 					);
 				}
-				*/
-			}
 
-/*
+			}
 
 			// If there is post data floating around, due to errors, create an entry object
 			if (isset($_POST['fields'])) {
@@ -966,6 +989,17 @@
 
 				if($this->errors->length() <= 0){
 
+					// Check if there is a field to prepopulate
+					if (isset($_REQUEST['prepopulate'])) {
+						$field_handle = key($_REQUEST['prepopulate']);
+						$value = stripslashes(rawurldecode($_REQUEST['prepopulate'][$field_handle]));
+
+						$prepopulate_filter = "?prepopulate[{$field_handle}]=" . rawurlencode($value);
+					}
+					else {
+						$prepopulate_filter = null;
+					}
+
 					###
 					# Delegate: EntryPostCreate
 					# Description: Creation of an Entry. New Entry object is provided.
@@ -976,11 +1010,11 @@
 
 					## WOOT
 					redirect(sprintf(
-						'%s/symphony/publish/%s/edit/%d/:created/',
+						'%s/symphony/publish/%s/edit/%d/:created/%s',
 						URL,
 						$entry->section,
-						$entry->id
-						//(!is_null($prepopulate_field_id) ? ":{$prepopulate_field_id}:{$prepopulate_value}" : NULL)
+						$entry->id,
+						$prepopulate_filter
 					));
 				}
 
@@ -1239,6 +1273,17 @@
 
 				if($this->errors->length() <= 0){
 
+					// Check if there is a field to prepopulate
+					if (isset($_REQUEST['prepopulate'])) {
+						$field_handle = key($_REQUEST['prepopulate']);
+						$value = stripslashes(rawurldecode($_REQUEST['prepopulate'][$field_handle]));
+
+						$prepopulate_filter = "?prepopulate[{$field_handle}]=" . rawurlencode($value);
+					}
+					else {
+						$prepopulate_filter = null;
+					}
+
 					###
 					# Delegate: EntryPostEdit
 					# Description: Editing an entry. Entry object is provided.
@@ -1249,11 +1294,11 @@
 
 					## WOOT
 					redirect(sprintf(
-						'%s/symphony/publish/%s/edit/%d/:saved/',
+						'%s/symphony/publish/%s/edit/%d/:saved/%s',
 						URL,
 						$entry->section,
-						$entry->id
-						//(!is_null($prepopulate_field_id) ? ":{$prepopulate_field_id}:{$prepopulate_value}" : NULL)
+						$entry->id,
+						$prepopulate_filter
 					));
 				}
 
@@ -1321,7 +1366,7 @@
 
 				###
 				# Delegate: Delete
-				# Description: Prior to deleting an entry. Entry ID is provided, as an 
+				# Description: Prior to deleting an entry. Entry ID is provided, as an
 				# array to remain compatible with other Delete delegate call
 				ExtensionManager::instance()->notifyMembers('Delete', '/publish/', array('entry_id' => $entry_id));
 
