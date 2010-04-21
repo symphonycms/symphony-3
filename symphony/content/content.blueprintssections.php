@@ -203,9 +203,12 @@
 
 			$section_pathname = implode('/', $context);
 
-			if(isset($_POST['action']['save'])){
-				if($this->__save(null, null, (isset($_POST['layout']) ? $_POST['layout'] : null), Section::load(SECTIONS . '/' . $this->_context[1] . '.xml')) == true){
-					redirect(ADMIN_URL . "/blueprints/sections/layout/{$this->section->handle}/:created/");
+			if (isset($_POST['action']['save'])) {
+				$layout = (isset($_POST['layout']) ? $_POST['layout'] : null);
+				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
+				
+				if ($this->__save(null, null, $layout, $section) == true) {
+					redirect(ADMIN_URL . "/blueprints/sections/layout/{$this->section->handle}/:saved/");
 				}
 			}
 		}
@@ -227,12 +230,13 @@
 			if(array_key_exists('delete', $_POST['action'])) {
 				$this->__actionDelete(array($section_pathname), ADMIN_URL . '/blueprints/sections/');
 			}
-			elseif(array_key_exists('save', $_POST['action'])) {
-				if($this->__save(
-					$_POST['essentials'],
-					(isset($_POST['fields']) ? $_POST['fields'] : null), null,
-					Section::load(SECTIONS . '/' . $this->_context[1] . '.xml')) == true
-				) {
+			
+			else if (array_key_exists('save', $_POST['action'])) {
+				$essentials = $_POST['essentials'];
+				$fields = (isset($_POST['fields']) ? $_POST['fields'] : null);
+				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
+				
+				if ($this->__save($essentials, $fields, null, $section) == true) {
 					redirect(ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/:saved/");
 				}
 			}
@@ -384,15 +388,16 @@
 				switch($callback['flag']){
 					case 'saved':
 						$this->pageAlert(
-							'Section layout updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 							__(
+								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',
 									ADMIN_URL . '/blueprints/sections/',
 								)
 							),
-							Alert::SUCCESS);
+							Alert::SUCCESS
+						);
 						break;
 				}
 			}
@@ -511,7 +516,8 @@
 		private function __form(Section $existing = null){
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
-			if(isset($callback['flag']) && !is_null($callback['flag'])){
+			
+			if (isset($callback['flag']) && !is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
 						$this->pageAlert(
@@ -523,7 +529,21 @@
 									ADMIN_URL . '/blueprints/sections/',
 								)
 							),
-							Alert::SUCCESS);
+							Alert::SUCCESS
+						);
+						break;
+					case 'created':
+						$this->pageAlert(
+							__(
+								'Section created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
+									ADMIN_URL . '/blueprints/sections/new/',
+									ADMIN_URL . '/blueprints/sections/',
+								)
+							),
+							Alert::SUCCESS
+						);
 						break;
 				}
 			}
@@ -538,6 +558,35 @@
 			if ($existing instanceof Section) {
 				$this->appendViewOptions();
 			}
+			
+			/*
+			TODO: This code should become MessageStack::appendTo(...)
+			
+			// Show errors:
+			function appendErrorSummary(SymphonyDOMElement $wrapper, MessageStack $messages) {
+				$document = $wrapper->ownerDocument;
+				$list = $document->createElement('ol');
+				$list->setAttribute('class', 'error-list');
+				
+				foreach ($messages as $key => $message) {
+					if ($message instanceof MessageStack) {
+						$item = $document->createElement('li', $key . ':');
+						
+						appendErrorSummary($item, $message);
+					}
+					
+					else {
+						$item = $document->createElement('li', $key . ': ' . $message);
+					}
+					
+					$list->appendChild($item);
+				}
+				
+				$wrapper->appendChild($list);
+			}
+			
+			appendErrorSummary($this->Form, $this->errors);
+			*/
 			
 			// Essentials:
 			$fieldset = $this->createElement('fieldset');
@@ -622,23 +671,32 @@
 			if (is_array($types)) foreach ($types as $type => $field) {
 				$defaults = array();
 				
-				$field->findDefaults($defaults);
-				foreach($defaults as $key => $value){
+				$field->findDefaultSettings($defaults);
+				
+				foreach ($defaults as $key => $value) {
 					$field->$key = $value;
 				}
 				
 				$item = $this->createElement('li');
 				
-				$field->displaySettingsPanel($item);
+				$field->displaySettingsPanel($item, new MessageStack);
 				$item->appendChild(Widget::Input('type', $type, 'hidden'));
 				$templates->appendChild($item);
 			}
 			
 			if (is_array($fields)) foreach($fields as $position => $field) {
 				$field->sortorder = $position;
-
+				
+				if ($this->errors->{"field::{$position}"}) {
+					$messages = $this->errors->{"field::{$position}"};
+				}
+				
+				else {
+					$messages = new MessageStack;
+				}
+				
 				$item = $this->createElement('li');
-				$field->displaySettingsPanel($item, (isset($this->errors->{"field::{$position}"}) ? $this->errors->{"field::{$position}"} : NULL));
+				$field->displaySettingsPanel($item, $messages);
 				$item->appendChild(
 					Widget::Input('type', $field->type, 'hidden')
 				);

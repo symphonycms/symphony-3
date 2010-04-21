@@ -311,26 +311,24 @@
 			return html_entity_decode(Symphony::Database()->escape($value));
 		}
 
-		public function checkFields(&$errors, $checkForDuplicates = true) {
+		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
 			$parent_section = $this->{'parent-section'};
-
-			//echo $this->id, ': ', $this->required, '<br />';
-
-			if (!is_array($errors)) $errors = array();
-
+			
 			if ($this->label == '') {
-				$errors['label'] = __('This is a required field.');
+				$messages->append('label', __('This is a required field.'));
 			}
-
+			
 			if ($this->{'element-name'} == '') {
-				$errors['element_name'] = __('This is a required field.');
+				$messages->append('element-name', __('This is a required field.'));
 			}
-
-			elseif(!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->{'element-name'})){
-				$errors['element_name'] = __('Invalid element name. Must be valid QName.');
+			
+			else if(!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->{'element-name'})) {
+				$messages->append('element-name', __('Invalid element name. Must be valid QName.'));
 			}
-
-			elseif($checkForDuplicates) {
+			
+			/*
+			TODO: Replace this with something:
+			else if($checkForDuplicates) {
 				$sql_id = ($this->id ? " AND f.id != '".$this->id."' " : '');
 
 				$query = sprintf("
@@ -351,16 +349,21 @@
 				);
 
 				if (Symphony::Database()->query($query)->valid()) {
-					$errors['element_name'] = __('A field with that element name already exists. Please choose another.');
+					$messages->append("field::{$index}::element-name", __('A field with that element name already exists. Please choose another.'));
 				}
 			}
-
-			return (is_array($errors) && !empty($errors) ? self::STATUS_ERROR : self::STATUS_OK);
+			*/
+			
+			if ($messages->length() > 0) {
+				return Field::STATUS_ERROR;
+			}
+			
+			return Field::STATUS_OK;
 		}
 
 
 		// TODO: Rethink this function
-		public function findDefaults(array &$fields){
+		public function findDefaultSettings(array &$fields){
 		}
 
 		public function isSortable(){
@@ -579,19 +582,19 @@
 			$wrapper->appendChild($label);
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors=NULL){
+		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, MessageStack $messages){
 			//$wrapper->appendChild(Symphony::Parent()->Page->createElement('h3', ucwords($this->name())));
-			$this->appendSummaryBlock($wrapper, $errors);
+			$this->appendSummaryBlock($wrapper, $messages);
 		}
 
-		public function appendSummaryBlock(SymphonyDOMElement $wrapper, $errors=NULL) {
+		public function appendSummaryBlock(SymphonyDOMElement $wrapper, MessageStack $messages) {
 			$document = $wrapper->ownerDocument;
 
 			if ($this->label) {
 				$name = $document->createElement('span', $this->label);
 				$name->appendChild($document->createElement('i', $this->name()));
 			}
-
+			
 			else {
 				$name = $document->createElement('span', $this->name());
 			}
@@ -602,9 +605,9 @@
 			$label = Widget::Label(__('Label'));
 			$label->setAttribute('class', 'field-label');
 			$label->appendChild(Widget::Input('label', $this->label));
-
-			if (isset($errors['label'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['label']);
+			
+			if ($messages->{'label'}) {
+				$label = Widget::wrapFormElementWithError($label, $messages->{'label'});
 			}
 
 			$wrapper->appendChild($label);

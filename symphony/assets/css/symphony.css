@@ -989,8 +989,15 @@
 	#notice a {
 		color: #fff9c9;
 	}
+	
 	.invalid {
 		margin: 10px 0;
+	}
+	.invalid:first-child {
+		margin-top: 0;
+	}
+	.invalid:last-child {
+		margin-bottom: 0;
 	}
 	.invalid label {
 		color: #cc2828;
@@ -1005,7 +1012,12 @@
 		content: "↑";
 		margin-right: 3px;
 	}
-
+	
+	.error-list {
+		margin: 0 30px 20px 30px;
+		list-style: none;
+	}
+	
 /*-----------------------------------------------------------------------------
 	System: Extensions
 -----------------------------------------------------------------------------*/

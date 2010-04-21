@@ -17,6 +17,11 @@
 			orderable:			false
 		}
 		
+		Symphony.Language.add({
+			'Add Items': false,
+			'Untitled': false
+		});
+		
 		jQuery.extend(settings, custom_settings);
 		
 	/*-----------------------------------------------------------------------*/
@@ -108,7 +113,7 @@
 				var name = tab.data('name');
 				
 				if (!name.text()) {
-					name.text('Untitled');
+					name.text(Symphony.Language.get('Untitled'));
 				}
 				
 				tab.data('index', index);
@@ -259,7 +264,11 @@
 			// Add controls:
 			jQuery('<div />')
 				.addClass('controls')
-				.append('<a class="add">Add Items</a>')
+				.append(
+					jQuery('<a />')
+						.addClass('add')
+						.text(Symphony.Language.get('Add Items'))
+				)
 				.bind('mousedown', function() { return false; })
 				.prependTo(object)
 				.find('.add')

@@ -210,14 +210,44 @@ var Symphony;
 		var duplicator = jQuery('#section-duplicator');
 		var layout = jQuery('#section-layout');
 		
+		// Not on the section editor:
 		if (duplicator.length == 0 && layout.length == 0) return;
+		
+		var form = $('form');
+		var changed = false;
+		
+		Symphony.Language.add({
+			'Discard your changes?': false
+		});
+		
+		// Listen for changes:
+		form.bind('change', function() {
+			changed = true;
+		});
+		
+		// Save before changing tabs:
+		$('#tab a').bind('click', function() {
+			if (changed == false) return true;
+			
+			return confirm(Symphony.Language.get('Discard your changes?'));
+		});
 		
 		if (duplicator.length) {
 			duplicator.symphonyFieldsDuplicator({
 				multiselect:	true,
 				orderable:		true
 			});
-		
+			
+			// Show errors:
+			duplicator.find('.instances > li').each(function(index) {
+				var instance = $(this);
+				
+				if (instance.find('.invalid').length == 0) return;
+				
+				duplicator.find('.tabs > li:eq(' + index + ')')
+					.trigger('duplicator-tab-select');
+			});
+			
 			// Update input names before submit:
 			$('form').submit(function() {
 				var expression = /^fields\[[0-9]+\]\[(.*)]$/;
@@ -300,19 +330,6 @@ var Symphony;
 				});
 			});
 		}
-		
-		// Save before changing tabs:
-		$('#tab a').bind('click', function() {
-			var link = $(this);
-			var index = link.parent().prevAll().length;
-			var form = $('form');
-			
-			//form.attr('action', form.attr('action') + '?redirect=' + index);
-			
-			//form.submit();
-			
-			//return false;
-		});
 	});
 
 /*-----------------------------------------------------------------------------

@@ -232,14 +232,30 @@
 					$data = array();
 
 					foreach ($value->column as $column) {
+						if (!isset($column->size)) {
+							$size = Layout::LARGE;
+						}
+						
+						else {
+							$size = (string)$column->size;
+						}
+						
 						$data_column = (object)array(
-							'size'		=> (string)$column->size,
+							'size'		=> $size,
 							'fieldsets'	=> array()
 						);
 
 						foreach ($column->fieldset as $fieldset) {
+							if (!isset($fieldset->name) or trim((string)$fieldset->name) == '') {
+								$name = __('Untitled');
+							}
+							
+							else {
+								$name = (string)$fieldset->name;
+							}
+							
 							$data_fieldset = (object)array(
-								'name'		=> (string)$fieldset->name,
+								'name'		=> $name,
 								'fields'	=> array()
 							);
 
@@ -311,7 +327,7 @@
 			}
 		}
 
-		public static function save(Section $section, MessageStack &$messages, $simulate=false){
+		public static function save(Section $section, MessageStack $messages, $simulate=false){
 
 			$pathname = sprintf('%s/%s.xml', $section->path, $section->handle);
 
@@ -334,12 +350,12 @@
 				$messages->append('navigation-group', __('This is a required field.'));
 			}
 
-
 			if(is_array($section->fields) && !empty($section->fields)){
-				foreach($section->fields as $index => $field){
-					$errors = NULL;
-					if($field->checkFields($errors, false, false) != Field::STATUS_OK && !empty($errors)){
-						$messages->append("field::{$index}", $errors);
+				foreach ($section->fields as $index => $field) {
+					$field_stack = new MessageStack;
+					
+					if ($field->validateSettings($field_stack, false, false) != Field::STATUS_OK) {
+						$messages->append("field::{$index}", $field_stack);
 					}
 				}
 			}
