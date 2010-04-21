@@ -293,7 +293,7 @@
 			$wrapper->appendChild($container);
 
 			if ($error != null) {
-				$wrapper = Widget::wrapFormElementWithError($wrapper, $error);
+				$wrapper = Widget::wrapFormElementWithError($wrapper, $error['message']);
 			}
 		}
 

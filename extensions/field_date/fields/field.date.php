@@ -51,7 +51,7 @@
 			);
 
 			if (!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($label, $error);
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
 			}
 
 			$wrapper->appendChild($label);

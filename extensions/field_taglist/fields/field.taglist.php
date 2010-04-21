@@ -83,8 +83,11 @@
 				Widget::Input('fields['.$this->{'element-name'}.']', $data->value)
 			);
 
-			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
-			else $wrapper->appendChild($label);
+			if (!is_null($error)) {
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
+			}
+
+			$wrapper->appendChild($label);
 
 			if($this->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
 		}

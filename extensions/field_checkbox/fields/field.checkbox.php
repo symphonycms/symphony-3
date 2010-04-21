@@ -179,7 +179,7 @@
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
 			parent::displaySettingsPanel($wrapper, $messages);
-			
+
 			$document = $wrapper->ownerDocument;
 
 			// Long Description

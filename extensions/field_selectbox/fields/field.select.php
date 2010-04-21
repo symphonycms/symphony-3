@@ -142,8 +142,11 @@
 				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));
 
-			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
-			else $wrapper->appendChild($label);
+			if (!is_null($error)) {
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
+			}
+
+			$wrapper->appendChild($label);
 		}
 
 		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
