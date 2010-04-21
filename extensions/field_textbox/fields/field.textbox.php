@@ -450,11 +450,6 @@
 		}
 
 		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
-			//	These could potentially be dropped as they are set using processFormData.
-			$data->value_formatted = $this->applyFormatting($data->value);
-			$data->handle = Lang::createHandle($data->value);
-			$data->word_count = General::countWords($data->value);
-
 			return parent::saveData($data, $errors, $entry);
 		}
 
@@ -482,30 +477,21 @@
 			return ($rule ? General::validateString($data, $rule) : true);
 		}
 
-/*
-		Deprecated [Use processFormData instead]
-
-		public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null) {
-			$status = self::__OK__;
-
-			$result = array(
-				'handle'			=> $this->createHandle($data, $entry_id),
-				'value'				=> $data,
-				'value_formatted'	=> $this->applyFormatting($data),
-				'word_count'		=> General::countWords($data)
-			);
-
-			return $result;
-		}
-*/
 		// TODO: Fix the createHandle function
 		public function processFormData($data, Entry $entry=NULL){
 			$result = (object)array(
-				'handle'			=> Lang::createHandle($data), //$this->createHandle($data, $entry->id),
-				'value'				=> $data,
-				'value_formatted'	=> $this->applyFormatting($data),
-				'word_count'		=> General::countWords($data)
+				'handle' => null,
+				'value' => null,
+				'value_formatted' => null,
+				'word_count' => null
 			);
+
+			if(!is_null($data)) {
+				$result->handle = Lang::createHandle($data);
+				$result->value = $data;
+				$result->value_formatted = $this->applyFormatting($data);
+				$result->word_count = General::countWords($data);
+			}
 
 			return $result;
 		}

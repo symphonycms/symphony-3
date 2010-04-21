@@ -123,9 +123,9 @@
 			catch(Exception $e){
 				throw new EntryException('The following error occurred during saving: ' . $e->getMessage());
 			}
-			
+
 			$entry->findDefaultFieldData();
-			
+
 			// Check the data
 			foreach($section->fields as $field){
 				$data = $entry->data()->{$field->{'element-name'}};
@@ -142,7 +142,7 @@
 					if(!isset($entry->data()->{$field->{'element-name'}})) continue;
 
 					$status = $field->saveData($entry->data()->{$field->{'element-name'}}, $errors, $entry);
-					// Cannot continue if a field failed to save				
+					// Cannot continue if a field failed to save
 					if($status != Field::STATUS_OK){
 						break;
 					}
@@ -258,7 +258,7 @@
 				'modification_date_gmt' => DateTimeObj::getGMT('c')
 			));
 		}
-
+/*
 		public function setDataFromPost($data, &$error, $simulate=false, $ignore_missing_fields=false){
 
 			$error = NULL;
@@ -302,7 +302,7 @@
 
 			return $status;
 		}
-/*
+
 		function setData($field_id, $data){
 			$this->_data[$field_id] = $data;
 		}

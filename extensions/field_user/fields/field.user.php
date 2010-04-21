@@ -44,6 +44,19 @@
 			return $data;
 		}
 
+		// TODO: Fix the createHandle function
+		public function processFormData($data, Entry $entry=NULL){
+			$result = (object)array(
+				'user_id' => null,
+			);
+
+			if(!is_null($data)) {
+				$result->user_id = $data;
+			}
+
+			return $result;
+		}
+
 /*
 		Deprecated
 
