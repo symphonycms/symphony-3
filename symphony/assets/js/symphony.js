@@ -216,6 +216,10 @@ var Symphony;
 		var form = $('form');
 		var changed = false;
 		
+		Symphony.Language.add({
+			'Discard your changes?': false
+		});
+		
 		// Listen for changes:
 		form.bind('change', function() {
 			changed = true;
@@ -225,8 +229,7 @@ var Symphony;
 		$('#tab a').bind('click', function() {
 			if (changed == false) return true;
 			
-			// TODO: Translate this.
-			return confirm('Discard your changes?');
+			return confirm(Symphony.Language.get('Discard your changes?'));
 		});
 		
 		if (duplicator.length) {
