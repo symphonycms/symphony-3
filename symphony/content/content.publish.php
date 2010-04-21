@@ -960,7 +960,7 @@
 				if($this->errors->length() <= 0){
 
 					// Check if there is a field to prepopulate
-					if (isset($_REQUEST['prepopulate'])) {
+					if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {
 						$field_handle = key($_REQUEST['prepopulate']);
 						$value = stripslashes(rawurldecode($_REQUEST['prepopulate'][$field_handle]));
 
@@ -1239,7 +1239,7 @@
 				if($this->errors->length() <= 0){
 
 					// Check if there is a field to prepopulate
-					if (isset($_REQUEST['prepopulate'])) {
+					if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {
 						$field_handle = key($_REQUEST['prepopulate']);
 						$value = stripslashes(rawurldecode($_REQUEST['prepopulate'][$field_handle]));
 
