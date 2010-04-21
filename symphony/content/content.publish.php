@@ -816,56 +816,47 @@
 
 			        )
 			*/
-
-			// Parse the layout
- 			foreach($section->layout as $o_column) {
-				foreach($o_column->fieldsets as $o_fieldset) {
-
+			
+			$layout = new Layout;
+			
+			foreach ($section->layout as $data) {
+				$column = $layout->createColumn($data->size);
+				
+				foreach ($data->fieldsets as $data) {
 					$fieldset = $this->createElement('fieldset');
-					$fieldset->appendChild(
-						$this->createElement('h3', $o_fieldset->name, array('class' => 'legend'))
-					);
-
-					// Got the fieldsets, now lets loop the rows
-					foreach($o_fieldset->fields as $o_field) {
-						//$do_grouping = (count($a_row) > 1) ? true : false;
-
-						//if($do_grouping) $group = $this->createElement('div', NULL, array('class' => 'group'));
-
-						//foreach($a_row as $a_field) {
-
-							$field = $section_fields[$o_field];
-
-							$div = $this->createElement('div', NULL, array(
-									'class' => trim(sprintf('field field-%s %s %s',
-										$field->handle(),
-										$this->__calculateWidth($field->width),
-										($field->required == 'yes' ? 'required' : '')
-									))
-								)
-							);
-
-							$field->displayPublishPanel(
-								$div,
-								 $this->entry->data()->{$field->{'element-name'}},
-								(isset($this->errors->{$field->{'element-name'}})
-									? $this->errors->{$field->{'element-name'}}
-									: NULL),
-								$this->entry
-							);
-
-							$fieldset->appendChild($div);
-							//($do_grouping) ? $group->appendChild($div) : $fieldset->appendChild($div);
-
-						//}
-
-						//($do_grouping) ? $fieldset->appendChild($group) : NULL;
-
+					
+					$header = $this->createElement('h3', $data->name);
+					$fieldset->appendChild($header);
+					
+					foreach ($data->fields as $handle) {
+						$field = $section_fields[$handle];
+						
+						$div = $this->createElement('div', NULL, array(
+								'class' => trim(sprintf('field field-%s %s %s',
+									$field->handle(),
+									$this->__calculateWidth($field->width),
+									($field->required == 'yes' ? 'required' : '')
+								))
+							)
+						);
+						
+						$field->displayPublishPanel(
+							$div,
+							 $this->entry->data()->{$field->{'element-name'}},
+							(isset($this->errors->{$field->{'element-name'}})
+								? $this->errors->{$field->{'element-name'}}
+								: NULL),
+							$this->entry
+						);
+						
+						$fieldset->appendChild($div);
 					}
-
-					$this->Form->appendChild($fieldset);
+					
+					$column->appendChild($fieldset);
 				}
 			}
+			
+			$layout->appendTo($this->Form);
 
 			// Check if there is a field to prepopulate
 			if (isset($_REQUEST['prepopulate'])) {
