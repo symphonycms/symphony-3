@@ -12,7 +12,7 @@
 	<html>
 		<head>
 			<title>Symphony Fatal Database Error</title>
-			<link rel="stylesheet" type="text/css" media="screen" href="{$root}/symphony/assets/css/exceptionperipheral.css" /> 
+			<link rel="stylesheet" type="text/css" media="screen" href="{$root}/symphony/assets/css/peripheral.css" /> 
 		</head>
 		<body>
 			<h1>Symphony Fatal Database Error</h1>
