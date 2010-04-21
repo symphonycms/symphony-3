@@ -617,6 +617,15 @@
 	form label:last-child {
 		margin-bottom: 0;
 	}
+	form .field label {
+		margin: 10px 0;
+	}
+	form .field:first-child label {
+		margin-top: 0;
+	}
+	form .field:last-child label {
+		margin-bottom: 0;
+	}
 	form label i {
 		float: right;
 		opacity: 0.5;
