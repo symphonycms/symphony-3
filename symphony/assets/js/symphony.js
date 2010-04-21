@@ -237,7 +237,17 @@ var Symphony;
 				multiselect:	true,
 				orderable:		true
 			});
-		
+			
+			// Show errors:
+			duplicator.find('.instances > li').each(function(index) {
+				var instance = $(this);
+				
+				if (instance.find('.invalid').length == 0) return;
+				
+				duplicator.find('.tabs > li:eq(' + index + ')')
+					.trigger('duplicator-tab-select');
+			});
+			
 			// Update input names before submit:
 			$('form').submit(function() {
 				var expression = /^fields\[[0-9]+\]\[(.*)]$/;

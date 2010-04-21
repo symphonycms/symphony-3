@@ -164,9 +164,9 @@
 			}
 
 			$label->appendChild(Widget::Select('destination', $options));
-
-			if (isset($errors['destination'])) {
-				$label = Widget::wrapFormElementWithError($label, $errors['destination']);
+			
+			if ($messages->{'destination'}) {
+				$label = Widget::wrapFormElementWithError($label, $messages->{'destination'});
 			}
 
 			$wrapper->appendChild($label);
