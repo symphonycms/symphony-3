@@ -726,7 +726,13 @@
 
 				// Grab the first field in the section
 				$first_field = $section->fields[0];
-				$subheading = $first_field->prepareTableValue($existing->data()->{$first_field->{'element-name'}});
+				$field_data = (object)array();
+				
+				if (!is_null($existing->data()->{$first_field->{'element-name'}})) {
+					$field_data = $existing->data()->{$first_field->{'element-name'}};
+				}
+				
+				$subheading = $first_field->prepareTableValue($field_data);
 			}
 
 			if(is_null($this->entry) || !($this->entry instanceof Entry)){
