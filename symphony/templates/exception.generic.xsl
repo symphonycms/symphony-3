@@ -12,7 +12,7 @@
 	<html>
 		<head>
 			<title><xsl:value-of select="concat('Symphony ', details/@type)"/></title>
-			<link rel="stylesheet" type="text/css" media="screen" href="{$root}/symphony/assets/css/exceptionperipheral.css" /> 
+			<link rel="stylesheet" type="text/css" media="screen" href="{$root}/symphony/assets/css/peripheral.css" /> 
 		</head>
 		<body>
 			<h1><xsl:value-of select="concat('Symphony ', details/@type)"/></h1>
