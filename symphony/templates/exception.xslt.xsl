@@ -12,7 +12,7 @@
 	<html>
 		<head>
 			<title>Symphony XSLT Error</title>
-			<link rel="stylesheet" type="text/css" media="screen" href="{$root}/symphony/assets/css/exception.css" /> 
+			<link rel="stylesheet" type="text/css" media="screen" href="{$root}/symphony/assets/css/exceptionperipheral.css" /> 
 		</head>
 		<body>
 			<h1>Symphony XSLT Error</h1>
