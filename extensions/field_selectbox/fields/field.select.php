@@ -122,7 +122,7 @@
 			return $data;
 		}
 
-		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 			$states = $this->getToggleStates();
 			natsort($states);
 
@@ -195,24 +195,6 @@
 			return parent::prepareTableValue((object)array('value' => General::sanitize(implode(', ', $value))), $link);
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-
-			$status = self::STATUS_OK;
-
-			if(!is_array($data)) return array('value' => $data, 'handle' => Lang::createHandle($data));
-
-			if(empty($data)) return NULL;
-
-			$result = array('value' => array(), 'handle' => array());
-
-			foreach($data as $value){
-				$result['value'][] = $value;
-				$result['handle'][] = Lang::createHandle($value);
-			}
-
-			return $result;
-		}
-
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
 			$field_id = $this->id;
 
@@ -273,6 +255,27 @@
 			return true;
 		}
 
+/*
+		Deprecated
+
+		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
+
+			$status = self::STATUS_OK;
+
+			if(!is_array($data)) return array('value' => $data, 'handle' => Lang::createHandle($data));
+
+			if(empty($data)) return NULL;
+
+			$result = array('value' => array(), 'handle' => array());
+
+			foreach($data as $value){
+				$result['value'][] = $value;
+				$result['handle'][] = Lang::createHandle($value);
+			}
+
+			return $result;
+		}
+
 		function commit(){
 
 			if(!parent::commit()) return false;
@@ -300,6 +303,7 @@
 			return true;
 
 		}
+*/
 
 		public function checkFields(&$errors, $checkForDuplicates=true){
 
@@ -341,7 +345,6 @@
 			}
 
 			foreach($field_groups as $group) {
-
 				if(!is_array($group['fields'])) continue;
 
 				$fields = array();
@@ -353,7 +356,6 @@
 							(!is_null($this->{'dynamic-options'}) && $this->{'dynamic-options'} == $field->id),
 							$field->label
 						);
-
 					}
 				}
 
@@ -409,6 +411,15 @@
 			}
 
 			return $groups;
+		}
+
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return self::STATUS_OK;
+		}
+
+		/*	Possibly could be removed.. */
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function createTable(){

@@ -28,7 +28,11 @@
 			return true;
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		function isSortable(){
+			return true;
+		}
+
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 			$name = $this->{'element-name'};
 			$value = null;
 
@@ -38,8 +42,8 @@
 			}
 
 			// Empty entry:
-			else if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data['gmt']);
+			else if (isset($data->gmt) && !is_null($data->gmt)) {
+				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data->gmt);
 			}
 
 			$label = Widget::Label($this->label, Widget::Input("fields[{$name}]", $value), array(
@@ -97,8 +101,8 @@
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
-			if (isset($data['gmt']) && !is_null($data['gmt'])) {
-				$wrapper->appendChild(General::createXMLDateObject($data['local'], $this->{'element-name'}));
+			if (isset($data->gmt) && !is_null($data->gmt)) {
+				$wrapper->appendChild(General::createXMLDateObject($data->local, $this->{'element-name'}));
 			}
 		}
 
@@ -113,7 +117,7 @@
 		}
 
 		public function getParameterPoolValue($data){
-     		return DateTimeObj::get('Y-m-d H:i:s', $data['local']);
+     		return DateTimeObj::get('Y-m-d H:i:s', $data->local);
 		}
 
 		function groupRecords($records){
@@ -346,10 +350,9 @@
 			return true;
 		}
 
-		function isSortable(){
-			return true;
-		}
 
+/*
+		Deprecated
 		function commit(){
 
 			if(!parent::commit()) return false;
@@ -369,7 +372,7 @@
 
 			return ($field_id == 0 || !$field_id) ? false : true;
 		}
-
+*/
 		public function findDefaults(array &$fields){
 			if(!isset($fields['pre-populate'])) $fields['pre-populate'] = 'yes';
 		}
@@ -415,14 +418,14 @@
 				)
 			);
 		}
-		
+
 		public function processFormData($data, Entry $entry=NULL){
 			$result = (object)array(
 				'value' => null,
 				'local' => null,
 				'gmt' => null
 			);
-			
+
 			if(is_null($data) || strlen(trim($data)) == 0){
 				if ($this->{'pre-populate'} == 'yes') {
 					$timestamp = strtotime(DateTimeObj::get('c', null));

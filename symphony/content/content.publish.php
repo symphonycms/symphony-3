@@ -60,7 +60,7 @@
 
 				$label = $column->label;
 
-				// TO DO: Fix the ordering links
+				// TODO: Fix the ordering links
 				/*if($column->isSortable()) {
 
 					if($column->id == $section->get('entry_order')){
@@ -86,14 +86,21 @@
 			$entry->section = 'blog';
 			$entry->user_id = Administration::instance()->User->id;
 			$entry->id = 3;
-
+/*
 			$entry->data()->name = (object)array(
 				'handle' => 'an-entry',
 				'value' => 'An & Entry',
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
-/*
+
+			$entry->data()->content = (object)array(
+				'handle' => 'an-entry',
+				'value' => 'Look at my copy isn\'t it grand!',
+				'id' => 1,
+				'entry_id' => $entry->id
+			);
+
 			$entry->data()->date = (object)array(
 				'gmt' => strtotime(DateTimeObj::getGMT('c')),
 				'local' => strtotime(DateTimeObj::get('c')),
@@ -101,6 +108,7 @@
 				'id' => 1,
 				'entry_id' => $entry->id
 			);
+
 			$entry->data()->category = (object)array(
 				'handle' => 'blah',
 				'value' => 'Blah &',
@@ -117,10 +125,10 @@
 			$entry->data()->published = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
-				'value' => 'yes'
+				'value' => 'no'
 			);
 
-			$entry->data()->{'tag-list'} = (object)array(
+			$entry->data()->tags = (object)array(
 				'id' => 1,
 				'entry_id' => $entry->id,
 				'handle' => 'tag',
@@ -137,19 +145,22 @@
 				'meta' => 'blah'
 			);
 */
-		$messages = new MessageStack;
-		Entry::save($entry, $messages);
-		var_dump($messages); die();
+			//$messages = new MessageStack;
+			//Entry::save($entry, $messages);
+			//var_dump($messages); die();
 
+			$entries = Symphony::Database()->query(
+				"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `id` DESC", array($section->handle), 'EntryResult'
+			);
 
-			$entries = array($entry);
+			//$entries = array($entry);
 
 			## Table Body
 			$aTableBody = array();
 			$colspan = count($aTableHead);
 
-			if(!is_array($entries) || empty($entries)){
-
+			//if(!is_array($entries) || empty($entries)){
+			if($entries->length() <= 0){
 				$aTableBody[] = Widget::TableRow(
 					array(
 						Widget::TableData(__('None found.'), array(
@@ -210,7 +221,7 @@
 				array('delete', false, __('Delete'))
 			);
 
-			// TO DO: Add toggable fields back
+			// TODO: Add toggable fields back
 			/*
 			$toggable_fields = $section->fetchToggleableFields();
 
@@ -234,7 +245,7 @@
 
 			$this->Form->appendChild($tableActions);
 
-			// TO DO: Fix Filtering
+			// TODO: Fix Filtering
 			/*if(isset($_REQUEST['filter'])){
 
 				list($field_handle, $filter_value) = explode(':', $_REQUEST['filter'], 2);
@@ -267,7 +278,7 @@
 
 			}*/
 
-			// TO DO: Fix Sorting
+			// TODO: Fix Sorting
 			/*if(isset($_REQUEST['sort']) && is_numeric($_REQUEST['sort'])){
 				$sort = intval($_REQUEST['sort']);
 				$order = ($_REQUEST['order'] ? strtolower($_REQUEST['order']) : 'asc');
@@ -603,8 +614,16 @@
 				default: return 'small';
 			}
 		}
-
-		public function __viewNew() {
+		
+		public function __viewEdit(){
+			$this->__form(Entry::loadFromID($this->_context['entry_id']), true);
+		}	
+			
+		public function __viewNew(){
+			$this->__form();
+		}
+		
+		public function __form(Entry $entry=NULL, $editing=false){
 
 			/*if(!$section_id = SectionManager::instance()->fetchIDFromHandle($this->_context['section_handle']))
 				Administration::instance()->customError(E_USER_ERROR, __('Unknown Section'), __('The Section you are looking for, <code>%s</code>, could not be found.', array($this->_context['section_handle'])), false, true);
@@ -615,7 +634,21 @@
 
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
-			$this->appendSubheading(__('Untitled'));
+			
+			$subheading = __('Untitled');
+			if(!is_null($entry) && $entry instanceof Entry){
+				// Grab the first field in the section
+				$first_field = $section->fields[0];
+				$subheading = $first_field->prepareTableValue($entry->data()->{$first_field->{'element-name'}});
+			}
+			else{
+				$entry = new Entry;
+			}
+
+			$entry->section = $this->_context['section_handle'];
+			$this->appendSubheading($subheading);
+			$entry->findDefaultFieldData();
+			
 			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
 
 			// Check that a layout and fields exist
@@ -637,24 +670,52 @@
 				$section_fields[$field->{'element-name'}] = $field;
 			}
 
+			/*
+			Array
+			(
+			    [0] => stdClass Object
+			        (
+			            [size] => large
+			            [fieldsets] => Array
+			                (
+			                    [0] => stdClass Object
+			                        (
+			                            [name] => SimpleXMLElement Object
+			                                (
+			                                    [0] => Untitled
+			                                )
+
+			                            [fields] => Array
+			                                (
+			                                    [0] => title
+			                                    [1] => body
+			                                )
+
+			                        )
+
+			                )
+
+			        )
+			*/
+
 			// Parse the layout
- 			foreach($section->layout as $a_layout) {
-				foreach($a_layout as $a_fieldset) {
+ 			foreach($section->layout as $o_column) {
+				foreach($o_column->fieldsets as $o_fieldset) {
 
 					$fieldset = $this->createElement('fieldset');
 					$fieldset->appendChild(
-						$this->createElement('h3', $a_fieldset->label, array('class' => 'legend'))
+						$this->createElement('h3', $o_fieldset->name, array('class' => 'legend'))
 					);
 
 					// Got the fieldsets, now lets loop the rows
-					foreach($a_fieldset->rows as $a_row) {
-						$do_grouping = (count($a_row) > 1) ? true : false;
+					foreach($o_fieldset->fields as $o_field) {
+						//$do_grouping = (count($a_row) > 1) ? true : false;
 
-						if($do_grouping) $group = $this->createElement('div', NULL, array('class' => 'group'));
+						//if($do_grouping) $group = $this->createElement('div', NULL, array('class' => 'group'));
 
-						foreach($a_row as $a_field) {
+						//foreach($a_row as $a_field) {
 
-							$field = $section_fields[$a_field];
+							$field = $section_fields[$o_field];
 
 							$div = $this->createElement('div', NULL, array(
 									'class' => trim(sprintf('field field-%s %s %s',
@@ -665,16 +726,21 @@
 								)
 							);
 
-							$field->displayPublishPanel($div, null, (isset($this->_errors[$field->id])
-								? $this->_errors[$field->id]
-								: NULL)
+							$field->displayPublishPanel(
+								$div,
+								 $entry->data()->{$field->{'element-name'}}, 
+								(isset($this->errors->$field->{'element-name'})
+									? $this->errors->$field->{'element-name'}
+									: NULL),
+								$entry
 							);
 
-							($do_grouping) ? $group->appendChild($div) : $fieldset->appendChild($div);
+							$fieldset->appendChild($div);
+							//($do_grouping) ? $group->appendChild($div) : $fieldset->appendChild($div);
 
-						}
+						//}
 
-						($do_grouping) ? $fieldset->appendChild($group) : NULL;
+						//($do_grouping) ? $fieldset->appendChild($group) : NULL;
 
 					}
 
@@ -722,11 +788,22 @@
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
 			$div->appendChild(Widget::Input('action[save]', __('Create Entry'), 'submit', array('accesskey' => 's')));
-
+			
+			if($editing == true){
+				$button = $this->createElement('button', __('Delete'));
+				$button->setAttributeArray(array(
+					'name' => 'action[delete]', 
+					'class' => 'confirm delete', 
+					'title' => __('Delete this entry'), 
+					'type' => 'submit'
+				));
+				$div->appendChild($button);
+			}
+			
 			$this->Form->appendChild($div);
 		}
 
-		function __actionNew(){
+		public function __actionNew(){
 
 			if(array_key_exists('save', $_POST['action']) || array_key_exists("done", $_POST['action'])) {
 
@@ -738,9 +815,43 @@
 				$entry->setFieldDataFromFormArray($post['fields']);
 
 				$errors = new MessageStack;
+				
+				###
+				# Delegate: EntryPreCreate
+				# Description: Just prior to creation of an Entry. Entry object provided
+				ExtensionManager::instance()->notifyMembers(
+					'EntryPreCreate', '/publish/new/', 
+					array('entry' => &$entry)
+				);
+				
 				Entry::save($entry, $errors);
-				die();
+				
+				if($errors->length() <= 0){
+					
+					###
+					# Delegate: EntryPostCreate
+					# Description: Creation of an Entry. New Entry object is provided.
+					ExtensionManager::instance()->notifyMembers(
+						'EntryPostCreate', '/publish/new/', 
+						array('entry' => $entry)
+					);
+					
+					## WOOT
+					redirect(sprintf(
+						'%s/symphony/publish/%s/edit/%d/created/',
+						URL,
+						$entry->section,
+						$entry->id
+						//(!is_null($prepopulate_field_id) ? ":{$prepopulate_field_id}:{$prepopulate_value}" : NULL)
+					));
+				}
+				
+				
+				// Oh dear
+				$this->pageAlert(NULL, Alert::ERROR);
+				return;
 
+/*
 				$section = Section::loadFromHandle($this->_context['section_handle']);
 
 				$entry =& EntryManager::instance()->create();
@@ -795,10 +906,11 @@
 					}
 
 				endif;
+				*/
 			}
-
+			
 		}
-
+/*
 		function __viewEdit() {
 
 			$section = Section::loadFromHandle($this->_context['section_handle']);
@@ -956,7 +1068,7 @@
 			$this->Form->appendChild($div);
 
 		}
-
+*/
 		function __actionEdit(){
 
 			$entry_id = intval($this->_context['entry_id']);
@@ -1040,4 +1152,3 @@
 	}
 
 
-?>

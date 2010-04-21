@@ -302,7 +302,8 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data = null, $error = null, $entry_id = null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
+
 			$this->_driver->addPublishHeaders($this->_engine->Page);
 
 			$sortorder = $this->{'sortorder'};
@@ -333,7 +334,7 @@
 			// Input box:
 			if ($this->{'text-size'} == 'single') {
 				$input = Widget::Input(
-					"fields{$prefix}[$element_name]{$postfix}", General::sanitize($data['value'])
+					"fields[$element_name]", General::sanitize($data->value)
 				);
 
 				###
@@ -345,7 +346,7 @@
 			// Text Box:
 			else {
 				$input = Widget::Textarea(
-					"fields{$prefix}[$element_name]{$postfix}", General::sanitize($data['value']), array('rows' => 20, 'cols' => 50)
+					"fields[$element_name]", General::sanitize($data->value), array('rows' => 20, 'cols' => 50)
 				);
 
 				###
@@ -388,8 +389,73 @@
 		Input:
 	-------------------------------------------------------------------------*/
 
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			$length = (integer)$this->{'text-length'};
+
+			if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
+				$errors->append(
+					$this->{'element-name'},
+					array(
+					 	'message' => __("'%s' is a required field.", array($this->label)),
+						'code' => self::ERROR_MISSING
+					)
+				);
+
+				return self::STATUS_ERROR;
+			}
+
+			if (empty($data)) return self::STATUS_OK;
+
+			if (!$this->applyValidationRules($data->value)) {
+				$errors->append(
+					$this->{'element-name'},
+					array(
+					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->label)),
+						'code' => self::ERROR_INVALID
+					)
+				);
+
+				return self::STATUS_ERROR;
+			}
+
+			if ($length > 0 and $length < strlen($data->value)) {
+				$errors->append(
+					$this->{'element-name'},
+					array(
+					 	'message' => __("'%s' must be no longer than %s characters.", array(
+							$this->{'label'},
+							$length
+						)),
+						'code' => self::ERROR_INVALID
+					)
+				);
+
+				return self::STATUS_ERROR;
+			}
+
+/*
+			Does this still need porting?
+
+			if (!General::validateXML($this->applyFormatting($data), $errors, false, new XsltProcess)) {
+				$message = __(
+					"'%1\$s' contains invalid XML. The following error was returned: <code>%2\$s</code>", array(
+						$this->{'label'},
+						$errors[0]['message']
+					)
+				);
+
+				return self::ERROR_INVALID;
+			}
+*/
+			return self::STATUS_OK;
+		}
+
 		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
+			//	These could potentially be dropped as they are set using processFormData.
 			$data->value_formatted = $this->applyFormatting($data->value);
+			$data->handle = Lang::createHandle($data->value);
+			$data->word_count = General::countWords($data->value);
+
 			return parent::saveData($data, $errors, $entry);
 		}
 
@@ -404,7 +470,7 @@
 				}
 				catch(Exception $e){
 					// Problem loading the formatter
-					// TO DO: Decide is we should be handling this better.
+					// TODO: Decide is we should be handling this better.
 				}
 			}
 
@@ -417,56 +483,8 @@
 			return ($rule ? General::validateString($data, $rule) : true);
 		}
 
-		public function checkPostFieldData($data, &$message, $entry_id = null) {
-			$length = (integer)$this->{'text-length'};
-			$message = null;
-
-			if ($this->{'required'} == 'yes' and strlen(trim($data)) == 0) {
-				$message = __(
-					"'%s' is a required field.", array(
-						$this->{'label'}
-					)
-				);
-
-				return self::__MISSING_FIELDS__;
-			}
-
-			if (empty($data)) self::__OK__;
-
-			if (!$this->applyValidationRules($data)) {
-				$message = __(
-					"'%s' contains invalid data. Please check the contents.", array(
-						$this->{'label'}
-					)
-				);
-
-				return self::__INVALID_FIELDS__;
-			}
-
-			if ($length > 0 and $length < strlen($data)) {
-				$message = __(
-					"'%s' must be no longer than %s characters.", array(
-						$this->{'label'},
-						$length
-					)
-				);
-
-				return self::__INVALID_FIELDS__;
-			}
-
-			if (!General::validateXML($this->applyFormatting($data), $errors, false, new XsltProcess)) {
-				$message = __(
-					"'%1\$s' contains invalid XML. The following error was returned: <code>%2\$s</code>", array(
-						$this->{'label'},
-						$errors[0]['message']
-					)
-				);
-
-				return self::__INVALID_FIELDS__;
-			}
-
-			return self::__OK__;
-		}
+/*
+		Deprecated [Use processFormData instead]
 
 		public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null) {
 			$status = self::__OK__;
@@ -480,8 +498,8 @@
 
 			return $result;
 		}
-		
-		// TO DO: Fix the createHandle function
+*/
+		// TODO: Fix the createHandle function
 		public function processFormData($data, Entry $entry=NULL){
 			$result = (object)array(
 				'handle'			=> Lang::createHandle($data), //$this->createHandle($data, $entry->id),

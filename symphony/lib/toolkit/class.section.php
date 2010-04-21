@@ -167,9 +167,10 @@
 			if(!is_null($data)){
 				$field->setFromPOST($data);
 			}
+			$field->section = $this->handle;
 
 			$this->fields[] = $field;
-			
+
 			return $field;
 		}
 
@@ -221,15 +222,15 @@
 						}
 						catch(Exception $e){
 							// Couldnt find the field. Ignore it for now
-							// TO DO: Might need to more than just ignore it
+							// TODO: Might need to more than just ignore it
 						}
 
 					}
 				}
-				
+
 				elseif($name == 'layout' && isset($value->column)){
 					$data = array();
-					
+
 					foreach ($value->column as $column) {
 						if (!isset($column->size)) {
 							$size = Layout::LARGE;
@@ -243,7 +244,7 @@
 							'size'		=> $size,
 							'fieldsets'	=> array()
 						);
-						
+
 						foreach ($column->fieldset as $fieldset) {
 							if (!isset($fieldset->name) or trim((string)$fieldset->name) == '') {
 								$name = __('Untitled');
@@ -257,17 +258,17 @@
 								'name'		=> $name,
 								'fields'	=> array()
 							);
-							
+
 							foreach ($fieldset->field as $field) {
 								$data_fieldset->fields[] = (string)$field;
 							}
-							
+
 							$data_column->fieldsets[] = $data_fieldset;
 						}
-						
+
 						$data[] = $data_column;
 					}
-					
+
 					$section->layout = $data;
 				}
 
@@ -311,6 +312,14 @@
 		}
 
 		public function synchroniseDataTables(){
+
+			/*
+			**	TODO:
+				When a field is removed from the section it will not be in the
+				$this->fields array, however it's table needs to be dropped from
+				the database
+			*/
+
 			if(is_array($this->fields) && !empty($this->fields)){
 				foreach($this->fields as $index => $field){
 					$field->createTable();
@@ -372,6 +381,11 @@
 				Upon renaming a section, data-sources/events attached to it must update.
 				Views will also need to update to ensure they still have references to the same
 				data-sources/sections
+
+				TODO:
+				If a section is renamed ie. ($old), all the fields tables need to be
+				renamed to match the new section handle instead of a new table being
+				created with the $new moniker
 			*/
 
 			list($old, $new) = $sections;

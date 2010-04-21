@@ -14,6 +14,18 @@
 			return true;
 		}
 
+		function isSortable(){
+			return true;
+		}
+
+		function canFilter(){
+			return true;
+		}
+
+		public function canImport(){
+			return true;
+		}
+
 		function groupRecords($records){
 
 			if(!is_array($records) || empty($records)) return;
@@ -23,7 +35,7 @@
 			foreach($records as $r){
 				$data = $r->getData($this->{'id'});
 
-				$value = $data['value'];
+				$value = $data->value;
 
 				if(!isset($groups[$this->{'element-name'}][$handle])){
 					$groups[$this->{'element-name'}][$handle] = array('attr' => array('value' => $value),
@@ -37,14 +49,6 @@
 			return $groups;
 		}
 
-		function canFilter(){
-			return true;
-		}
-
-		public function canImport(){
-			return true;
-		}
-
 		function getToggleStates(){
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
@@ -52,16 +56,6 @@
 		function toggleFieldData($data, $newState){
 			$data['value'] = $newState;
 			return $data;
-		}
-
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-
-			$status = self::STATUS_OK;
-
-			return array(
-				'value' => (strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no')
-			);
-
 		}
 
 		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
@@ -126,7 +120,7 @@
 
 		}
 
-		function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL){
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
 
 			if(!$data){
 				## TODO: Don't rely on $_POST
@@ -135,7 +129,7 @@
 				else $value = 'no';
 			}
 
-			else $value = ($data['value'] == 'yes' ? 'yes' : 'no');
+			else $value = ($data->value == 'yes' ? 'yes' : 'no');
 
 			$label = Widget::Label();
 			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
@@ -150,10 +144,13 @@
 			return ($data->value == 'yes' ? __('Yes') : __('No'));
 		}
 
-		function isSortable(){
-			return true;
+		public function processFormData($data, Entry $entry=NULL){
+			return parent::processFormData(
+				(strtolower($data) == 'yes' || strtolower($data) == 'on' ? 'yes' : 'no'), $entry
+			);
 		}
 
+/*		Deprecated
 		function commit(){
 
 			if(!parent::commit()) return false;
@@ -175,15 +172,16 @@
 			return ($field_id == 0 || !$field_id) ? false : true;
 		}
 
-		function findDefaults(&$fields){
+*/
+		public function findDefaults(&$fields){
 			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
-			
+
 			$document = $wrapper->ownerDocument;
-			
+
 			// Long Description
 			$label = Widget::Label(__('Long Description'));
 			$label->appendChild($document->createElement('i', __('Optional')));
@@ -192,11 +190,11 @@
 
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-			
+
 			// Default State
 			$label = Widget::Label(__('Checked by default'));
 			$input = Widget::Input('default-state', 'on', 'checkbox');
-			
+
 			if ($this->{'default-state'} == 'on') {
 				$input->setAttribute('checked', 'checked');
 			}
@@ -209,6 +207,15 @@
 			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
+		}
+
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return self::STATUS_OK;
+		}
+
+		/*	Possibly could be removed.. */
+		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
+			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function createTable(){
@@ -231,7 +238,9 @@
 
 		public function getExampleFormMarkup(){
 			$label = Widget::Label($this->{'label'});
-			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']', NULL, 'checkbox', ($this->{'default-state'} == 'on' ? array('checked' => 'checked') : array())));
+			$label->appendChild(
+				Widget::Input('fields['.$this->{'element-name'}.']', NULL, 'checkbox', ($this->{'default-state'} == 'on' ? array('checked' => 'checked') : array()))
+			);
 
 			return $label;
 		}

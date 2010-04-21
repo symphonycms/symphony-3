@@ -57,7 +57,7 @@
 			// in to a string then passed to the processor
 			// it does not return a file
 
-			// TO DO: FIX THIS
+			// TODO: FIX THIS
 /*
 			if(!$bFoundFile){
 				$page = Symphony::parent()->Page()->pageData();

@@ -1,7 +1,7 @@
 <?php
-	
+
 	require_once(TOOLKIT . '/class.textformatter.php');
-	
+
 	Class FieldException extends Exception {}
 
 	Class FieldFilterIterator extends FilterIterator{
@@ -64,41 +64,41 @@
 
 
 	Abstract Class Field{
-		
+
 		protected static $key;
 		protected static $loaded;
-				
+
 		protected $properties;
 
 		protected $_required;
 		protected $_showcolumn;
 		protected $_handle;
 		protected $_name;
-				
+
 		// Status codes
 		const STATUS_OK = 'ok';
 		const STATUS_ERROR = 'error';
-		
+
 		// Error codes
 		const ERROR_MISSING = 'missing';
 		const ERROR_INVALID = 'invalid';
 		const ERROR_DUPLICATE = 'duplicate';
 		const ERROR_CUSTOM = 'custom';
 		const ERROR_INVALID_QNAME = 'invalid qname';
-		
+
 		// Filtering Flags
 		const FLAG_TOGGLEABLE = 'toggeable';
 		const FLAG_UNTOGGLEABLE = 'untoggleable';
 		const FLAG_FILTERABLE = 'filterable';
 		const FLAG_UNFILTERABLE = 'unfilterable';
 		const FLAG_ALL = 'all';
-		
+
 		// Abstract functions
-		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $flagWithError=NULL, $entry_id=NULL);
-		
+		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL);
+
 		public function __construct(){
 			if(is_null(self::$key)) self::$key = 0;
-			
+
 			$this->properties = new StdClass;
 
 			$this->_required = false;
@@ -107,7 +107,7 @@
 			$this->_handle = (strtolower(get_class($this)) == 'field' ? 'field' : strtolower(substr(get_class($this), 5)));
 
 		}
-		
+
 		public function __isset($name){
 			return isset($this->properties->$name);
 		}
@@ -117,18 +117,18 @@
 			if($name == 'element-name'){
 				$this->{'element-name'} = Lang::createHandle($this->properties->label, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
 			}
-			
+
 			return $this->properties->$name;
 		}
 
 		public function __set($name, $value){
 			$this->properties->$name = $value;
 		}
-		
+
 		public function __clone(){
 			$this->properties = new StdClass;
 		}
-		
+
 		public static function load($pathname){
 			if(!is_array(self::$loaded)){
 				self::$loaded = array();
@@ -241,7 +241,7 @@
 				$this->$key = $value;
 			}
 		}
-		
+
 		// DEPRICATED
 		/*public function get($field=NULL){
 
@@ -288,7 +288,7 @@
 		}
 		*/
 
-		
+
 
 		public function canPrePopulate(){
 			return false;
@@ -324,12 +324,12 @@
 
 			if ($this->{'element-name'} == '') {
 				$errors['element_name'] = __('This is a required field.');
-			} 
-			
+			}
+
 			elseif(!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->{'element-name'})){
 				$errors['element_name'] = __('Invalid element name. Must be valid QName.');
 			}
-			
+
 			elseif($checkForDuplicates) {
 				$sql_id = ($this->id ? " AND f.id != '".$this->id."' " : '');
 
@@ -357,8 +357,8 @@
 
 			return (is_array($errors) && !empty($errors) ? self::STATUS_ERROR : self::STATUS_OK);
 		}
-		
-		
+
+
 		// TODO: Rethink this function
 		public function findDefaults(array &$fields){
 		}
@@ -395,8 +395,8 @@
 					AND t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
 				";
 
-			} 
-			
+			}
+
 			elseif ($andOperation == true){
 				foreach ($data as $value) {
 					self::$key++;
@@ -411,8 +411,8 @@
 					";
 				}
 
-			} 
-			
+			}
+
 			else{
 				if (!is_array($data)) $data = array($data);
 
@@ -434,19 +434,19 @@
 
 			return true;
 		}
-		
+
 		public function processFormData($data, Entry $entry=NULL){
 			return (object)array('value' => $data);
 		}
-		
-		// TO DO: Support an array of data objects. This is important for 
+
+		// TODO: Support an array of data objects. This is important for
 		// fields like Select box or anything that allows mutliple values
 		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
 
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;
-			
-			try{					
+
+			try{
 				Symphony::Database()->insert(
 					sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
 					(array)$data,
@@ -455,21 +455,21 @@
 				return self::STATUS_OK;
 			}
 			catch(DatabaseException $e){
-				
+
 			}
 			catch(Exception $e){
-				
+
 			}
 			return self::STATUS_ERROR;
 		}
-		
+
 		public function loadDataFromDatabase(Entry $entry){
 			try{
 				return Symphony::Database()->query(
-					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s LIMIT 1", 
+					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s LIMIT 1",
 					array(
-						$entry->section, 
-						$this->{'element-name'}, 
+						$entry->section,
+						$this->{'element-name'},
 						$entry->id
 					)
 				)->current();
@@ -478,11 +478,11 @@
 				// Oh oh....no data. oh well, have a smoke and then return
 			}
 		}
-		
+
 		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
 			if ($this->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
 				$errors->append(
-					$this->{'element-name'}, 
+					$this->{'element-name'},
 					array(
 					 	'message' => __("'%s' is a required field.", array($this->label)),
 						'code' => self::ERROR_MISSING
@@ -551,7 +551,7 @@
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 			$document = $wrapper->ownerDocument;
-			
+
 			$name = $document->createElement('span', $this->label);
 			$name->setAttribute('class', 'name');
 			$name->appendChild($document->createElement('i', $this->name()));
@@ -575,44 +575,44 @@
 
 		public function appendSummaryBlock(SymphonyDOMElement $wrapper, $errors=NULL) {
 			$document = $wrapper->ownerDocument;
-			
+
 			if ($this->label) {
 				$name = $document->createElement('span', $this->label);
 				$name->appendChild($document->createElement('i', $this->name()));
 			}
-			
+
 			else {
 				$name = $document->createElement('span', $this->name());
 			}
-			
+
 			$name->setAttribute('class', 'name');
 			$wrapper->appendChild($name);
-			
+
 			$label = Widget::Label(__('Label'));
 			$label->setAttribute('class', 'field-label');
 			$label->appendChild(Widget::Input('label', $this->label));
-			
+
 			if (isset($errors['label'])) {
 				$label = Widget::wrapFormElementWithError($label, $errors['label']);
 			}
-			
+
 			$wrapper->appendChild($label);
 		}
 
 		public function appendRequiredCheckbox(SymphonyDOMElement $wrapper) {
 			if (!$this->_required) return;
-			
+
 			$document = $wrapper->ownerDocument;
 			$item = $document->createElement('li');
 			$item->appendChild(Widget::Input('required', 'no', 'hidden'));
-		
+
 			$label = Widget::Label(__('Make this a required field'));
 			$input = Widget::Input('required', 'yes', 'checkbox');
 
 			if ($this->required == 'yes') {
 				$input->setAttribute('checked', 'checked');
 			}
-			
+
 			$label->prependChild($input);
 			$item->appendChild($label);
 			$wrapper->appendChild($item);
@@ -638,9 +638,9 @@
 
 		public function appendFormatterSelect(SymphonyDOMElement $wrapper, $selected=NULL, $name='fields[format]', $label_value = null){
 			require_once(TOOLKIT . '/class.textformatter.php');
-			
+
 			if (!$label_value) $label_value = __('Text Formatter');
-			
+
 			$label = Widget::Label($label_value);
 			$document = $wrapper->ownerDocument;
 			$options = array();
@@ -663,9 +663,9 @@
 
 		public function appendValidationSelect(SymphonyDOMElement $wrapper, $selected=NULL, $name='fields[validator]', $label_value = null, $type='input'){
 			include(TOOLKIT . '/util.validators.php');
-			
+
 			if (!$label_value) $label_value = __('Validation Rule');
-			
+
 			$label = Widget::Label($label_value);
 			$document = $wrapper->ownerDocument;
 			$rules = ($type == 'upload' ? $upload : $validators);
@@ -675,11 +675,11 @@
 			$wrapper->appendChild($label);
 
 			$ul = $document->createElement('ul', NULL, array('class' => 'tags singular'));
-			
+
 			foreach($rules as $name => $rule) $ul->appendChild(
 				$document->createElement('li', $name, array('class' => $rule))
 			);
-			
+
 			$wrapper->appendChild($ul);
 		}
 
