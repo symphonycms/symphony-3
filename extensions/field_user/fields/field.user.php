@@ -116,8 +116,12 @@
 			$label->appendChild(Widget::Select($fieldname, $options,
 				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));
-			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
-			else $wrapper->appendChild($label);
+
+			if (!is_null($error)) {
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
+			}
+
+			$wrapper->appendChild($label);
 		}
 
 		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
@@ -282,6 +286,19 @@
 			$this->appendShowColumnCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 
+		}
+		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
+			if ($this->required == 'yes' && (!isset($data->user_id) || strlen(trim($data->user_id)) == 0)){
+				$errors->append(
+					$this->{'element-name'},
+					array(
+					 	'message' => __("'%s' is a required field.", array($this->label)),
+						'code' => self::ERROR_MISSING
+					)
+				);
+				return self::STATUS_ERROR;
+			}
+			return self::STATUS_OK;
 		}
 
 		/*	Possibly could be removed.. */

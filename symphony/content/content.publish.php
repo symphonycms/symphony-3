@@ -157,9 +157,7 @@
 			*/
 			try {
 				$entry_count = Symphony::Database()->query(
-					"SELECT COUNT(id) as `count` FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `%s` %s", array(
-						$section->handle, 'id', 'DESC'
-					)
+					"SELECT COUNT(id) as `count` FROM `tbl_entries` WHERE `section` = '%s'", array($section->handle)
 				)->current()->count;
 
 				$pagination = array(
@@ -176,9 +174,11 @@
 			}
 
 			$entries = Symphony::Database()->query(
-				"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `id` DESC LIMIT %d, %d ",
+				"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `%s` %s LIMIT %d, %d ",
 				array(
 					$section->handle,
+					'id',
+					'DESC',
 					$pagination['start'],
 					$pagination['entries-per-page']
 				), 'EntryResult'
