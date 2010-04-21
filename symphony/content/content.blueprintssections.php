@@ -608,8 +608,9 @@
 				($this->section->{'hidden-from-publish-menu'} == 'yes') ? array('checked' => 'checked') : array()
 			);
 
-			$label = Widget::Label(null, $input);
-			$label->setValue(__('%s Hide this section from the Publish menu', array($input)));
+			$label = Widget::Label(__('Hide this section from the Publish menu'));
+			$label->prependChild($input);
+
 			$fieldset->appendChild($label);
 
 			$label = Widget::Label(__('Navigation Group'));

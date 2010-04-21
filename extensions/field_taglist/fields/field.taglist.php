@@ -4,6 +4,9 @@
 		public function __construct(){
 			parent::__construct();
 			$this->_name = __('Tag List');
+
+			$this->{'suggestion-source-threshold'} = 2;
+			$this->{'tag-delimiter'} = ',';
 		}
 
 		public function requiresSQLGrouping() {
@@ -28,11 +31,6 @@
 
 		function canPrePopulate(){
 			return true;
-		}
-
-		public function set($field, $value){
-			if($field == 'pre_populate_source' && !is_array($value)) $value = preg_split('/\s*,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY);
-			$this->_fields[$field] = $value;
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
@@ -62,7 +60,7 @@
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
-			if($this->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
+			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
@@ -118,10 +116,14 @@
 
 			$result = Symphony::Database()->query("
 				SELECT
-					DISTINCT `value`
+					`value`
 				FROM
 					`tbl_data_%s_%s`
-				", array($section, $field_handle)
+				GROUP BY
+					`value`
+				HAVING
+					COUNT(`value`) >= %d
+				", array($section, $field_handle, $this->{'suggestion-source-threshold'})
 			);
 
 			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
@@ -209,7 +211,7 @@
 
 			sort($tags);
 
-			return implode(', ', $tags);
+			return implode($this->{'tag-delimiter'}, $tags);
 
 		}
 
@@ -260,6 +262,22 @@
 			$label->appendChild(Widget::Select('suggestion-list-source', $options, array('multiple' => 'multiple')));
 			$wrapper->appendChild($label);
 
+			$group = $document->createElement('div');
+			$group->setAttribute('class', 'group');
+
+			// Suggestion threshold
+			$input = Widget::Input('suggestion-source-threshold',$this->{'suggestion-source-threshold'});
+			$label = Widget::Label(__('Minimum Tag Suggestion Threshold'), $input);
+			$group->appendChild($label);
+
+			// Custom delimiter
+			$input = Widget::Input('delimiter', $this->{'tag-delimiter'});
+			$label = Widget::Label(__('Tag Delimiter'), $input);
+			$group->appendChild($label);
+
+			$wrapper->appendChild($group);
+
+			// Validator
 			$this->appendValidationSelect($wrapper, $this->validator, 'validator');
 
 			$options_list = Symphony::Parent()->Page->createElement('ul');
