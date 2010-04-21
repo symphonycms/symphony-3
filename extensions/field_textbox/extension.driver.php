@@ -22,34 +22,34 @@
 		Utilites:
 	-------------------------------------------------------------------------*/
 
-		protected $addedPublishHeaders = false;
-		protected $addedSettingsHeaders = false;
-		protected $addedFilteringHeaders = false;
+		protected static $addedPublishHeaders = false;
+		protected static $addedSettingsHeaders = false;
+		protected static $addedFilteringHeaders = false;
 
 		public function addPublishHeaders($page) {
-			if ($page and !$this->addedPublishHeaders) {
-				$this->insertNodeIntoHead($this->createStylesheetElement(URL . '/extensions/textboxfield/assets/publish.css'));
-				$this->insertNodeIntoHead($this->createScriptElement(URL . '/extensions/textboxfield/assets/publish.js'));
+			if ($page and !self::$addedPublishHeaders) {
+				$page->insertNodeIntoHead($page->createStylesheetElement(URL . '/extensions/field_textbox/assets/publish.css'));
+				$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/field_textbox/assets/publish.js'));
 
-				$this->addedPublishHeaders = true;
+				self::$addedPublishHeaders = true;
 			}
 		}
 
 		public function addSettingsHeaders($page) {
-			if ($page and !$this->addedSettingsHeaders) {
-				$this->insertNodeIntoHead($this->createStylesheetElement(URL . '/extensions/textboxfield/assets/settings.css'));
+			if ($page and !self::$addedSettingsHeaders) {
+				$page->insertNodeIntoHead($page->createStylesheetElement(URL . '/extensions/field_textbox/assets/settings.css'));
 
-				$this->addedSettingsHeaders = true;
+				self::$addedSettingsHeaders = true;
 			}
 		}
 
 		public function addFilteringHeaders($page) {
-			if ($page and !$this->addedFilteringHeaders) {
-				$this->insertNodeIntoHead($this->createStylesheetElement(URL . '/extensions/textboxfield/assets/filtering.css'));
-				$this->insertNodeIntoHead($this->createScriptElement(URL . '/extensions/textboxfield/assets/interface.js'));
-				$this->insertNodeIntoHead($this->createScriptElement(URL . '/extensions/textboxfield/assets/filtering.js'));
+			if ($page and !self::$addedFilteringHeaders) {
+				$page->insertNodeIntoHead($page->createStylesheetElement(URL . '/extensions/field_textbox/assets/filtering.css'));
+				$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/field_textbox/assets/interface.js'));
+				$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/field_textbox/assets/filtering.js'));
 
-				$this->addedFilteringHeaders = true;
+				self::$addedFilteringHeaders = true;
 			}
 		}
 	}

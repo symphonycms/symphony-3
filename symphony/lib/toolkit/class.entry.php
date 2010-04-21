@@ -93,8 +93,7 @@
 
 			foreach($section->fields as $field){
 				$field_handle = $field->{'element-name'};
-				if(!isset($data[$field_handle])) continue;
-				$this->data()->$field_handle = $field->processFormData($data[$field_handle]);
+				$this->data()->$field_handle = $field->processFormData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
 			}
 		}
 
@@ -105,7 +104,9 @@
 			}
 
 			// Create a new ID if one is not already set
+			$purge_meta_on_error = false;
 			if(!isset($entry->id) || is_null($entry->id)){
+				$purge_meta_on_error = true;
 				$entry->id = self::generateID($entry->section, $entry->user_id);
 			}
 
@@ -150,7 +151,7 @@
 			}
 
 			// Cleanup due to failure
-			if($errors->length() > 0){
+			if($errors->length() > 0 && $purge_meta_on_error == true){
 				Symphony::Database()->delete('tbl_entries', array(), " `id` = {$entry->id} LIMIT 1");
 				return self::STATUS_ERROR;
 			}

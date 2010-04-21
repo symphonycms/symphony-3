@@ -559,6 +559,9 @@
 				$this->appendViewOptions();
 			}
 			
+			/*
+			TODO: This code should become MessageStack::appendTo(...)
+			
 			// Show errors:
 			function appendErrorSummary(SymphonyDOMElement $wrapper, MessageStack $messages) {
 				$document = $wrapper->ownerDocument;
@@ -583,6 +586,7 @@
 			}
 			
 			appendErrorSummary($this->Form, $this->errors);
+			*/
 			
 			// Essentials:
 			$fieldset = $this->createElement('fieldset');

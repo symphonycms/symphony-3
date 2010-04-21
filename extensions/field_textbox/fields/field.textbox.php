@@ -324,8 +324,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
-
-			$this->_driver->addPublishHeaders($this->_engine->Page);
+			$this->_driver->addPublishHeaders($wrapper->ownerDocument);
 
 			$sortorder = $this->{'sortorder'};
 			$element_name = $this->{'element-name'};
@@ -399,8 +398,8 @@
 
 			$label->appendChild($input);
 
-			if ($error != null) {
-				$label = Widget::wrapFormElementWithError($label, $error);
+			if (!is_null($error)) {
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
 			}
 
 			$wrapper->appendChild($label);
@@ -501,14 +500,21 @@
 
 		// TODO: Fix the createHandle function
 		public function processFormData($data, Entry $entry=NULL){
-			$result = (object)array(
-				'handle' => null,
-				'value' => null,
-				'value_formatted' => null,
-				'word_count' => null
-			);
 
-			if(!is_null($data)) {
+			if(isset($entry->data()->{$this->{'element-name'}})){
+				$result = $entry->data()->{$this->{'element-name'}};
+			}
+
+			else {
+				$result = (object)array(
+					'handle' => null,
+					'value' => null,
+					'value_formatted' => null,
+					'word_count' => null
+				);
+			}
+
+			if(!is_null($data)){
 				$result->handle = Lang::createHandle($data);
 				$result->value = $data;
 				$result->value_formatted = $this->applyFormatting($data);
@@ -603,7 +609,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
-			//$this->_driver->addFilteringHeaders($this->_engine->Page);
+			//$this->_driver->addFilteringHeaders($wrapper->ownerDocument);
 			$field_id = $this->{'id'};
 			$document = $wrapper->ownerDocument;
 

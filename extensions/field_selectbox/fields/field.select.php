@@ -126,12 +126,12 @@
 			$states = $this->getToggleStates();
 			natsort($states);
 
-			if(!is_array($data['value'])) $data['value'] = array($data['value']);
-
 			$options = array();
 
 			foreach($states as $handle => $v){
-				$options[] = array(General::sanitize($v), in_array($v, $data['value']), General::sanitize($v));
+				//	TODO: Support multiple data Classes
+				//	$options[] = array(General::sanitize($v), in_array($v, $data->value), General::sanitize($v));
+				$options[] = array(General::sanitize($v), ($v == $data->value), General::sanitize($v));
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
@@ -256,10 +256,17 @@
 		}
 
 		public function processFormData($data, Entry $entry=NULL){
-			$result = (object)array(
-				'value' => null,
-				'handle' => null,
-			);
+
+			if(isset($entry->data()->{$this->{'element-name'}})){
+				$result = $entry->data()->{$this->{'element-name'}};
+			}
+
+			else {
+				$result = (object)array(
+					'value' => null,
+					'handle' => null
+				);
+			}
 
 			if(!is_null($data)){
 				$result->value = $data;
