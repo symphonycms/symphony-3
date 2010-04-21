@@ -179,13 +179,18 @@ var Symphony;
 
 	$(document).ready(function() {
 		var selector = jQuery('#event-context-selector');
-
+		
+		jQuery('.event-duplicator').symphonyDuplicator({
+			multiselect:	true,
+			orderable:		true
+		});
+		
 		selector.bind('change', function() {
 			var options = selector.find('option');
 
 			options.each(function() {
 				var option = $(this);
-				var context = jQuery('#event-context-' + option.val());
+				var context = jQuery('.event-context-' + option.val());
 
 				if (context.length == 0) return;
 

@@ -347,7 +347,7 @@
 		private function __buildDefaultsAndOverridesDuplicator(Section $section, array $items=NULL){
 
 			$duplicator = $this->createElement('div');
-			$duplicator->setAttribute('id', 'section-duplicator');
+			$duplicator->setAttribute('class', 'event-duplicator event-context-' . $section->handle);
 
 			$templates = $this->createElement('ol');
 			$templates->setAttribute('class', 'templates');
@@ -357,7 +357,6 @@
 
 			$ol = new XMLElement('ol');
 			$ol->setAttribute('id', 'section-' . $section->handle);
-			$ol->setAttribute('class', 'section-duplicator');
 		
 			$item = $this->createElement('li');
 			$span = $this->createElement('span', 'Override');
