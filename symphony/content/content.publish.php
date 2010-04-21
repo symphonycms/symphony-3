@@ -252,6 +252,19 @@
 				array(NULL, false, __('With Selected...')),
 				array('delete', false, __('Delete'))
 			);
+			
+			$index = 2;
+			foreach($section->fields as $field){
+				if($field->canToggleData() != true) continue;
+				
+				$options[$index] = array('label' => __('Set %s', array($field->label)), 'options' => array());
+				
+				foreach ($field->getToggleStates() as $value => $state) {
+					$options[$index]['options'][] = array('toggle::' . $field->{'element-name'} . '::' . $value, false, $state);
+				}
+				
+				$index++;
+			}
 
 			// TODO: Add toggable fields back
 			/*
@@ -617,7 +630,8 @@
 
 		function __actionIndex(){
 			$checked = array_keys($_POST['items']);
-
+			$callback = Administration::instance()->getPageCallback();
+			
 			if(is_array($checked) && !empty($checked)){
 				switch($_POST['with-selected']) {
 
@@ -639,21 +653,32 @@
 
 						## TODO: Add delegate
 
-						/*list($option, $field_id, $value) = explode('-', $_POST['with-selected'], 3);
+						list($option, $field_handle, $value) = explode('::', $_POST['with-selected'], 3);
 
 						if($option == 'toggle'){
 
-							$field = FieldManager::instance()->fetch($field_id);
-
-							foreach($checked as $entry_id){
-								$entry = EntryManager::instance()->fetch($entry_id);
-								$entry[0]->setData($field_id, $field->toggleFieldData($entry[0]->getData($field_id), $value));
-								$entry[0]->commit();
+							// TO DO: This is a funky way to access a field via its handle. Might need to rethink this
+							$section = Section::loadFromHandle($callback['context']['section_handle']);
+							foreach($section->fields as $f){
+								if($f->{'element-name'} == $field_handle){
+									$field = $f;
+								}
 							}
+			
+							if($field instanceof Field){
+								foreach($checked as $entry_id){
+									$entry = Entry::loadFromID($entry_id);
+									
+									$entry->data()->$field_handle = $field->processFormData($value, $entry);
 
+									$this->errors->flush();
+									Entry::save($entry, $this->errors);
+								}
+							}
+							
 							redirect($_SERVER['REQUEST_URI']);
 
-						}*/
+						}
 
 						break;
 				}
@@ -1222,8 +1247,13 @@
 				$entry = Entry::loadFromID($entry_id);
 
 				$post = General::getPostData();
-
-				$entry->setFieldDataFromFormArray($post['fields']);
+				$fields = array();
+				
+				if (isset($post['fields']) and !empty($post['fields'])) {
+					$fields = $post['fields'];
+				}
+				
+				$entry->setFieldDataFromFormArray($fields);
 
 				###
 				# Delegate: EntryPreEdit

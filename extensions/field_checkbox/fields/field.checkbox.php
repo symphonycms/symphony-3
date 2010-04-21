@@ -6,7 +6,7 @@
 			$this->_name = __('Checkbox');
 		}
 
-		function canToggle(){
+		public function canToggleData(){
 			return true;
 		}
 
@@ -49,16 +49,11 @@
 			return $groups;
 		}
 
-		function getToggleStates(){
+		public function getToggleStates(){
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		function toggleFieldData($data, $newState){
-			$data['value'] = $newState;
-			return $data;
-		}
-
-		function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
+		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
 			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`value` $order");
 		}

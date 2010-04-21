@@ -18,7 +18,7 @@
 			$this->{'limit'} = 20;
 		}
 
-		public function canToggle(){
+		public function canToggleData(){
 			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
 
@@ -29,7 +29,7 @@
 			return $output;
 		}
 
-		public function toggleFieldData($data, $new_value){
+		public function toggleEntryData(StdClass $data, $value, Entry $entry=NULL){
 			$data['relation_id'] = $new_value;
 			return $data;
 		}
@@ -454,12 +454,12 @@
 			return true;
 		}
 
-		public function findDefaultSettings(&$fields){
+		public function findDefaults(&$fields){
 			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
-			parent::displaySettingsPanel($wrapper, $messages);
+		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+			parent::displaySettingsPanel($wrapper, $errors);
 
 
 			$label = Widget::Label(__('Options'));
@@ -491,8 +491,9 @@
 */
 			$label->appendChild(Widget::Select('related-field-id][', $options, array('multiple' => 'multiple')));
 
-
-			if(isset($errors['related-field-id'])) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $errors['related-field-id']));
+			if(isset($errors->{'related-field-id'})){
+				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $errors->{'related-field-id'}));
+			}
 			else $wrapper->appendChild($label);
 
 			## Maximum entries

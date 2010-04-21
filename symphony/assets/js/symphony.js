@@ -241,6 +241,11 @@ var Symphony;
 				orderable:		true
 			});
 			
+			if (duplicator.find('.instances > li .invalid').length) {
+				duplicator.find('.tabs > li:first')
+					.trigger('duplicator-tab-deselect');
+			}
+			
 			// Show errors:
 			duplicator.find('.instances > li').each(function(index) {
 				var instance = $(this);
