@@ -56,7 +56,7 @@
 
 			$aTableHead = array();
 			$renderOnlyEntryIDColumn = false;
-			
+
 			foreach($section->fields as $column){
 				if($column->{'show-column'} != 'yes') continue;
 
@@ -81,12 +81,12 @@
 				else */
 				$aTableHead[] = array($label, 'col');
 			}
-			
+
 			if(count($aTableHead) <= 0){
 				$renderOnlyEntryIDColumn = true;
 				$aTableHead[] = array('ID', 'col');
 			}
-			
+
 			/*
 			$entry = Entry::loadFromID(3);
 
@@ -230,10 +230,14 @@
 								$cells[] = Widget::TableData(__('None'), array('class' => 'inactive'));
 							}
 							else{
-								$cells[] = Widget::TableData($column->prepareTableValue(
+								$value = $column->prepareTableValue(
 									$entry->data()->$field_handle,
 									($first == true ? $link : NULL)
-								));
+								);
+
+								$cells[] = Widget::TableData(
+									$value, ($value == __('None')) ? array('class' => 'inactive') : array()
+								);
 							}
 
 							$first = false;
@@ -243,7 +247,7 @@
 						$link->setValue($entry->id);
 						$cells[] = Widget::TableData($link);
 					}
-					
+
 					$cells[count($cells) - 1]->appendChild(
 						Widget::Input('items['. $entry->id .']', NULL, 'checkbox')
 					);
@@ -265,17 +269,17 @@
 				array(NULL, false, __('With Selected...')),
 				array('delete', false, __('Delete'))
 			);
-			
+
 			$index = 2;
 			foreach($section->fields as $field){
 				if($field->canToggleData() != true) continue;
-				
+
 				$options[$index] = array('label' => __('Set %s', array($field->label)), 'options' => array());
-				
+
 				foreach ($field->getToggleStates() as $value => $state) {
 					$options[$index]['options'][] = array('toggle::' . $field->{'element-name'} . '::' . $value, false, $state);
 				}
-				
+
 				$index++;
 			}
 
@@ -644,7 +648,7 @@
 		function __actionIndex(){
 			$checked = array_keys($_POST['items']);
 			$callback = Administration::instance()->getPageCallback();
-			
+
 			if(is_array($checked) && !empty($checked)){
 				switch($_POST['with-selected']) {
 
@@ -678,18 +682,18 @@
 									break;
 								}
 							}
-			
+
 							if($field instanceof Field){
 								foreach($checked as $entry_id){
 									$entry = Entry::loadFromID($entry_id);
-									
+
 									$entry->data()->$field_handle = $field->processFormData($value, $entry);
 
 									$this->errors->flush();
 									Entry::save($entry, $this->errors);
 								}
 							}
-							
+
 							redirect($_SERVER['REQUEST_URI']);
 
 						}
@@ -774,11 +778,11 @@
 				// Grab the first field in the section
 				$first_field = $section->fields[0];
 				$field_data = (object)array();
-				
+
 				if (!is_null($existing->data()->{$first_field->{'element-name'}})) {
 					$field_data = $existing->data()->{$first_field->{'element-name'}};
 				}
-				
+
 				$subheading = $first_field->prepareTableValue($field_data);
 			}
 
@@ -883,9 +887,9 @@
 
 					foreach ($data->fields as $handle) {
 						$field = $section_fields[$handle];
-						
+
 						if (!$field instanceof Field) continue;
-						
+
 						$div = $this->createElement('div', NULL, array(
 								'class' => trim(sprintf('field field-%s %s %s',
 									$field->handle(),
@@ -909,7 +913,7 @@
 
 					$column->appendChild($fieldset);
 				}
-				
+
 				$layout->appendTo($this->Form);
 			}
 
@@ -1271,11 +1275,11 @@
 
 				$post = General::getPostData();
 				$fields = array();
-				
+
 				if (isset($post['fields']) and !empty($post['fields'])) {
 					$fields = $post['fields'];
 				}
-				
+
 				$entry->setFieldDataFromFormArray($fields);
 
 				###

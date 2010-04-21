@@ -521,7 +521,7 @@
 			$max_length = ($max_length ? $max_length : 75);
 
 			$value = strip_tags($data->value);
-			$value = (strlen($value) <= $max_length ? $value : substr($value, 0, $max_length) . '...');
+			$value = (strlen($value) <= $max_length ? $value : substr($value, 0, $max_length) . '&#x2026;');
 
 			if (strlen($value) == 0) $value = __('None');
 
