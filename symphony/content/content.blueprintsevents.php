@@ -376,7 +376,7 @@
 			$instances = $this->createElement('ol');
 			$instances->setAttribute('class', 'instances');
 
-			$ol = new XMLElement('ol');
+			$ol = $this->createElement('ol');
 			$ol->setAttribute('id', 'section-' . $section->handle);
 
 			$item = $this->createElement('li');
@@ -883,7 +883,7 @@
 				$section = SectionManager::instance()->fetch($fields['source']);
 				$markup = NULL;
 				foreach($section->fetchFields() as $f){
-					if ($f->getExampleFormMarkup() instanceof XMLElement)
+					if ($f->getExampleFormMarkup() instanceof DOMElement)
 						$container->appendChild($f->getExampleFormMarkup());
 				}
 				$container->appendChild(Widget::Input('action['.$rootelement.']', __('Submit'), 'submit'));

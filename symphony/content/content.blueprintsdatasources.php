@@ -265,7 +265,7 @@
 
 			catch (Exception $e) {
 				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
-			}			
+			}
 
 			/*$type_file = NULL;
 			$type_data = array();

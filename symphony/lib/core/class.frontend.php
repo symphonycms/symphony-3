@@ -93,12 +93,23 @@
 		}
 	}
 	
-	Class FrontendPageNotFoundException extends Exception{
+	Class FrontendPageNotFoundException extends SymphonyErrorPage{
+		public function __construct($page){
+			parent::__construct(
+				__('The page you requested does not exist.'),
+				__('Page Not Found'),
+				$page,
+				array('header' => 'HTTP/1.0 404 Not Found')
+			);
+		}
 	}
 
 	Class FrontendPageNotFoundExceptionHandler extends SymphonyErrorPageHandler{
+		/*
 		public static function render($e){
 			// TODO: Fix me to use Views
+			
+			$view = View::loadFromURL($_SERVER['PHP_SELF']);
 			$page_id = Symphony::Database()->fetchVar('page_id', 0, "SELECT `page_id` FROM `tbl_pages_types` WHERE `type` = '404' LIMIT 1");
 
 			if(is_null($page_id)){
@@ -117,6 +128,9 @@
 				echo $output;
 				exit;
 			}
+		}*/
+		public static function render($e){
+			parent::render($e);
 		}
 	}
 
@@ -169,11 +183,7 @@
 				self::$view = array_shift($views);
 
 				if(!(self::$view instanceof View)){
-					throw new SymphonyErrorPage(
-						__('The page you requested does not exist.'),
-						__('Page Not Found'), NULL,
-						array('HTTP/1.0 404 Not Found')
-					);
+					throw new FrontendPageNotFoundException($page);
 				}
 			}
 

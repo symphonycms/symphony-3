@@ -12,7 +12,7 @@
 
 	require_once(TOOLKIT . '/class.page.php'); // DELETE?
 	require_once(TOOLKIT . '/class.view.php');
-	require_once(TOOLKIT . '/class.xmlelement.php'); // DELETE?
+	//require_once(TOOLKIT . '/class.xmlelement.php'); // DELETE?
 	require_once(TOOLKIT . '/class.widget.php');
 	require_once(TOOLKIT . '/class.general.php');
 	require_once(TOOLKIT . '/class.profiler.php'); // REPLACE?
@@ -39,7 +39,7 @@
 
 			$root->appendChild($xml->createElement('heading', General::sanitize($e->getHeading())));
 			$root->appendChild($xml->createElement('message', General::sanitize(
-				$e->getMessageObject() instanceof XMLElement ? $e->getMessageObject()->generate(true) : trim($e->getMessage())
+				$e->getMessageObject() instanceof SymphonyDOMElement ? (string)$e->getMessageObject() : trim($e->getMessage())
 			)));
 			if(!is_null($e->getDescription())){
 				$root->appendChild($xml->createElement('description', General::sanitize($e->getDescription())));
@@ -74,9 +74,9 @@
 		public function __construct($message, $heading='Fatal Error', $description=NULL, array $headers=array()){
 
 			$this->_messageObject = NULL;
-			if($message instanceof XMLElement){
+			if($message instanceof SymphonyDOMElement){
 				$this->_messageObject = $message;
-				$message = $this->_messageObject->generate();
+				$message = (string)$this->_messageObject;
 			}
 
 			parent::__construct($message);
@@ -136,11 +136,11 @@
 		public $User;
 
 		protected static $_instance;
-		
+
 		protected function __construct(){
 
 			$this->Profiler = new Profiler;
-			
+
 			self::$Configuration = new Configuration;
 
 			DateTimeObj::setDefaultTimezone(self::Configuration()->get('timezone', 'region'));
@@ -248,11 +248,11 @@
 		public function isLoggedIn(){
 
 			if ($this->User) return true;
-			
+
 			if (isset($_REQUEST['auth-token']) && $_REQUEST['auth-token'] && strlen($_REQUEST['auth-token']) == 8) {
 				return $this->loginFromToken($_REQUEST['auth-token']);
 			}
-			
+
 			$username = $this->Cookie->get('username');
 			$password = $this->Cookie->get('pass');
 

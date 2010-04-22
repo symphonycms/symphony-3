@@ -7,11 +7,11 @@
 	require_once(TOOLKIT . '/class.ajaxpage.php');
 
 	Class AdministrationPageNotFoundException extends SymphonyErrorPage{
-		public function __construct(){
+		public function __construct($page){
 			parent::__construct(
 				__('The page you requested does not exist.'),
 				__('Page Not Found'),
-				'general',
+				$page,
 				array('header' => 'HTTP/1.0 404 Not Found')
 			);
 		}
@@ -61,7 +61,7 @@
 			}
 			
 			if(!$this->_callback = $this->getPageCallback($page)){
-				throw new AdministrationPageNotFoundException;
+				throw new AdministrationPageNotFoundException($page);
 			}
 				
 			include_once((isset($this->_callback['driverlocation']) ? $this->_callback['driverlocation'] : CONTENT) . '/content.' . $this->_callback['driver'] . '.php'); 			
