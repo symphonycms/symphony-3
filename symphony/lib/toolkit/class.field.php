@@ -466,7 +466,7 @@
 
 		// TODO: Support an array of data objects. This is important for
 		// fields like Select box or anything that allows mutliple values
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
+		public function saveData($data=NULL, MessageStack &$errors, Entry $entry){
 
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;

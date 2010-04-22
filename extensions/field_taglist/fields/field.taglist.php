@@ -1,12 +1,32 @@
 <?php
 
 	Class fieldTagList extends Field {
+
 		public function __construct(){
 			parent::__construct();
 			$this->_name = __('Tag List');
 
 			$this->{'suggestion-source-threshold'} = 2;
 			$this->{'tag-delimiter'} = ',';
+		}
+
+		public function create(){
+			return Symphony::Database()->query(
+				sprintf(
+					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+						`id` int(11) unsigned NOT NULL auto_increment,
+						`entry_id` int(11) unsigned NOT NULL,
+						`handle` varchar(255) default NULL,
+						`value` varchar(255) default NULL,
+						PRIMARY KEY  (`id`),
+						KEY `entry_id` (`entry_id`),
+						KEY `handle` (`handle`),
+						KEY `value` (`value`)
+					)',
+					$this->section,
+					$this->{'element-name'}
+				)
+			);
 		}
 
 		public function requiresSQLGrouping() {
@@ -33,64 +53,11 @@
 			return true;
 		}
 
-		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
-			if (!is_array($data) or empty($data)) return;
+		/*-------------------------------------------------------------------------
+			Utilities:
+		-------------------------------------------------------------------------*/
 
-			$list = Symphony::Parent()->Page->createElement($this->{'element-name'});
-
-			if (!is_array($data['handle']) and !is_array($data['value'])) {
-				$data = array(
-					'handle'	=> array($data['handle']),
-					'value'		=> array($data['value'])
-				);
-			}
-
-			foreach ($data['value'] as $index => $value) {
-				$list->appendChild(Symphony::Parent()->Page->createElement(
-					'item', General::sanitize($value), array(
-						'handle'	=> $data['handle'][$index]
-					)
-				));
-			}
-
-			$wrapper->appendChild($list);
-		}
-
-		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
-
-			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
-
-			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
-		}
-
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
-
-			if(!isset($data->value)) {
-				$data->value = NULL;
-			}
-			/*	TODO: Support Multiple
-			$value = NULL;
-			if(isset($data->value)){
-				 $value = (is_array($data['value']) ? self::__tagArrayToString($data['value']) : $data['value']);
-
-			}*/
-
-			$label = Widget::Label($this->label);
-
-			$label->appendChild(
-				Widget::Input('fields['.$this->{'element-name'}.']', $data->value)
-			);
-
-			if (!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($label, $error['message']);
-			}
-
-			$wrapper->appendChild($label);
-
-			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
-		}
-
-		function prepopulateSource(&$wrapper) {
+		public function prepopulateSource(&$wrapper) {
 
 			$document = $wrapper->ownerDocument;
 
@@ -137,103 +104,21 @@
 			return array_unique($values);
 		}
 
-		//	TODO: Make work with multiple tags!
-		public function processFormData($data, Entry $entry=NULL){
-
-			if(isset($entry->data()->{$this->{'element-name'}})){
-				$result = $entry->data()->{$this->{'element-name'}};
-			}
-
-			else {
-				$result = (object)array(
-					'value' => null,
-					'handle' => null
-				);
-			}
-
-			if(!is_null($data)){
-				$result->value = $data;
-				$result->handle = Lang::createHandle($data);
-			}
-
-			return $result;
+		public function __tagArrayToString(array $tags){
+			return (!empty($tags)) ? implode($this->{'tag-delimiter'} . ' ', $tags) : null;
 		}
 
-/*
-		Deprecated
+		/*-------------------------------------------------------------------------
+			Settings:
+		-------------------------------------------------------------------------*/
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-
-			$status = self::STATUS_OK;
-
-			$data = preg_split('/\,\s/i', $data, -1, PREG_SPLIT_NO_EMPTY);
-			$data = array_map('trim', $data);
-
-			if(empty($data)) return;
-
-			// Do a case insensitive removal of duplicates
-			$data = General::array_remove_duplicates($data, true);
-
-			sort($data);
-
-			$result = array();
-			foreach($data as $value){
-				$result['value'][] = $value;
-				$result['handle'][] = Lang::createHandle($value);
-			}
-
-			return $result;
-		}
-
-		function commit(){
-
-			if(!parent::commit()) return false;
-
-			$field_id = $this->id;
-			$handle = $this->handle();
-
-			if($field_id === false) return false;
-
-			$fields = array(
-				'field_id' => $field_id,
-				'pre-populate-source' => (is_null($this->{'pre-populate-source'})) ? NULL : implode(',', $this->{'pre-populate-source'}),
-				'validator' => ($fields['validator'] == 'custom' ? NULL : $this->validator)
-			);
-
-			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
-			$field_id = Symphony::Database()->insert('tbl_fields_' . $handle, $fields);
-
-			return ($field_id == 0 || !$field_id) ? false : true;
-		}
-
-*/
 		public function findDefaultSettings(array &$fields){
 			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array('existing');
 		}
 
-		static private function __tagArrayToString(array $tags){
-
-			if(empty($tags)) return NULL;
-
-			sort($tags);
-
-			return implode($this->{'tag-delimiter'}, $tags);
-
-		}
-
-		public function prepareTableValue($data, DOMElement $link=NULL){
-			$value = NULL;
-
-			if(!is_null($data->value)){
-				$value = (is_array($data->value) ? self::__tagArrayToString($data->value) : $data->value);
-			}
-
-			return parent::prepareTableValue((object)array('value' => General::sanitize($value)), $link);
-		}
-
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
-			
+
 			$document = $wrapper->ownerDocument;
 
 			$label = Widget::Label(__('Suggestion List'));
@@ -265,11 +150,11 @@
 						'options' => $fields
 					);
 				}
-			}			
+			}
 
 			$label->appendChild(Widget::Select('suggestion-list-source', $options, array('multiple' => 'multiple')));
 			$wrapper->appendChild($label);
-			
+
 			$group = $document->createElement('div');
 			$group->setAttribute('class', 'group');
 
@@ -297,58 +182,197 @@
 			$wrapper->appendChild($options_list);
 		}
 
-		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
-			// TODO: Support Multiple
-			if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
-				$errors->append(
-					$this->{'element-name'},
-					array(
-					 	'message' => __("'%s' is a required field.", array($this->label)),
-						'code' => self::ERROR_MISSING
-					)
-				);
 
-				return self::STATUS_ERROR;
+		/*-------------------------------------------------------------------------
+			Publish:
+		-------------------------------------------------------------------------*/
+
+		public function prepareTableValue($data, DOMElement $link=NULL){
+			$value = NULL;
+
+			if(!is_null($data->value)){
+				$value = (is_array($data->value) ? self::__tagArrayToString($data->value) : $data->value);
 			}
 
-			if (!isset($data->value)) return self::STATUS_OK;
+			return parent::prepareTableValue((object)array('value' => General::sanitize($value)), $link);
+		}
 
-			if (!$this->applyValidationRules($data->value)) {
-				$errors->append(
-					$this->{'element-name'},
-					array(
-					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->label)),
-						'code' => self::ERROR_INVALID
-					)
-				);
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
 
-				return self::STATUS_ERROR;
+			if(is_array($data)) {
+				$values = array();
+				foreach($data as $d) {
+					$values[] = $d->value;
+				}
+				$data = (object)array('value' => $this->__tagArrayToString($values));
+				unset($values);
 			}
 
-			return self::STATUS_OK;
-		}
+			if(!isset($data->value)) {
+				$data->value = NULL;
+			}
 
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return parent::saveData($data, $errors, $entry);
-		}
+			$label = Widget::Label($this->label);
 
-		public function create(){
-			return Symphony::Database()->query(
-				sprintf(
-					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` int(11) unsigned NOT NULL auto_increment,
-						`entry_id` int(11) unsigned NOT NULL,
-						`handle` varchar(255) default NULL,
-						`value` varchar(255) default NULL,
-						PRIMARY KEY  (`id`),
-						KEY `entry_id` (`entry_id`),
-						KEY `handle` (`handle`),
-						KEY `value` (`value`)
-					)',
-					$this->section,
-					$this->{'element-name'}
-				)
+			$label->appendChild(
+				Widget::Input('fields['.$this->{'element-name'}.']', $data->value)
 			);
+
+			if (!is_null($error)) {
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
+			}
+
+			$wrapper->appendChild($label);
+
+			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
+		}
+
+
+		/*-------------------------------------------------------------------------
+			Input:
+		-------------------------------------------------------------------------*/
+
+		public function processFormData($data, Entry $entry=NULL){
+			$result = (object)array(
+				'value' => null,
+				'handle' => null
+			);
+
+			if(!is_null($data)){
+				$result->value = $data;
+				$result->handle = Lang::createHandle($data);
+			}
+
+			return $result;
+		}
+
+		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
+			$data = preg_split('/' . preg_quote($this->{'delimiter'}) . '/i', $data->value, -1, PREG_SPLIT_NO_EMPTY);
+			$data = array_map('trim', $data);
+
+			if(!is_array($data)) {
+				$data = array($data);
+			}
+
+			$data = General::array_remove_duplicates($data, true);
+
+			foreach($data as $tag) {
+				if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
+					$errors->append(
+						$this->{'element-name'},
+						array(
+						 	'message' => __("'%s' is a required field.", array($this->label)),
+							'code' => self::ERROR_MISSING
+						)
+					);
+
+					return self::STATUS_ERROR;
+				}
+
+				if (!isset($data->value)) return self::STATUS_OK;
+
+				if (!$this->applyValidationRules($data->value)) {
+					$errors->append(
+						$this->{'element-name'},
+						array(
+						 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->label)),
+							'code' => self::ERROR_INVALID
+						)
+					);
+
+					return self::STATUS_ERROR;
+				}
+
+				return self::STATUS_OK;
+			}
+		}
+
+		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
+			// Since we are dealing with multiple
+			// values, must purge the existing data first
+			Symphony::Database()->delete(
+				sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
+				array($entry->id),
+				"`entry_id` = %s"
+			);
+
+			$data = preg_split('/' . preg_quote($this->{'delimiter'}) . '/i', $data->value, -1, PREG_SPLIT_NO_EMPTY);
+			$data = array_map('trim', $data);
+
+			if(!is_array($data)) {
+				$data = array($data);
+			}
+
+			$data = General::array_remove_duplicates($data, true);
+
+			foreach($data as $tag) {
+				$tag = $this->processFormData($tag, $entry);
+				parent::saveData($tag, $errors, $entry);
+			}
+
+			return Field::STATUS_OK;
+		}
+
+
+		/*-------------------------------------------------------------------------
+			Output:
+		-------------------------------------------------------------------------*/
+
+		public function loadDataFromDatabase(Entry $entry){
+			try{
+				$rows = Symphony::Database()->query(
+					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s ORDER BY `id` ASC",
+					array(
+						$entry->section,
+						$this->{'element-name'},
+						$entry->id
+					)
+				);
+
+				$result = array();
+				foreach($rows as $r){
+					$result[] = $r;
+				}
+				return $result;
+			}
+			catch(DatabaseException $e){
+				// Oh oh....no data. oh well, have a smoke and then return
+			}
+		}
+
+
+		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
+			if (!is_array($data) or empty($data)) return;
+
+			$list = Symphony::Parent()->Page->createElement($this->{'element-name'});
+
+			if (!is_array($data['handle']) and !is_array($data['value'])) {
+				$data = array(
+					'handle'	=> array($data['handle']),
+					'value'		=> array($data['value'])
+				);
+			}
+
+			foreach ($data['value'] as $index => $value) {
+				$list->appendChild(Symphony::Parent()->Page->createElement(
+					'item', General::sanitize($value), array(
+						'handle'	=> $data['handle'][$index]
+					)
+				));
+			}
+
+			$wrapper->appendChild($list);
+		}
+
+
+		/*-------------------------------------------------------------------------
+			Filtering:
+		-------------------------------------------------------------------------*/
+
+		public function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL) {
+			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+
+			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
@@ -410,6 +434,11 @@
 
 			return true;
 		}
-	}
+
+}
+
+
+
+
 
 	return 'fieldTagList';
