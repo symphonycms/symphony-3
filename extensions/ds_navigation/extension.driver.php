@@ -184,7 +184,7 @@
 			$ol->appendChild($li);
 */
 
-			$left->appendChild($fieldset);
+			$right->appendChild($fieldset);
 			$layout->appendTo($wrapper);
 		}
 	}
