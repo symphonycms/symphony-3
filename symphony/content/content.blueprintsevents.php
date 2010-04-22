@@ -632,8 +632,9 @@
 		}
 
 		function __formAction(){
-			$fields = $_POST['fields'];
-
+			$post = General::getPostData();
+			var_dump($post['fields']); die();
+			
 			$this->_errors = array();
 
 			if(trim($fields['name']) == '') $this->_errors['name'] = __('This is a required field');
