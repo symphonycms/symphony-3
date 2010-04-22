@@ -76,30 +76,35 @@
 
 		function findAllTags(){
 
-			//  TODO: This will need to be updated once Section Editor can save multiple values
+			//  TODO: This will need to be updated once Section Editor can save multiple values for the suggestion source
 			//  foreach($this->{'suggestion-list-source'} as $item){
 
-			list($section, $field_handle) = explode("::", $this->{'suggestion-list-source'});
+			$this->{'suggestion-list-source'} = "food::types";
 
-			if(!is_array($this->{'pre-populate-source'})) return;
+			if($this->{'suggestion-list-source'} == 'existing') {
+				$section = $this->section;
+				$field_handle = $this->{'element-name'};
+			}
+
+			else {
+				list($section, $field_handle) = explode("::", $this->{'suggestion-list-source'});
+			}
 
 			$values = array();
 
-			foreach($this->{'pre-populate-source'} as $item) {
-				$result = Symphony::Database()->query("
-						SELECT
-							`value`
-						FROM
-							`tbl_data_%s_%s`
-						GROUP BY
-							`value`
-						HAVING
-							COUNT(`value`) >= %d
-					", array($section, $field_handle, $this->{'suggestion-source-threshold'})
-				);
+			$result = Symphony::Database()->query("
+					SELECT
+						`value`
+					FROM
+						`tbl_data_%s_%s`
+					GROUP BY
+						`value`
+					HAVING
+						COUNT(`value`) >= %d
+				", array($section, $field_handle, $this->{'suggestion-source-threshold'})
+			);
 
-				if(!$result->valid()) $values = array_merge($values, $result->resultColumn('value'));
-			}
+			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
 
 			return array_unique($values);
 		}
