@@ -654,6 +654,9 @@
 	form .help {
 		opacity: 0.5;
 	}
+	form label + p.help {
+		margin-top: -5px;
+	}
 	form fieldset h3 + .help {
 		position: absolute;
 		top: 0;
