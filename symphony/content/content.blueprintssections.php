@@ -166,7 +166,7 @@
 			catch (SectionException $e) {
 				switch($e->getCode()){
 					case Section::ERROR_MISSING_OR_INVALID_FIELDS:
-						$this->pageAlert(__('Could not save the layout, there are errors in your field condifurations.'), Alert::ERROR);
+						$this->pageAlert(__('Could not save the layout, there are errors in your field configuration.'), Alert::ERROR);
 						break;
 					case Section::ERROR_FAILED_TO_WRITE:
 						$this->pageAlert($e->getMessage(), Alert::ERROR);
