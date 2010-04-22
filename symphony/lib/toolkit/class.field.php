@@ -94,7 +94,11 @@
 		const FLAG_ALL = 'all';
 
 		// Abstract functions
-		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL);
+		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL);
+		
+		public static function createGUID(Field $field) {
+			return uniqid(substr(md5($field->type), 0, 4) . '_');
+		}
 
 		public function __construct(){
 			if(is_null(self::$key)) self::$key = 0;
@@ -116,6 +120,10 @@
 
 			if($name == 'element-name'){
 				$this->{'element-name'} = Lang::createHandle($this->properties->label, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
+			}
+			
+			else if ($name == 'guid' and !isset($this->guid)) {
+				$this->guid = Field::createGUID($this);
 			}
 
 			return $this->properties->$name;
@@ -167,14 +175,17 @@
 	    public function toDoc() {
 			$doc = new DOMDocument('1.0', 'UTF-8');
 			$doc->formatOutput = true;
-
+			
 			$root = $doc->createElement('field');
-			$doc->appendChild($root);
-
-			foreach($this->properties as $name => $value){
+			$root->setAttribute('guid', $this->guid);
+			
+			foreach ($this->properties as $name => $value) {
+				if ($name == 'guid') continue;
+				
 				$root->appendChild($doc->createElement($name, $value));
 			}
 			
+			$doc->appendChild($root);
 			return $doc;
 	    }
 		
@@ -609,6 +620,12 @@
 			}
 
 			$wrapper->appendChild($label);
+			
+			if (isset($this->guid)) {
+				$wrapper->appendChild(Widget::Input('guid', $this->guid, 'hidden'));
+			}
+			
+			$wrapper->appendChild(Widget::Input('type', $this->type, 'hidden'));
 		}
 
 		public function appendRequiredCheckbox(SymphonyDOMElement $wrapper) {
