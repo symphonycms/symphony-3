@@ -680,7 +680,6 @@
 				$item = $this->createElement('li');
 				
 				$field->displaySettingsPanel($item, new MessageStack);
-				$item->appendChild(Widget::Input('type', $type, 'hidden'));
 				$templates->appendChild($item);
 			}
 			
@@ -697,9 +696,6 @@
 				
 				$item = $this->createElement('li');
 				$field->displaySettingsPanel($item, $messages);
-				$item->appendChild(
-					Widget::Input('type', $field->type, 'hidden')
-				);
 				
 				$instances->appendChild($item);
 			}
