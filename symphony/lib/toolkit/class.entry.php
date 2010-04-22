@@ -80,6 +80,7 @@
 		}
 
 		public function setFieldDataFromFormArray(array $data){
+
 			// Load the section
 			try{
 				$section = Section::loadFromHandle($this->section);
@@ -93,7 +94,20 @@
 
 			foreach($section->fields as $field){
 				$field_handle = $field->{'element-name'};
-				$this->data()->$field_handle = $field->processFormData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
+
+				// Handle multiple values here
+				if(is_array($data[$field_handle])){
+					$result = array();
+					foreach($data[$field_handle] as $d){
+						$result[] = $field->processFormData($d, $this);
+					}
+				}
+				
+				else{
+					$result = $field->processFormData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
+				}
+				
+				$this->data()->$field_handle = $result;
 			}
 		}
 		

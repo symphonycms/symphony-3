@@ -25,6 +25,7 @@
 			$this->Driver = ExtensionManager::instance()->create('field_upload');
 
 			$this->_name = 'Upload';
+			$this->_required = true;
 			$this->_mimes = array(
 				'image'	=> array(
 					'image/bmp',
@@ -41,6 +42,9 @@
 					'text/html'
 				)
 			);
+
+			$this->{'show-column'} = 'yes';
+			$this->required = 'yes';
 		}
 
 		public function createTable(){
@@ -123,7 +127,7 @@
 			if (!is_writable(DOCROOT . $this->{'destination'} . '/')) {
 				$messages->append('destination', __('Folder is not writable. Please check permissions.'));
 			}
-
+			
 			return parent::validateSettings($messages, $checkForDuplicates);
 		}
 
@@ -160,7 +164,7 @@
 			}
 
 			$label->appendChild(Widget::Select('destination', $options));
-
+			
 			if ($messages->{'destination'}) {
 				$label = Widget::wrapFormElementWithError($label, $messages->{'destination'});
 			}
@@ -171,24 +175,26 @@
 
 			$this->appendValidationSelect($wrapper, $this->validator, 'validator', 'upload');
 
-			$options_list = $wrapper->ownerDocument->createElement('ul');
-			$options_list->setAttribute('class', 'options-list');
 
-			$this->appendShowColumnCheckbox($options_list);
-			$this->appendRequiredCheckbox($options_list);
+
+			$options_list = Symphony::Parent()->Page->createElement('ul');
+			$options_list->setAttribute('class', 'options-list');
 
 			// Serialise ----------------------------------------------------------
 
-			$label = Widget::Label(__('Serialise file names'));
-			$input = Widget::Input(
-				'serialise', 'yes', 'checkbox'
-			);
+				$label = Widget::Label(__('Serialise file names'));
+				$input = Widget::Input(
+					'serialise', 'yes', 'checkbox'
+				);
 
-			if ($this->serialise == 'yes') $input->setAttribute('checked', 'checked');
+				if ($this->serialise == 'yes') $input->setAttribute('checked', 'checked');
 
-			$label->prependChild($input);
-			$options_list->appendChild($label);
+				$label->prependChild($input);
+				$options_list->appendChild($label);
 
+
+			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 		}
 
@@ -219,7 +225,7 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
 			if (!$error and !is_writable(DOCROOT . $this->destination . '/')) {
 				$error = 'Destination folder, <code>'.$this->destination.'</code>, is not writable. Please check permissions.';
 			}

@@ -4,9 +4,6 @@
 		public function __construct(){
 			parent::__construct();
 			$this->_name = __('Tag List');
-
-			$this->{'suggestion-source-threshold'} = 2;
-			$this->{'tag-delimiter'} = ',';
 		}
 
 		public function requiresSQLGrouping() {
@@ -31,6 +28,11 @@
 
 		function canPrePopulate(){
 			return true;
+		}
+
+		public function set($field, $value){
+			if($field == 'pre_populate_source' && !is_array($value)) $value = preg_split('/\s*,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY);
+			$this->_fields[$field] = $value;
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
@@ -60,10 +62,10 @@
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
-			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
+			if($this->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
 
 			if(!isset($data->value)) {
 				$data->value = NULL;
@@ -87,20 +89,18 @@
 
 			$wrapper->appendChild($label);
 
-			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
+			if($this->{'pre-populate-source'} != NULL) $this->prepopulateSource($wrapper);
 		}
 
 		function prepopulateSource(&$wrapper) {
 
-			$document = $wrapper->ownerDocument;
-
 			$existing_tags = $this->findAllTags();
 
 			if(is_array($existing_tags) && !empty($existing_tags)){
-				$taglist = $document->createElement('ul');
+				$taglist = Symphony::Parent()->Page->createElement('ul');
 				$taglist->setAttribute('class', 'tags');
 
-				foreach($existing_tags as $tag) $taglist->appendChild($document->createElement('li', General::sanitize($tag)));
+				foreach($existing_tags as $tag) $taglist->appendChild(Symphony::Parent()->Page->createElement('li', $tag));
 
 				$wrapper->appendChild($taglist);
 			}
@@ -108,27 +108,30 @@
 		}
 
 		function findAllTags(){
-			//	TODO: This will need to be updated once Section Editor can save multiple values
-			//	foreach($this->{'suggestion-list-source'} as $item){
-			list($section, $field_handle) = explode("::", $this->{'suggestion-list-source'});
+
+			if(!is_array($this->{'pre-populate-source'})) return;
 
 			$values = array();
 
-			$result = Symphony::Database()->query("
-				SELECT
-					`value`
-				FROM
-					`tbl_data_%s_%s`
-				GROUP BY
-					`value`
-				HAVING
-					COUNT(`value`) >= %d
-				", array($section, $field_handle, $this->{'suggestion-source-threshold'})
-			);
+			foreach($this->{'pre-populate-source'} as $item){
 
-			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
+				$result = Symphony::Database()->query("
+					SELECT
+						DISTINCT `value`
+					FROM
+						`tbl_entries_data_%d`
+					ORDER BY
+						`value` ASC
+					",
+					($item == 'existing') ? $this->id : $item
+				);
 
-			return array_filter(array_unique($values), array($this, 'applyValidationRules'));
+				if(!$result->valid()) continue;
+
+				$values = array_merge($values, $result->resultColumn('value'));
+			}
+
+			return array_unique($values);
 		}
 
 		//	TODO: Make work with multiple tags!
@@ -202,7 +205,7 @@
 
 */
 		public function findDefaultSettings(array &$fields){
-			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array('existing');
+			if(!isset($fields['pre-populate-source'])) $fields['pre-populate-source'] = array('existing');
 		}
 
 		static private function __tagArrayToString(array $tags){
@@ -211,11 +214,11 @@
 
 			sort($tags);
 
-			return implode($this->{'tag-delimiter'}, $tags);
+			return implode(', ', $tags);
 
 		}
 
-		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
+		public function prepareTableValue($data, DOMElement $link=NULL){
 			$value = NULL;
 
 			if(!is_null($data->value)){
@@ -228,32 +231,41 @@
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$document = $wrapper->ownerDocument;
-
 			$label = Widget::Label(__('Suggestion List'));
 
+			$suggestion_list_source = $this->{'suggestion-list-source'};
+
 			$options = array(
-				array('existing', ($this->{'suggestion-list-source'} == 'existing'), __('Existing Values')),
+				array('existing', (is_array($suggestion_list_source) && in_array('existing', $suggestion_list_source)), __('Existing Values')),
 			);
 
 			foreach (new SectionIterator as $section) {
-				if(!is_array($section->fields) || $section->handle == $document->_context[1]) continue;
+				$field_groups[$section->handle] = array(
+					'fields'	=> $section->fields,
+					'section'	=> $section
+				);
+			}
+
+			foreach($field_groups as $group) {
+
+				if(!is_array($group['fields'])) continue;
 
 				$fields = array();
 
-				foreach($section->fields as $field) {
-					if($field->canPrePopulate()) {
+				foreach($group['fields'] as $field) {
+					if($field->id != $this->id && $field->canPrePopulate()) {
 						$fields[] = array(
-							$section->handle . '::' .$field->{'element-name'},
-							($this->{'suggestion-list-source'} == $section->handle . '::' .$field->{'element-name'}),
+							$field->id,
+							(in_array($field->id, $this->{'pre-populate-source'})),
 							$field->label
 						);
+
 					}
 				}
 
 				if(!empty($fields)) {
 					$options[] = array(
-						'label' => $section->name,
+						'label' => $group['section']->name,
 						'options' => $fields
 					);
 				}
@@ -262,67 +274,15 @@
 			$label->appendChild(Widget::Select('suggestion-list-source', $options, array('multiple' => 'multiple')));
 			$wrapper->appendChild($label);
 
-			$group = $document->createElement('div');
-			$group->setAttribute('class', 'group');
-
-			// Suggestion threshold
-			$input = Widget::Input('suggestion-source-threshold',$this->{'suggestion-source-threshold'});
-			$label = Widget::Label(__('Minimum Tag Suggestion Threshold'), $input);
-			$group->appendChild($label);
-
-			// Custom delimiter
-			$input = Widget::Input('delimiter', $this->{'tag-delimiter'});
-			$label = Widget::Label(__('Tag Delimiter'), $input);
-			$group->appendChild($label);
-
-			$wrapper->appendChild($group);
-
-			// Validator
 			$this->appendValidationSelect($wrapper, $this->validator, 'validator');
 
-			$options_list = $document->createElement('ul');
+			$options_list = Symphony::Parent()->Page->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-
 			$this->appendShowColumnCheckbox($options_list);
-			$this->appendRequiredCheckbox($options_list);
-
 			$wrapper->appendChild($options_list);
 		}
 
-		public function applyValidationRules($data) {
-			$rule = $this->{'validator'};
-
-			return ($rule ? General::validateString($data, $rule) : true);
-		}
-
-		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			// TODO: Support Multiple
-			if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
-				$errors->append(
-					$this->{'element-name'},
-					array(
-					 	'message' => __("'%s' is a required field.", array($this->label)),
-						'code' => self::ERROR_MISSING
-					)
-				);
-
-				return self::STATUS_ERROR;
-			}
-
-			if (!isset($data->value)) return self::STATUS_OK;
-
-			if (!$this->applyValidationRules($data->value)) {
-				$errors->append(
-					$this->{'element-name'},
-					array(
-					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->label)),
-						'code' => self::ERROR_INVALID
-					)
-				);
-
-				return self::STATUS_ERROR;
-			}
-
+		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
 			return self::STATUS_OK;
 		}
 

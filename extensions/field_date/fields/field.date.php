@@ -32,7 +32,7 @@
 			return true;
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
 			$name = $this->{'element-name'};
 			$value = null;
 
@@ -385,9 +385,6 @@
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
 
-			$this->appendShowColumnCheckbox($options_list);
-			$this->appendRequiredCheckbox($options_list);
-
 			$label = Widget::Label(__('Pre-populate this field with today\'s date'));
 			$input = Widget::Input('pre-populate', 'yes', 'checkbox');
 			if($this->{'pre-populate'} == 'yes') $input->setAttribute('checked', 'checked');
@@ -396,6 +393,8 @@
 			$item = $document->createElement('li');
 			$item->appendChild($label);
 			$options_list->appendChild($item);
+
+			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
 
