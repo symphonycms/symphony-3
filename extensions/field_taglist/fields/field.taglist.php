@@ -79,8 +79,6 @@
 			//  TODO: This will need to be updated once Section Editor can save multiple values for the suggestion source
 			//  foreach($this->{'suggestion-list-source'} as $item){
 
-			$this->{'suggestion-list-source'} = "food::types";
-
 			if($this->{'suggestion-list-source'} == 'existing') {
 				$section = $this->section;
 				$field_handle = $this->{'element-name'};
@@ -106,11 +104,17 @@
 
 			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
 
-			return array_unique($values);
+			return array_filter(array_unique($values), array($this, 'applyValidationRules'));
 		}
 
 		public function __tagArrayToString(array $tags){
 			return (!empty($tags)) ? implode($this->{'tag-delimiter'} . ' ', $tags) : null;
+		}
+
+		public function applyValidationRules($data) {
+			$rule = $this->{'validator'};
+
+			return ($rule ? General::validateString($data, $rule) : true);
 		}
 
 		/*-------------------------------------------------------------------------
