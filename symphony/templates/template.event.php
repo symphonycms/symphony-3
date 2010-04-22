@@ -18,9 +18,12 @@
 			);
 			
 			$this->_parameters = (object)array(
-				'source' => %8$s,
-				'overrides' => %9$s,
-				'defaults' => %10$s
+				'root-element' => %8$s,
+				'source' => %9$s,
+				'filters' => %10$s,
+				'overrides' => %11$s,
+				'defaults' => %12$s,
+				'output-id-on-save' => %13$s
 			);
 		}
 

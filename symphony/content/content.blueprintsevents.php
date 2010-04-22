@@ -1,8 +1,6 @@
 <?php
 
 	require_once(TOOLKIT . '/class.administrationpage.php');
-	//require_once(TOOLKIT . '/class.eventmanager.php');
-	//require_once(TOOLKIT . '/class.sectionmanager.php');
 	require_once(TOOLKIT . '/class.event.php');
 	
 	Class contentBlueprintsEvents extends AdministrationPage{
@@ -49,9 +47,6 @@
 				foreach($iterator as $pathname){
 					
 					$event = Event::load($pathname);
-					
-					//$instance = eventManager::instance()->create($event['handle']);
-					//$section = SectionManager::instance()->fetch($instance->getSource());
 
 					$view_mode = ($event->allowEditorToParse() == true ? 'edit' : 'info');
 					$handle = preg_replace('/.php$/i', NULL, basename($event->parameters()->pathname));
@@ -123,19 +118,26 @@
 			$this->Form->appendChild($tableActions);
 		}
 
-		function __viewNew(){
+		public function __viewNew(){
+			if(!($this->event instanceof Event)){
+				$this->event = new Event;
+			}
+
 			$this->__form();
 		}
 
-		function __viewEdit(){
-			$this->__form();
-		}
+		public function __viewEdit(){
 
-		function __viewInfo(){
-			$this->__form(true);
-		}
+			$existing = Event::loadFromName($this->_context[1]);
 
-		function __form($readonly=false){
+			if(!($this->event instanceof Event)){
+				$this->event = $existing;
+			}
+
+			$this->__form($existing);
+		}
+		
+		function __form(Event $existing=NULL){
 
 			if($this->errors instanceof MessageStack && $this->errors->length() > 0){
 				$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
@@ -173,9 +175,11 @@
 				}
 			}
 
-			$isEditing = ($readonly ? true : false);
-			$fields = array();
+			//$isEditing = ($readonly ? true : false);
+			
 
+/*
+			$fields = array();
 			if($this->_context[0] == 'edit' || $this->_context[0] == 'info'){
 				$isEditing = true;
 
@@ -219,22 +223,27 @@
 			}
 
 			if(isset($_POST['fields'])) $fields = $_POST['fields'];
-
+*/
 			$layout = new Layout; //('small', 'small', 'medium');
 			
 			$column_1 = $layout->createColumn(Layout::SMALL);
 			$column_2 = $layout->createColumn(Layout::SMALL);
 			$column_3 = $layout->createColumn(Layout::LARGE);
-						
-			$this->setTitle(__(($isEditing ? '%1$s &ndash; %2$s &ndash; %3$s' : '%1$s &ndash; %2$s'), array(__('Symphony'), __('Events'), $about['name'])));
-			$this->appendSubheading(($isEditing ? $about['name'] : __('New Event')));
+			
+			$heading = __('Untitled');
+			if(!is_null($existing)){
+				$heading = $existing->about()->name;
+			}
+			
+			$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(__('Symphony'), __('Events'), $heading)));
+			$this->appendSubheading($heading);
 
-			if(!$readonly):
+			//if(!$readonly):
 
 				$fieldset = Widget::Fieldset(__('Essentials'));
 
 				$label = Widget::Label(__('Name'));
-				$label->appendChild(Widget::Input('fields[name]', General::sanitize($fields['name'])));
+				$label->appendChild(Widget::Input('fields[name]', General::sanitize($this->event->about()->name)));
 
 				if(isset($this->errors->{'about::name'})){
 					$fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->errors->{'about::name'}));
@@ -246,7 +255,7 @@
 			    $options = array();
 
 				foreach (new SectionIterator as $section) {
-					$options[] = array($section->handle, ($fields['source'] == $section->handle), $section->name);
+					$options[] = array($section->handle, ($this->event->parameters()->source == $section->handle), $section->name);
 				}
 
 				$label->appendChild(Widget::Select('fields[source]', $options, array('id' => 'event-context-selector')));
@@ -256,12 +265,13 @@
 				$fieldset = Widget::Fieldset(__('Processing Options'));
 				$label = Widget::Label(__('Filter Rules'));
 
-				if(!is_array($fields['filters'])) $fields['filters'] = array($fields['filters']);
-
+				$filters = $this->event->parameters()->filters;
+				if(!is_array($filters)) $filters = array();
+				
 				$options = array(
-					array('admin-only', in_array('admin-only', $fields['filters']), __('Admin Only')),
-					array('send-email', in_array('send-email', $fields['filters']), __('Send Email')),
-					array('expect-multiple', in_array('expect-multiple', $fields['filters']), __('Allow Multiple')),
+					array('admin-only', in_array('admin-only', $filters), __('Admin Only')),
+					array('send-email', in_array('send-email', $filters), __('Send Email')),
+					array('expect-multiple', in_array('expect-multiple', $filters), __('Allow Multiple')),
 				);
 
 				###
@@ -278,13 +288,13 @@
 				$fieldset->appendChild($label);
 
 				$label = Widget::Label();
-				$input = Widget::Input('fields[output_id_on_save]', 'yes', 'checkbox');
-				if(isset($fields['output_id_on_save']) && $fields['output_id_on_save'] == 'yes'){
+				$input = Widget::Input('fields[output-id-on-save]', 'yes', 'checkbox');
+				if($this->event->parameters()->{'output-id-on-save'} == true){
 					$input->setAttribute('checked', 'checked');
 				}
 
 				$label->appendChild($input);
-				$label->setValue(__('Add entry ID to the parameter pool in the format of <code>$event-name-id</code> when saving is successful.'));
+				$label->appendChild(new DOMText(__('Add entry ID to the parameter pool in the format of $event-name-id when saving is successful.')));
 				$fieldset->appendChild($label);
 				$column_2->appendChild($fieldset);
 				
@@ -297,8 +307,11 @@
 					$fieldset->appendChild(
 						$this->__buildDefaultsAndOverridesDuplicator(
 							$s,
-							($fields['source'] == $s->id
-								? array('overrides' => $fields['overrides'], 'defaults' => $fields['defaults'])
+							($this->event->parameters()->source == $s->handle
+								? array(
+									'overrides' => $this->event->parameters()->overrides, 
+									'defaults' => $this->event->parameters()->defaults
+								)
 								: NULL
 							)
 						)
@@ -310,7 +323,7 @@
 
 				$layout->appendTo($this->Form);
 				
-			endif;
+			//endif;
 
 			/*
 			// TO DO: Find new home for Documentation
@@ -325,13 +338,18 @@
 			endif;
 			*/
 
-			if($readonly != true){
+			//if($readonly != true){
 				
 				$div = $this->createElement('div');
 				$div->setAttribute('class', 'actions');
-				$div->appendChild(Widget::Input('action[save]', ($isEditing ? __('Save Changes') : __('Create Event')), 'submit', array('accesskey' => 's')));
+				$div->appendChild(Widget::Input(
+					'action[save]', 
+					(!is_null($existing) ? __('Save Changes') : __('Create Event')), 
+					'submit', 
+					array('accesskey' => 's')
+				));
 
-				if($isEditing){
+				if(!is_null($existing)){
 					$div->appendChild(
 						$this->createElement('button', __('Delete'), array(
 							'name' => 'action[delete]',
@@ -342,7 +360,7 @@
 				}
 
 				$this->Form->appendChild($div);
-			}
+			//}
 
 		}
 
@@ -404,10 +422,11 @@
 			$templates->appendChild($item);
 			
 			if(is_array($items['overrides'])){
-				$field_names = $items['overrides']['field'];
-				$replacement_values = $items['overrides']['replacement'];
+				//$field_names = $items['overrides']['field'];
+				//$replacement_values = $items['overrides']['replacement'];
 				
-				for($ii = 0; $ii < count($field_names); $ii++){
+				//for($ii = 0; $ii < count($field_names); $ii++){
+				foreach($items['overrides'] as $field_name => $replacement){
 					$item = $this->createElement('li');
 					$span = $this->createElement('span', 'Override');
 					$span->setAttribute('class', 'name');
@@ -419,7 +438,7 @@
 					foreach($section->fields as $f){
 						$options[] = array(
 							General::sanitize($f->{'element-name'}), 
-							$f->{'element-name'} == $field_names[$ii], 
+							$f->{'element-name'} == $field_name, 
 							General::sanitize($f->label)
 						);
 					}
@@ -428,7 +447,7 @@
 					$item->appendChild($label);
 
 					$label = Widget::Label(__('Replacement'));
-					$label->appendChild(Widget::Input('fields[overrides][replacement][]', General::sanitize($replacement_values[$ii])));
+					$label->appendChild(Widget::Input('fields[overrides][replacement][]', General::sanitize($replacement)));
 					$item->appendChild($label);
 					$instances->appendChild($item);
 				}
@@ -436,10 +455,11 @@
 			
 			if(is_array($items['defaults'])){
 				
-				$field_names = $items['defaults']['field'];
-				$replacement_values = $items['defaults']['replacement'];
+				//$field_names = $items['defaults']['field'];
+				//$replacement_values = $items['defaults']['replacement'];
 				
-				for($ii = 0; $ii < count($field_names); $ii++){
+				//for($ii = 0; $ii < count($field_names); $ii++){
+				foreach($items['defaults'] as $field_name => $replacement){
 					$item = $this->createElement('li');
 					$span = $this->createElement('span', 'Default Value');
 					$span->setAttribute('class', 'name');
@@ -451,7 +471,7 @@
 					foreach($section->fields as $f){
 						$options[] = array(
 							General::sanitize($f->{'element-name'}), 
-							$f->{'element-name'} == $field_names[$ii], 
+							$f->{'element-name'} == $field_name, 
 							General::sanitize($f->label)
 						);
 					}
@@ -460,7 +480,7 @@
 					$item->appendChild($label);
 
 					$label = Widget::Label(__('Replacement'));
-					$label->appendChild(Widget::Input('fields[defaults][replacement][]', General::sanitize($replacement_values[$ii])));
+					$label->appendChild(Widget::Input('fields[defaults][replacement][]', General::sanitize($replacement)));
 					$item->appendChild($label);
 					$instances->appendChild($item);
 				}
@@ -646,11 +666,11 @@
 			if($this->_context[0] == 'edit'){
 				$isEditing = true;
 				$handle = $this->_context[1];
-				$this->event = Event::loadFromName($handle);
+				//$this->event = Event::loadFromName($handle);
 			}
-			else{
+			//else{
 				$this->event = new Event;
-			}
+			//}
 			
 			$this->event->about()->name = $fields['name'];
 			
@@ -658,6 +678,10 @@
 			$this->event->about()->author->email = Administration::instance()->User->get('email');
 			
 			$this->event->parameters()->source = $fields['source'];
+			
+			if(isset($fields['output-id-on-save']) && $fields['output-id-on-save'] == 'yes'){
+				$this->event->parameters()->{'output-id-on-save'} = true;
+			}
 			
 			if(isset($fields['filters']) && is_array($fields['filters']) || !empty($fields['filters'])){
 				$this->event->parameters()->filters = $fields['filters'];
@@ -696,6 +720,31 @@
 			}
 
 		}
+		protected function __actionDelete($events, $redirect) {
+			$success = true;
+
+			if(!is_array($events)) $events = array($events);
+
+			foreach ($events as $event) {
+				if(!General::deleteFile(EVENTS . '/event.' . $event . '.php'))
+					$this->pageAlert(__('Failed to delete <code>%s</code>. Please check permissions.', array($this->_context[1])), Alert::ERROR);
+			}
+
+			if($success) redirect($redirect);
+		}
+
+		public function __actionIndex() {
+			$checked = array_keys($_POST['items']);
+
+			if(is_array($checked) && !empty($checked)) {
+				switch ($_POST['with-selected']) {
+					case 'delete':
+						$this->__actionDelete($checked, URL . '/symphony/blueprints/events/');
+						break;
+				}
+			}
+		}
+
 
 		function __formAction(){
 
@@ -873,7 +922,7 @@
 		<input name="send-email[recipient]" value="fred" type="hidden" />
 		<input id="submit" type="submit" name="action[save-contact-form]" value="Send" />
 	</fieldset>
-</form>');
+	</form>');
 
 				}
 
@@ -1023,31 +1072,6 @@
 			}
 
 			return $shell;
-		}
-
-		protected function __actionDelete($events, $redirect) {
-			$success = true;
-
-			if(!is_array($events)) $events = array($events);
-
-			foreach ($events as $event) {
-				if(!General::deleteFile(EVENTS . '/event.' . $event . '.php'))
-					$this->pageAlert(__('Failed to delete <code>%s</code>. Please check permissions.', array($this->_context[1])), Alert::ERROR);
-			}
-
-			if($success) redirect($redirect);
-		}
-
-		public function __actionIndex() {
-			$checked = array_keys($_POST['items']);
-
-			if(is_array($checked) && !empty($checked)) {
-				switch ($_POST['with-selected']) {
-					case 'delete':
-						$this->__actionDelete($checked, URL . '/symphony/blueprints/events/');
-						break;
-				}
-			}
 		}
 
 

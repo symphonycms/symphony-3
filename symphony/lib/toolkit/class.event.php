@@ -93,8 +93,10 @@
 			$this->_parameters = (object)array(
 				'root-element' => NULL,
 				'source' => NULL,
+				'filters' => array(),
 				'overrides' => array(),
-				'defaults' => array()
+				'defaults' => array(),
+				'output-id-on-save' => false
 			);
 		}
 		
@@ -149,9 +151,12 @@
 					var_export($event->about()->author->email, true),
 					var_export($event->about()->version, true),
 					var_export($event->about()->{'release-date'}, true),
+					var_export($event->parameters()->{'root-element'}, true),
 					var_export($event->parameters()->source, true),
-					var_export($event->parameters()->overrides, true),
-					var_export($event->parameters()->defaults, true),
+					General::var_export($event->parameters()->filters, true, 4),
+					General::var_export($event->parameters()->overrides, true, 4),
+					General::var_export($event->parameters()->defaults, true, 4),
+					$event->parameters()->{'output-id-on-save'} == true ? 'true' : 'false'
 				);
 
 				if(General::writeFile(

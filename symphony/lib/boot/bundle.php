@@ -10,9 +10,17 @@
 	} 
 	else{
 	    error_reporting(E_ALL & ~E_NOTICE);
-	}
 	
-	set_magic_quotes_runtime(0);
+		// Bad Magic Quotes! You're not wanted here!
+		if(get_magic_quotes_gpc() === true) {
+			set_magic_quotes_runtime(false);
+			General::cleanArray($_SERVER);
+			General::cleanArray($_COOKIE);
+			General::cleanArray($_GET);
+			General::cleanArray($_POST);
+		}
+		
+	}
 
 	header('Expires: Mon, 12 Dec 1982 06:14:00 GMT');
 	header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
