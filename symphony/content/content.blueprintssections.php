@@ -133,7 +133,7 @@
 			// Resave fields:
 			if (!is_null($fields)) {
 				$this->section->removeAllFields();
-				
+
 				if (is_array($fields) and !empty($fields)) {
 					foreach ($fields as $field) {
 						$this->section->appendField($field['type'], $field);
@@ -250,14 +250,16 @@
 					Section::delete($handle);
 				}
 				catch(SectionException $e){
-					die($e->getMessage() . 'DOH!!1');
+					$success = false;
+					$this->pageAlert($e->getMessage(), Alert::ERROR);
 				}
 				catch(Exception $e){
-					die($e->getMessage() . 'DOH!!2');
+					$success = false;
+					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
 				}
 			}
 
-			if($success == true) redirect($redirect);
+			if($success) redirect($redirect);
 		}
 
 		private static function __loadExistingSection($handle){
@@ -679,7 +681,7 @@
 				}
 
 				$item = $this->createElement('li');
-				
+
 				$field->displaySettingsPanel($item, new MessageStack);
 				$templates->appendChild($item);
 			}
@@ -697,7 +699,7 @@
 
 				$item = $this->createElement('li');
 				$field->displaySettingsPanel($item, $messages);
-				
+
 				$instances->appendChild($item);
 			}
 

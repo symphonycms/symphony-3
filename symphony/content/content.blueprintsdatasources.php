@@ -636,11 +636,19 @@
 			$success = true;
 
 			foreach ($datasources as $ds) {
-				if(!General::deleteFile(DATASOURCES . "/{$ds}.php")){
-					$this->pageAlert(__('Failed to delete <code>%s</code>. Please check permissions.', array($this->_context[1])), Alert::ERROR);
+				try{
+					Datasource::delete($handle);
+				}
+				catch(DatasourceException $e){
+					$success = false;
+					$this->pageAlert($e->getMessage(), Alert::ERROR);
+				}
+				catch(Exception $e){
+					$success = false;
+					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
 				}
 
-				// To Do: Delete reference from View XML
+				// TODO: Delete reference from View XML
 
 				/*$sql = "SELECT * FROM `tbl_pages` WHERE `data_sources` REGEXP '[[:<:]]".$ds."[[:>:]]' ";
 				$pages = Symphony::Database()->fetch($sql);
@@ -655,9 +663,7 @@
 				}*/
 			}
 
-			if($success == true && !is_null($redirect)){
-				redirect($redirect);
-			}
+			if($success) redirect($redirect);
 		}
 
 		public function __actionIndex() {

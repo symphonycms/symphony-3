@@ -100,8 +100,6 @@
 			);
 		}
 
-
-
 		public function &about(){
 			return $this->_about;
 		}
@@ -143,7 +141,9 @@
 			$classname = Lang::createHandle(ucwords($event->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
 			$pathname = EVENTS . "/{$filename}";
 
-			if(file_exists($pathname)) {}
+			if(self::__find($handle) !== false) {
+				throw new EventException(__('An Event with the name <code>%s</code> already exists.', array($event->about()->name)));
+			}
 
 			if($errors->length() <= 0){
 				$data = array(
@@ -174,6 +174,37 @@
 			}
 
 			throw new EventException(__('Event could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
+		}
+
+		public function rename(array $events) {
+			/*
+				$sections = array(
+					'old-event-name',
+					'new-event-name'
+				)
+
+			 	TODO:
+				Upon renaming an event, views need to be updated with the event
+			*/
+
+			list($old, $new) = $events;
+
+			self::delete($old);
+		}
+
+		public function delete($handle){
+			/*
+				TODO:
+				Upon deletion of the event, views need to be updated to remove
+				it's associated with the event
+			*/
+			$event = Event::loadFromName($handle);
+
+			if(!$event->allowEditorToParse()) {
+				throw new EventException(__('Event cannot be deleted, the Editor does not have permission.'));
+			}
+
+			return General::deleteFile(EVENTS . "/{$handle}.php");
 		}
 
 		public static function loadFromName($name){
