@@ -133,7 +133,6 @@
 			// Resave fields:
 			if (!is_null($fields)) {
 				$this->section->removeAllFields();
-				
 				if (is_array($fields) and !empty($fields)) {
 					foreach ($fields as $field) {
 						$this->section->appendField($field['type'], $field);

@@ -91,7 +91,9 @@
 
 		public function setAttributeArray(array $attributes) {
 			if(is_array($attributes) && !empty($attributes)) {
-				foreach($attributes as $key => $val) $this->setAttribute($key, $val);
+				foreach($attributes as $key => $val){
+					$this->setAttribute($key, $val);
+				}
 			}
 		}
 

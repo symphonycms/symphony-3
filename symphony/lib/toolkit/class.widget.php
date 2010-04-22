@@ -83,14 +83,16 @@
 		public static function Select($name, $options, array $attributes = array()){
 			if(!self::$Symphony) Widget::init();
 
-			$obj = Widget::$Symphony->createElement('select', null, $attributes);
-			$obj->setAttribute('name', $name);
+			$obj = Widget::$Symphony->createElement('select');
+			
+			$attributes['name'] = $name;
+			
+			$obj->setAttributeArray($attributes);
 
 			$obj->appendChild(Widget::$Symphony->createTextNode(''));
 
 			if(!is_array($options) || empty($options)){
 				if(!isset($attributes['disabled'])) $obj->setAttribute('disabled', 'disabled');
-
 				return $obj;
 			}
 

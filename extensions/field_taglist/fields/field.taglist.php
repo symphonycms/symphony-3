@@ -111,7 +111,24 @@
 		/*-------------------------------------------------------------------------
 			Settings:
 		-------------------------------------------------------------------------*/
-
+		
+		public function setPropertiesFromPostData($data) {
+			//if(is_array($data['suggestion-list-source'])){
+			//	var_dump($data);
+			//	exit;
+			//}
+			return parent::setPropertiesFromPostData($data);
+		}
+		/*
+		public function setPropertiesFromPostData($data) {
+			$data['required'] = (isset($data['required']) && $data['required'] == 'yes' ? 'yes' : 'no');
+			$data['show-column'] = (isset($data['show-column']) && $data['show-column'] == 'yes' ? 'yes' : 'no');
+			foreach($data as $key => $value){
+				$this->$key = $value;
+			}
+		}
+		*/
+		
 		public function findDefaultSettings(array &$fields){
 			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array('existing');
 		}
@@ -152,7 +169,7 @@
 				}
 			}
 
-			$label->appendChild(Widget::Select('suggestion-list-source', $options, array('multiple' => 'multiple')));
+			$label->appendChild(Widget::Select('suggestion-list-source][', $options, array('multiple' => 'multiple')));
 			$wrapper->appendChild($label);
 
 			$group = $document->createElement('div');

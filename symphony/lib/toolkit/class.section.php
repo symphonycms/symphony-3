@@ -167,7 +167,7 @@
 			$field = Field::loadFromType($type);
 
 			if(!is_null($data)){
-				$field->setFromPOST($data);
+				$field->setPropertiesFromPostData($data);
 			}
 			$field->section = $this->handle;
 			
