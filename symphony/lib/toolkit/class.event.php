@@ -153,9 +153,9 @@
 					var_export($event->about()->{'release-date'}, true),
 					var_export($event->parameters()->{'root-element'}, true),
 					var_export($event->parameters()->source, true),
-					General::var_export($event->parameters()->filters, true, 4),
-					General::var_export($event->parameters()->overrides, true, 4),
-					General::var_export($event->parameters()->defaults, true, 4),
+					trim(General::var_export($event->parameters()->filters, true, 4)),
+					trim(General::var_export($event->parameters()->overrides, true, 4)),
+					trim(General::var_export($event->parameters()->defaults, true, 4)),
 					$event->parameters()->{'output-id-on-save'} == true ? 'true' : 'false'
 				);
 

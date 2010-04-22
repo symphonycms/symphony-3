@@ -281,7 +281,7 @@
 				);
 
 				foreach ($this->parameters() as $value) {
-					$data[] = var_export($value, true);
+					$data[] = trim(General::var_export($value, true, (is_array($value) ? 5 : 0)));
 				}
 
 				if(General::writeFile(
