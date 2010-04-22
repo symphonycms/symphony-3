@@ -766,7 +766,7 @@
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
 
-			$subheading = __('Untitled');
+			$subheading = __('New Entry');
 			if(!is_null($existing) && $existing instanceof Entry){
 
 				if(is_null($this->entry) || !($this->entry instanceof Entry)){

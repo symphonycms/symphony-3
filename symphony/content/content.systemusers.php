@@ -162,7 +162,7 @@
 
 						$this->pageAlert(
 							__(
-								'User updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Users</a>',
+								'User updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/system/users/new/',
@@ -177,7 +177,7 @@
 
 						$this->pageAlert(
 							__(
-								'User created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Users</a>',
+								'User created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/system/users/new/',
@@ -210,7 +210,7 @@
 			if($this->_context[0] == 'edit' && $user->get('id') == Administration::instance()->User->id) $isOwner = true;
 
 			$this->setTitle(__(($this->_context[0] == 'new' ? '%1$s &ndash; %2$s &ndash; Untitled' : '%1$s &ndash; %2$s &ndash; %3$s'), array(__('Symphony'), __('Users'), $user->getFullName())));
-			$this->appendSubheading(($this->_context[0] == 'new' ? __('Untitled') : $user->getFullName()));
+			$this->appendSubheading(($this->_context[0] == 'new' ? __('New User') : $user->getFullName()));
 
 			### Essentials ###
 			$fieldset = Widget::Fieldset(__('Essentials'));

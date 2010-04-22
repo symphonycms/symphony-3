@@ -362,7 +362,7 @@
 					case 'saved':
 						$this->pageAlert(
 							__(
-								'Data source updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Data sources</a>',
+								'Data source updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									URL . '/symphony/blueprints/datasources/new/',
@@ -376,7 +376,7 @@
 					case 'created':
 						$this->pageAlert(
 							__(
-								'Data source created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Data sources</a>',
+								'Data source created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									URL . '/symphony/blueprints/datasources/new/',
@@ -414,7 +414,7 @@
 				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
 					__('Symphony'), __('Data Sources'), __('Untitled')
 				)));
-				$this->appendSubheading(General::sanitize(__('Untitled')));
+				$this->appendSubheading(General::sanitize(__('New Data Source')));
 			}
 
 			else{

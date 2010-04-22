@@ -145,7 +145,7 @@
 					case 'saved':
 						$this->pageAlert(
 							__(
-								'Event updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Events</a>',
+								'Event updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									URL . '/symphony/blueprints/events/new/',
@@ -158,7 +158,7 @@
 					case 'created':
 						$this->pageAlert(
 							__(
-								'Event created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Events</a>',
+								'Event created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									URL . '/symphony/blueprints/events/new/',
@@ -225,7 +225,7 @@
 			$column_3 = $layout->createColumn(Layout::LARGE);
 						
 			$this->setTitle(__(($isEditing ? '%1$s &ndash; %2$s &ndash; %3$s' : '%1$s &ndash; %2$s'), array(__('Symphony'), __('Events'), $about['name'])));
-			$this->appendSubheading(($isEditing ? $about['name'] : __('Untitled')));
+			$this->appendSubheading(($isEditing ? $about['name'] : __('New Event')));
 
 			if(!$readonly):
 

@@ -121,7 +121,7 @@
 					case 'saved':
 						$this->pageAlert(
 							__(
-								'Utility updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Utilities</a>',
+								'Utility updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									URL . '/symphony/blueprints/utilities/new/',
@@ -134,7 +134,7 @@
 					case 'created':
 						$this->pageAlert(
 							__(
-								'Utility created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Utilities</a>',
+								'Utility created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									URL . '/symphony/blueprints/utilities/new/',
@@ -148,7 +148,7 @@
 			}
 
 			$this->setTitle(__(($this->_context[0] == 'new' ? '%1$s &ndash; %2$s' : '%1$s &ndash; %2$s &ndash; %3$s'), array(__('Symphony'), __('Utilities'), $filename)));
-			$this->appendSubheading(($this->_context[0] == 'new' ? __('Untitled') : $filename));
+			$this->appendSubheading(($this->_context[0] == 'new' ? __('New Utility') : $filename));
 
 			if(!empty($_POST)) $fields = $_POST['fields'];
 
