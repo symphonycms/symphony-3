@@ -44,6 +44,11 @@
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
 			$page = Administration::instance()->Page;
+			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
+			
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::SMALL);
+			$right = $layout->createColumn(Layout::LARGE);
 
 		//	Essentials --------------------------------------------------------
 
@@ -61,7 +66,7 @@
 			}
 
 			$fieldset->appendChild($label);
-			$wrapper->appendChild($fieldset);
+			$left->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
@@ -69,10 +74,7 @@
 				'class' => 'settings'
 			));
 
-			$div = $page->createElement('div');
-			$div->appendChild(
-				$page->createElement('h3', __('Filter Users by'), array('class' => 'label'))
-			);
+			$label = Widget::Label(__('Filter Users By:'));
 
 			$ol = $page->createElement('ol');
 			$ol->setAttribute('class', 'filters-duplicator');
@@ -83,22 +85,13 @@
 			$this->appendFilter($ol, __('Last Name'), 'last-name', $datasource->parameters()->filters['last-name']);
 			$this->appendFilter($ol, __('Email Address'), 'email-address', $datasource->parameters()->filters['email-address']);
 
-			$div->appendChild($ol);
-
-			$fieldset->appendChild($div);
-			$wrapper->appendChild($fieldset);
+			$fieldset->appendChild($label);
+			$fieldset->appendChild($ol);
+			$right->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 
-			$fieldset = $page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($page->createElement('legend', __('Output Options')));
-
-			$ul = $page->createElement('ul');
-			$ul->setAttribute('class', 'group');
-
-			$li = $page->createElement('li');
-			$li->appendChild($page->createElement('h3', __('XML Output')));
+			$fieldset = Widget::Fieldset(__('Output Options'));
 
 			$select = Widget::Select('fields[included-elements][]', array(
 				array('username', in_array('username', $datasource->parameters()->{"included-elements"}), 'username'),
@@ -113,11 +106,11 @@
 
 			$label = Widget::Label(__('Included Elements'));
 			$label->appendChild($select);
-			$li->appendChild($label);
-			$ul->appendChild($li);
-
-			$fieldset->appendChild($ul);
-			$wrapper->appendChild($fieldset);
+			
+			$fieldset->appendChild($label);
+			$right->appendChild($fieldset);
+			
+			$layout->appendTo($wrapper);
 		}
 
 		protected function appendFilter(&$wrapper, $name, $handle, $value=NULL) {
