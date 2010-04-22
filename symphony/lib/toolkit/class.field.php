@@ -151,8 +151,10 @@
 			if(!isset(self::$loaded[$pathname])){
 				self::$loaded[$pathname] = require($pathname);
 			}
-
+			
 			$obj = new self::$loaded[$pathname];
+			$obj->type = preg_replace('%^field\.|\.php$%', '', basename($pathname));
+			
 			return $obj;
 		}
 
@@ -750,21 +752,63 @@
 			return false;
 
 		}
-*/
-		public function createTable(){
+*/		
+		
+		public function create(){
 			return Symphony::Database()->query(
-				sprintf(
-					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+				'
+					CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
 						`id` int(11) unsigned NOT NULL auto_increment,
 						`entry_id` int(11) unsigned NOT NULL,
 						`value` varchar(255) default NULL,
-					PRIMARY KEY  (`id`),
-					KEY `entry_id` (`entry_id`),
-					KEY `value` (`value`)
-					)',
-					$this->section,
-					$this->{'element-name'}
-				)
+						PRIMARY KEY  (`id`),
+						KEY `entry_id` (`entry_id`),
+						KEY `value` (`value`)
+					)
+				',
+				array($this->section, $this->{'element-name'})
 			);
+		}
+		
+		public function remove() {
+			try {
+				Symphony::Database()->query(
+					'
+						DROP TABLE
+							`tbl_data_%s_%s`
+					',
+					array($this->section, $this->{'element-name'})
+				);
+			}
+			
+			catch (Exception $e) {
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public function rename($old, $new) {
+			try {
+				Symphony::Database()->query(
+					'
+						ALTER TABLE
+							`tbl_data_%s_%s`
+						RENAME TO
+							`tbl_data_%1$s_%s`
+					',
+					array($this->section, $old, $new)
+				);
+			}
+			
+			catch (Exception $e) {
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public function update() {
+			return true;
 		}
 	}
