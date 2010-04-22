@@ -418,10 +418,6 @@
 			return true;
 		}
 
-}
-
-
-
-
+	}
 
 	return 'fieldTagList';
