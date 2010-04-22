@@ -75,7 +75,7 @@
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
 			$middle = $layout->createColumn(Layout::SMALL);
-			$right = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -140,7 +140,7 @@
 			$container->appendChild($templates);
 			$container->appendChild($instances);
 			$fieldset->appendChild($container);
-			$right->appendChild($fieldset);
+			$left->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
@@ -159,7 +159,7 @@
 			$p->setAttribute('class', 'help');
 			$fieldset->appendChild($p);
 		*/
-			$right->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Sorting -----------------------------------------------------------
 
@@ -179,7 +179,7 @@
 			$label->appendChild(Widget::Select('fields[sort-order]', $options));
 			$fieldset->appendChild($label);
 
-			$left->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Limiting ----------------------------------------------------------
 
@@ -221,7 +221,7 @@
 
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
-			$left->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 
@@ -267,7 +267,7 @@
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
 
-			$middle->appendChild($fieldset);
+			$right->appendChild($fieldset);
 			
 			$layout->appendTo($wrapper);
 
