@@ -87,12 +87,14 @@
 		}
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
+		
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::SMALL);
+			$right = $layout->createColumn(Layout::LARGE);
 
 		//	Essentials --------------------------------------------------------
 
-			$fieldset = Symphony::Parent()->Page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(Symphony::Parent()->Page->createElement('legend', __('Essentials')));
+			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			// Name:
 			$label = Widget::Label(__('Name'));
@@ -104,13 +106,11 @@
 			}
 
 			$fieldset->appendChild($label);
-			$wrapper->appendChild($fieldset);
+			$left->appendChild($fieldset);
 
 		//	Source ------------------------------------------------------------
 
-			$fieldset = Symphony::Parent()->Page->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild(Symphony::Parent()->Page->createElement('legend', __('Source')));
+			$fieldset = Widget::Fieldset(__('Source'));
 			$label = Widget::Label(__('URL'));
 			$label->appendChild(Widget::Input(
 				'fields[url]', General::sanitize($datasource->parameters()->url)
@@ -130,11 +130,12 @@
 					'class' => 'help'
 				))
 			);
+			
+			$right->appendChild($fieldset);
+			
+		//	Namespace Declarations
 
-			$div = Symphony::Parent()->Page->createElement('div');
-			$h3 = Symphony::Parent()->Page->createElement('h3', __('Namespace Declarations'), array('class' => 'label'));
-			$h3->appendChild(Symphony::Parent()->Page->createElement('i', 'Optional'));
-			$div->appendChild($h3);
+			$fieldset = Widget::Fieldset(__('Namespace Declarations'), Symphony::Parent()->Page->createElement('i', 'Optional'));
 
 			$ol = Symphony::Parent()->Page->createElement('ol');
 			$ol->setAttribute('class', 'filters-duplicator');
@@ -182,8 +183,7 @@
 
 			}
 
-			$div->appendChild($ol);
-			$fieldset->appendChild($div);
+			$fieldset->appendChild($ol);
 
 			$input = Widget::Input('fields[automatically-discover-namespaces]', 'yes', 'checkbox');
 			if ($datasource->parameters()->{'automatically-discover-namespaces'} == 'yes') {
@@ -198,7 +198,10 @@
 			$help->setAttribute('class', 'help');
 			$help->setValue(__('Search the source document for namespaces, any that it finds will be added to the declarations above.'));
 			$fieldset->appendChild($help);
+			
+			$right->appendChild($fieldset);
 
+			$fieldset = Widget::Fieldset(__('Included Elements'));
 			$label = Widget::Label(__('Included Elements'));
 			$label->appendChild(Widget::Input('fields[xpath]', General::sanitize($datasource->parameters()->xpath)));
 
@@ -250,6 +253,8 @@
 			}
 			$fieldset->appendChild($label);
 
-			$wrapper->appendChild($fieldset);
+			$right->appendChild($fieldset);
+			
+			$layout->appendTo($wrapper);
 		}
 	}

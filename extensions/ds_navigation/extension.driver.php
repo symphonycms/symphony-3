@@ -58,13 +58,15 @@
 		}
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
-			$admin = Administration::instance()->Page;
+			$page = Administration::instance()->Page;
+			
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::SMALL);
+			$right = $layout->createColumn(Layout::LARGE);
 
 		//	Essentials --------------------------------------------------------
 
-			$fieldset = $admin->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($admin->createElement('legend', __('Essentials')));
+			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			// Name:
 			$label = Widget::Label(__('Name'));
@@ -76,28 +78,20 @@
 			}
 
 			$fieldset->appendChild($label);
-			$wrapper->appendChild($fieldset);
+			$left->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
-			$fieldset = $admin->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
-			$fieldset->appendChild($admin->createElement('legend', __('Filtering')));
-			$p = $admin->createElement('p');
+			$p = $page->createElement('p');
 			$p->setAttribute('class', 'help');
 			$p->appendChild(
-				$admin->createElement('code', '{$param}')
+				$page->createElement('code', '{$param}')
 			);
 			$p->setValue(' or ');
 			$p->appendChild(
-				$admin->createElement('code', 'Value')
+				$page->createElement('code', 'Value')
 			);
-			$fieldset->appendChild($p);
-
-			$group = $admin->createElement('div');
-			$group->setAttribute('class', 'group');
-
-			$div = $admin->createElement('div');
+			$fieldset = Widget::Fieldset(__('Filtering'), $p);
 
 			// Parent View:
 			$label = Widget::Label(__('Parent View'));
@@ -108,19 +102,16 @@
 				$label = Widget::wrapFormElementWithError($label, $errors->{'parent'});
 			}
 
-			$div->appendChild($label);
+			$fieldset->appendChild($label);
 
-			$ul = $admin->createElement('ul');
+			$ul = $page->createElement('ul');
 			$ul->setAttribute('class', 'tags');
 
 			foreach (new ViewIterator as $view) {
-				$ul->appendChild($admin->createElement('li', $view->path));
+				$ul->appendChild($page->createElement('li', $view->path));
 			}
 
-			$div->appendChild($ul);
-			$group->appendChild($div);
-
-			$div = $admin->createElement('div');
+			$fieldset->appendChild($ul);
 
 			// View Type:
 			$label = Widget::Label(__('View Type'));
@@ -131,17 +122,16 @@
 				$label = Widget::wrapFormElementWithError($label, $errors->{'type'});
 			}
 
-			$div->appendChild($label);
+			$fieldset->appendChild($label);
 
-			$ul = $admin->createElement('ul');
+			$ul = $page->createElement('ul');
 			$ul->setAttribute('class', 'tags');
 
 			foreach(View::fetchUsedTypes() as $type){
-				$ul->appendChild($admin->createElement('li', $type));
+				$ul->appendChild($page->createElement('li', $type));
 			}
 
-			$div->appendChild($ul);
-			$group->appendChild($div);
+			$fieldset->appendChild($ul);
 
 /*
 			if (isset($datasource->parameters()->parent) && !is_null($datasource->parameters()->parent)){
@@ -194,9 +184,7 @@
 			$ol->appendChild($li);
 */
 
-
-			$fieldset->appendChild($group);
-
-			$wrapper->appendChild($fieldset);
+			$left->appendChild($fieldset);
+			$layout->appendTo($wrapper);
 		}
 	}
