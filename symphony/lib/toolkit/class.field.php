@@ -381,10 +381,17 @@
 			return false;
 		}
 
+		public function buildSortingSQL(&$joins, &$order, $direction = 'ASC'){
+			$joins .= "LEFT OUTER JOIN `tbl_data_%s_%s` AS `ed` ON (e.`id` = ed.`entry_id`)";
+			$order = "ORDER BY " . (in_array(strtolower($direction), array('random','rand')) ? "RAND()" : " ed.`value`" . $direction);
+		}
+
+		/*
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
 			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`value` $order");
 		}
+		*/
 
 		protected static function isFilterRegex($string){
 			if(preg_match('/^regexp:/i', $string)) return true;
