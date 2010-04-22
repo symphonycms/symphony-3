@@ -12,7 +12,6 @@
 			$this->_name = __('Select Box Link');
 
 			// Set default
-			$this->{'required'} = 'yes';
 			$this->{'limit'} = 20;
 		}
 

@@ -188,17 +188,19 @@
 		-------------------------------------------------------------------------*/
 
 		public function prepareTableValue($data, DOMElement $link=NULL){
-			$value = NULL;
-
-			if(!is_null($data->value)){
-				$value = (is_array($data->value) ? self::__tagArrayToString($data->value) : $data->value);
+			if(!is_array($data)){
+				$data = array($data);
 			}
 
-			return parent::prepareTableValue((object)array('value' => General::sanitize($value)), $link);
+			$values = array();
+			foreach($data as $d){
+				$values[] = $d->value;
+			}
+
+			return parent::prepareTableValue((object)array('value' => General::sanitize($this->__tagArrayToString($values))), $link);
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
-
 			if(is_array($data)) {
 				$values = array();
 				foreach($data as $d) {
@@ -282,9 +284,9 @@
 
 					return self::STATUS_ERROR;
 				}
-
-				return self::STATUS_OK;
 			}
+
+			return self::STATUS_OK;
 		}
 
 		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
@@ -318,28 +320,9 @@
 			Output:
 		-------------------------------------------------------------------------*/
 
-		public function loadDataFromDatabase(Entry $entry){
-			try{
-				$rows = Symphony::Database()->query(
-					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s ORDER BY `id` ASC",
-					array(
-						$entry->section,
-						$this->{'element-name'},
-						$entry->id
-					)
-				);
-
-				$result = array();
-				foreach($rows as $r){
-					$result[] = $r;
-				}
-				return $result;
-			}
-			catch(DatabaseException $e){
-				// Oh oh....no data. oh well, have a smoke and then return
-			}
+		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false){
+			return parent::loadDataFromDatabase($entry, true);
 		}
-
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (!is_array($data) or empty($data)) return;

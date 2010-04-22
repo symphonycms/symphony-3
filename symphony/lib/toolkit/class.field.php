@@ -149,10 +149,10 @@
 			if(!isset(self::$loaded[$pathname])){
 				self::$loaded[$pathname] = require($pathname);
 			}
-			
+
 			$obj = new self::$loaded[$pathname];
 			$obj->type = preg_replace('%^field\.|\.php$%', '', basename($pathname));
-			
+
 			return $obj;
 		}
 
@@ -488,6 +488,32 @@
 			return self::STATUS_ERROR;
 		}
 
+		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false){
+			try{
+				$rows = Symphony::Database()->query(
+					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s ORDER BY `id` ASC",
+					array(
+						$entry->section,
+						$this->{'element-name'},
+						$entry->id
+					)
+				);
+
+				if(!$expect_multiple) return $rows->current();
+
+				$result = array();
+				foreach($rows as $r){
+					$result[] = $r;
+				}
+
+				return $result;
+			}
+			catch(DatabaseException $e){
+				// Oh oh....no data. oh well, have a smoke and then return
+			}
+		}
+
+/*
 		public function loadDataFromDatabase(Entry $entry){
 			try{
 				return Symphony::Database()->query(
@@ -503,6 +529,7 @@
 				// Oh oh....no data. oh well, have a smoke and then return
 			}
 		}
+*/
 
 		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
 			if ($this->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
@@ -741,8 +768,8 @@
 			return false;
 
 		}
-*/		
-		
+*/
+
 		public function create(){
 			return Symphony::Database()->query(
 				'
@@ -758,7 +785,7 @@
 				array($this->section, $this->{'element-name'})
 			);
 		}
-		
+
 		public function remove() {
 			try {
 				Symphony::Database()->query(
@@ -769,14 +796,14 @@
 					array($this->section, $this->{'element-name'})
 				);
 			}
-			
+
 			catch (Exception $e) {
 				return false;
 			}
-			
+
 			return true;
 		}
-		
+
 		public function rename($old, $new) {
 			try {
 				Symphony::Database()->query(
@@ -789,14 +816,14 @@
 					array($this->section, $old, $new)
 				);
 			}
-			
+
 			catch (Exception $e) {
 				return false;
 			}
-			
+
 			return true;
 		}
-		
+
 		public function update() {
 			return true;
 		}

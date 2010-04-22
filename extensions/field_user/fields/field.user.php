@@ -74,24 +74,32 @@
 */
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
 
-			$value = (isset($data->user_id) ? $data->user_id : NULL);
-
-			$callback = Administration::instance()->getPageCallback();
-
-			if ($this->{'default-to-current-user'} == 'yes' && is_null($data)) {
-				$value = array(Administration::instance()->User->id);
+			if(!is_array($data)){
+				$data = array($data);
 			}
 
-			if (!is_array($value)) {
-				$value = array($value);
+			$selected = array();
+			foreach($data as $d){
+				if(!($d instanceof StdClass) || !isset($d->user_id)) continue;
+				$selected[] = $d->user_id;
+			}
+
+			//$callback = Administration::instance()->getPageCallback();
+
+			if ($this->{'default-to-current-user'} == 'yes' && is_null($data)) {
+				$selected[] = Administration::instance()->User->id;
 			}
 
 		    $users = UserManager::fetch();
 
 			$options = array();
 
+			if($this->{'required'} == 'yes') {
+				$options[] = array(null, false);
+			}
+
 			foreach($users as $u){
-				$options[] = array($u->id, in_array($u->id, $value), $u->getFullName());
+				$options[] = array($u->id, in_array($u->id, $selected), General::sanitize($u->getFullName()));
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
@@ -101,21 +109,28 @@
 			$label->appendChild(Widget::Select($fieldname, $options,
 				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));
-			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
-			else $wrapper->appendChild($label);
+
+			if (!is_null($error)) {
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
+			}
+
+			$wrapper->appendChild($label);
 		}
 
 		public function prepareTableValue($data, DOMElement $link=NULL){
 
-			if(!is_array($data->{'user_id'})) $data->{'user_id'} = array($data->{'user_id'});
+			if(!is_array($data)){
+				$data = array($data);
+			}
 
-			if(empty($data->{'user_id'})) return __('None');
+			$values = array();
+			foreach($data as $d){
+				$values[] = $d->user_id;
+			}
 
-			$value = array();
+			$fragment = Symphony::Parent()->Page->createDocumentFragment();
 
-			$fragment = $wrapper->ownerDocument->createDocumentFragment();
-
-			foreach($data->{'user_id'} as $user_id){
+			foreach($values as $user_id){
 				if(is_null($user_id)) continue;
 
 				$user = new User($user_id);
@@ -142,12 +157,6 @@
 			return (!$fragment->hasChildNodes()) ? __('None') : $fragment;
 		}
 
-/*
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
-			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`user_id` $order");
-		}
-*/
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
 			$field_id = $this->id;
 
@@ -246,9 +255,11 @@
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$options_list = $wrapper->ownerDocument->createElement('ul');
+			$document = $wrapper->ownerDocument;
+
+			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-			
+
 			$this->appendShowColumnCheckbox($options_list);
 			$this->appendRequiredCheckbox($options_list);
 
@@ -258,7 +269,9 @@
 			if($this->{'allow-multiple-selection'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->prependChild($input);
-			$options_list->appendChild($label);
+			$item = $document->createElement('li');
+			$item->appendChild($label);
+			$options_list->appendChild($item);
 
 			## Default to current logged in user
 			$label = Widget::Label(__('Select current user by default'));
@@ -266,24 +279,19 @@
 			if($this->{'default-to-current-user'} == 'yes') $input->setAttribute('checked', 'checked');
 
 			$label->prependChild($input);
-			$options_list->appendChild($label);
+			$item = $document->createElement('li');
+			$item->appendChild($label);
+			$options_list->appendChild($item);
 
-			$this->appendShowColumnCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 
 		}
 
 		public function processFormData($data, Entry $entry=NULL){
 
-			if(isset($entry->data()->{$this->{'element-name'}})){
-				$result = $entry->data()->{$this->{'element-name'}};
-			}
-
-			else {
-				$result = (object)array(
-					'user_id' => NULL
-				);
-			}
+			$result = (object)array(
+				'user_id' => NULL
+			);
 
 			$result->user_id = $data;
 
@@ -291,7 +299,12 @@
 		}
 
 		public function validateData($data=NULL, MessageStack &$errors, Entry $entry=NULL){
-			if ($this->required == 'yes' && (!isset($data->user_id) || strlen(trim($data->user_id)) == 0)){
+
+			if(!is_array($data)) {
+				$data = array($data);
+			}
+
+			if ($this->required == 'yes' && (!isset($data[0]->user_id) || strlen(trim($data[0]->user_id)) == 0)){
 				$errors->append(
 					$this->{'element-name'},
 					array(
@@ -304,8 +317,26 @@
 			return self::STATUS_OK;
 		}
 
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return parent::saveData($data, $errors, $entry);
+		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
+			// Since we are dealing with multiple
+			// values, must purge the existing data first
+			Symphony::Database()->delete(
+				sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
+				array($entry->id),
+				"`entry_id` = %s"
+			);
+
+			if(!is_array($data)){
+				$data = array($data);
+			}
+			foreach($data as $d){
+				parent::saveData($d, $errors, $entry);
+			}
+			return Field::STATUS_OK;
+		}
+
+		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false){
+			return parent::loadDataFromDatabase($entry, true);
 		}
 
 		public function create(){

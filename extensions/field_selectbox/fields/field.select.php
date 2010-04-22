@@ -120,7 +120,6 @@
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
-
 			if(!is_array($data)){
 				$data = array($data);
 			}
@@ -457,6 +456,7 @@
 			return parent::validateData($this->processFormData($value, $entry), $errors, $entry);
 		}
 
+		/*	Possibly could be removed.. */
 		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
 
 			// Since we are dealing with multiple
@@ -476,29 +476,11 @@
 			return Field::STATUS_OK;
 		}
 
-		public function loadDataFromDatabase(Entry $entry){
-			try{
-				$rows = Symphony::Database()->query(
-					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s ORDER BY `id` ASC",
-					array(
-						$entry->section,
-						$this->{'element-name'},
-						$entry->id
-					)
-				);
-
-				$result = array();
-				foreach($rows as $r){
-					$result[] = $r;
-				}
-				return $result;
-			}
-			catch(DatabaseException $e){
-				// Oh oh....no data. oh well, have a smoke and then return
-			}
+		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false) {
+			return parent::loadDataFromDatabase($entry, true);
 		}
 
-		public function create(){
+		public function createTable(){
 			return Symphony::Database()->query(
 				sprintf(
 					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
