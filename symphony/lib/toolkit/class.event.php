@@ -64,16 +64,39 @@
 		}
 	}
 
-	Abstract Class Event{
+	Class Event{
 		
 		const PRIORITY_HIGH = 3;
 		const PRIORITY_NORMAL = 2;
 		const PRIORITY_LOW = 1;
 		
+		const ERROR_MISSING_OR_INVALID_FIELDS = 4;
+		const ERROR_FAILED_TO_WRITE = 5;
+		
 		protected static $_loaded;
 		
 		protected $_about;
 		protected $_parameters;
+		
+		public function __construct(){
+			$this->_about = (object)array(
+				'name'			=> NULL,
+				'author'		=> (object)array(
+					'name'			=> NULL,
+					'website'		=> URL,
+					'email'			=> NULL
+				),
+				'version'		=> '1.0',
+				'release-date'	=> DateTimeObj::get('Y-m-d')
+			);
+			
+			$this->_parameters = (object)array(
+				'root-element' => NULL,
+				'source' => NULL,
+				'overrides' => array(),
+				'defaults' => array()
+			);
+		}
 		
 		public function &about(){
 			return $this->_about;
@@ -103,6 +126,45 @@
 
 			return $obj;
 
+		}
+		
+		public static function save(Event $event, MessageStack &$errors){
+			
+			if (!isset($event->about()->name) || empty($event->about()->name)) {
+				$errors->append('about::name', __('This is a required field'));
+			}
+			
+			$event->parameters()->{'root-element'} = $handle = Lang::createFilename($event->about()->name);
+			$filename = "{$handle}.php";
+			$classname = Lang::createHandle(ucwords($event->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
+			$pathname = EVENTS . "/{$filename}";
+			
+			if($errors->length() <= 0){
+				$data = array(
+					$classname,
+					// About info:
+					var_export($event->about()->name, true),
+					var_export($event->about()->author->name, true),
+					var_export($event->about()->author->website, true),
+					var_export($event->about()->author->email, true),
+					var_export($event->about()->version, true),
+					var_export($event->about()->{'release-date'}, true),
+					var_export($event->parameters()->source, true),
+					var_export($event->parameters()->overrides, true),
+					var_export($event->parameters()->defaults, true),
+				);
+
+				if(General::writeFile(
+					$pathname,
+					vsprintf(file_get_contents(TEMPLATES . '/template.event.php'), $data),
+					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
+				)){
+					return $pathname;
+				}
+				throw new EventException(__('Failed to write event "%s" to disk.', array($filename)), self::ERROR_FAILED_TO_WRITE);
+			}
+			
+			throw new EventException(__('Event could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
 		}
 
 		public static function loadFromName($name){
@@ -201,6 +263,8 @@
 			return self::PRIORITY_NORMAL;
 		}
 
-		abstract public function trigger();
+		public function trigger(){
+			return NULL;
+		}
 	}
 	

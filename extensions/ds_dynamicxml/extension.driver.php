@@ -88,6 +88,9 @@
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
 		
+			$page = Administration::instance()->Page;
+			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
+		
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
 			$right = $layout->createColumn(Layout::LARGE);
@@ -215,8 +218,13 @@
 			$help->setAttribute('class', 'help');
 			$help->setValue(__('Use an XPath expression to select which elements from the source XML to include.'));
 			$fieldset->appendChild($help);
+			
+			$right->appendChild($fieldset);
 
 		//	Timeouts ------------------------------------------------------------
+		
+			$fieldset = Widget::Fieldset(__('Timeout Options'));
+			
 			$input = Widget::Input('fields[cache-lifetime]', max(0, intval($datasource->parameters()->{'cache-lifetime'})));
 			$input->setAttribute('size', 4);
 
@@ -253,7 +261,7 @@
 			}
 			$fieldset->appendChild($label);
 
-			$right->appendChild($fieldset);
+			$left->appendChild($fieldset);
 			
 			$layout->appendTo($wrapper);
 		}

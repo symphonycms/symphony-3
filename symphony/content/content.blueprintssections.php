@@ -172,7 +172,7 @@
 			catch (SectionException $e) {
 				switch($e->getCode()){
 					case Section::ERROR_MISSING_OR_INVALID_FIELDS:
-						$this->pageAlert(__('Could not save the layout, there are errors in your field condifurations.'), Alert::ERROR);
+						$this->pageAlert(__('Could not save the layout, there are errors in your field configuration.'), Alert::ERROR);
 						break;
 					case Section::ERROR_FAILED_TO_WRITE:
 						$this->pageAlert($e->getMessage(), Alert::ERROR);
@@ -528,7 +528,7 @@
 					case 'saved':
 						$this->pageAlert(
 							__(
-								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
+								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',
@@ -541,7 +541,7 @@
 					case 'created':
 						$this->pageAlert(
 							__(
-								'Section created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
+								'Section created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',
@@ -559,7 +559,7 @@
 			$right = $layout->createColumn(Layout::LARGE);
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
-			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('Untitled')));
+			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('New Section')));
 
 			if ($existing instanceof Section) {
 				$this->appendViewOptions();

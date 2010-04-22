@@ -390,7 +390,7 @@
 
 						$this->pageAlert(
 							__(
-								'View updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Views</a>',
+								'View updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/views/new/',
@@ -405,7 +405,7 @@
 
 						$this->pageAlert(
 							__(
-								'View created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Views</a>',
+								'View created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/views/new/',
@@ -434,7 +434,7 @@
 
 			$title = $fields['title'];
 			if(strlen(trim($title)) == 0){
-				$title = ($existing instanceof View ? $existing->title : 'Untitled');
+				$title = ($existing instanceof View ? $existing->title : 'New View');
 			}
 
 			$this->setTitle(__(
@@ -449,7 +449,7 @@
 			if ($existing instanceof View) {
 				$template_name = $fields['handle'];
 				$this->appendSubheading(
-					__($title ? $title : __('Untitled'))
+					__($title ? $title : __('New View'))
 				);
 				$viewoptions = array(
 					__('Configuration')		=>	Administration::instance()->getCurrentPageURL(),

@@ -1,58 +1,36 @@
 <?php
-
-	require_once(TOOLKIT . '/class.event.php');
 	
-	Class event<!-- CLASS NAME --> extends Event{
-		
-		const ROOTELEMENT = '<!-- ROOT ELEMENT -->';
-		public $eParamOUTPUT_ID_ON_SAVE = <!-- OUTPUT ID ON SAVE -->;
-		
-		public $eParamFILTERS = array(
-			<!-- FILTERS -->
-		);
-		
-		public $eParamOVERRIDES = array(
-			<!-- OVERRIDES -->
-		);
-		
-		public $eParamDEFAULTS = array(
-			<!-- DEFAULTS -->
-		);
-					
-		public static function about(){
-			return array(
-					 'name' => '<!-- NAME -->',
-					 'author' => array(
-							'name' => '<!-- AUTHOR NAME -->',
-							'website' => '<!-- AUTHOR WEBSITE -->',
-							'email' => '<!-- AUTHOR EMAIL -->'),
-					 'version' => '<!-- VERSION -->',
-					 'release-date' => '<!-- RELEASE DATE -->',
-					 'trigger-condition' => 'action[<!-- TRIGGER CONDITION -->]');	
+	require_once TOOLKIT . '/class.event.php';
+	
+	Final Class Event%1$s extends Event {
+
+		public function __construct(){
+
+			$this->_about = (object)array(
+				'name'			=> %2$s,
+				'author'		=> (object)array(
+					'name'			=> %3$s,
+					'website'		=> %4$s,
+					'email'			=> %5$s
+				),
+				'version'		=> %6$s,
+				'release-date'	=> %7$s
+			);
+			
+			$this->_parameters = (object)array(
+				'source' => %8$s,
+				'overrides' => %9$s,
+				'defaults' => %10$s
+			);
 		}
 
-		public static function getSource(){
-			return '<!-- SOURCE -->';
-		}
-
-		public static function allowEditorToParse(){
+		public function allowEditorToParse() {
 			return true;
 		}
-
-		public static function documentation(){
-			return PHP_EOL . '<!-- DOCUMENTATION -->';
-		}
 		
-		public function load(){			
-			if(isset($_POST['action']['<!-- TRIGGER CONDITION -->'])){
-				return $this->__trigger();
-			}
+		public function trigger(){
+			
 		}
-		
-		protected function __trigger(){
-			include(TOOLKIT . '/events/event.section.php');
-			return $result;
-		}		
-
 	}
 
+	return 'Event%1$s';
