@@ -179,10 +179,13 @@ var Symphony;
 
 	$(document).ready(function() {
 		var selector = jQuery('#event-context-selector');
-		
-		jQuery('.event-duplicator').symphonyDuplicator({
+		var duplicators = jQuery('.event-duplicator').symphonyDuplicator({
 			multiselect:	true,
 			orderable:		true
+		});
+		
+		jQuery('form').bind('submit', function(){
+			jQuery('.event-duplicator > .templates').remove();
 		});
 		
 		selector.bind('change', function() {
