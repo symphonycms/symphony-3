@@ -253,7 +253,7 @@
 
 			foreach($sections as $handle){
 				try{
-					Section::delete($handle);
+					Section::delete(Section::loadFromHandle($handle));
 				}
 				catch(SectionException $e){
 					die($e->getMessage() . 'DOH!!1');
