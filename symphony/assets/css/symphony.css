@@ -331,11 +331,11 @@
 	#layout > .large {
 		width: 70%;
 	}
-	
+
 	#layout.type-lll > .column {
 		width: 33.3%;
 	}
-	
+
 /*-----------------------------------------------------------------------------
 	Content
 -----------------------------------------------------------------------------*/
@@ -477,6 +477,7 @@
 	table td:last-child {
 		padding-right: 30px;
 	}
+
 	table thead tr th,
 	table tbody tr td {
 		border-bottom: 1px solid hsla(0, 0%, 0%, 0.1);
@@ -514,6 +515,36 @@
 	}
 
 /*-----------------------------------------------------------------------------
+	Content: Table Sorting
+-----------------------------------------------------------------------------*/
+	th a,
+	th a:hover,
+	th a:hover:after {
+		color: #665;
+		text-decoration: none;
+	}
+	th a:after {
+		color: #ccb;
+	}
+	th a:active,
+	th a.active,
+	th a.active:after {
+		color: #554;
+	}
+	th a:after,
+	th a.active:hover:after,
+	th a.active[href$=asc]:after {
+		margin-left: 3px;
+		content: "\2193"
+	}
+	th a.active:after,
+	th a[href$=asc]:after,
+	th a.active[href$=asc]:hover:after {
+		content: "\2191";
+	}
+
+
+/*-----------------------------------------------------------------------------
 	Content: Table: Settings
 -----------------------------------------------------------------------------*/
 
@@ -546,7 +577,7 @@
 		display: block;
 		margin: 0 auto;
 	}
-	
+
 /*-----------------------------------------------------------------------------
 	Content: Form
 -----------------------------------------------------------------------------*/
@@ -567,7 +598,7 @@
 	form fieldset:first-child {
 		margin-top: 0;
 	}
-	
+
 	form h3 {
 		color: #666666;
 		font-size: 10pt;
@@ -675,7 +706,7 @@
 		width: auto;
 		margin: 0 auto;
 	}
-	
+
 	form .group {
 		border-spacing: 0;
 		display: table;
@@ -998,7 +1029,7 @@
 	#notice a {
 		color: #fff9c9;
 	}
-	
+
 	.invalid {
 		margin: 10px 0;
 	}
@@ -1021,16 +1052,16 @@
 		content: "↑";
 		margin-right: 3px;
 	}
-	
+
 	.error-list {
 		margin: 0 30px 20px 30px;
 		list-style: none;
 	}
-	
+
 /*-----------------------------------------------------------------------------
 	System: Extensions
 -----------------------------------------------------------------------------*/
-	
+
 #extension_stats {
 	font-size: 1.15em;
 	line-height: 2.5em;

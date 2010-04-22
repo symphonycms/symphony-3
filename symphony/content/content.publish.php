@@ -42,6 +42,30 @@
 			$filter = $filter_value = $where = $joins = NULL;
 
 			$current_page = (isset($_REQUEST['pg']) && is_numeric($_REQUEST['pg']) ? max(1, intval($_REQUEST['pg'])) : 1);
+			$current_filter = ($filter ? "&filter=$field_handle:$filter_value" : '');
+
+			if(isset($_REQUEST['sort']) && is_string($_REQUEST['sort'])){
+				$sort = $_REQUEST['sort'];
+				$order = ($_REQUEST['order'] ? strtolower($_REQUEST['order']) : 'asc');
+
+				if($section->{'publish-order-handle'} != $sort || $section->{'publish-order-direction'} != $order) {
+					$section->{'publish-order-handle'} = $sort;
+					$section->{'publish-order-direction'} = $order;
+
+					$errors = new MessageStack;
+					Section::save($section, $errors);
+					redirect(Administration::instance()->getCurrentPageURL(). $current_filter);
+				}
+			}
+			elseif(isset($_REQUEST['unsort'])){
+				$section->{'publish-order-handle'} = null;
+				$section->{'publish-order-direction'} = null;
+
+				$errors = new MessageStack;
+				Section::save($section, $errors);
+
+				redirect(Administration::instance()->getCurrentPageURL());
+			}
 
 			$this->appendSubheading(
 				$section->name,
@@ -62,24 +86,35 @@
 
 				$label = $column->label;
 
-				// TODO: Fix the ordering links
-				/*if($column->isSortable()) {
+				if($column->isSortable()) {
 
-					if($column->id == $section->get('entry_order')){
-						$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->id.'&amp;order='. ($section->get('entry_order_direction') == 'desc' ? 'asc' : 'desc').($filter ? "&amp;filter=$field_handle:$filter_value" : '');
-						$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(($section->get('entry_order_direction') == 'desc' ? __('ascending') : __('descending')), strtolower($column->label))), 'active');
+					$link = Administration::instance()->getCurrentPageURL();
+
+					if($column->{'element-name'} == $section->{'publish-order-handle'}) {
+						$link .= '?pg=' . $current_page . '&sort=' . $column->{'element-name'};
+						$link .= '&order=' . ($section->{'publish-order-direction'} == 'desc' ? 'asc' : 'desc') . $current_filter;
+
+						$anchor = Widget::Anchor($label, $link, array(
+							'title' => __('Sort by %1$s %2$s', array(
+								($section->{'publish-order-direction'} == 'desc' ? __('ascending') : __('descending')),
+								strtolower($column->label)
+							)),
+							'class' => 'active'
+						));
 					}
-
-					else{
-						$link = Administration::instance()->getCurrentPageURL() . '?pg='.$current_page.'&amp;sort='.$column->id.'&amp;order=asc'.($filter ? "&amp;filter=$field_handle:$filter_value" : '');
-						$anchor = Widget::Anchor($label, $link, __('Sort by %1$s %2$s', array(__('ascending'), strtolower($column->label))));
+					else {
+						$link .= '?pg='.$current_page.'&sort='.$column->{'element-name'}.'&order=asc'.$current_filter;
+						$anchor = Widget::Anchor($label, $link, array(
+							'title' => __('Sort by %1$s %2$s', array(__('ascending'), strtolower($column->label)))
+						));
 					}
 
 					$aTableHead[] = array($anchor, 'col');
 				}
 
-				else */
-				$aTableHead[] = array($label, 'col');
+				else {
+					$aTableHead[] = array($label, 'col');
+				}
 			}
 
 			if(count($aTableHead) <= 0){
@@ -180,16 +215,37 @@
 
 			}
 
-			$entries = Symphony::Database()->query(
-				"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `%s` %s LIMIT %d, %d ",
-				array(
-					$section->handle,
-					'id',
-					'DESC',
-					$pagination['start'],
-					$pagination['entries-per-page']
-				), 'EntryResult'
-			);
+			//	If there's no sorting, just order by ID, otherwise applying column sorting
+			if(!isset($section->{'publish-order-handle'}) || strlen($section->{'publish-order-handle'}) == 0) {
+				$entries = Symphony::Database()->query(
+					"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `id` ASC LIMIT %d, %d ",
+					array(
+						$section->handle,
+						$pagination['start'],
+						$pagination['entries-per-page']
+					), 'EntryResult'
+				);
+			}
+			else {
+				$sort_field = $section->fetchFieldByHandle($section->{'publish-order-handle'});
+				$sort_field->buildSortingSQL($joins, $order, $section->{'publish-order-direction'});
+
+				$query = sprintf("
+					SELECT e.*
+					FROM `tbl_entries` AS e
+					%s
+					WHERE `section` = '%s'
+					%s
+					LIMIT %d, %d",
+					$joins, $section->handle, $order, $pagination['start'], $pagination['entries-per-page']
+				);
+
+				$entries = Symphony::Database()->query($query, array(
+						$section->handle,
+						$section->{'publish-order-handle'}
+					), 'EntryResult'
+				);
+			}
 
 			## Table Body
 			$aTableBody = array();
@@ -283,25 +339,6 @@
 				$index++;
 			}
 
-			// TODO: Add toggable fields back
-			/*
-			$toggable_fields = $section->fetchToggleableFields();
-
-			if (is_array($toggable_fields) && !empty($toggable_fields)) {
-				$index = 2;
-
-				foreach ($toggable_fields as $field) {
-					$options[$index] = array('label' => __('Set %s', array($field->label)), 'options' => array());
-
-					foreach ($field->getToggleStates() as $value => $state) {
-						$options[$index]['options'][] = array('toggle-' . $field->id . '-' . $value, false, $state);
-					}
-
-					$index++;
-				}
-			}
-			*/
-
 			$tableActions->appendChild(Widget::Select('with-selected', $options));
 			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
 
@@ -309,7 +346,6 @@
 
 			if($pagination['total-pages'] > 1){
 				$current_url = Administration::instance()->getCurrentPageURL() . '?pg=';
-				$current_filter = ($filter ? "&amp;filter=$field_handle:$filter_value" : '');
 
 				$ul = $this->createElement('ul');
 				$ul->setAttribute('class', 'page');
@@ -604,44 +640,6 @@
 			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
 
 			$this->Form->appendChild($tableActions);
-
-			if($entries['total-pages'] > 1){
-
-				$ul = new XMLElement('ul');
-				$ul->setAttribute('class', 'page');
-
-				## First
-				$li = new XMLElement('li');
-				if($current_page > 1) $li->appendChild(Widget::Anchor(__('First'), Administration::instance()->getCurrentPageURL(). '?pg=1'.($filter ? "&amp;filter=$field_handle:$filter_value" : '')));
-				else $li->setValue(__('First'));
-				$ul->appendChild($li);
-
-				## Previous
-				$li = new XMLElement('li');
-				if($current_page > 1) $li->appendChild(Widget::Anchor(__('&larr; Previous'), Administration::instance()->getCurrentPageURL(). '?pg=' . ($current_page - 1).($filter ? "&amp;filter=$field_handle:$filter_value" : '')));
-				else $li->setValue(__('&larr; Previous'));
-				$ul->appendChild($li);
-
-				## Summary
-				$li = new XMLElement('li', __('Page %1$s of %2$s', array($current_page, max($current_page, $entries['total-pages']))));
-				$li->setAttribute('title', __('Viewing %1$s - %2$s of %3$s entries', array($entries['start'], min($entries['limit'], max(1, $entries['remaining-entries'])), $entries['total-entries'])));
-				$ul->appendChild($li);
-
-				## Next
-				$li = new XMLElement('li');
-				if($current_page < $entries['total-pages']) $li->appendChild(Widget::Anchor(__('Next &rarr;'), Administration::instance()->getCurrentPageURL(). '?pg=' . ($current_page + 1).($filter ? "&amp;filter=$field_handle:$filter_value" : '')));
-				else $li->setValue(__('Next &rarr;'));
-				$ul->appendChild($li);
-
-				## Last
-				$li = new XMLElement('li');
-				if($current_page < $entries['total-pages']) $li->appendChild(Widget::Anchor(__('Last'), Administration::instance()->getCurrentPageURL(). '?pg=' . $entries['total-pages'].($filter ? "&amp;filter=$field_handle:$filter_value" : '')));
-				else $li->setValue(__('Last'));
-				$ul->appendChild($li);
-
-				$this->Form->appendChild($ul);
-
-			}
 			*/
 		}
 

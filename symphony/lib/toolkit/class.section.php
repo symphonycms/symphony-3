@@ -186,6 +186,19 @@
 			}
 		}
 
+		/*
+		**	Given an field's element name, return an object of
+		**	that Field.
+
+		**	@param $handle string
+		**	@return Field
+		*/
+		public function fetchFieldByHandle($handle) {
+			foreach($this->fields as $field) if($field->{'element-name'} == $handle) {
+				return Field::loadFromType($field->type);
+			}
+		}
+
 		public static function fetchUsedNavigationGroups(){
 			$groups = array();
 			foreach(new SectionIterator as $s){
@@ -235,11 +248,11 @@
 						if (!isset($column->size)) {
 							$size = Layout::LARGE;
 						}
-						
+
 						else {
 							$size = (string)$column->size;
 						}
-						
+
 						$data_column = (object)array(
 							'size'		=> $size,
 							'fieldsets'	=> array()
@@ -249,11 +262,11 @@
 							if (!isset($fieldset->name) or trim((string)$fieldset->name) == '') {
 								$name = __('Untitled');
 							}
-							
+
 							else {
 								$name = (string)$fieldset->name;
 							}
-							
+
 							$data_fieldset = (object)array(
 								'name'		=> $name,
 								'fields'	=> array()
@@ -353,7 +366,7 @@
 			if(is_array($section->fields) && !empty($section->fields)){
 				foreach ($section->fields as $index => $field) {
 					$field_stack = new MessageStack;
-					
+
 					if ($field->validateSettings($field_stack, false, false) != Field::STATUS_OK) {
 						$messages->append("field::{$index}", $field_stack);
 					}
@@ -367,7 +380,7 @@
 			$section->synchroniseDataTables();
 
 			$doc = $section->toDoc();
-			
+
 			return ($simulate == true ? true : file_put_contents($pathname, $doc->saveXML()));
 		}
 
@@ -438,6 +451,9 @@
 			)));
 			$root->appendChild($doc->createElement('navigation-group', General::sanitize($this->{'navigation-group'})));
 
+			$root->appendChild($doc->createElement('publish-order-handle', General::sanitize($this->{'publish-order-handle'})));
+			$root->appendChild($doc->createElement('publish-order-direction', General::sanitize($this->{'publish-order-direction'})));
+
 			if(is_array($this->fields) && !empty($this->fields)){
 				$fields = $doc->createElement('fields');
 				foreach($this->fields as $index => $field){
@@ -448,42 +464,42 @@
 
 			if (is_array($this->layout)) {
 				$layout = $doc->createElement('layout');
-				
+
 				foreach ($this->layout as $data) {
 					$column = $doc->createElement('column');
-					
+
 					if (!isset($data->size) or $data->size != Layout::LARGE) {
 						$data->size = Layout::SMALL;
 					}
-					
+
 					$size = $doc->createElement('size', $data->size);
 					$column->appendChild($size);
-					
+
 					if (is_array($data->fieldsets)) foreach ($data->fieldsets as $data) {
 						$fieldset = $doc->createElement('fieldset');
-						
+
 						if (!isset($data->name) or trim($data->name) == '') {
 							$data->name = __('Untitled');
 						}
-						
+
 						$name = $doc->createElement('name', $data->name);
 						$fieldset->appendChild($name);
-						
+
 						if (is_array($data->fields)) foreach ($data->fields as $data) {
 							if (!is_string($data) or trim($data) == '') continue;
-							
+
 							$fieldset->appendChild($doc->createElement('field', $data));
 						}
-						
+
 						$column->appendChild($fieldset);
 					}
-					
+
 					$layout->appendChild($column);
 				}
-				
+
 				$root->appendChild($layout);
 			}
-			
+
 			return $doc;
 		}
 

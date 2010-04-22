@@ -20,6 +20,16 @@
 			return $this->canToggleData();
 		}
 
+		public function buildSortingSQL(&$joins, &$order, $direction = 'ASC'){
+			$joins .= "
+						LEFT OUTER JOIN
+							`tbl_data_%s_%s` AS d ON (e.`id` = d.`entry_id`)
+						JOIN
+							`tbl_users` AS u ON (d.`user_id` = u.`id`)
+						";
+			$order = sprintf('ORDER BY u.`first_name` %1$s , u.`last_name` %1$s', $direction);
+		}
+
 		public function canFilter(){
 			return true;
 		}
@@ -133,11 +143,12 @@
 			return (!$fragment->hasChildNodes()) ? __('None') : $fragment;
 		}
 
+/*
 		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
 			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`user_id` $order");
 		}
-
+*/
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
 			$field_id = $this->id;
 
