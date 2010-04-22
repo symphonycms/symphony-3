@@ -119,7 +119,18 @@
 			return $data;
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+			
+			if(!is_array($data)){
+				$data = array($data);
+			}
+			
+			$selected = array();
+			foreach($data as $d){
+				if(!($d instanceof StdClass) || !isset($d->value)) continue;
+				$selected[] = $d->value;
+			}
+			
 			$states = $this->getToggleStates();
 			natsort($states);
 
@@ -130,9 +141,7 @@
 			}
 
 			foreach($states as $handle => $v){
-				//	TODO: Support multiple data Classes
-				//	$options[] = array(General::sanitize($v), in_array($v, $data->value), General::sanitize($v));
-				$options[] = array(General::sanitize($v), ($v == $data->value), General::sanitize($v));
+				$options[] = array(General::sanitize($v), in_array($v, $selected), General::sanitize($v));
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
@@ -189,12 +198,18 @@
 			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
 		}
 
-		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
-			$value = $data->value;
+		public function prepareTableValue($data, DOMElement $link=NULL){
+			
+			if(!is_array($data)){
+				$data = array($data);
+			}
+			
+			$values = array();
+			foreach($data as $d){
+				$values[] = $d->value;
+			}
 
-			if(!is_array($value)) $value = array($value);
-
-			return parent::prepareTableValue((object)array('value' => General::sanitize(implode(', ', $value))), $link);
+			return parent::prepareTableValue((object)array('value' => General::sanitize(implode(', ', $values))), $link);
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
@@ -259,16 +274,16 @@
 
 		public function processFormData($data, Entry $entry=NULL){
 
-			if(isset($entry->data()->{$this->{'element-name'}})){
-				$result = $entry->data()->{$this->{'element-name'}};
-			}
+			//if(isset($entry->data()->{$this->{'element-name'}})){
+			//	$result = $entry->data()->{$this->{'element-name'}};
+			//}
 
-			else {
+			//else {
 				$result = (object)array(
 					'value' => null,
 					'handle' => null
 				);
-			}
+			//}
 
 			if(!is_null($data)){
 				$result->value = $data;
@@ -428,13 +443,60 @@
 			return $groups;
 		}
 
-		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return parent::validateData($data, $errors, $entry);
+		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
+			
+			if(!is_array($data)){
+				$data = array($data);
+			}
+			
+			$value = NULL;
+			foreach($data as $d){
+				$value .= $d->value;
+			}
+			
+			return parent::validateData($this->processFormData($value, $entry), $errors, $entry);
 		}
 
 		/*	Possibly could be removed.. */
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry) {
-			return parent::saveData($data, $errors, $entry);
+		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
+			
+			// Since we are dealing with multiple 
+			// values, must purge the existing data first
+			Symphony::Database()->delete(
+				sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}), 
+				array($entry->id), 
+				"`entry_id` = %s"
+			);
+			
+			if(!is_array($data)){
+				$data = array($data);
+			}
+			foreach($data as $d){
+				parent::saveData($d, $errors, $entry);
+			}
+			return Field::STATUS_OK;
+		}
+
+		public function loadDataFromDatabase(Entry $entry){
+			try{
+				$rows = Symphony::Database()->query(
+					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s ORDER BY `id` ASC",
+					array(
+						$entry->section,
+						$this->{'element-name'},
+						$entry->id
+					)
+				);
+				
+				$result = array();
+				foreach($rows as $r){
+					$result[] = $r;
+				}
+				return $result;
+			}
+			catch(DatabaseException $e){
+				// Oh oh....no data. oh well, have a smoke and then return
+			}
 		}
 
 		public function createTable(){

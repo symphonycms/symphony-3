@@ -401,7 +401,71 @@
 			
 			$templates->appendChild($item);
 			
+			if(is_array($items['overrides'])){
+				$field_names = $items['overrides']['field'];
+				$replacement_values = $items['overrides']['replacement'];
+				
+				for($ii = 0; $ii < count($field_names); $ii++){
+					$item = $this->createElement('li');
+					$span = $this->createElement('span', 'Override');
+					$span->setAttribute('class', 'name');
+					$item->appendChild($span);
+
+					$label = Widget::Label(__('Field'));
+					$options = array(array('system:id', false, 'System ID'));
+
+					foreach($section->fields as $f){
+						$options[] = array(
+							General::sanitize($f->{'element-name'}), 
+							$f->{'element-name'} == $field_names[$ii], 
+							General::sanitize($f->label)
+						);
+					}
+
+					$label->appendChild(Widget::Select('fields[overrides][field][]', $options));
+					$item->appendChild($label);
+
+					$label = Widget::Label(__('Replacement'));
+					$label->appendChild(Widget::Input('fields[overrides][replacement][]', General::sanitize($replacement_values[$ii])));
+					$item->appendChild($label);
+					$instances->appendChild($item);
+				}
+			}
 			
+			if(is_array($items['defaults'])){
+				
+				$field_names = $items['defaults']['field'];
+				$replacement_values = $items['defaults']['replacement'];
+				
+				for($ii = 0; $ii < count($field_names); $ii++){
+					$item = $this->createElement('li');
+					$span = $this->createElement('span', 'Default Value');
+					$span->setAttribute('class', 'name');
+					$item->appendChild($span);
+
+					$label = Widget::Label(__('Field'));
+					$options = array(array('system:id', false, 'System ID'));
+
+					foreach($section->fields as $f){
+						$options[] = array(
+							General::sanitize($f->{'element-name'}), 
+							$f->{'element-name'} == $field_names[$ii], 
+							General::sanitize($f->label)
+						);
+					}
+
+					$label->appendChild(Widget::Select('fields[defaults][field][]', $options));
+					$item->appendChild($label);
+
+					$label = Widget::Label(__('Replacement'));
+					$label->appendChild(Widget::Input('fields[defaults][replacement][]', General::sanitize($replacement_values[$ii])));
+					$item->appendChild($label);
+					$instances->appendChild($item);
+				}
+			}
+			
+
+				
 			$duplicator->appendChild($templates);
 			$duplicator->appendChild($instances);
 			

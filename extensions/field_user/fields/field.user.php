@@ -6,18 +6,8 @@
 			$this->_name = __('User');
 		}
 
-		public function canToggleData(){
-			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
-		}
-
-		public function allowDatasourceOutputGrouping(){
-			## Grouping follows the same rule as toggling.
-			return $this->canToggleData();
-		}
-
 		public function isSortable(){
-			## Grouping follows the same rule as toggling.
-			return $this->canToggleData();
+			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
 
 		public function buildSortingSQL(&$joins, &$order, $direction = 'ASC'){
@@ -36,6 +26,15 @@
 
 		public function canImport(){
 			return true;
+		}
+
+		public function canToggleData(){
+			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
+		}
+
+		public function allowDatasourceOutputGrouping(){
+			## Grouping follows the same rule as toggling.
+			return $this->canToggle();
 		}
 
 		public function getToggleStates(){
@@ -73,13 +72,13 @@
 		}
 
 */
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
 
 			$value = (isset($data->user_id) ? $data->user_id : NULL);
 
 			$callback = Administration::instance()->getPageCallback();
 
-			if ($this->{'default-to-current-user'} == 'yes' && is_null($data)) {
+			if ($this->{'default-to-current-user'} == 'yes' && empty($data) && empty($_POST)) {
 				$value = array(Administration::instance()->User->id);
 			}
 
@@ -106,7 +105,7 @@
 			else $wrapper->appendChild($label);
 		}
 
-		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL){
+		public function prepareTableValue($data, DOMElement $link=NULL){
 
 			if(!is_array($data->{'user_id'})) $data->{'user_id'} = array($data->{'user_id'});
 
@@ -227,11 +226,11 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 	        if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
 
-	        $list = $wrapper->ownerDocument->createElement($this->{'element-name'});
+	        $list = Symphony::Parent()->Page->createElement($this->{'element-name'});
 	        foreach($data['user_id'] as $user_id){
 	            $user = new User($user_id);
 	            $list->appendChild(
-					$wrapper->ownerDocument->createElement('item', $user->getFullName(), array(
+					Symphony::Parent()->Page->createElement('item', $user->getFullName(), array(
 						'id' => $user->id,
 						'username' => $user->username
 					))
@@ -247,11 +246,8 @@
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$options_list = $wrapper->ownerDocument->createElement('ul');
+			$options_list = Symphony::Parent()->Page->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-
-			$this->appendShowColumnCheckbox($options_list);
-			$this->appendRequiredCheckbox($options_list);
 
 			## Allow multiple selection
 			$label = Widget::Label(__('Allow selection of multiple users'));
@@ -269,6 +265,7 @@
 			$label->prependChild($input);
 			$options_list->appendChild($label);
 
+			$this->appendShowColumnCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 
 		}
@@ -290,7 +287,7 @@
 			return $result;
 		}
 
-		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
+		public function validateData($data=NULL, MessageStack &$errors, Entry $entry=NULL){
 			if ($this->required == 'yes' && (!isset($data->user_id) || strlen(trim($data->user_id)) == 0)){
 				$errors->append(
 					$this->{'element-name'},

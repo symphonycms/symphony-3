@@ -83,6 +83,10 @@
 
 		protected $parameters;
 		protected $fields;
+		
+		public static function createGUID() {
+			return uniqid();
+		}
 
 		public function __construct(){
 			$this->parameters = new StdClass;
@@ -107,10 +111,8 @@
 				//}
 			}
 
-			elseif($name == 'guid'){
-				if(is_null($this->parameters->guid)){
-					$this->parameters->guid = uniqid();
-				}
+			elseif($name == 'guid' and !isset($this->guid)){
+				$this->parameters->guid = Section::createGUID();
 			}
 
 			elseif($name == 'fields'){
@@ -168,7 +170,7 @@
 				$field->setFromPOST($data);
 			}
 			$field->section = $this->handle;
-
+			
 			$this->fields[] = $field;
 
 			return $field;
@@ -227,12 +229,20 @@
 				if($name == 'fields' && isset($value->field)){
 					foreach($value->field as $field){
 						$data = array();
+						
 						foreach($field as $property_name => $property_value){
 							$data[(string)$property_name] = (string)$property_value;
 						}
+						
+						// Set field GUID:
+						if (isset($field->attributes()->guid) and trim((string)$field->attributes()->guid) != '') {
+							$data['guid'] = (string)$field->attributes()->guid;
+						}
+						
 						try{
 							$section->appendField($data['type'], $data);
 						}
+						
 						catch(Exception $e){
 							// Couldnt find the field. Ignore it for now
 							// TODO: Might need to more than just ignore it
@@ -298,26 +308,11 @@
 				}
 			}
 
-			if(isset($doc->attributes()->guid)){
+			if (isset($doc->attributes()->guid)) {
 				$section->guid = (string)$doc->attributes()->guid;
-			}
-			else{
-				$section->guid = uniqid();
 			}
 
 			return $section;
-/*
-			if(!isset(self::$_sections[$path])){
-				self::$_sections[$path] = array('handle' => NULL, 'classname' => include_once($path));
-			}
-
-			$obj = new self::$_sections[$path]['classname'];
-
-			self::$_sections[$path]['handle'] = $obj->handle;
-
-			$obj->initialise();
-
-			return $obj;*/
 		}
 
 		public function loadFromHandle($handle){
@@ -352,7 +347,8 @@
 			## Check for duplicate section handle
 			elseif(file_exists($pathname)){
 				$existing = self::load($pathname);
-				if($existing->guid != $section->guid){
+				
+				if (isset($existing->guid) and $existing->guid != $section->guid) {
 					$messages->append('name', __('A Section with the name <code>%s</code> already exists', array($section->name)));
 				}
 				unset($existing);
@@ -456,9 +452,13 @@
 
 			if(is_array($this->fields) && !empty($this->fields)){
 				$fields = $doc->createElement('fields');
-				foreach($this->fields as $index => $field){
-					$fields->appendChild($doc->importNode($field->toDoc()->documentElement, true));
+				
+				foreach ($this->fields as $index => $field) {
+					$fields->appendChild($doc->importNode(
+						$field->toDoc()->documentElement, true
+					));
 				}
+				
 				$root->appendChild($fields);
 			}
 

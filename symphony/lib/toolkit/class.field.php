@@ -70,6 +70,8 @@
 
 		protected $properties;
 
+		protected $_required;
+		protected $_showcolumn;
 		protected $_handle;
 		protected $_name;
 
@@ -92,15 +94,19 @@
 		const FLAG_ALL = 'all';
 
 		// Abstract functions
-		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, StdClass $data=NULL, $error=NULL, Entry $entry=NULL);
+		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL);
+		
+		public static function createGUID(Field $field) {
+			return uniqid(substr(md5($field->type), 0, 4) . '_');
+		}
 
 		public function __construct(){
 			if(is_null(self::$key)) self::$key = 0;
 
 			$this->properties = new StdClass;
 
-			$this->{'required'} = 'no';
-			$this->{'show-column'} = 'yes';
+			$this->_required = false;
+			$this->_showcolumn = true;
 
 			$this->_handle = (strtolower(get_class($this)) == 'field' ? 'field' : strtolower(substr(get_class($this), 5)));
 
@@ -114,6 +120,10 @@
 
 			if($name == 'element-name'){
 				$this->{'element-name'} = Lang::createHandle($this->properties->label, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
+			}
+			
+			else if ($name == 'guid' and !isset($this->guid)) {
+				$this->guid = Field::createGUID($this);
 			}
 
 			return $this->properties->$name;
@@ -161,24 +171,32 @@
 			}
 		    return false;
 	    }
-
+	    
 	    public function toDoc() {
-			$doc = new XMLDocument;
-
+			$doc = new DOMDocument('1.0', 'UTF-8');
+			$doc->formatOutput = true;
+			
 			$root = $doc->createElement('field');
-			$doc->appendChild($root);
-
-			foreach($this->properties as $name => $value){
+			$root->setAttribute('guid', $this->guid);
+			
+			foreach ($this->properties as $name => $value) {
+				if ($name == 'guid') continue;
+				
 				$root->appendChild($doc->createElement($name, $value));
 			}
-
+			
+			$doc->appendChild($root);
 			return $doc;
 	    }
-
+		
 		public function __toString(){
 			$doc = $this->toDoc();
 
 			return $doc->saveXML($doc->documentElement);
+		}
+
+		public function canShowTableColumn(){
+			return $this->_showcolumn;
 		}
 
 		public function canToggleData(){
@@ -302,19 +320,19 @@
 
 		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
 			$parent_section = $this->{'parent-section'};
-
+			
 			if ($this->label == '') {
 				$messages->append('label', __('This is a required field.'));
 			}
-
+			
 			if ($this->{'element-name'} == '') {
 				$messages->append('element-name', __('This is a required field.'));
 			}
-
+			
 			else if(!preg_match('/^[A-z]([\w\d-_\.]+)?$/i', $this->{'element-name'})) {
 				$messages->append('element-name', __('Invalid element name. Must be valid QName.'));
 			}
-
+			
 			/*
 			TODO: Replace this with something:
 			else if($checkForDuplicates) {
@@ -342,11 +360,11 @@
 				}
 			}
 			*/
-
+			
 			if ($messages->length() > 0) {
 				return Field::STATUS_ERROR;
 			}
-
+			
 			return Field::STATUS_OK;
 		}
 
@@ -435,19 +453,19 @@
 		}
 
 		public function processFormData($data, Entry $entry=NULL){
-
+			
 			if(isset($entry->data()->{$this->{'element-name'}})){
 				$result = $entry->data()->{$this->{'element-name'}};
 			}
-
+			
 			else {
 				$result = (object)array(
 					'value' => NULL
 				);
 			}
-
+			
 			$result->value = $data;
-
+			
 			return $result;
 		}
 
@@ -513,7 +531,7 @@
 								   will be deleting or adding data outside of the main entry object commit function
 			$entry_id (optionsl) - Useful for identifying the current entry
 
-
+	
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL) {
 
 			$status = self::STATUS_OK;
@@ -528,7 +546,7 @@
 			$max_length = ($max_length ? $max_length : 75);
 
 			$value = strip_tags($data->value);
-			$value = (strlen($value) <= $max_length ? $value : substr($value, 0, $max_length) . '&#x2026;');
+			$value = (strlen($value) <= $max_length ? $value : substr($value, 0, $max_length) . '...');
 
 			if (strlen($value) == 0) $value = __('None');
 
@@ -592,7 +610,7 @@
 				$name = $document->createElement('span', $this->label);
 				$name->appendChild($document->createElement('i', $this->name()));
 			}
-
+			
 			else {
 				$name = $document->createElement('span', $this->name());
 			}
@@ -603,15 +621,23 @@
 			$label = Widget::Label(__('Label'));
 			$label->setAttribute('class', 'field-label');
 			$label->appendChild(Widget::Input('label', $this->label));
-
+			
 			if ($messages->{'label'}) {
 				$label = Widget::wrapFormElementWithError($label, $messages->{'label'});
 			}
 
 			$wrapper->appendChild($label);
+			
+			if (isset($this->guid)) {
+				$wrapper->appendChild(Widget::Input('guid', $this->guid, 'hidden'));
+			}
+			
+			$wrapper->appendChild(Widget::Input('type', $this->type, 'hidden'));
 		}
 
 		public function appendRequiredCheckbox(SymphonyDOMElement $wrapper) {
+			if (!$this->_required) return;
+
 			$document = $wrapper->ownerDocument;
 			$item = $document->createElement('li');
 			$item->appendChild(Widget::Input('required', 'no', 'hidden'));
@@ -629,6 +655,8 @@
 		}
 
 		public function appendShowColumnCheckbox(SymphonyDOMElement $wrapper) {
+			if (!$this->_showcolumn) return;
+
 			$document = $wrapper->ownerDocument;
 			$item = $document->createElement('li');
 			$item->appendChild(Widget::Input('show-column', 'no', 'hidden'));
