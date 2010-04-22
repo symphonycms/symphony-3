@@ -584,7 +584,7 @@
 	form fieldset {
 		border: none;
 		-webkit-margin-bottom-collapse: separate;
-		margin: 20px 0;
+		margin: 20px 0 40px;
 		position: relative;
 	}
 	form fieldsets + fieldset {
@@ -601,7 +601,7 @@
 		border-color: hsla(0, 0%, 0%, 0.15);
 		border-style: solid;
 		padding-bottom: 6px;
-		margin-bottom: 20px;
+		margin-bottom: 15px;
 	}
 	form h3 input {
 		background: transparent;
