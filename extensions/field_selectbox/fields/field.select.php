@@ -120,17 +120,16 @@
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
-			
 			if(!is_array($data)){
 				$data = array($data);
 			}
-			
+
 			$selected = array();
 			foreach($data as $d){
 				if(!($d instanceof StdClass) || !isset($d->value)) continue;
 				$selected[] = $d->value;
 			}
-			
+
 			$states = $this->getToggleStates();
 			natsort($states);
 
@@ -199,11 +198,11 @@
 		}
 
 		public function prepareTableValue($data, DOMElement $link=NULL){
-			
+
 			if(!is_array($data)){
 				$data = array($data);
 			}
-			
+
 			$values = array();
 			foreach($data as $d){
 				$values[] = $d->value;
@@ -444,30 +443,30 @@
 		}
 
 		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
-			
+
 			if(!is_array($data)){
 				$data = array($data);
 			}
-			
+
 			$value = NULL;
 			foreach($data as $d){
 				$value .= $d->value;
 			}
-			
+
 			return parent::validateData($this->processFormData($value, $entry), $errors, $entry);
 		}
 
 		/*	Possibly could be removed.. */
 		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
-			
-			// Since we are dealing with multiple 
+
+			// Since we are dealing with multiple
 			// values, must purge the existing data first
 			Symphony::Database()->delete(
-				sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}), 
-				array($entry->id), 
+				sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
+				array($entry->id),
 				"`entry_id` = %s"
 			);
-			
+
 			if(!is_array($data)){
 				$data = array($data);
 			}
@@ -477,29 +476,11 @@
 			return Field::STATUS_OK;
 		}
 
-		public function loadDataFromDatabase(Entry $entry){
-			try{
-				$rows = Symphony::Database()->query(
-					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` = %s ORDER BY `id` ASC",
-					array(
-						$entry->section,
-						$this->{'element-name'},
-						$entry->id
-					)
-				);
-				
-				$result = array();
-				foreach($rows as $r){
-					$result[] = $r;
-				}
-				return $result;
-			}
-			catch(DatabaseException $e){
-				// Oh oh....no data. oh well, have a smoke and then return
-			}
+		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false) {
+			return parent::loadDataFromDatabase($entry, true);
 		}
 
-		public function create(){
+		public function createTable(){
 			return Symphony::Database()->query(
 				sprintf(
 					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (

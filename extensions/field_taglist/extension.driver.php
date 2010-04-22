@@ -5,7 +5,7 @@
 			return array(
 				'name'			=> 'Taglist',
 				'version'		=> '2.0.0',
-				'release-date'	=> '2010-04-21',
+				'release-date'	=> '2010-04-22',
 				'author'		=> array(
 					'name'			=> 'Symphony Team',
 					'website'		=> 'http://symphony-cms.com/',
