@@ -318,8 +318,57 @@
 		public function loadFromHandle($handle){
 			return self::load(SECTIONS . '/' . $handle . '.xml');
 		}
+
+		public static function save(Section $section, MessageStack $messages, $essentials = null, $simulate = false) {
+			$pathname = sprintf('%s/%s.xml', $section->path, $section->handle);
+			
+			// Check to ensure all the required section fields are filled
+			if (!isset($section->name) || strlen(trim($section->name)) == 0) {
+				$messages->append('name', __('This is a required field.'));
+			}
+
+			// Check for duplicate section handle
+			elseif(file_exists($pathname)){
+				$existing = self::load($pathname);
+				
+				if (isset($existing->guid) and $existing->guid != $section->guid) {
+					$messages->append('name', __('A Section with the name <code>%s</code> already exists', array($section->name)));
+				}
+				
+				unset($existing);
+			}
+
+			## Check to ensure all the required section fields are filled
+			if(!isset($section->{'navigation-group'}) || strlen(trim($section->{'navigation-group'})) == 0){
+				$messages->append('navigation-group', __('This is a required field.'));
+			}
+
+			if(is_array($section->fields) && !empty($section->fields)){
+				foreach ($section->fields as $index => $field) {
+					$field_stack = new MessageStack;
+
+					if ($field->validateSettings($field_stack, false, false) != Field::STATUS_OK) {
+						$messages->append("field::{$index}", $field_stack);
+					}
+				}
+			}
+
+			if ($messages->length() > 0) {
+				throw new SectionException(__('Section could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
+			}
+			
+			if ($simulate) return true;
+			
+			$doc = $section->toDoc();
+			
+			return file_put_contents($pathname, $doc->saveXML());
+		}
 		
-		public function syncroniseStatistics() {
+		public static function syncroniseStatistics(Section $section, $old_handle = null) {
+			$new_handle = $section->handle;
+			
+			if (is_null($old_handle)) $old_handle = $new_handle;
+			
 			$old = $new = $create = $update = $rename = $remove = array();
 			$res = Symphony::Database()->query(
 				'
@@ -330,9 +379,7 @@
 					WHERE
 						s.section = "%s"
 				',
-				array(
-					$this->handle
-				)
+				array($old_handle)
 			);
 			
 			// Get existing field GUIDs:
@@ -340,14 +387,14 @@
 				$old[$field->guid] = $field;
 			}
 			
-			foreach ($this->fields as $field) {
+			foreach ($section->fields as $field) {
 				// Field is being created:
 				if (!array_key_exists($field->guid, $old)) {
 					$create[$field->guid] = $field->{'element-name'};
 				}
 				
 				// Field is being renamed or removed then created:
-				else if ($old[$field->guid]->name != $field->{'element-name'}) {
+				else if ($old_handle != $new_handle or $old[$field->guid]->name != $field->{'element-name'}) {
 					if ($old[$field->guid]->type == $field->type) {
 						$rename[$field->guid] = $field->{'element-name'};
 						$update[$field->guid] = $field->{'element-name'};
@@ -390,7 +437,7 @@
 				$field = Field::loadFromType($data->type);
 				$field->guid = $guid;
 				$field->label = $data->name;
-				$field->section = $this->handle;
+				$field->section = $old_handle;
 				
 				$data = (object)array(
 					'name'	=> $data->name,
@@ -400,7 +447,7 @@
 			
 			// Fill out rename data:
 			foreach ($rename as $guid => &$data) {
-				$field = $this->fetchFieldByHandle($data);
+				$field = $section->fetchFieldByHandle($data);
 				$current = Symphony::Database()->query(
 					'
 						SELECT
@@ -423,7 +470,7 @@
 			
 			// Fill out create data:
 			foreach ($create as $guid => &$data) {
-				$field = $this->fetchFieldByHandle($data);
+				$field = $section->fetchFieldByHandle($data);
 				
 				$data = (object)array(
 					'name'	=> $data,
@@ -433,7 +480,7 @@
 			
 			// Fill out update data:
 			foreach ($update as $guid => &$data) {
-				$field = $this->fetchFieldByHandle($data);
+				$field = $section->fetchFieldByHandle($data);
 				
 				$data = (object)array(
 					'name'	=> $data,
@@ -450,8 +497,12 @@
 			);
 		}
 
-		public function synchronise() {
-			$stats = $this->syncroniseStatistics();
+		public static function synchronise(Section $section, $old_handle = null) {
+			$new_handle = $section->handle;
+			
+			if (is_null($old_handle)) $old_handle = $new_handle;
+			
+			$stats = self::syncroniseStatistics($section, $old_handle);
 			
 			// Remove fields:
 			foreach ($stats->remove as $guid => $data) {
@@ -460,7 +511,10 @@
 			
 			// Rename fields:
 			foreach ($stats->rename as $guid => $data) {
-				$data->field->rename($data->from, $data->to);
+				$data->field->rename(
+					$old_handle, $data->from,
+					$new_handle, $data->to
+				);
 			}
 			
 			// Create fields:
@@ -475,92 +529,36 @@
 			
 			// Remove old sync data:
 			Symphony::Database()->delete(
-				'tbl_sections_sync', array(
-					$this->handle
-				),
+				'tbl_sections_sync',
+				array($old_handle),
 				'`section` = "%s"'
 			);
 			
 			// Create new sync data:
-			foreach ($this->fields as $field) {
+			foreach ($section->fields as $field) {
 				Symphony::Database()->insert('tbl_sections_sync', array(
 					'guid'		=> $field->guid,
 					'name'		=> $field->{'element-name'},
 					'type'		=> $field->type,
-					'section'	=> $this->handle
+					'section'	=> $new_handle
 				));
 			}
 		}
-
-		public static function save(Section $section, MessageStack $messages, $simulate=false){
-
-			$pathname = sprintf('%s/%s.xml', $section->path, $section->handle);
-
-			## Check to ensure all the required section fields are filled
-			if(!isset($section->name) || strlen(trim($section->name)) == 0){
-				$messages->append('name', __('This is a required field.'));
-			}
-
-			## Check for duplicate section handle
-			elseif(file_exists($pathname)){
-				$existing = self::load($pathname);
-				
-				if (isset($existing->guid) and $existing->guid != $section->guid) {
-					$messages->append('name', __('A Section with the name <code>%s</code> already exists', array($section->name)));
-				}
-				unset($existing);
-			}
-
-			## Check to ensure all the required section fields are filled
-			if(!isset($section->{'navigation-group'}) || strlen(trim($section->{'navigation-group'})) == 0){
-				$messages->append('navigation-group', __('This is a required field.'));
-			}
-
-			if(is_array($section->fields) && !empty($section->fields)){
-				foreach ($section->fields as $index => $field) {
-					$field_stack = new MessageStack;
-
-					if ($field->validateSettings($field_stack, false, false) != Field::STATUS_OK) {
-						$messages->append("field::{$index}", $field_stack);
-					}
-				}
-			}
-
-			if($messages->length() > 0){
-				throw new SectionException(__('Section could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
-			}
-
-			$section->synchronise();
-
-			$doc = $section->toDoc();
-
-			return ($simulate == true ? true : file_put_contents($pathname, $doc->saveXML()));
-		}
-
-		public function rename(array $sections) {
+		
+		public static function rename(Section $section, $old_handle) {
 			/*
-				$sections = array(
-					'old-section-name',
-					'new-section-name'
-				)
-
 			 	TODO:
 				Upon renaming a section, data-sources/events attached to it must update.
 				Views will also need to update to ensure they still have references to the same
 				data-sources/sections
-
-				TODO:
-				If a section is renamed ie. ($old), all the fields tables need to be
-				renamed to match the new section handle instead of a new table being
-				created with the $new moniker
 			*/
-
-			list($old, $new) = $sections;
-
-			self::delete($old);
+			
+			self::synchronise($section, $old_handle);
+			
+			return General::deleteFile(SECTIONS . '/' . $old_handle . '.xml');
 		}
-
-		public function delete($handle){
+		
+		public static function delete(Section $section) {
 			/*
 				TODO:
 				Upon deletion it should update all data-sources/events attached to it.
@@ -575,8 +573,20 @@
 
 				Verdict?
 			*/
-
-			return General::deleteFile(SECTIONS . '/' . $handle . '.xml');
+			
+			// Remove fields:
+			foreach ($section->fields as $field) {
+				$field->remove();
+			}
+			
+			// Remove sync data:
+			Symphony::Database()->delete(
+				'tbl_sections_sync',
+				array($section->handle),
+				'`section` = "%s"'
+			);
+			
+			return General::deleteFile(SECTIONS . '/' . $section->handle . '.xml');
 		}
 
 		public function toDoc(){
