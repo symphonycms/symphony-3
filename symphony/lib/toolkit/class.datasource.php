@@ -271,8 +271,6 @@
 					throw new DatasourceException(__('A Datasource with the name <code>%s</code> already exists.', array($this->about()->name)));
 				}
 
-				// To Do: Check for duplicates
-
 				$data = array(
 					$classname,
 					// About info:
