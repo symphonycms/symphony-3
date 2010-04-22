@@ -16,13 +16,10 @@
 			parent::__construct();
 
 			$this->_name = 'Text Box';
-			$this->_required = true;
 			$this->_driver = ExtensionManager::instance()->create('field_textbox');
 
 			// Set defaults:
-			$this->{'show-column'} = 'yes';
 			$this->{'size'} = 'medium';
-			$this->{'required'} = 'yes';
 
 			$this->_sizes = array(
 				array('single', false, __('Single Line')),
@@ -164,22 +161,22 @@
 			$fields['text-handle'] = 'yes';
 			$fields['text-cdata'] = 'no';
 		}
-		
+
 		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
 			if (trim((string)$this->{'text-length'}) == '') {
 				$messages->append('text-length', __('This is a required field.'));
 			}
-			
+
 			if (trim((string)$this->{'column-length'}) == '') {
 				$messages->append('column-length', __('This is a required field.'));
 			}
-			
+
 			return parent::validateSettings($messages, $checkForDuplicates);
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
 			parent::displaySettingsPanel($wrapper, $messages);
-			
+
 			$this->_driver->addSettingsHeaders($this->_engine->Page);
 			$document = $wrapper->ownerDocument;
 
@@ -229,11 +226,11 @@
 			$label->appendChild($document->createElement('i', __('Number of characters')));
 			$input = Widget::Input('text-length', $this->{'text-length'});
 			$label->appendChild($input);
-			
+
 			if ($messages->{'text-length'}) {
 				$label = Widget::wrapFormElementWithError($label, $messages->{'text-length'});
 			}
-			
+
 			$group->appendChild($label);
 
 		/*---------------------------------------------------------------------
@@ -244,11 +241,11 @@
 			$label->appendChild($document->createElement('i', __('Number of characters')));
 			$input = Widget::Input('column-length', $this->{'column-length'});
 			$label->appendChild($input);
-			
+
 			if ($messages->{'column-length'}) {
 				$label = Widget::wrapFormElementWithError($label, $messages->{'column-length'});
 			}
-			
+
 			$group->appendChild($label);
 			$wrapper->appendChild($group);
 
@@ -258,6 +255,9 @@
 
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
+
+			$this->appendRequiredCheckbox($options_list);
+			$this->appendShowColumnCheckbox($options_list);
 
 			$label = Widget::Label(__('Output with handles'));
 			$input = Widget::Input('text-handle', 'yes', 'checkbox');
@@ -282,9 +282,6 @@
 			$item = $document->createElement('li');
 			$item->appendChild($label);
 			$options_list->appendChild($item);
-
-			$this->appendRequiredCheckbox($options_list);
-			$this->appendShowColumnCheckbox($options_list);
 
 			$wrapper->appendChild($options_list);
 			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-textbox');
@@ -424,7 +421,7 @@
 				return self::STATUS_ERROR;
 			}
 
-			if (empty($data)) return self::STATUS_OK;
+			if (!isset($data->value)) return self::STATUS_OK;
 
 			if (!$this->applyValidationRules($data->value)) {
 				$errors->append(

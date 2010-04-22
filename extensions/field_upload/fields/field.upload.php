@@ -25,7 +25,6 @@
 			$this->Driver = ExtensionManager::instance()->create('field_upload');
 
 			$this->_name = 'Upload';
-			$this->_required = true;
 			$this->_mimes = array(
 				'image'	=> array(
 					'image/bmp',
@@ -42,9 +41,6 @@
 					'text/html'
 				)
 			);
-
-			$this->{'show-column'} = 'yes';
-			$this->required = 'yes';
 		}
 
 		public function createTable(){
@@ -175,26 +171,24 @@
 
 			$this->appendValidationSelect($wrapper, $this->validator, 'validator', 'upload');
 
-
-
-			$options_list = Symphony::Parent()->Page->createElement('ul');
+			$options_list = $wrapper->ownerDocument->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-
-			// Serialise ----------------------------------------------------------
-
-				$label = Widget::Label(__('Serialise file names'));
-				$input = Widget::Input(
-					'serialise', 'yes', 'checkbox'
-				);
-
-				if ($this->serialise == 'yes') $input->setAttribute('checked', 'checked');
-
-				$label->prependChild($input);
-				$options_list->appendChild($label);
-
-
+			
 			$this->appendShowColumnCheckbox($options_list);
 			$this->appendRequiredCheckbox($options_list);
+
+		// Serialise ----------------------------------------------------------
+
+			$label = Widget::Label(__('Serialise file names'));
+			$input = Widget::Input(
+				'serialise', 'yes', 'checkbox'
+			);
+
+			if ($this->serialise == 'yes') $input->setAttribute('checked', 'checked');
+
+			$label->prependChild($input);
+			$options_list->appendChild($label);
+
 			$wrapper->appendChild($options_list);
 		}
 

@@ -78,7 +78,7 @@
 
 			$callback = Administration::instance()->getPageCallback();
 
-			if ($this->{'default-to-current-user'} == 'yes' && empty($data) && empty($_POST)) {
+			if ($this->{'default-to-current-user'} == 'yes' && is_null($data)) {
 				$value = array(Administration::instance()->User->id);
 			}
 
@@ -113,7 +113,7 @@
 
 			$value = array();
 
-			$fragment = Symphony::Parent()->Page->createDocumentFragment();
+			$fragment = $wrapper->ownerDocument->createDocumentFragment();
 
 			foreach($data->{'user_id'} as $user_id){
 				if(is_null($user_id)) continue;
@@ -226,11 +226,11 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
 	        if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
 
-	        $list = Symphony::Parent()->Page->createElement($this->{'element-name'});
+	        $list = $wrapper->ownerDocument->createElement($this->{'element-name'});
 	        foreach($data['user_id'] as $user_id){
 	            $user = new User($user_id);
 	            $list->appendChild(
-					Symphony::Parent()->Page->createElement('item', $user->getFullName(), array(
+					$wrapper->ownerDocument->createElement('item', $user->getFullName(), array(
 						'id' => $user->id,
 						'username' => $user->username
 					))
@@ -246,8 +246,11 @@
 		public function displaySettingsPanel(&$wrapper, $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$options_list = Symphony::Parent()->Page->createElement('ul');
+			$options_list = $wrapper->ownerDocument->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
+			
+			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
 
 			## Allow multiple selection
 			$label = Widget::Label(__('Allow selection of multiple users'));
