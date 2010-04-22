@@ -267,7 +267,9 @@
 				$classname = Lang::createHandle(ucwords($this->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
 				$pathname = DATASOURCES . "/{$filename}";
 
-				// To Do: Check for duplicates
+				if(self::__find($handle) !== false) {
+					throw new DatasourceException(__('A Datasource with the name <code>%s</code> already exists.', array($this->about()->name)));
+				}
 
 				$data = array(
 					$classname,
@@ -296,6 +298,21 @@
 			}
 
 			throw new Exception('Errors were encountered whilst attempting to save.');
+		}
+
+		public function delete($handle){
+			/*
+				TODO:
+				Upon deletion of the event, views need to be updated to remove
+				it's associated with the event
+			*/
+			$datasource = Datasource::loadFromName($handle);
+
+			if(!$datasource->allowEditorToParse()) {
+				throw new DatasourceException(__('Datasource cannot be deleted, the Editor does not have permission.'));
+			}
+
+			return General::deleteFile(DATASOURCES . "/{$handle}.php");
 		}
 
 

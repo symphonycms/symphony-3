@@ -667,6 +667,7 @@
 					default:
 
 						## TODO: Add delegate
+						//	I've add this in a 2.0.8 commit, look for it //brendan
 
 						list($option, $field_handle, $value) = explode('::', $_POST['with-selected'], 3);
 

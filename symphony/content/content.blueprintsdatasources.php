@@ -249,20 +249,8 @@
 
 			// Delete datasource:
 			if ($this->editing && array_key_exists('delete', $_POST['action'])) {
-
-				//if (!General::deleteFile(DATASOURCES . '/data.' . $this->handle . '.php')) {
-				$this->__actionDelete(array($this->handle), URL . '/symphony/blueprints/datasources/');
-
-				$this->pageAlert(
-					__('Failed to delete <code>%s</code>. Please check permissions.', array(
-						$this->handle
-					)),
-					Alert::ERROR
-				);
-
-				return;
+				$this->__actionDelete(array($this->handle), ADMIN_URL . '/blueprints/datasources/');
 			}
-
 
 			// Saving
 			try{
@@ -270,17 +258,14 @@
 				$handle = preg_replace('/.php$/i', NULL, basename($pathname));
 				redirect(URL . "/symphony/blueprints/datasources/edit/{$handle}/:".($this->editing == true ? 'saved' : 'created')."/");
 			}
-			catch(Exception $e){
-				$this->failed = true;
 
-				// There is a special error if writing fails.
-				if(isset($this->errors->write)){
-					$this->pageAlert(
-						$this->errors->write,
-						Alert::ERROR
-					);
-				}
+			catch (DatasourceException $e) {
+				$this->pageAlert($e->getMessage(), Alert::ERROR);
 			}
+
+			catch (Exception $e) {
+				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+			}			
 
 			/*$type_file = NULL;
 			$type_data = array();
@@ -635,12 +620,20 @@
 		protected function __actionDelete(array $datasources, $redirect=NULL) {
 			$success = true;
 
-			foreach ($datasources as $ds) {
-				if(!General::deleteFile(DATASOURCES . "/{$ds}.php")){
-					$this->pageAlert(__('Failed to delete <code>%s</code>. Please check permissions.', array($this->_context[1])), Alert::ERROR);
+			foreach ($datasources as $handle) {
+				try{
+					Datasource::delete($handle);
+				}
+				catch(DatasourceException $e){
+					$success = false;
+					$this->pageAlert($e->getMessage(), Alert::ERROR);
+				}
+				catch(Exception $e){
+					$success = false;
+					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
 				}
 
-				// To Do: Delete reference from View XML
+				// TODO: Delete reference from View XML
 
 				/*$sql = "SELECT * FROM `tbl_pages` WHERE `data_sources` REGEXP '[[:<:]]".$ds."[[:>:]]' ";
 				$pages = Symphony::Database()->fetch($sql);
@@ -655,9 +648,7 @@
 				}*/
 			}
 
-			if($success == true && !is_null($redirect)){
-				redirect($redirect);
-			}
+			if($success) redirect($redirect);
 		}
 
 		public function __actionIndex() {

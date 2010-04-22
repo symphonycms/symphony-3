@@ -281,10 +281,7 @@
 				# Delegate: Delete
 				# Description: Prior to deleting the asset file. Target file path is provided.
 				//ExtensionManager::instance()->notifyMembers('Delete', getCurrentPage(), array('file' => WORKSPACE . '/' . $this->_existing_file_rel));
-
-		    	General::deleteFile(UTILITIES . '/' . $this->_existing_file);
-
-		    	redirect(URL . '/symphony/blueprints/components/');
+				$this->__actionDelete(UTILITIES . '/' . $this->_existing_file, URL . '/symphony/blueprints/components/');
 		  	}
 		}
 
