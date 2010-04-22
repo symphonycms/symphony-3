@@ -10,11 +10,8 @@
 		public function __construct(){
 			parent::__construct();
 			$this->_name = __('Select Box Link');
-			$this->_required = true;
 
 			// Set default
-			$this->{'show-column'} = 'no';
-			$this->{'required'} = 'yes';
 			$this->{'limit'} = 20;
 		}
 
@@ -128,7 +125,7 @@
 
 		private function __findPrimaryFieldValueFromRelationID($entry_id){
 			$field_id = $this->findFieldIDFromRelationID($entry_id);
-			
+
 			if (!isset(self::$cacheFields[$field_id])) {
 				self::$cacheFields[$field_id] = Symphony::Database()->fetchRow(0, "
 					SELECT
@@ -147,13 +144,13 @@
 					 LIMIT 1
 				");
 			}
-			
+
 			$primary_field = self::$cacheFields[$field_id];
-			
+
 			if(!$primary_field) return NULL;
 
 			$field = Field::loadFromType($primary_field['type']);
-			
+
 			if (!isset(self::$cacheValues[$entry_id])) {
 				self::$cacheValues[$entry_id] = Symphony::Database()->fetchRow(0,
 					"SELECT *
@@ -161,13 +158,13 @@
 					 WHERE `entry_id` = '{$entry_id}' ORDER BY `id` DESC LIMIT 1"
 				);
 			}
-			
+
 			$data = self::$cacheValues[$entry_id];
-			
+
 			if(empty($data)) return null;
-			
+
 			$primary_field['value'] = $field->prepareTableValue($data);
-			
+
 			return $primary_field;
 		}
 
@@ -219,10 +216,10 @@
 
 			foreach($data['relation_id'] as $relation_id){
 				$primary_field = $this->__findPrimaryFieldValueFromRelationID($relation_id);
-				
+
 				$value = $primary_field['value'];
 				if ($encode) $value = General::sanitize($value);
-				
+
 				$item = new XMLElement('item');
 				$item->setAttribute('id', $relation_id);
 				$item->setAttribute('handle', Lang::createHandle($primary_field['value']));
@@ -235,12 +232,12 @@
 
 			$wrapper->appendChild($list);
 		}
-		
-		
-		
+
+
+
 		public function findFieldIDFromRelationID($id){
 			if(is_null($id)) return NULL;
-			
+
 			if (isset(self::$cacheRelations[$id])) {
 				return self::$cacheRelations[$id];
 			}
@@ -259,19 +256,19 @@
 			catch(Exception $e){
 				return NULL;
 			}
-			
+
 			self::$cacheRelations[$id] = $field_id;
-			
+
 			return $field_id;
 		}
 
 		public function findOptions(array $existing_selection=NULL){
 			$values = array();
 			$limit = $this->{'limit'};
-			
+
 			// find the sections of the related fields
 			$sections = Symphony::Database()->fetch("SELECT DISTINCT (s.id), s.name, f.id as `field_id`
-				 								FROM `tbl_sections` AS `s` 
+				 								FROM `tbl_sections` AS `s`
 												LEFT JOIN `tbl_fields` AS `f` ON `s`.id = `f`.parent_section
 												WHERE `f`.id IN ('" . implode("','", $this->{'related-field-id'}) . "')
 												ORDER BY s.sortorder ASC");
@@ -405,8 +402,8 @@
 					$where .= " AND `t{$field_id}`.relation_id IS NULL ";
 
 				}
-			} 
-			
+			}
+
 			else{
 				foreach($data as $key => &$value) {
 					// for now, I assume string values are the only possible handles.
@@ -430,7 +427,7 @@
 							if(empty($return)){
 								$value = 0;
 							}
-							
+
 							else{
 								$value = $return[0];
 							}
@@ -463,9 +460,9 @@
 
 
 			$label = Widget::Label(__('Options'));
-			
+
 			$options = array();
-			
+
 			// TODO: Fix me
 /*			$sections = SectionManager::instance()->fetch(NULL, 'ASC', 'sortorder');
 			$field_groups = array();
@@ -500,7 +497,7 @@
 			$label = Widget::Label();
 			$input = Widget::Input('limit', $this->{'limit'});
 			$input->setAttribute('size', '3');
-			
+
 			$label->appendChild(new DOMText(__('Limit to the ')));
 			$label->appendChild($input);
 			$label->appendChild(new DOMText(__(' most recent entries')));
@@ -510,7 +507,10 @@
 
 			$options_list = $wrapper->ownerDocument->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-			
+
+			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
+
 			## Allow selection of multiple items
 			$label = Widget::Label();
 			$input = Widget::Input('allow-multiple-selection', 'yes', 'checkbox');
@@ -519,11 +519,8 @@
 
 			$label->appendChild($input);
 			$label->appendChild(new DOMText(__('Allow selection of multiple options')));
-			
+
 			$options_list->appendChild($label);
-			
-			$this->appendShowColumnCheckbox($options_list);
-			$this->appendRequiredCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 		}
 
@@ -545,5 +542,5 @@
 		}
 
 	}
-	
+
 	return 'fieldSelectBox_Link';

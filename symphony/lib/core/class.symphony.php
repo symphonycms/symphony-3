@@ -140,14 +140,7 @@
 		protected function __construct(){
 
 			$this->Profiler = new Profiler;
-
-			if(get_magic_quotes_gpc()) {
-				General::cleanArray($_SERVER);
-				General::cleanArray($_COOKIE);
-				General::cleanArray($_GET);
-				General::cleanArray($_POST);
-			}
-
+			
 			self::$Configuration = new Configuration;
 
 			DateTimeObj::setDefaultTimezone(self::Configuration()->get('timezone', 'region'));

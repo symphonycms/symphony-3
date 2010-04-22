@@ -426,7 +426,16 @@
 
 			return $result;
 		}
-
+		
+		public static function var_export($expressions, $return=false, $indenting=0){
+			$result = var_export($expressions, $return);
+			if($indenting > 0){
+				$tabs = str_repeat("\t", $indenting);
+				$result = $tabs . preg_replace('/[\r\n]+/', PHP_EOL . $tabs, $result);
+			}
+			return $result;
+		}
+		
 		/***
 
 		Method: getPostData
