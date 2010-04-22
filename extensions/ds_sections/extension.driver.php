@@ -74,7 +74,8 @@
 
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
-			$right = $layout->createColumn(Layout::LARGE);
+			$middle = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -139,7 +140,7 @@
 			$container->appendChild($templates);
 			$container->appendChild($instances);
 			$fieldset->appendChild($container);
-			$right->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
@@ -158,17 +159,14 @@
 			$p->setAttribute('class', 'help');
 			$fieldset->appendChild($p);
 		*/
-			$right->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Sorting -----------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Sorting'));
 
-			$group = $page->createElement('div');
-			$group->setAttribute('class', 'group');
-
 			$container_sort_by = $page->createElement('div');
-			$group->appendChild($container_sort_by);
+			$fieldset->appendChild($container_sort_by);
 
 			$label = Widget::Label(__('Sort Order'));
 
@@ -179,17 +177,13 @@
 			);
 
 			$label->appendChild(Widget::Select('fields[sort-order]', $options));
-			$group->appendChild($label);
+			$fieldset->appendChild($label);
 
-			$fieldset->appendChild($group);
-			$left->appendChild($fieldset);
+			$right->appendChild($fieldset);
 
 		//	Limiting ----------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Limiting'), '<code>{$param}</code> or <code>Value</code>');
-			
-			$group = $page->createElement('div');
-			$group->setAttribute('class', 'group');
 			
 			// Show page # of results:
 			$label = Widget::Label(__('Show page of results'));
@@ -201,7 +195,7 @@
 				$label = Widget::wrapFormElementWithError($label, $errors->page);
 			}
 			
-			$group->appendChild($label);
+			$fieldset->appendChild($label);
 			
 			// Show a maximum of # results
 			$label = Widget::Label(__('Limit results per page'));
@@ -213,9 +207,7 @@
 				$label = Widget::wrapFormElementWithError($label, $errors->limit);
 			}
 			
-			$group->appendChild($label);
-			
-			$fieldset->appendChild($group);
+			$fieldset->appendChild($label);
 			
 			// Can redirect on empty:
 			$fieldset->appendChild(Widget::Input('fields[redirect-404-on-empty]', 'no', 'hidden'));
@@ -229,7 +221,7 @@
 
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
-			$left->appendChild($fieldset);
+			$right->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 

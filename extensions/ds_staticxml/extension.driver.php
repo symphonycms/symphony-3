@@ -77,12 +77,14 @@
 		*/
 		
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
+		
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::SMALL);
+			$right = $layout->createColumn(Layout::LARGE);
 			
 			//	Essentials --------------------------------------------------------
 
-				$fieldset = Symphony::Parent()->Page->createElement('fieldset');
-				$fieldset->setAttribute('class', 'settings');
-				$fieldset->appendChild(Symphony::Parent()->Page->createElement('legend', __('Essentials')));
+				$fieldset = Widget::Fieldset(__('Essentials'));
 
 				// Name:
 				$label = Widget::Label(__('Name'));
@@ -94,6 +96,9 @@
 				}
 
 				$fieldset->appendChild($label);
+				$left->appendChild($fieldset);
+				
+				$fieldset = Widget::Fieldset(__('Content'));
 			
 				$label = Widget::Label(__('XML'));
 				$input = Widget::Textarea('fields[xml]', $datasource->parameters()->{'xml'}, array(
@@ -108,8 +113,9 @@
 				}
 			
 				$fieldset->appendChild($label);
+				$right->appendChild($fieldset);
 				
-			$wrapper->appendChild($fieldset);
+				$layout->appendTo($wrapper);
 		}
 	}
 	

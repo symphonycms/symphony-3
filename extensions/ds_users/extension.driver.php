@@ -24,7 +24,7 @@
 			);
 		}
 
-		public function prepare(array $data=NULL, UsersDataSource $datasource) {
+		public function prepare(array $data=NULL, UsersDataSource $datasource=NULL) {
 
 			if(is_null($datasource)) $datasource = new UsersDataSource;
 
