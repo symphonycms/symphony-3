@@ -512,6 +512,32 @@
 	table .selected td a {
 		color: #fff;
 	}
+	
+/*-----------------------------------------------------------------------------
+	Content: Table: Pagination
+-----------------------------------------------------------------------------*/
+	
+	div.actions + ul.page {
+		margin-top: -58px;
+	}
+	ul.page {
+		margin: 0;
+		padding: 20px 50px 0 30px;
+		height: 36px;
+		color: #999;
+	}
+	ul.page li {
+		display: inline;
+		margin-right: 1.25em;
+	}
+	ul.page li[title] {
+		color: #444;
+	}
+	ul.page a {
+		margin: 0 -0.67em;
+		padding: 0.67em;
+		text-decoration: none;
+	}
 
 /*-----------------------------------------------------------------------------
 	Content: Table: Settings
