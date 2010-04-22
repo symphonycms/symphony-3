@@ -6,7 +6,9 @@
 	require_once(TOOLKIT . '/class.event.php');
 	
 	Class contentBlueprintsEvents extends AdministrationPage{
-
+		
+		private $event;
+		
 		public function __viewIndex() {
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Events'))));
 
@@ -234,8 +236,8 @@
 				$label = Widget::Label(__('Name'));
 				$label->appendChild(Widget::Input('fields[name]', General::sanitize($fields['name'])));
 
-				if(isset($this->errors->name)){
-					$fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->errors->name));
+				if(isset($this->errors->{'about::name'})){
+					$fieldset->appendChild(Widget::wrapFormElementWithError($label, $this->errors->{'about::name'}));
 				}
 				else $fieldset->appendChild($label);
 
@@ -610,11 +612,15 @@
 		}
 
 		function __actionNew(){
-			if(array_key_exists('save', $_POST['action'])) return $this->__formAction();
+			if(array_key_exists('save', $_POST['action'])){
+				return $this->__save();
+			}
 		}
 
 		function __actionEdit(){
-			if(array_key_exists('save', $_POST['action'])) return $this->__formAction();
+			if(array_key_exists('save', $_POST['action'])){
+				return $this->__save();
+			}
 			elseif(array_key_exists('delete', $_POST['action'])){
 
 				## TODO: Fix Me
@@ -623,7 +629,7 @@
 				# Description: Prior to deleting the event file. Target file path is provided.
 				#ExtensionManager::instance()->notifyMembers('Delete', getCurrentPage(), array("file" => EVENTS . "/event." . $_REQUEST['file'] . ".php"));
 
-		    	if(!General::deleteFile(EVENTS . '/event.' . $this->_context[1] . '.php'))
+		    	if(!General::deleteFile(EVENTS . '/' . $this->_context[1] . '.php'))
 					$this->pageAlert(__('Failed to delete <code>%s</code>. Please check permissions.', array($this->_context[1])), Alert::ERROR);
 
 		    	else redirect(URL . '/symphony/blueprints/components/');
@@ -631,10 +637,68 @@
 			}
 		}
 
-		function __formAction(){
+		private function __save(){
+
 			$post = General::getPostData();
-			var_dump($post['fields']); die();
 			
+			$fields = $post['fields'];
+			
+			if($this->_context[0] == 'edit'){
+				$isEditing = true;
+				$handle = $this->_context[1];
+				$this->event = Event::loadFromName($handle);
+			}
+			else{
+				$this->event = new Event;
+			}
+			
+			$this->event->about()->name = $fields['name'];
+			
+			$this->event->about()->author->name = Administration::instance()->User->getFullName();
+			$this->event->about()->author->email = Administration::instance()->User->get('email');
+			
+			$this->event->parameters()->source = $fields['source'];
+			
+			if(isset($fields['filters']) && is_array($fields['filters']) || !empty($fields['filters'])){
+				$this->event->parameters()->filters = $fields['filters'];
+			}
+			
+			if(isset($fields['defaults']) && is_array($fields['defaults']) || !empty($fields['defaults'])){
+				$defaults = array();
+				foreach($fields['defaults']['field'] as $index => $field){
+					$defaults[$field] = $fields['defaults']['replacement'][$index];
+				}
+				$this->event->parameters()->defaults = $defaults;
+			}
+			
+			if(isset($fields['overrides']) && is_array($fields['overrides']) || !empty($fields['overrides'])){
+				$overrides = array();
+				foreach($fields['overrides']['field'] as $index => $field){
+					$overrides[$field] = $fields['overrides']['replacement'][$index];
+				}
+				$this->event->parameters()->overrides = $overrides;
+			}
+			
+			$this->errors->flush();
+			
+			try{
+				$pathname = Event::save($this->event, $this->errors);
+				$handle = preg_replace('/.php$/i', NULL, basename($pathname));
+				redirect(URL . "/symphony/blueprints/events/edit/{$handle}/".($this->_context[0] == 'new' ? 'created' : 'saved') . '/');
+			}
+			
+			catch (EventException $e) {
+				$this->pageAlert($e->getMessage(), Alert::ERROR);
+			}
+			
+			catch (Exception $e) {
+				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+			}
+
+		}
+
+		function __formAction(){
+
 			$this->_errors = array();
 
 			if(trim($fields['name']) == '') $this->_errors['name'] = __('This is a required field');
@@ -892,7 +956,6 @@
 		public static function processDocumentationCode($code){
 			return $this->createElement('pre', '<code>' . str_replace('<', '&lt;', str_replace('&', '&amp;', trim((is_object($code) ? $code->generate(true) : $code)))) . '</code>', array('class' => 'XML'));
 		}
-
 
 		private static function __injectArrayValues($shell, $variable, array $elements){
 			return str_replace('<!-- '.strtoupper($variable).' -->',  "'" . implode("'," . PHP_EOL . "\t\t\t'", $elements) . "'", $shell);
