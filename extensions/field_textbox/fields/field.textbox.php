@@ -33,7 +33,7 @@
 			);
 		}
 
-		public function createTable() {
+		public function create() {
 			return Symphony::Database()->query(sprintf(
 				"
 					CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
