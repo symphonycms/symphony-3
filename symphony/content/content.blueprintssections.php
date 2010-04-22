@@ -106,30 +106,30 @@
 		}
 
 		private function __save(array $essentials = null, array $fields = null, array $layout = null, Section $section = null){
-			$renamed = false;
-
 			if (is_null($section)) {
 				$section = new Section;
 				$section->path = SECTIONS;
 			}
-
+			
 			$this->section = $section;
 			$this->errors = new MessageStack;
-
-			// Resave essentials:
-			if (!is_null($essentials)) {
-				if($essentials['name'] !== $section->name) {
-					$renamed = array(
-						$section->handle,
-						$essentials['name']
-					);
+			$old_handle = false;
+			
+			if (is_array($essentials)) {
+				if ($essentials['name'] !== $this->section->name) {
+					$old_handle = $this->section->handle;
 				}
-
+				
 				$this->section->name = $essentials['name'];
 				$this->section->{'navigation-group'} = $essentials['navigation-group'];
-				$this->section->{'hidden-from-publish-menu'} = (isset($essentials['hidden-from-publish-menu']) && $essentials['hidden-from-publish-menu'] == 'yes' ? 'yes' : 'no');
+				$this->section->{'hidden-from-publish-menu'} = (
+					isset($essentials['hidden-from-publish-menu'])
+					&& $essentials['hidden-from-publish-menu'] == 'yes'
+						? 'yes'
+						: 'no'
+				);
 			}
-
+			
 			// Resave fields:
 			if (!is_null($fields)) {
 				$this->section->removeAllFields();
@@ -156,10 +156,16 @@
 
 			try {
 				Section::save($this->section, $this->errors);
-
-				// If it's a renamed section, cleanup!
-				if ($renamed !== false) Section::rename($renamed);
-
+				
+				// Rename section:
+				if ($old_handle !== false) {
+					Section::rename($this->section, $old_handle);
+				}
+				
+				else {
+					Section::synchronise($this->section);
+				}
+				
 				return true;
 			}
 
@@ -247,7 +253,7 @@
 
 			foreach($sections as $handle){
 				try{
-					Section::delete($handle);
+					Section::delete(Section::loadFromHandle($handle));
 				}
 				catch(SectionException $e){
 					die($e->getMessage() . 'DOH!!1');

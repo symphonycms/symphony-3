@@ -95,7 +95,7 @@
 		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL);
 
 		public static function createGUID(Field $field) {
-			return uniqid(substr(md5($field->type), 0, 4) . '_');
+			return uniqid();
 		}
 
 		public function __construct(){
@@ -803,17 +803,17 @@
 
 			return true;
 		}
-
-		public function rename($old, $new) {
+		
+		public function rename($old_section, $old_name, $new_section, $new_name) {
 			try {
 				Symphony::Database()->query(
 					'
 						ALTER TABLE
 							`tbl_data_%s_%s`
 						RENAME TO
-							`tbl_data_%1$s_%s`
+							`tbl_data_%s_%s`
 					',
-					array($this->section, $old, $new)
+					array($old_section, $old_name, $new_section, $new_name)
 				);
 			}
 

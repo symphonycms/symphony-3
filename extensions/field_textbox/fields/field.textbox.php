@@ -256,8 +256,8 @@
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
 
-			$this->appendRequiredCheckbox($options_list);
 			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
 
 			$label = Widget::Label(__('Output with handles'));
 			$input = Widget::Input('text-handle', 'yes', 'checkbox');
