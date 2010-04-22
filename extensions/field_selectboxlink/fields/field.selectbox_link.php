@@ -525,7 +525,7 @@
 			$wrapper->appendChild($options_list);
 		}
 
-		public function createTable(){
+		public function create(){
 			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->{'id'} . "` (
 				`id` int(11) unsigned NOT NULL auto_increment,

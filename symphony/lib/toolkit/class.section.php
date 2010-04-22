@@ -196,8 +196,8 @@
 		**	@return Field
 		*/
 		public function fetchFieldByHandle($handle) {
-			foreach($this->fields as $field) if($field->{'element-name'} == $handle) {
-				return Field::loadFromType($field->type);
+			foreach($this->fields as $field) if ($field->{'element-name'} == $handle) {
+				return $field;
 			}
 		}
 
@@ -318,20 +318,177 @@
 		public function loadFromHandle($handle){
 			return self::load(SECTIONS . '/' . $handle . '.xml');
 		}
-
-		public function synchroniseDataTables(){
-
-			/*
-			**	TODO:
-				When a field is removed from the section it will not be in the
-				$this->fields array, however it's table needs to be dropped from
-				the database
-			*/
-
-			if(is_array($this->fields) && !empty($this->fields)){
-				foreach($this->fields as $index => $field){
-					$field->createTable();
+		
+		public function syncroniseStatistics() {
+			$old = $new = $create = $update = $rename = $remove = array();
+			$res = Symphony::Database()->query(
+				'
+					SELECT
+						s.guid, s.name, s.type
+					FROM
+						`tbl_sections_sync` AS s
+					WHERE
+						s.section = "%s"
+				',
+				array(
+					$this->handle
+				)
+			);
+			
+			// Get existing field GUIDs:
+			if ($res->valid()) foreach ($res as $field) {
+				$old[$field->guid] = $field;
+			}
+			
+			foreach ($this->fields as $field) {
+				// Field is being created:
+				if (!array_key_exists($field->guid, $old)) {
+					$create[$field->guid] = $field->{'element-name'};
 				}
+				
+				// Field is being renamed or removed then created:
+				else if ($old[$field->guid]->name != $field->{'element-name'}) {
+					if ($old[$field->guid]->type == $field->type) {
+						$rename[$field->guid] = $field->{'element-name'};
+						$update[$field->guid] = $field->{'element-name'};
+					}
+					
+					else {
+						$remove[$field->guid] = $field->{'element-name'};
+						$create[$field->guid] = $field->{'element-name'};
+					}
+				}
+				
+				// Field is updated:
+				else {
+					$update[$field->guid] = $field->{'element-name'};
+				}
+				
+				$new[$field->guid] = $field->{'element-name'};
+			}
+			
+			// Fields that no longer exist:
+			$remove = array_merge($remove, array_diff_key($old, $new));
+			
+			// Fill out remove data:
+			foreach ($remove as $guid => &$data) {
+				if (!is_object($data)) {
+					$data = Symphony::Database()->query(
+						'
+							SELECT
+								s.name, s.type
+							FROM
+								`tbl_sections_sync` AS s
+							WHERE
+								s.guid = "%s"
+							LIMIT 1
+						',
+						array($guid)
+					)->current();
+				}
+				
+				$field = Field::loadFromType($data->type);
+				$field->guid = $guid;
+				$field->label = $data->name;
+				$field->section = $this->handle;
+				
+				$data = (object)array(
+					'name'	=> $data->name,
+					'field' => $field
+				);
+			}
+			
+			// Fill out rename data:
+			foreach ($rename as $guid => &$data) {
+				$field = $this->fetchFieldByHandle($data);
+				$current = Symphony::Database()->query(
+					'
+						SELECT
+							s.name
+						FROM
+							`tbl_sections_sync` AS s
+						WHERE
+							s.guid = "%s"
+						LIMIT 1
+					',
+					array($guid)
+				)->current();
+				
+				$data = (object)array(
+					'from'	=> $current->name,
+					'to'	=> $data,
+					'field'	=> $field
+				);
+			}
+			
+			// Fill out create data:
+			foreach ($create as $guid => &$data) {
+				$field = $this->fetchFieldByHandle($data);
+				
+				$data = (object)array(
+					'name'	=> $data,
+					'field'	=> $field
+				);
+			}
+			
+			// Fill out update data:
+			foreach ($update as $guid => &$data) {
+				$field = $this->fetchFieldByHandle($data);
+				
+				$data = (object)array(
+					'name'	=> $data,
+					'field'	=> $field
+				);
+			}
+			
+			return (object)array(
+				'synced'	=> (empty($remove) and empty($rename) and empty($create)),
+				'remove'	=> $remove,
+				'rename'	=> $rename,
+				'create'	=> $create,
+				'update'	=> $update
+			);
+		}
+
+		public function synchronise() {
+			$stats = $this->syncroniseStatistics();
+			
+			// Remove fields:
+			foreach ($stats->remove as $guid => $data) {
+				$data->field->remove();
+			}
+			
+			// Rename fields:
+			foreach ($stats->rename as $guid => $data) {
+				$data->field->rename($data->from, $data->to);
+			}
+			
+			// Create fields:
+			foreach ($stats->create as $guid => $data) {
+				$data->field->create();
+			}
+			
+			// Update fields:
+			foreach ($stats->update as $guid => $data) {
+				$data->field->update();
+			}
+			
+			// Remove old sync data:
+			Symphony::Database()->delete(
+				'tbl_sections_sync', array(
+					$this->handle
+				),
+				'`section` = "%s"'
+			);
+			
+			// Create new sync data:
+			foreach ($this->fields as $field) {
+				Symphony::Database()->insert('tbl_sections_sync', array(
+					'guid'		=> $field->guid,
+					'name'		=> $field->{'element-name'},
+					'type'		=> $field->type,
+					'section'	=> $this->handle
+				));
 			}
 		}
 
@@ -373,7 +530,7 @@
 				throw new SectionException(__('Section could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
 			}
 
-			$section->synchroniseDataTables();
+			$section->synchronise();
 
 			$doc = $section->toDoc();
 
