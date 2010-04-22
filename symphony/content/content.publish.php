@@ -918,13 +918,43 @@
 			else {
 				$this->pageAlert(
 					__(
-						'You haven\'t set any section layout rules. PERHAPS IF NO LAYOUT IS SET A DEFAULT TWO COLUMN SHOULD BE USED? <a href="%s">Click here to define a layout.</a>',
+						'You haven\'t set any section layout rules. <a href="%s">Click here to define a layout.</a>',
 						array(
 							ADMIN_URL . '/blueprints/sections/layout/' . $section->handle . '/'
 						)
 					),
 					Alert::ERROR
 				);
+				
+				$column = $layout->createColumn(Layout::LARGE);
+				$fieldset = $this->createElement('fieldset');
+				$header = $this->createElement('h3', __('Untitled'));
+				$fieldset->appendChild($header);
+				
+				if (is_array($section->fields)) foreach ($section->fields as $field) {
+					$div = $this->createElement('div', NULL, array(
+							'class' => trim(sprintf('field field-%s %s %s',
+								$field->handle(),
+								$this->__calculateWidth($field->width),
+								($field->required == 'yes' ? 'required' : '')
+							))
+						)
+					);
+					
+					$field->displayPublishPanel(
+						$div,
+						 $this->entry->data()->{$field->{'element-name'}},
+						(isset($this->errors->{$field->{'element-name'}})
+							? $this->errors->{$field->{'element-name'}}
+							: NULL),
+						$this->entry
+					);
+
+					$fieldset->appendChild($div);
+				}
+
+				$column->appendChild($fieldset);
+				$layout->appendTo($this->Form);
 			}
 /*
 			//Check if there is a field to prepopulate
