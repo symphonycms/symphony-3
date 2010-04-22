@@ -95,16 +95,23 @@
 						`value`
 					FROM
 						`tbl_data_%s_%s`
+					WHERE
+						`value` REGEXP '%s'
 					GROUP BY
 						`value`
 					HAVING
 						COUNT(`value`) >= %d
-				", array($section, $field_handle, $this->{'suggestion-source-threshold'})
+				", array(
+					$section,
+					$field_handle,
+					(!empty($this->{'validator'})) ? rtrim(trim($this->{'validator'}, '/'), '/') : '.',
+					$this->{'suggestion-source-threshold'}
+				)
 			);
 
 			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
 
-			return array_filter(array_unique($values), array($this, 'applyValidationRules'));
+			return array_unique($values);
 		}
 
 		public function __tagArrayToString(array $tags){
