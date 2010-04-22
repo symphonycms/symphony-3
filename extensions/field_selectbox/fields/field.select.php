@@ -199,11 +199,17 @@
 		}
 
 		public function prepareTableValue($data, DOMElement $link=NULL){
-			$value = $data->value;
+			
+			if(!is_array($data)){
+				$data = array($data);
+			}
+			
+			$values = array();
+			foreach($data as $d){
+				$values[] = $d->value;
+			}
 
-			if(!is_array($value)) $value = array($value);
-
-			return parent::prepareTableValue((object)array('value' => General::sanitize(implode(', ', $value))), $link);
+			return parent::prepareTableValue((object)array('value' => General::sanitize(implode(', ', $values))), $link);
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
