@@ -4,7 +4,6 @@
 
 	class FieldUpload extends Field {
 		protected $_mimes = array();
-		protected $Driver = null;
 		protected $Symphony = null;
 
 	/*-------------------------------------------------------------------------
@@ -13,16 +12,6 @@
 
 		public function __construct() {
 			parent::__construct();
-
-			if (class_exists('Administration')) {
-				$this->Symphony = Administration::instance();
-			}
-
-			else {
-				$this->Symphony = Frontend::instance();
-			}
-
-			$this->Driver = ExtensionManager::instance()->create('field_upload');
 
 			$this->_name = 'Upload';
 			$this->_mimes = array(

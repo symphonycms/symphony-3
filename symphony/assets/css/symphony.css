@@ -707,6 +707,7 @@
 	}
 	form select optgroup > option {
 		font-weight: normal;
+		padding-left: 10px;
 	}
 	form input {
 		cursor: text;
@@ -719,8 +720,11 @@
 	form input[type=checkbox] {
 		display: inline;
 		width: auto;
-		margin-right: .4em;
+		margin-right: 0.4em;
 		cursor: pointer;
+	}
+	form input[size] {
+		margin-left: 0.4em;
 	}
 	form select[multiple] {
 		min-height: 100px;
