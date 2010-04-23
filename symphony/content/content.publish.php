@@ -754,14 +754,14 @@
 
 			// Check that a layout and fields exist
 			if(isset($section->fields)) {
-				return $this->pageAlert(
+				$this->alerts()->append(
 					__(
 						'It looks like you\'re trying to create an entry. Perhaps you want fields first? <a href="%s">Click here to create some.</a>',
 						array(
 							ADMIN_URL . '/blueprints/sections/edit/' . $section->handle . '/'
 						)
 					),
-					Alert::ERROR
+					AlertStack::ERROR
 				);
 			}
 
@@ -812,7 +812,7 @@
 			if(!is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Entry updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
 								array(
@@ -821,12 +821,12 @@
 									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/'
 								)
 							),
-						Alert::SUCCESS);
-
+							AlertStack::SUCCESS
+						);
 						break;
 
 					case 'created':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Entry created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
 								array(
@@ -835,7 +835,8 @@
 									ADMIN_URL . '/publish/'.$callback['context']['section_handle'].'/'
 								)
 							),
-						Alert::SUCCESS);
+							AlertStack::SUCCESS
+						);
 						break;
 				}
 			}
@@ -918,14 +919,14 @@
 			}
 
 			else {
-				$this->pageAlert(
+				$this->alerts()->append(
 					__(
 						'You haven\'t set any section layout rules. <a href="%s">Click here to define a layout.</a>',
 						array(
 							ADMIN_URL . '/blueprints/sections/layout/' . $section->handle . '/'
 						)
 					),
-					Alert::ERROR
+					AlertStack::ERROR
 				);
 				
 				$column = $layout->createColumn(Layout::LARGE);
@@ -1073,7 +1074,12 @@
 
 				// Oh dear
 				$this->entry = $entry;
-				$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+				
+				$this->alerts()->append(
+					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
+					AlertStack::ERROR,
+					$this->errors
+				);
 				return;
 
 /*
@@ -1357,7 +1363,11 @@
 
 				// Oh dear
 				$this->entry = $entry;
-				$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+				$this->alerts()->append(
+					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
+					AlertStack::ERROR
+				);
+				
 				return;
 
 

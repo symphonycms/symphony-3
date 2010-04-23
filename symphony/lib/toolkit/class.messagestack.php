@@ -68,4 +68,30 @@
 			return isset($this->messages[$identifier]);
 		}
 
+		public function appendTo(SymphonyDOMElement $wrapper) {
+			$document = $wrapper->ownerDocument;
+			$list = $document->createElement('ol');
+			$list->setAttribute('class', 'error-list');
+
+			foreach ($this as $key => $message) {
+				if ($message instanceof MessageStack) {
+					$item = $document->createElement('li', $key . ':');
+
+					$message->appendTo($item);
+				}
+				
+				else if (is_array($message)) {
+					$item = $document->createElement('li', $key . ': ' . implode(' ', $message));
+				}
+
+				else {
+					$item = $document->createElement('li', $key . ': ' . $message);
+				}
+
+				$list->appendChild($item);
+			}
+
+			$wrapper->appendChild($list);
+		}
 	}
+	

@@ -113,13 +113,18 @@
 			}
 
 			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
-			if($formHasErrors) $this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+			if($formHasErrors) {
+				$this->alerts()->append(
+					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
+					AlertStack::ERROR
+				);
+			}
 
 			if(isset($this->_context[2])){
 				switch($this->_context[2]){
 
 					case 'saved':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Utility updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -128,11 +133,12 @@
 									URL . '/symphony/blueprints/utilities/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS
+						);
 						break;
 
 					case 'created':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Utility created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -141,7 +147,8 @@
 									URL . '/symphony/blueprints/utilities/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS
+						);
 						break;
 
 				}
@@ -252,8 +259,12 @@
 					elseif($this->_context[0] == 'new' && is_file($file)) $this->_errors['name'] = __('A Utility with that name already exists. Please choose another.');
 
 					##Write the file
-					elseif(!$write = General::writeFile($file, $fields['body'], Symphony::Configuration()->get('write_mode', 'file')))
-						$this->pageAlert(__('Utility could not be written to disk. Please check permissions on <code>/workspace/utilities</code>.'), Alert::ERROR);
+					elseif(!$write = General::writeFile($file, $fields['body'], Symphony::Configuration()->get('write_mode', 'file'))) {
+						$this->alerts()->append(
+							__('Utility could not be written to disk. Please check permissions on <code>/workspace/utilities</code>.'),
+							AlertStack::SUCCESS
+						);
+					}
 
 					##Write Successful, add record to the database
 					else{

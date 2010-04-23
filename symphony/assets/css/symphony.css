@@ -1018,9 +1018,11 @@
 	System Notification
 -----------------------------------------------------------------------------*/
 
-	#notice {
+	#alerts > li {
+		display: none;
 		z-index: 10;
 		position: absolute;
+		top: 0;
 		width: 50%;
 		left: 50%;
 		margin: 0 0 0 -25%;
@@ -1051,7 +1053,10 @@
 		-moz-box-shadow: 1px 1px 3px #000;
 		-webkit-box-shadow: 1px 1px 3px #000;
 	}
-	#notice:before {
+	#alerts > li:last-child {
+		display: block;
+	}
+	#alerts > li:before {
 		float: left;
 		margin: 0 10px 0 -30px;
 		display: block;
@@ -1068,7 +1073,7 @@
 		-moz-border-radius: 20px;
 		-webkit-border-radius: 20px;
 	}
-	#notice.error {
+	#alerts > li.error {
 		background-color: #970707;
 		background: -moz-linear-gradient(
 			top,
@@ -1083,7 +1088,7 @@
 			to(hsla(0, 90%, 25%, 1))
 		);
 	}
-	#notice.success {
+	#alerts > li.success {
 		background: -moz-linear-gradient(
 			top,
 			hsla(110, 60%, 55%, 1),
@@ -1097,7 +1102,7 @@
 			to(hsla(110, 50%, 40%, 1))
 		);
 	}
-	#notice a {
+	#alerts a {
 		color: #fff9c9;
 	}
 

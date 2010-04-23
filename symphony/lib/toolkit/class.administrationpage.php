@@ -5,13 +5,12 @@
 	require_once(TOOLKIT . '/class.alert.php');
 	require_once(TOOLKIT . '/class.section.php');
 	require_once(TOOLKIT . '/class.layout.php');
+	require_once(TOOLKIT . '/class.alertstack.php');
 
 	Class AdministrationPage extends HTMLDocument{
-
-		public $Alert;
-
 		public $_navigation;
 		public $_context;
+		protected $_alerts;
 
 		### By CZ: Should be checked
 		var $_layout;
@@ -126,31 +125,28 @@
 			$this->$function();
 		}
 
+		public function alerts() {
+			if (!$this->alerts instanceof AlertStack) {
+				$this->alerts = new AlertStack;
+			}
+			
+			return $this->alerts;
+		}
+		
 		public function pageAlert($message=NULL, $type=Alert::NOTICE){
-
-			if(is_null($message) && $type == Alert::ERROR){
-				$message = 'There was a problem rendering this page. Please check the activity log for more details.';
-			}
-
-			$message = __($message);
-
-			if(strlen(trim($message)) == 0) throw new Exception('A message must be supplied unless flagged as Alert::ERROR');
-
-			if(!($this->Alert instanceof Alert) || ($this->Alert->type == Alert::NOTICE && in_array($type, array(Alert::ERROR, Alert::SUCCESS)))){
-				$this->Alert = new Alert($message, $type);
-			}
+			throw new Exception('Use the global message stack instead. $page::alerts()->append(..).');
 		}
 
 		public function appendAlert(){
-
 			###
 			# Delegate: AppendPageAlert
 			# Description: Allows for appending of alerts. Administration::instance()->Page->Alert is way to tell what
 			# is currently in the system
 			ExtensionManager::instance()->notifyMembers('AppendPageAlert', '/backend/');
-
-			if(($this->Alert instanceof Alert)){
-				$this->insertAlert($this->Alert->asXML());
+			
+			if ($this->alerts()->valid()) {
+				$body = $this->xpath("/html/body")->item(0);
+				$this->alerts()->appendTo($body);
 			}
 		}
 
