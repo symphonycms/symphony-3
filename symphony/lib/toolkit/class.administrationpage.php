@@ -18,11 +18,14 @@
 		### - - - - - - ###
 		
 		public function __construct(){
-			parent::__construct('1.0', 'utf-8', "html");
+			parent::__construct('1.0', 'utf-8', 'html');
 		}
 
 		public function setTitle($val, $position=null) {
-			return $this->insertNodeIntoHead($this->createElement('title', $val), $position);
+			$doc = new XMLDocument;
+			$doc->loadHTML('<title>'.$val.'</title>');
+			$node = $this->importNode($doc->xpath('//title')->item(0), true);
+			return $this->insertNodeIntoHead($node, $position);
 		}
 
 		public function Context(){
@@ -178,7 +181,7 @@
 
 		public function appendSubheading($string, $link=NULL){
 			$h2 = $this->createElement('h2', $string);
-			$h2->setValue($link);
+			if(!is_null($link)) $h2->setValue($link);
 
 			$this->Form->appendChild($h2);
 		}
