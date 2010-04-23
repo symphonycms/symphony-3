@@ -414,8 +414,8 @@
 			unset($this->properties->{'suggestion-list-source'});
 			
 			$include_existing = ($this->{'suggestion-list-include-existing'} == true ? 'yes' : 'no');
-			unset($this->{'suggestion-list-include-existing'});
-			
+			unset($this->properties->{'suggestion-list-include-existing'});
+
 			$doc = parent::toDoc();
 			
 			if(!is_null($suggestion_list_source)){
