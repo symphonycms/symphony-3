@@ -2,7 +2,6 @@
 
 	class Layout {
 		const SMALL = 'small';
-		const MEDIUM = 'medium';
 		const LARGE = 'large';
 		
 		protected $class;
@@ -17,7 +16,7 @@
 		}
 		
 		public function createColumn($size) {
-			if ($size != Layout::SMALL && $size != Layout::LARGE && $size != Layout::MEDIUM) {
+			if ($size != Layout::SMALL && $size != Layout::LARGE) {
 				throw new Exception(sprintf('Invalid column size %s.', var_export($size, true)));
 			}
 			

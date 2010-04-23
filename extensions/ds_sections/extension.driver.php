@@ -73,8 +73,8 @@
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
 
 			$layout = new Layout();
-			$left = $layout->createColumn(Layout::MEDIUM);
-			$middle = $layout->createColumn(Layout::MEDIUM);
+			$left = $layout->createColumn(Layout::LARGE);
+			$middle = $layout->createColumn(Layout::LARGE);
 			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------

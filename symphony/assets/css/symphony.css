@@ -328,15 +328,16 @@
 	#layout > .small {
 		width: 30%;
 	}
-	#layout > .medium {
-		width: 50%;
-	}
 	#layout > .large {
 		width: 70%;
 	}
 
 	#layout.type-lll > .column {
 		width: 33.3%;
+	}
+	
+	#layout.type-lls > .large, #layout.type-lsl > .large, #layout.type-sll > .large {
+		width: 50%;
 	}
 
 /*-----------------------------------------------------------------------------
