@@ -176,32 +176,29 @@
 		.duplicator-widget > .templates {
 			display: none;
 			background: #888888;
-			background: -moz-linear-gradient(#666666, #777777 4%, #888888, #777777 96%, #666666);background: -webkit-gradient(
+			background: -moz-linear-gradient(#666666, #777777 4%, #666666);background: -webkit-gradient(
 				linear, left top, left bottom,
 				from(#666666),
 				to(#666666),
-				color-stop(0.04, #777777),
-				color-stop(0.5, #888888),
-				color-stop(0.96, #777777)
+				color-stop(0.04, #777777)
 			);
-			border: 1px solid #666666;
-			border-bottom-color: #555555;
-			border-top-color: #555555;
+			border: 1px solid #777777;
+			border-bottom-color: #606060;
+			border-top-color: #606060;
 			list-style: none;
 			margin: 0 -1px;
 			overflow: hidden;
 			padding: 10px;
 		}
 		.duplicator-widget > .templates > li {
-			background: hsla(0, 0%, 0%, 0.1);
+			background: hsla(0, 0%, 0%, 0.15);
 			-moz-border-radius: 5px;
 			-webkit-border-radius: 5px;
 			cursor: pointer;
 			display: block;
 			float: left;
-			margin: 5px;
-			padding: 4px;
-			width: 180px;
+			margin: 4px;
+			width: 160px;
 			white-space: nowrap;
 		}
 		.duplicator-widget > .templates > li > * {
@@ -210,35 +207,14 @@
 			text-overflow: ellipsis;
 		}
 		.duplicator-widget > .templates > li:hover {
-			background: hsla(0, 0%, 0%, 0.2);
+			background: hsla(0, 0%, 0%, 0.25);
 		}
 		.duplicator-widget > .templates > li > .name {
-			background: #eeeeee;
-			background: -moz-linear-gradient(hsla(0, 0%, 100%, 0.9), hsla(0, 0%, 100%, 0.7));
-			background: -webkit-gradient(
-				linear, left top, left bottom,
-				from(hsla(0, 0%, 100%, 0.9)),
-				to(hsla(0, 0%, 100%, 0.7))
-			);
-			-moz-border-radius: 2px;
-			-webkit-border-radius: 2px;
-			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
-			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.2);
 			cursor: pointer;
 			display: block;
-			line-height: 25px;
+			line-height: 26px;
 			padding: 0 10px;
-		}
-		.duplicator-widget > .templates > li:hover > .name {
-			background: #ffffff;
-			background: -moz-linear-gradient(hsla(0, 0%, 100%, 1), hsla(0, 0%, 100%, 0.9));
-			background: -webkit-gradient(
-				linear, left top, left bottom,
-				from(hsla(0, 0%, 100%, 1)),
-				to(hsla(0, 0%, 100%, 0.9))
-			);
-			-moz-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
-			-webkit-box-shadow: 1px 1px 3px hsla(0, 0%, 0%, 0.4);
+			color: #eeeeee;
 		}
 		.duplicator-widget > .templates > li > .name i {
 			margin: 0 0 0 1ex;
