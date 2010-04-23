@@ -300,7 +300,7 @@
 				$column_2->appendChild($fieldset);
 
 
-				$fieldset = Widget::Fieldset(__('Overrides &amp; Defaults'), '{$param}');
+				$fieldset = Widget::Fieldset(__('Overrides & Defaults'), '{$param}');
 
 				//$div = $this->createElement('div');
 

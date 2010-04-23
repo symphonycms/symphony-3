@@ -18,13 +18,15 @@
 
 			$path = URL . '/symphony/system/settings/';
 
+			/*
 			$viewoptions = array(
 				'Preferences'		=>	$path,
 				'Tools'				=>	$path . 'tools/'
 			);
 
 			$this->appendViewOptions($viewoptions);
-
+			*/
+			
 		    $bIsWritable = true;
 			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
 

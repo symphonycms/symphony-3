@@ -237,20 +237,6 @@
 			$label->appendChild(Widget::Input('fields[username]', $user->get('username'), NULL));
 			$fieldset->appendChild((isset($this->_errors['username']) ? Widget::wrapFormElementWithError($label, $this->_errors['username']) : $label));
 
-			$label = Widget::Label(__('Default Section'));
-
-		    //$sections = SectionManager::instance()->fetch(NULL, 'ASC', 'sortorder');
-
-			$options = array();
-
-			//if(is_array($sections) && !empty($sections))
-			foreach(new SectionIterator as $s){
-				$options[] = array($s->handle, $user->get('default_section') == $s->handle, $s->name);
-			}
-
-			$label->appendChild(Widget::Select('fields[default_section]', $options));
-			$fieldset->appendChild($label);
-
 			if($this->_context[0] == 'edit') {
 				$fieldset->setAttribute('id', 'change-password');
 			}
@@ -283,7 +269,23 @@
 
 			$center->appendChild($fieldset);
 
-			###
+			### Default Section ###
+
+			$fieldset = Widget::Fieldset(__('Custom Preferences'));
+
+			$label = Widget::Label(__('Default Section'));
+
+		    //$sections = SectionManager::instance()->fetch(NULL, 'ASC', 'sortorder');
+
+			$options = array();
+
+			//if(is_array($sections) && !empty($sections))
+			foreach(new SectionIterator as $s){
+				$options[] = array($s->handle, $user->get('default_section') == $s->handle, $s->name);
+			}
+
+			$label->appendChild(Widget::Select('fields[default_section]', $options));
+			$fieldset->appendChild($label);
 
 			### Custom Language Selection ###
 			$languages = Lang::getAvailableLanguages(true);
@@ -291,8 +293,6 @@
 
 				// Get language names
 				asort($languages);
-
-				$fieldset = Widget::Fieldset(__('Custom Preferences'));
 
 				$label = Widget::Label(__('Language'));
 
