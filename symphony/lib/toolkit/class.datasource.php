@@ -429,7 +429,7 @@
 		protected function __noRecordsFound(){
 			return Symphony::Parent()->Page->createElement('error', __('No records found.'));
 		}
-*/
+
 		//	TODO: Rewrite __processParametersInString.
 		protected function __processParametersInString($value, $env, $includeParenthesis=true, $escape=false){
 			if(trim($value) == '') return NULL;
@@ -475,6 +475,63 @@
 
 			return $value;
 		}
+*/
+
+		/*
+		**	Given a string that may contain params in form of {$param}
+		**	resolve the tokens with their values
+		**
+		**	This checks both the Frontend Parameters and Datasource
+		**	Registers.
+		*/
+		public function replaceStringWithParameter($string, Register $DataSourceParameterOutput = null) {
+			if(trim($string) == '') return null;
+
+			if(preg_match_all('@{([^}]+)}@i', $string, $matches, PREG_SET_ORDER)){
+				foreach($matches as $match){
+					list($source, $cleaned) = $match;
+
+					$replacement = NULL;
+
+					$bits = preg_split('/:/', $cleaned, -1, PREG_SPLIT_NO_EMPTY);
+
+					foreach($bits as $param) {
+						if($param{0} != '$') {
+							$replacement = $param;
+							break;
+						}
+
+						$param = trim($param, '$');
+
+						$replacement = $this->resolveParameter($param, $DataSourceParameterOutput);
+
+						if(is_array($replacement)){
+							$replacement = array_map(array('Datasource', 'escapeCommas'), $replacement);
+							if(count($replacement) > 1) $replacement = implode(',', $replacement);
+							else $replacement = end($replacement);
+						}
+
+						if(!is_null($replacement)) break;
+					}
+
+					$string = str_replace($source, $replacement, $string);
+				}
+			}
+
+			return $string;
+		}
+
+		public static function resolveParameter($param, Register $DataSourceParameterOutput = null) {
+			//	TODO: Allow resolveParamter to check the stack, ie: $ds-blog-tag:$ds-blog-id
+			$param = trim($param, '$');
+
+			if(isset(Frontend::Parameters()->{$param})) return Frontend::Parameters()->{$param}->value;
+
+			if(isset($DataSourceParameterOutput->{$param})) return $DataSourceParameterOutput->{$param}->value;
+
+			return null;
+		}
+
 
 		public static function escapeCommas($string){
 			return preg_replace('/(?<!\\\\),/', "\\,", $string);
@@ -483,7 +540,7 @@
 		public static function removeEscapedCommas($string){
 			return preg_replace('/(?<!\\\\)\\\\,/', ',', $string);
 		}
-
+/*
 		protected function __findParameterInEnv($needle, $env){
 
 			if(isset($env['env']['url'][$needle])) return $env['env']['url'][$needle];
@@ -495,6 +552,6 @@
 			return NULL;
 
 		}
-
+*/
 	}
 

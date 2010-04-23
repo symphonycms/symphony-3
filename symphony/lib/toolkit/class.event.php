@@ -234,7 +234,7 @@
 			if(isset($this->_env) && is_array($this->_env)){
 				if(isset($this->eParamOVERRIDES) && is_array($this->eParamOVERRIDES) && !empty($this->eParamOVERRIDES)){
 					foreach($this->eParamOVERRIDES as $field => $replacement){
-						$replacement = $this->__processParametersInString(stripslashes($replacement), $this->_env);
+						$replacement = $this->replaceStringWithParameter(stripslashes($replacement), $this->_env);
 
 						if($replacement === NULL){
 							unset($this->eParamOVERRIDES[$field]);
@@ -247,7 +247,7 @@
 
 				if(isset($this->eParamDEFAULTS) && is_array($this->eParamDEFAULTS) && !empty($this->eParamDEFAULTS)){
 					foreach($this->eParamDEFAULTS as $field => $replacement){
-						$replacement = self::__processParametersInString(stripslashes($replacement), $this->_env);
+						$replacement = self::replaceStringWithParameter(stripslashes($replacement), $this->_env);
 
 						if($replacement === NULL){
 							unset($this->eParamDEFAULTS[$key]);
@@ -260,7 +260,7 @@
 			}
 		}
 
-		private static function __processParametersInString($value, array $env=NULL){
+		private static function replaceStringWithParameter($value, array $env=NULL){
 
 			if(preg_match_all('@{\$([^}]+)}@i', $value, $matches, PREG_SET_ORDER)){
 

@@ -44,7 +44,7 @@
 		}
 
 		public function __get($name){
-			 if(isset($this->parameters[$name])) 
+			 if(isset($this->parameters[$name]))
 				return $this->parameters[$name];
 
 			throw new Exception('No such parameter "' . $name . '"');
@@ -83,7 +83,7 @@
 		public function valid(){
 			return $this->_position < $this->length();
 		}
-		
+
 		public function toArray(){
 			$result = array();
 			foreach($this as $key => $parameter){
@@ -92,7 +92,7 @@
 			return $result;
 		}
 	}
-	
+
 	Class FrontendPageNotFoundException extends SymphonyErrorPage{
 		public function __construct($page){
 			parent::__construct(
@@ -108,7 +108,7 @@
 		/*
 		public static function render($e){
 			// TODO: Fix me to use Views
-			
+
 			$view = View::loadFromURL($_SERVER['PHP_SELF']);
 			$page_id = Symphony::Database()->fetchVar('page_id', 0, "SELECT `page_id` FROM `tbl_pages_types` WHERE `type` = '404' LIMIT 1");
 
@@ -136,6 +136,7 @@
 
 	Class Frontend extends Symphony {
 		private static $view;
+		private static $Parameters;
 
 		public static function instance() {
 			if (!(self::$_instance instanceof Frontend)) {
@@ -149,6 +150,10 @@
 			return self::$view;
 		}
 
+		public static function Parameters() {
+			return self::$Parameters;
+		}
+
 		public function display($page=NULL){
 
 			// VIEW RESOLVING --------------------------
@@ -160,24 +165,24 @@
 				else{
 					self::$view = View::loadFromURL($page);
 				}
-			
+
 				if(!(self::$view instanceof View)) throw Exception('Page not found');
-			
+
 				if(!Frontend::instance()->isLoggedIn() && in_array('admin', self::$view->types)){
-				
+
 					$views = View::findFromType('403');
 					self::$view = array_shift($views);
-				
+
 					if(!(self::$view instanceof View)){
-						throw new SymphonyErrorPage( 
-							__('Please <a href="%s">login</a> to view this page.', array(ADMIN_URL . '/login/')), 
+						throw new SymphonyErrorPage(
+							__('Please <a href="%s">login</a> to view this page.', array(ADMIN_URL . '/login/')),
 							__('Forbidden'), NULL,
 							array('HTTP/1.0 403 Forbidden')
 						);
 					}
 				}
 			}
-			
+
 			catch(Exception $e){
 				$views = View::findFromType('404');
 				self::$view = array_shift($views);
@@ -190,17 +195,17 @@
 			####
 			# Delegate: FrontendInitialised
 			ExtensionManager::instance()->notifyMembers('FrontendInitialised', '/frontend/');
-			
-			
+
+
 			// SETTING UP PARAMETERS --------------------------
-			
-			$Parameters = new Register;
+
+			self::$Parameters = new Register;
 
 			$root_page = array_shift(explode('/', self::$view->parent()->path));
 			$current_path = explode(dirname($_SERVER['SCRIPT_NAME']), $_SERVER['REQUEST_URI'], 2);
 			$current_path = '/' . ltrim(end($current_path), '/');
 
-			$Parameters->register(array(
+			self::$Parameters->register(array(
 				'today' => DateTimeObj::get('Y-m-d'),
 				'current-time' => DateTimeObj::get('H:i'),
 				'this-year' => DateTimeObj::get('Y'),
@@ -210,7 +215,7 @@
 				'website-name' => Symphony::Configuration()->get('sitename', 'symphony'),
 				'symphony-version' => Symphony::Configuration()->get('version', 'symphony'),
 				'upload-limit' => min(
-					ini_size_to_bytes(ini_get('upload_max_filesize')), 
+					ini_size_to_bytes(ini_get('upload_max_filesize')),
 					Symphony::Configuration()->get('max_upload_size','admin')
 				),
 				'root' => URL,
@@ -222,47 +227,47 @@
 				'parent-path' => '/' . self::$view->path,
 				'current-url' => URL . $current_path,
 			));
-		
-			if(isset($this->{'url-parameters'}) && is_array($this->{'url-parameters'})){
-				foreach($this->{'url-parameters'} as $p){
-					$Parameters->$p = NULL;
+
+			if(isset(self::$view->{'url-parameters'}) && is_array(self::$view->{'url-parameters'})){
+				foreach(self::$view->{'url-parameters'} as $p){
+					self::$Parameters->$p = NULL;
 				}
 
-				foreach($this->parameters() as $p => $v){
-					$Parameters->$p = str_replace(' ', '+', $v);
+				foreach(self::$view->parameters() as $p => $v){
+					self::$Parameters->$p = str_replace(' ', '+', $v);
 				}
-			
+
 			}
-			
+
 			if(is_array($_GET) && !empty($_GET)){
 				foreach($_GET as $key => $val){
 					if(in_array($key, array('symphony-page', 'debug', 'profile'))) continue;
-					$Parameters->{"url-{$key}"} = $val;
+					self::$Parameters->{"url-{$key}"} = $val;
 				}
 			}
 
 			if(is_array($_COOKIE[__SYM_COOKIE_PREFIX__]) && !empty($_COOKIE[__SYM_COOKIE_PREFIX__])){
 				foreach($_COOKIE[__SYM_COOKIE_PREFIX__] as $key => $val){
-					$Parameters->{"cookie-{$key}"} = $val;
+					self::$Parameters->{"cookie-{$key}"} = $val;
 				}
 			}
-			
+
 			####
 			# Delegate: FrontendParamsResolve
 			# Description: Just after having resolved the page params, but prior to any commencement of output creation
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('FrontendParamsResolve', '/frontend/', array('parameters' => &$Parameters));
-			
-			
+			ExtensionManager::instance()->notifyMembers('FrontendParamsResolve', '/frontend/', array('parameters' => &self::$Parameters));
+
+
 			// RENDER THE VIEW --------------------------
-			
-			// Can ask the view to operate on an existing 
-			// Document. Useful if we pass it around beyond 
+
+			// Can ask the view to operate on an existing
+			// Document. Useful if we pass it around beyond
 			// the scope of View::render()
-			$Document = new XMLDocument; 
+			$Document = new XMLDocument;
 			$Document->appendChild($Document->createElement('data'));
-			
-			return self::$view->render($Parameters, $Document);
+
+			return self::$view->render(self::$Parameters, $Document);
 		}
 	}
 

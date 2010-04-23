@@ -69,7 +69,6 @@
 		}
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
-
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
 
@@ -181,11 +180,11 @@
 		//	Limiting ----------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Limiting'), '<code>{$param}</code> or <code>Value</code>');
-			
+
 			// Show a maximum of # results
 			$label = Widget::Label(__('Limit results per page'));
 			$input = Widget::Input('fields[limit]', $datasource->parameters()->page);
-			
+
 			$label->appendChild($input);
 
 			if (isset($errors->limit)) {
@@ -193,7 +192,7 @@
 			}
 
 			$fieldset->appendChild($label);
-	
+
 			// Show page # of results:
 			$label = Widget::Label(__('Show page of results'));
 			$input = Widget::Input('fields[page]', $datasource->parameters()->page);
@@ -230,6 +229,7 @@
 			$container_xml_output = $page->createElement('div');
 			$fieldset->appendChild($container_xml_output);
 
+/*
 			$fieldset->appendChild(Widget::Input('fields[append-pagination]', 'no', 'hidden'));
 
 			$label = Widget::Label(__('Append pagination data'));
@@ -263,9 +263,10 @@
 
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
+*/
 
 			$right->appendChild($fieldset);
-			
+
 			$layout->appendTo($wrapper);
 
 		//	Build contexts ----------------------------------------------------
@@ -369,6 +370,11 @@
 						'system:user',
 						($section_active and in_array('system:user', $datasource->parameters()->{'included-elements'})),
 						__('system:user')
+					),
+					array(
+						'system:pagination',
+						($section_active and in_array('system:pagination', $datasource->parameters()->{'included-elements'})),
+						__('system:pagination')
 					)
 				);
 
@@ -447,12 +453,12 @@
 
 			$li = $document->createElement('li');
 
-			$name = $document->createElement('span', __('When'));
+			$name = $document->createElement('span', __('Don\'t Execute When'));
 			$name->setAttribute('class', 'name');
 			$li->appendChild($name);
 
 			$group = $document->createElement('div');
-			$group->setAttribute('class', 'group triple');
+			$group->setAttribute('class', 'group double');
 
 			// Parameter
 			$label = $document->createElement('label', __('Parameter'));
@@ -462,12 +468,13 @@
 			// Logic
 			$label = $document->createElement('label', __('Logic'));
 			$label->appendChild(Widget::select('fields[conditions][logic][]', array(
-				array('set', ($condition['logic'] == 'set'), __('is set')),
-				array('not-set', ($condition['logic'] == 'not-set'), __('is not set')),
+				array('empty', ($condition['logic'] == 'empty'), __('empty')),
+				array('set', ($condition['logic'] == 'set'), __('set'))
 			), array('class' => 'filtered')));
 			$group->appendChild($label);
 
 			// Action
+			/*
 			$label = $document->createElement('label', __('Action'));
 			$label->appendChild(Widget::select('fields[conditions][action][]', array(
 				//array('label' => 'Execution', 'options' => array(
@@ -479,6 +486,7 @@
 				//	array('redirect:/about/me/', false, '/about/me/'),
 				//)),
 			), array('class' => 'filtered')));
+			*/
 
 			$group->appendChild($label);
 			$li->appendChild($group);
