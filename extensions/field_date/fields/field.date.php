@@ -32,7 +32,7 @@
 			return true;
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $error=NULL, Entry $entry=NULL) {
 			$name = $this->{'element-name'};
 			$value = null;
 

@@ -47,17 +47,18 @@
 			return Symphony::Database()->query(
 				sprintf(
 					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-						`entry_id` INT(11) UNSIGNED NOT NULL,
-						`name` TEXT DEFAULT NULL,
-						`file` TEXT DEFAULT NULL,
-						`size` INT(11) UNSIGNED NOT NULL,
-						`mimetype` VARCHAR(50) NOT NULL,
-						`meta` VARCHAR(255) DEFAULT NULL,
+						`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+						`entry_id` int(11) unsigned NOT NULL,
+						`name` text,
+						`path` text,
+						`file` text,
+						`size` int(11) unsigned NOT NULL,
+						`type` varchar(255) NOT NULL,
+						`meta` varchar(255) DEFAULT NULL,
 						PRIMARY KEY (`id`),
-						KEY `entry_id` (`entry_id`),
-						KEY `mimetype` (`mimetype`),
+						UNIQUE KEY `entry_id` (`entry_id`),
 						FULLTEXT KEY `name` (`name`),
+						FULLTEXT KEY `path` (`path`),
 						FULLTEXT KEY `file` (`file`)
 					)',
 					$this->section,
@@ -218,83 +219,107 @@
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
-
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
-			if (!$error and !is_writable(DOCROOT . $this->destination . '/')) {
-				$error = 'Destination folder, <code>'.$this->destination.'</code>, is not writable. Please check permissions.';
-			}
-
+		
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
+			//if (!$error and !is_writable(DOCROOT . $this->destination . '/')) {
+			//	$error = 'Destination folder, <code>'.$this->destination.'</code>, is not writable. Please check permissions.';
+			//}
+			
+			$driver = ExtensionManager::instance()->create('field_upload');
+			$driver->addHeaders();
+			
 			$handle = $this->{'element-name'};
+			$document = $wrapper->ownerDocument;
 
 		// Preview ------------------------------------------------------------
 
-			$label = Widget::Label($this->label);
+			$label = $document->createElement('div', $this->label);
+			$label->setAttribute('class', 'label');
 
 			if ($this->required != 'yes') {
-				$label->appendChild(Symphony::Parent()->Page->createElement('i', 'Optional'));
+				$label->appendChild($document->createElement('i', 'Optional'));
 			}
-
-			$wrapper->appendChild($label);
-			$container = Symphony::Parent()->Page->createElement('div');
-
+			
 			if ($error == null and !empty($data->{'file'})) {
-				$details = Symphony::Parent()->Page->createElement('div');
-				$details->setAttribute('class', 'details');
-
+				$file = $document->createElement('div');
+				$file->setAttribute('class', 'file');
+				$path = substr($data->path, strlen(DOCROOT));
+				
 				###
-				# Delegate: UploadField_AppendMediaPreview
+				# Delegate: UploadField_PreviewFile
 				# Description: Allow other extensions to add media previews.
 				ExtensionManager::instance()->notifyMembers(
-					'UploadField_AppendMediaPreview',
+					'UploadField_PreviewFile',
 					'/publish/', array(
 						'data'		=> $data,
-						'entry_id'	=> $entry_id,
-						'field_id'	=> $this->id,
+						'field'		=> $this,
+						'entry'		=> $entry,
 						'wrapper'	=> $container
 					)
 				);
-
-				if (!is_file(WORKSPACE . $data->{'file'})) {
-					$error = __('Destination file could not be found.');
+				
+				//if (!is_file(WORKSPACE . $data->{'file'})) {
+				//	$error = __('Destination file could not be found.');
+				//}
+				
+				$name = $document->createElement('p');
+				$link = Widget::Anchor($data->{'name'}, URL . $path . '/' . $data->file);
+				$name->appendChild($link);
+				$file->appendChild($name);
+				
+				$list = $document->createElement('dl');
+				
+				$list->appendChild($document->createElement('dt', __('Size:')));
+				$list->appendChild($document->createElement('dd', General::formatFilesize($data->size)));
+				
+				$list->appendChild($document->createElement('dt', __('Type:')));
+				$list->appendChild($document->createElement('dd', $data->type));
+				
+				// Meta data:
+				if ($meta = unserialize($data->meta) and is_array($meta)) {
+					$meta = (object)$meta;
 				}
-
-				$list = Symphony::Parent()->Page->createElement('dl');
-				$link = Symphony::Parent()->Page->createElement('a', __('Clear File'));
-				$item = Symphony::Parent()->Page->createElement('dt', $link, array('class' => 'clear'));
-				$list->appendChild($item);
-
-				$link = Widget::Anchor($data->{'name'}, URL . '/workspace' . $data->{'file'});
-				$item = Symphony::Parent()->Page->createElement('dt', $link, array('class' => 'popup'));
-				$list->appendChild($item);
-
-				$list->appendChild(Symphony::Parent()->Page->createElement('dt', __('Size:')));
-				$list->appendChild(Symphony::Parent()->Page->createElement('dd', General::formatFilesize($data->{'size'})));
-				$list->appendChild(Symphony::Parent()->Page->createElement('dt', __('Type:')));
-				$list->appendChild(Symphony::Parent()->Page->createElement('dd', General::sanitize($data->{'mimetype'})));
-				$details->appendChild($list);
-				$container->appendChild($details);
+				
+				if (isset($meta->width, $meta->height)) {
+					$list->appendChild($document->createElement('dt', __('Width:')));
+					$list->appendChild($document->createElement('dd', sprintf(
+						'%dpx', $meta->width
+					)));
+					$list->appendChild($document->createElement('dt', __('Height:')));
+					$list->appendChild($document->createElement('dd', sprintf(
+						'%dpx', $meta->height
+					)));
+				}
+				
+				$file->appendChild($list);
+				$label->appendChild($file);
 			}
-
+			
 		// Upload -------------------------------------------------------------
-
-			$upload = Symphony::Parent()->Page->createElement('div');
+			
+			$upload = $document->createElement('div');
 			$upload->setAttribute('class', 'upload');
-			$upload->appendChild(Widget::Input(
+			$input = Widget::Input(
 				"fields[{$handle}]",
-				$data->{'file'}, ($data->{'file'} ? 'hidden' : 'file')
-			));
-			$container->appendChild($upload);
-			$wrapper->appendChild($container);
-
-			if ($error != null) {
-				$wrapper = Widget::wrapFormElementWithError($wrapper, $error['message']);
+				$data->path . '/' . $data->file,
+				($data->file ? 'hidden' : 'file')
+			);
+			
+			$upload->appendChild($input);
+			$label->appendChild($upload);
+			
+			if ($errors->valid()) {
+				$error = $errors->current();
+				$label = Widget::wrapFormElementWithError($label, $error['message']);
 			}
+			
+			$wrapper->appendChild($label);
 		}
-
+		
 	/*-------------------------------------------------------------------------
 		Input:
 	-------------------------------------------------------------------------*/
-
+		
 		protected function getHashedFilename($filename) {
 			preg_match('/(.*?)(\.[^\.]+)$/', $filename, $meta);
 
@@ -306,240 +331,20 @@
 
 			return $filename;
 		}
-
-		public function checkPostFieldData($data, &$message, $entry_id = null) {
-			$label = $this->label;
-			$message = null;
-
-			if (empty($data) or $data['error'] == UPLOAD_ERR_NO_FILE) {
-				if ($this->required == 'yes') {
-					$message = "'{$label}' is a required field.";
-
-					return self::ERROR_MISSING;
-				}
-
-				return self::STATUS_OK;
-			}
-
-			// Its not an array, so just retain the current data and return
-			if (!is_array($data)) return self::STATUS_OK;
-
-			if (!is_writable(DOCROOT . $this->destination . '/')) {
-				$message = __(
-					'Destination folder, <code>%s</code>, is not writable. Please check permissions.',
-					array($this->destination)
-				);
-
-				return self::STATUS_ERROR;
-			}
-
-			if ($data['error'] != UPLOAD_ERR_NO_FILE and $data['error'] != UPLOAD_ERR_OK) {
-				switch($data['error']) {
-					case UPLOAD_ERR_INI_SIZE:
-						$size = (
-							is_numeric(ini_get('upload_max_filesize'))
-							? General::formatFilesize(ini_get('upload_max_filesize'))
-							: ini_get('upload_max_filesize')
-						);
-						$message = __(
-							'File chosen in \'%s\' exceeds the maximum allowed upload size of %s specified by your host.',
-							array($label, $size)
-						);
-						break;
-
-					case UPLOAD_ERR_FORM_SIZE:
-						$size = General::formatFilesize(Symphony::Configuration()->get('max_upload_size', 'admin'));
-						$message = __(
-							'File chosen in \'%s\' exceeds the maximum allowed upload size of %s, specified by Symphony.',
-							array($label, $size)
-						);
-						break;
-
-					case UPLOAD_ERR_PARTIAL:
-					case UPLOAD_ERR_NO_TMP_DIR:
-						$message = __(
-							'File chosen in \'%s\' was only partially uploaded due to an error.',
-							array($label)
-						);
-						break;
-
-					case UPLOAD_ERR_CANT_WRITE:
-						$message = __(
-							'Uploading \'%s\' failed. Could not write temporary file to disk.',
-							array($label)
-						);
-						break;
-
-					case UPLOAD_ERR_EXTENSION:
-						$message = __(
-							'Uploading \'%s\' failed. File upload stopped by extension.',
-							array($label)
-						);
-						break;
-				}
-
-				return self::ERROR_CUSTOM;
-			}
-
-			// Sanitize the filename:
-			if ($this->serialise == 'yes' and is_array($data) and isset($data['name'])) {
-				$data['name'] = $this->getHashedFilename($data['name']);
-			}
-
-			if ($this->validator != null) {
-				$rule = $this->validator;
-
-				if (!General::validateString($data['name'], $rule)) {
-					$message = __(
-						'File chosen in \'%s\' does not match allowable file types for that field.',
-						array($label)
-					);
-
-					return self::ERROR_INVALID;
-				}
-			}
-
-			$abs_path = DOCROOT . '/' . trim($this->destination, '/');
-			$new_file = $abs_path . '/' . $data['name'];
-			$existing_file = null;
-
-			if ($entry_id) {
-				$field_id = $this->id;
-				$row = Symphony::Database()->query("
-					SELECT
-						f.*
-					FROM
-						`tbl_entries_data_{$field_id}` AS f
-					WHERE
-						f.entry_id = '{$entry_id}'
-					LIMIT 1
-				");
-
-				if($row->valid()) $existing_file = $abs_path . '/' . trim($row->current->file, '/');
-			}
-
-			if (($existing_file != $new_file) and file_exists($new_file)) {
-				$message = __(
-					'A file with the name %s already exists in %s. Please rename the file first, or choose another.',
-					array($data['name'], $this->destination)
-				);
-
-				return self::ERROR_INVALID;
-			}
-
-			return self::STATUS_OK;
-		}
-
-		public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null) {
-			$status = self::STATUS_OK;
-
-			// Recal existing data:
-			$existing = Symphony::Database()->query("
-				SELECT
-					f.name,
-					f.file,
-					f.size,
-					f.mimetype,
-					f.meta
-				FROM
-					`tbl_entries_data_{$this->id}` AS f
-				WHERE
-					f.entry_id = '{$entry_id}'
-				LIMIT 1
-			");
-
-			if ($simulate || !$existing->valid()) return;
-
-			$existing = $existing->current();
-
-			// No file sent, cleanup existing:
-			if (is_null($data) or $data == '' or (isset($data['error']) and $data['error'] != UPLOAD_ERR_OK)) {
-				if (isset($existing->file) and is_file(WORKSPACE . $existing->file)) {
-					General::deleteFile(WORKSPACE . $existing->file);
-				}
-
-				return;
-			}
-
-			// Accept a path:
-			if (is_string($data)) {
-				// Existing data found:
-				if (is_object($existing) and $existing->file == $data) {
-					return $existing;
-				}
-
-				// Examine file:
-				else if (is_file(WORKSPACE . '/' . $data)) {
-					return array(
-						'name'		=> basename($data),
-						'file'		=> $data,
-						'mimetype'	=> $this->getMimeType($data),
-						'size'		=> filesize(WORKSPACE . '/' . $data),
-						'meta'		=> serialize($this->getMetaInfo(WORKSPACE . $data, $this->getMimeType($data)))
-					);
-				}
-			}
-
-			$path = rtrim(preg_replace('%^/workspace%', '', $this->destination), '/');
-			$name = $data['name'];
-
-			// Sanitize the filename:
-			if ($this->serialise == 'yes') {
-				$data['name'] = $this->getHashedFilename($data['name']);
-			}
-
-			if (!General::uploadFile(
-				DOCROOT . '/' . trim($this->destination, '/'),
-				$data['name'], $data['tmp_name'],
-				$this->Symphony->Configuration->get('write_mode', 'file')
-			)) {
-				$message = __(
-					'There was an error while trying to upload the file <code>%s</code> to the target directory <code>workspace/%s</code>.',
-					array($data['name'], $path)
-				);
-				$status = self::ERROR_CUSTOM;
-				return;
-			}
-
-			// Remove file being replaced:
-			if (isset($existing->file) and is_file(WORKSPACE . $existing->file)) {
-				General::deleteFile(WORKSPACE . $existing->file);
-			}
-
-			$data = array(
-				'name'		=> $name,
-				'file'		=> $path . '/' . trim($data['name'], '/'),
-				'size'		=> $data['size'],
-				'mimetype'	=> $data['type'],
-				'meta'		=> serialize($this->getMetaInfo(WORKSPACE . $file, $data['type']))
-			);
-
-			###
-			# Delegate: UploadField_PostProccessFile
-			# Description: Allow other extensions to add media previews.
-			ExtensionManager::instance()->notifyMembers(
-				'UploadField_PostProccessFile',
-				'/publish/', array(
-					'data'		=> $data,
-					'entry_id'	=> $entry_id,
-					'field_id'	=> $this->id
-				)
-			);
-
-			return $data;
-		}
-
+		
 		protected function getMimeType($file) {
 			if (in_array('image/' . General::getExtension($file), $this->_mimes['image'])) {
 				return 'image/' . General::getExtension($file);
 			}
-
+			
 			return 'application/octet-stream';
 		}
-
+		
 		protected function getMetaInfo($file, $type) {
+			// TODO: Remove @
+			
 			$meta = array(
-				'creation'	=> DateTimeObj::get('c', filemtime($file))
+				'creation'	=> DateTimeObj::get('c', @filemtime($file))
 			);
 
 			if (in_array($type, $this->_mimes['image'])) {
@@ -553,7 +358,311 @@
 
 			return $meta;
 		}
+		
+		public function processFormData($data, Entry $entry = null) {
+			$result = (object)array();
+			$existing = null;
+			
+			if (isset($entry->data()->{$this->{'element-name'}})) {
+				$existing = $entry->data()->{$this->{'element-name'}};
+			}
+			
+			// Recieving file:
+			if (is_array($data)) {
+				$result = (object)$data;
+				
+				if (isset($result->error)) switch ($result->error) {
+					case UPLOAD_ERR_NO_FILE:
+					case UPLOAD_ERR_INI_SIZE:
+					case UPLOAD_ERR_FORM_SIZE:
+					case UPLOAD_ERR_PARTIAL:
+					case UPLOAD_ERR_NO_TMP_DIR:
+					case UPLOAD_ERR_CANT_WRITE:
+					case UPLOAD_ERR_EXTENSION:
+						return $result;
+						break;
+				}
+				
+				// Accept a new file:
+				if (isset($result->name) and trim($result->name) != '') {
+					$result = (object)$data;
+					$result->path = DOCROOT . '/' . trim($this->destination, '/');
+					$result->meta = $this->getMetaInfo($result->tmp_name, $result->type);
+					$result->file = $result->name;
+					
+					if ($this->serialise == 'yes') {
+						$result->file = $this->getHashedFilename($result->file);
+					}
+				}
+			}
+			
+			// Filename given, check if it is existing:
+			else if (is_string($data)) {
+				$existing_file = null;
+				
+				if (isset($existing->file, $existing->path)) {
+					$existing_file = $existing->path . '/' . $existing->file;
+				}
+				
+				// Existing data:
+				if ($existing_file === $data) {
+					$result = $existing;
+				}
+				
+				// Find new data:
+				else if (file_exists($data)) {
+					$result->name = basename($data);
+					$result->path = dirname($data);
+					$result->file = basename($data);
+					$result->size = filesize($data);
+					$result->type = $this->getMimeType($data);
+					$result->meta = $this->getMetaInfo($data, $result->type);
+				}
+			}
+			
+			// No data given, use existing:
+			else if (isset($existing->file, $existing->path)) {
+				$result = $existing;
+			}
+			
+			// Force correct ID to be used:
+			if (isset($existing->id)) {
+				$result->id = $existing->id;
+			}
+			
+			// Track existing file:
+			if (isset($existing->file, $existing->path)) {
+				$result->existing = $existing->path . '/' . $existing->file;
+			}
+			
+			// Make sure meta data is serialized:
+			if (isset($result->meta) and is_array($result->meta)) {
+				$result->meta = serialize($result->meta);
+			}
+			
+			return $result;
+		}
+		
+		public function validateData(MessageStack $errors, Entry $entry = null, $data = null) {
+			if (empty($data) or $data->error == UPLOAD_ERR_NO_FILE) {
+				if ($this->required == 'yes') {
+					$errors->append(
+						'required',
+						array(
+						 	'message' => __(
+						 		"'%s' is a required field.",
+						 		array($this->label)
+						 	),
+							'code' => self::ERROR_MISSING
+						)
+					);
+					
+					return self::STATUS_ERROR;
+				}
+				
+				return self::STATUS_OK;
+			}
+			
+			if (!is_object($data)) return self::STATUS_OK;
+			
+			if (!is_writable(DOCROOT . $this->destination . '/')) {
+				$errors->append(
+					'destination',
+					array(
+					 	'message' => __(
+					 		"Destination folder, <code>%s</code>, is not writable. Please check permissions.",
+					 		array($this->destination)
+					 	),
+						'code' => self::ERROR_INVALID
+					)
+				);
+				
+				return self::STATUS_ERROR;
+			}
 
+			if ($data->error != UPLOAD_ERR_NO_FILE and $data->error != UPLOAD_ERR_OK) {
+				switch($data->error) {
+					case UPLOAD_ERR_INI_SIZE:
+						$size = (
+							is_numeric(ini_get('upload_max_filesize'))
+							? General::formatFilesize(ini_get('upload_max_filesize'))
+							: ini_get('upload_max_filesize')
+						);
+						$errors->append(
+							'upload',
+							array(
+							 	'message' => __(
+									'File chosen in \'%s\' exceeds the maximum allowed upload size of %s specified by your host.',
+									array($this->label, $size)
+							 	),
+								'code' => self::ERROR_INVALID
+							)
+						);
+						break;
+
+					case UPLOAD_ERR_FORM_SIZE:
+						$size = General::formatFilesize(Symphony::Configuration()->get('max_upload_size', 'admin'));
+						$errors->append(
+							'upload',
+							array(
+							 	'message' => __(
+									'File chosen in \'%s\' exceeds the maximum allowed upload size of %s, specified by Symphony.',
+									array($this->label, $size)
+							 	),
+								'code' => self::ERROR_INVALID
+							)
+						);
+						break;
+
+					case UPLOAD_ERR_PARTIAL:
+					case UPLOAD_ERR_NO_TMP_DIR:
+						$errors->append(
+							'upload',
+							array(
+							 	'message' => __(
+									'File chosen in \'%s\' was only partially uploaded due to an error.',
+									array($this->label)
+							 	),
+								'code' => self::ERROR_INVALID
+							)
+						);
+						break;
+
+					case UPLOAD_ERR_CANT_WRITE:
+						$errors->append(
+							'upload',
+							array(
+							 	'message' => __(
+									'Uploading \'%s\' failed. Could not write temporary file to disk.',
+									array($this->label)
+							 	),
+								'code' => self::ERROR_INVALID
+							)
+						);
+						break;
+
+					case UPLOAD_ERR_EXTENSION:
+						$errors->append(
+							'upload',
+							array(
+							 	'message' => __(
+									'Uploading \'%s\' failed. File upload stopped by extension.',
+									array($this->label)
+							 	),
+								'code' => self::ERROR_INVALID
+							)
+						);
+						break;
+				}
+				
+				return self::STATUS_ERROR;
+			}
+			
+			if ($this->validator != null) {
+				$rule = $this->validator;
+				
+				if (!General::validateString($data->name, $rule)) {
+					$errors->append(
+						'validation',
+						array(
+						 	'message' => __(
+								'File chosen in \'%s\' does not match allowable file types for that field.',
+								array($this->label)
+						 	),
+							'code' => self::ERROR_INVALID
+						)
+					);
+					
+					return self::STATUS_ERROR;
+				}
+			}
+			
+			$file = $data->path . '/' . $data->file;
+			
+			if ($data->existing != $file and file_exists($file)) {
+				$errors->append(
+					'upload',
+					array(
+					 	'message' => __(
+							'A file with the name %s already exists in %s. Please rename the file first, or choose another.',
+							array($data->name, $this->destination)
+					 	),
+						'code' => self::ERROR_INVALID
+					)
+				);
+				
+				return self::ERROR_INVALID;
+			}
+			
+			return self::STATUS_OK;
+		}
+		
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
+			$permissions = Symphony::Configuration()->core()->{'file-write-mode'};
+			$file = $data->path . '/' . $data->file;
+			$data->entry_id = $entry->id;
+			
+			// Upload the file:
+			if (isset($data->tmp_name)) {
+				if (!General::uploadFile($data->path, $data->file, $data->tmp_name, $permissions)) {
+					$errors->append(
+						'upload',
+						array(
+						 	'message' => __(
+								'There was an error while trying to upload the file <code>%s</code> to the target directory <code>workspace/%s</code>.',
+								array($data->name, $path)
+						 	),
+							'code' => self::ERROR_INVALID
+						)
+					);
+					
+					return self::STATUS_ERROR;
+				}
+				
+				// Remove file being replaced:
+				if (isset($data->existing) and is_file($data->existing)) {
+					General::deleteFile($data->existing);
+				}
+			}
+			
+			unset($data->existing);
+			unset($data->error);
+			unset($data->tmp_name);
+			
+			###
+			# Delegate: UploadField_ProccessFile
+			# Description: Allow other extensions to add media previews.
+			ExtensionManager::instance()->notifyMembers(
+				'UploadField_ProccessFile',
+				'/publish/', array(
+					'data'	=> $data,
+					'field'	=> $this,
+					'entry'	=> $entry
+				)
+			);
+			
+			try{
+				Symphony::Database()->insert(
+					sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
+					(array)$data,
+					Database::UPDATE_ON_DUPLICATE
+				);
+				
+				return self::STATUS_OK;
+			}
+			
+			catch (Exception $e) {
+				throw $e;
+			}
+			
+			// Remove uploaded file:
+			if (isset($file) and is_file($file)) {
+				General::deleteFile($file);
+			}
+			
+			return self::STATUS_ERROR;
+		}
+		
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
@@ -595,14 +704,16 @@
 
 		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link = null) {
 			if (!$this->sanitizeDataArray($data)) return null;
-
+			
 			if ($link) {
 				$link->setValue($data->name);
-
+				
 				return $link;
-
-			} else {
-				$link = Widget::Anchor($data->name, URL . '/workspace' . $data->file);
+			}
+			
+			else {
+				$path = substr($data->path, strlen(DOCROOT));
+				$link = Widget::Anchor($data->name, URL . $path . '/' . $data->file);
 
 				return $link;
 			}

@@ -320,7 +320,7 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry=NULL, $data=NULL) {
 			$this->_driver->addPublishHeaders($wrapper->ownerDocument);
 
 			$sortorder = $this->{'sortorder'};
@@ -395,7 +395,8 @@
 
 			$label->appendChild($input);
 
-			if (!is_null($error)) {
+			if ($errors->valid()) {
+				$error = $errors->current();
 				$label = Widget::wrapFormElementWithError($label, $error['message']);
 			}
 
@@ -406,7 +407,7 @@
 		Input:
 	-------------------------------------------------------------------------*/
 
-		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
+		public function validateData(MessageStack &$errors, Entry $entry, $data = null) {
 			$length = (integer)$this->{'text-length'};
 
 			if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
@@ -465,10 +466,6 @@
 			}
 */
 			return self::STATUS_OK;
-		}
-
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
-			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function applyFormatting($value) {

@@ -72,7 +72,7 @@
 		}
 
 */
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null) {
 
 			if(!is_array($data)){
 				$data = array($data);
@@ -298,7 +298,7 @@
 			return $result;
 		}
 
-		public function validateData($data=NULL, MessageStack &$errors, Entry $entry=NULL){
+		public function validateData(MessageStack $errors, Entry $entry = null, $data = null) {
 
 			if(!is_array($data)) {
 				$data = array($data);
@@ -317,7 +317,7 @@
 			return self::STATUS_OK;
 		}
 
-		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			// Since we are dealing with multiple
 			// values, must purge the existing data first
 			Symphony::Database()->delete(
