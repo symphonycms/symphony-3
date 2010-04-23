@@ -233,7 +233,7 @@
 			return parent::prepareTableValue((object)array('value' => General::sanitize($this->__tagArrayToString($values))), $link);
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
 			if(is_array($data)) {
 				$values = array();
 				foreach($data as $d) {
@@ -253,7 +253,8 @@
 				Widget::Input('fields['.$this->{'element-name'}.']', $data->value)
 			);
 
-			if (!is_null($error)) {
+			if ($errors->valid()) {
+				$error = $errors->current();
 				$label = Widget::wrapFormElementWithError($label, $error['message']);
 			}
 
@@ -342,7 +343,7 @@
 
 			foreach($data as $tag) {
 				$tag = $this->processFormData($tag, $entry);
-				parent::saveData($tag, $errors, $entry);
+				parent::saveData($errors, $entry, $tag);
 			}
 
 			return Field::STATUS_OK;

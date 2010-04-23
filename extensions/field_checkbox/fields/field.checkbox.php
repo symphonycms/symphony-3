@@ -109,7 +109,7 @@
 
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
 			if(!$data && $this->{'required'} == 'yes') {
 				$value = null;
  			}
@@ -128,7 +128,8 @@
 			$label->appendChild($input);
 			$label->appendChild(new DOMText(($this->{'description'} != NULL ? $this->{'description'} : $this->{'label'})));
 
-			if (!is_null($error)) {
+			if ($errors->valid()) {
+				$error = $errors->current();
 				$label = Widget::wrapFormElementWithError($label, $error['message']);
 			}
 
