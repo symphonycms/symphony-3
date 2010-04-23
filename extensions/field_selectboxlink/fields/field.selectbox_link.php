@@ -20,18 +20,27 @@
 		}
 		
 		public function create(){
-			return Symphony::Database()->query(
-				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->{'id'} . "` (
-				`id` int(11) unsigned NOT NULL auto_increment,
-				`entry_id` int(11) unsigned NOT NULL,
-				`relation_id` int(11) unsigned DEFAULT NULL,
-				PRIMARY KEY	 (`id`),
-				KEY `entry_id` (`entry_id`),
-				KEY `relation_id` (`relation_id`)
-				) TYPE=MyISAM;"
-			);
+			return Symphony::Database()->query(sprintf(
+				"
+					CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+						`id` int(11) unsigned NOT NULL auto_increment,
+						`entry_id` int(11) unsigned NOT NULL,
+						`relation_id` int(11) unsigned DEFAULT NULL,
+						PRIMARY KEY	 (`id`),
+						KEY `entry_id` (`entry_id`),
+						KEY `relation_id` (`relation_id`)
+					)
+				",
+				$this->{'section'},
+				$this->{'element-name'}
+			));
 		}
-
+		
+		public function update() {
+			// TODO: Remove this when table structure is table:
+			$this->create();
+		}
+		
 		public function canToggleData(){
 			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
@@ -184,26 +193,43 @@
 		Settings:
 	-------------------------------------------------------------------------*/
 
-		public function findDefaults(&$fields){
-			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
+		public function findDefaultSettings(&$fields){
+			if (!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
 		}
 
-		public function displaySettingsPanel(&$wrapper, $errors=NULL){
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-
 			$label = Widget::Label(__('Options'));
-
 			$options = array();
-
-			// TODO: Fix me
+			
+			$sections = new SectionIterator;
+			
+			foreach ($sections as $section) {
+				$group = (object)array(
+					'label'		=> $section->name,
+					'options'	=> array()
+				);
+				
+				foreach ($section->fields as $field) if ($field->canPrePopulate()) {
+					$group->options[] = array(
+						$field->{'element-name'},
+						false,
+						$field->label
+					);
+				}
+				
+				if (!empty($group->options)) $options[] = (array)$group;
+			}
+			
+			//var_dump($options); exit;
+			
 /*			$sections = SectionManager::instance()->fetch(NULL, 'ASC', 'sortorder');
 			$field_groups = array();
 
 			if(is_array($sections) && !empty($sections)){
 				foreach($sections as $section) $field_groups[$section->{'id'}] = array('fields' => $section->fetchFields(), 'section' => $section);
 			}
-
 
 			foreach($field_groups as $group){
 				if(!is_array($group['fields'])) continue;
@@ -221,10 +247,11 @@
 */
 			$label->appendChild(Widget::Select('related-field-id][', $options, array('multiple' => 'multiple')));
 
-			if(isset($errors->{'related-field-id'})){
-				$wrapper->appendChild(Widget::wrapFormElementWithError($label, $errors->{'related-field-id'}));
+			if (isset($errors->{'related-field-id'})) {
+				$label = Widget::wrapFormElementWithError($label, $errors->{'related-field-id'});
 			}
-			else $wrapper->appendChild($label);
+			
+			$wrapper->appendChild($label);
 
 			## Maximum entries
 			$label = Widget::Label();
@@ -298,7 +325,7 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
 
 			$entry_ids = array();
 
@@ -332,9 +359,12 @@
 
 			$label = Widget::Label($this->{'label'});
 			$label->appendChild(Widget::Select($fieldname, $options, ($this->{'allow-multiple-selection'} == 'yes' ? array('multiple' => 'multiple') : NULL)));
-
-			if($flagWithError != NULL) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $flagWithError));
-			else $wrapper->appendChild($label);
+			
+			if ($errors->valid()) {
+				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
+			}
+			
+			$wrapper->appendChild($label);
 		}
 
 	/*-------------------------------------------------------------------------

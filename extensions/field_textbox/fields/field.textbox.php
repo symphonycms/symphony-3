@@ -162,20 +162,20 @@
 			$fields['text-cdata'] = 'no';
 		}
 
-		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
+		public function validateSettings(MessageStack $errors, $checkForDuplicates = true) {
 			if (trim((string)$this->{'text-length'}) == '') {
-				$messages->append('text-length', __('This is a required field.'));
+				$errors->append('text-length', __('This is a required field.'));
 			}
 
 			if (trim((string)$this->{'column-length'}) == '') {
-				$messages->append('column-length', __('This is a required field.'));
+				$errors->append('column-length', __('This is a required field.'));
 			}
 
-			return parent::validateSettings($messages, $checkForDuplicates);
+			return parent::validateSettings($errors, $checkForDuplicates);
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
-			parent::displaySettingsPanel($wrapper, $messages);
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
+			parent::displaySettingsPanel($wrapper, $errors);
 
 			$this->_driver->addSettingsHeaders($this->_engine->Page);
 			$document = $wrapper->ownerDocument;
@@ -227,8 +227,8 @@
 			$input = Widget::Input('text-length', $this->{'text-length'});
 			$label->appendChild($input);
 
-			if ($messages->{'text-length'}) {
-				$label = Widget::wrapFormElementWithError($label, $messages->{'text-length'});
+			if ($errors->{'text-length'}) {
+				$label = Widget::wrapFormElementWithError($label, $errors->{'text-length'});
 			}
 
 			$group->appendChild($label);
@@ -242,8 +242,8 @@
 			$input = Widget::Input('column-length', $this->{'column-length'});
 			$label->appendChild($input);
 
-			if ($messages->{'column-length'}) {
-				$label = Widget::wrapFormElementWithError($label, $messages->{'column-length'});
+			if ($errors->{'column-length'}) {
+				$label = Widget::wrapFormElementWithError($label, $errors->{'column-length'});
 			}
 
 			$group->appendChild($label);
@@ -396,8 +396,7 @@
 			$label->appendChild($input);
 
 			if ($errors->valid()) {
-				$error = $errors->current();
-				$label = Widget::wrapFormElementWithError($label, $error['message']);
+				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
 			}
 
 			$wrapper->appendChild($label);

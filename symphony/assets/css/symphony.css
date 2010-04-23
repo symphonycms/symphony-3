@@ -700,6 +700,7 @@
 	}
 	form select optgroup > option {
 		font-weight: normal;
+		padding-left: 10px;
 	}
 	form input {
 		cursor: text;
