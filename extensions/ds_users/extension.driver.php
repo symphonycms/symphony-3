@@ -48,7 +48,8 @@
 
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
-			$right = $layout->createColumn(Layout::LARGE);
+			$middle = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -123,7 +124,7 @@
 			$context->appendChild($templates);
 			$context->appendChild($instances);
 			$fieldset->appendChild($context);
-			$right->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 

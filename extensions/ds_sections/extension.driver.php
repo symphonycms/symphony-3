@@ -74,9 +74,9 @@
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
 
 			$layout = new Layout();
-			$left = $layout->createColumn(Layout::SMALL);
-			$middle = $layout->createColumn(Layout::SMALL);
-			$right = $layout->createColumn(Layout::LARGE);
+			$left = $layout->createColumn(Layout::LARGE);
+			$middle = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -137,7 +137,7 @@
 			$container->appendChild($templates);
 			$container->appendChild($instances);
 			$fieldset->appendChild($container);
-			$right->appendChild($fieldset);
+			$left->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
@@ -146,7 +146,17 @@
 			$container_filter_results = $page->createElement('div');
 			$fieldset->appendChild($container_filter_results);
 
-			$right->appendChild($fieldset);
+		//	Redirect/404 ------------------------------------------------------
+		/*
+			$label = Widget::Label(__('Required URL Parameter <i>Optional</i>'));
+			$label->appendChild(Widget::Input('fields[required_url_param]', $datasource->parameters()->required_url_param));
+			$fieldset->appendChild($label);
+
+			$p = new XMLElement('p', __('An empty result will be returned when this parameter does not have a value. Do not wrap the parameter with curly-braces.'));
+			$p->setAttribute('class', 'help');
+			$fieldset->appendChild($p);
+		*/
+			$middle->appendChild($fieldset);
 
 		//	Sorting -----------------------------------------------------------
 
@@ -166,12 +176,24 @@
 			$label->appendChild(Widget::Select('fields[sort-order]', $options));
 			$fieldset->appendChild($label);
 
-			$left->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Limiting ----------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Limiting'), '<code>{$param}</code> or <code>Value</code>');
+			
+			// Show a maximum of # results
+			$label = Widget::Label(__('Limit results per page'));
+			$input = Widget::Input('fields[limit]', $datasource->parameters()->page);
+			
+			$label->appendChild($input);
 
+			if (isset($errors->limit)) {
+				$label = Widget::wrapFormElementWithError($label, $errors->limit);
+			}
+
+			$fieldset->appendChild($label);
+	
 			// Show page # of results:
 			$label = Widget::Label(__('Show page of results'));
 			$input = Widget::Input('fields[page]', $datasource->parameters()->page);
@@ -180,18 +202,6 @@
 
 			if (isset($errors->page)) {
 				$label = Widget::wrapFormElementWithError($label, $errors->page);
-			}
-
-			$fieldset->appendChild($label);
-
-			// Show a maximum of # results
-			$label = Widget::Label(__('Limit results per page'));
-			$input = Widget::Input('fields[limit]', $datasource->parameters()->page);
-
-			$label->appendChild($input);
-
-			if (isset($errors->limit)) {
-				$label = Widget::wrapFormElementWithError($label, $errors->limit);
 			}
 
 			$fieldset->appendChild($label);
@@ -208,7 +218,7 @@
 
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
-			$left->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 
@@ -254,8 +264,8 @@
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
 
-			$middle->appendChild($fieldset);
-
+			$right->appendChild($fieldset);
+			
 			$layout->appendTo($wrapper);
 
 		//	Build contexts ----------------------------------------------------

@@ -100,7 +100,7 @@
 				
 				$fieldset = Widget::Fieldset(__('Content'));
 			
-				$label = Widget::Label(__('XML'));
+				$label = Widget::Label(__('Source XML'));
 				$input = Widget::Textarea('fields[xml]', $datasource->parameters()->{'xml'}, array(
 					'rows' => '24',
 					'cols' => '50',
