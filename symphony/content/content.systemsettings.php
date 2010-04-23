@@ -5,8 +5,11 @@
 	class contentSystemSettings extends AdministrationPage {
 		public function __construct(){
 			parent::__construct();
-
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Settings'))));
+			/*
+			$element = $this->createElement('p');
+			$element->appendChild(new DOMEntityReference('ndash'));
+			$this->Body->appendChild($element);*/
 		}
 
 		## Overload the parent 'view' function since we dont need the switchboard logic
@@ -76,7 +79,7 @@
 
 		// REGIONAL SETTINGS
 
-			$fieldset = Widget::Fieldset(__('Date &amp; Time Settings'));
+			$fieldset = Widget::Fieldset(__('Date & Time Settings'));
 
 			// Date and Time Settings
 			$label = Widget::Label(__('Date Format'));

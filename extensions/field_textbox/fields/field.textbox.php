@@ -351,7 +351,7 @@
 			// Input box:
 			if ($this->{'text-size'} == 'single') {
 				$input = Widget::Input(
-					"fields[$element_name]", General::sanitize($data->value)
+					"fields[$element_name]", $data->value
 				);
 
 				###
@@ -363,7 +363,7 @@
 			// Text Box:
 			else {
 				$input = Widget::Textarea(
-					"fields[$element_name]", General::sanitize($data->value), array('rows' => 20, 'cols' => 50)
+					"fields[$element_name]", $data->value, array('rows' => 20, 'cols' => 50)
 				);
 
 				###
@@ -587,7 +587,7 @@
 			}
 
 			if(!is_null($link)) {
-				$link->setValue(General::sanitize($value));
+				$link->setValue($value);
 				return $link;
 			}
 

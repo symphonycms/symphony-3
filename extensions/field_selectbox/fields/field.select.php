@@ -140,7 +140,7 @@
 			}
 
 			foreach($states as $handle => $v){
-				$options[] = array(General::sanitize($v), in_array($v, $selected), General::sanitize($v));
+				$options[] = array($v, in_array($v, $selected), $v);
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
@@ -152,7 +152,7 @@
 			));
 
 			if (!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($label, $error['message']);
+				$label = Widget::wrapFormElementWithError($label, $error->message);
 			}
 
 			$wrapper->appendChild($label);
@@ -210,7 +210,7 @@
 				$values[] = $d->value;
 			}
 
-			return parent::prepareTableValue((object)array('value' => General::sanitize(implode(', ', $values))), $link);
+			return parent::prepareTableValue((object)array('value' => implode(', ', $values)), $link);
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
@@ -474,7 +474,7 @@
 				$data = array($data);
 			}
 			foreach($data as $d){
-				parent::saveData($d, $errors, $entry);
+				parent::saveData($errors, $entry, $d);
 			}
 			return Field::STATUS_OK;
 		}
