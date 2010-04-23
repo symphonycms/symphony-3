@@ -129,10 +129,13 @@
 		-------------------------------------------------------------------------*/
 		
 		public function setPropertiesFromPostData($data) {
-			//if(is_array($data['suggestion-list-source'])){
-			//	var_dump($data);
-			//	exit;
-			//}
+			/*if(isset($data['suggestion-list-source'])){
+				if(!is_array($data['suggestion-list-source'])) $data['suggestion-list-source'] = array($data['suggestion-list-source']);
+				var_dump($data);
+				exit;
+
+			}*/
+
 			return parent::setPropertiesFromPostData($data);
 		}
 		/*
@@ -296,7 +299,7 @@
 				if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
 					$errors->append(
 						$this->{'element-name'},
-						array(
+						(object)array(
 						 	'message' => __("'%s' is a required field.", array($this->label)),
 							'code' => self::ERROR_MISSING
 						)
@@ -310,7 +313,7 @@
 				if (!$this->applyValidationRules($data->value)) {
 					$errors->append(
 						$this->{'element-name'},
-						array(
+						(object)array(
 						 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->label)),
 							'code' => self::ERROR_INVALID
 						)
