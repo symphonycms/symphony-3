@@ -7,11 +7,11 @@
 
 		protected $_sizes = array();
 		protected $_driver = null;
-
+		
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
-
+		
 		public function __construct() {
 			parent::__construct();
 
