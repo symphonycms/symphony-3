@@ -187,34 +187,34 @@
 			$doc->appendChild($root);
 			return $doc;
 	    }
-		
+
 		public function __toString(){
 			$doc = $this->toDoc();
 
 			return $doc->saveXML($doc->documentElement);
 		}
-		
+
 		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
 			foreach($xml as $property_name => $property_value){
 				$data[(string)$property_name] = (string)$property_value;
 			}
-			
+
 			// Set field GUID:
 			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
 				$data['guid'] = (string)$xml->attributes()->guid;
 			}
-			
+
 			$this->setPropertiesFromPostData($data);
 		}
-		
+
 		public static function loadFromXMLDefinition(SimpleXMLElement $xml){
 			if(!isset($xml->type)){
 				throw new FieldException('Section XML contains fields with no type specified.');
 			}
-			
+
 			$field = self::loadFromType((string)$xml->type);
 			$field->loadSettingsFromSimpleXMLObject($xml);
-			
+
 			return $field;
 		}
 
@@ -491,7 +491,6 @@
 		// TODO: Support an array of data objects. This is important for
 		// fields like Select box or anything that allows mutliple values
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
-
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;
 
@@ -827,7 +826,7 @@
 
 			return true;
 		}
-		
+
 		public function rename($old_section, $old_name, $new_section, $new_name) {
 			try {
 				Symphony::Database()->query(

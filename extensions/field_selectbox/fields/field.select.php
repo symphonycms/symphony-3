@@ -119,7 +119,7 @@
 			return $data;
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
 			if(!is_array($data)){
 				$data = array($data);
 			}
@@ -151,8 +151,8 @@
 				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));
 
-			if (!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($label, $error->message);
+			if ($errors->valid()) {
+				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
 			}
 
 			$wrapper->appendChild($label);
@@ -470,10 +470,11 @@
 				"`entry_id` = %s"
 			);
 
-			if(!is_array($data)){
-				$data = array($data);
+			if(!is_array($data->value)){
+				$data->value = array($data->value);
 			}
-			foreach($data as $d){
+			foreach($data->value as $d){
+				$d = $this->processFormData($d, $entry);
 				parent::saveData($errors, $entry, $d);
 			}
 			return Field::STATUS_OK;

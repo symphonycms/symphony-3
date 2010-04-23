@@ -129,10 +129,8 @@
 			$label->appendChild(new DOMText(($this->{'description'} != NULL ? $this->{'description'} : $this->{'label'})));
 
 			if ($errors->valid()) {
-				$error = $errors->current();
-				$label = Widget::wrapFormElementWithError($label, $error['message']);
+				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
 			}
-
 			$wrapper->appendChild($label);
 		}
 
