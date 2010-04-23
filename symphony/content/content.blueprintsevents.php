@@ -2,11 +2,11 @@
 
 	require_once(TOOLKIT . '/class.administrationpage.php');
 	require_once(TOOLKIT . '/class.event.php');
-	
+
 	Class contentBlueprintsEvents extends AdministrationPage{
-		
+
 		private $event;
-		
+
 		public function __viewIndex() {
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Events'))));
 
@@ -25,9 +25,9 @@
 
 			$eTableBody = array();
 			$colspan = count($eTableHead);
-			
+
 			$iterator = new EventIterator;
-			
+
 			if(!$iterator->valid()) {
 				$eTableBody = array(Widget::TableRow(
 					array(
@@ -42,61 +42,62 @@
 				));
 			}
 
-			else{
-			
-				foreach($iterator as $pathname){
-					
-					$event = Event::load($pathname);
+			else foreach($iterator as $pathname){
 
-					$view_mode = ($event->allowEditorToParse() == true ? 'edit' : 'info');
-					$handle = preg_replace('/.php$/i', NULL, basename($event->parameters()->pathname));
-					
+				$event = Event::load($pathname);
+				$handle = preg_replace('/.php$/i', NULL, basename($event->parameters()->pathname));
+
+				if($event->allowEditorToParse()) {
 					$col_name = Widget::TableData(
-						Widget::Anchor($event->about()->name, URL . "/symphony/blueprints/events/{$view_mode}/{$handle}/", array(
+						Widget::Anchor($event->about()->name, URL . "/symphony/blueprints/events/edit/{$handle}/", array(
 							'title' => $event->parameters()->pathname
 						))
 					);
-					$col_name->appendChild(Widget::Input("items[{$handle}]", null, 'checkbox'));
-
-					// Source  
-					if(is_null($event->parameters()->source)){
-						$col_source = Widget::TableData(__('None'), 'inactive');
-					}
-					else{
-						$section = Section::loadFromHandle($event->parameters()->source);
-
-						$col_source = Widget::TableData(Widget::Anchor(
-							$section->name,
-							URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/',
-							array('title' => $section->handle)
-						));
-					}
-
-					if (isset($event->about()->author->website)) {
-						$col_author = Widget::TableData(Widget::Anchor(
-							$event->about()->author->name,
-							General::validateURL($event->about()->author->website)
-						));
-					}
-
-					else if (isset($event->about()->author->email)) {
-						$col_author = Widget::TableData(Widget::Anchor(
-							$event->about()->author->name,
-							'mailto:' . $event->about()->author->email
-						));
-					}
-
-					else {
-						$col_author = Widget::TableData($event->about()->author->name);
-					}
-
-					$eTableBody[] = Widget::TableRow(
-						array($col_name, $col_source, $col_author)
-					);
+				}
+				else {
+					$col_name = Widget::TableData($event->about()->name);
 				}
 
+				$col_name->appendChild(Widget::Input("items[{$handle}]", null, 'checkbox'));
+
+				// Source
+				if(is_null($event->parameters()->source)){
+					$col_source = Widget::TableData(__('None'), 'inactive');
+				}
+				else{
+					$section = Section::loadFromHandle($event->parameters()->source);
+
+					$col_source = Widget::TableData(Widget::Anchor(
+						$section->name,
+						URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/',
+						array('title' => $section->handle)
+					));
+				}
+
+				if (isset($event->about()->author->website)) {
+					$col_author = Widget::TableData(Widget::Anchor(
+						$event->about()->author->name,
+						General::validateURL($event->about()->author->website)
+					));
+				}
+
+				else if (isset($event->about()->author->email)) {
+					$col_author = Widget::TableData(Widget::Anchor(
+						$event->about()->author->name,
+						'mailto:' . $event->about()->author->email
+					));
+				}
+
+				else {
+					$col_author = Widget::TableData($event->about()->author->name);
+				}
+
+				$eTableBody[] = Widget::TableRow(
+					array($col_name, $col_source, $col_author)
+				);
+
 			}
-			
+
 			$table = Widget::Table(
 				Widget::TableHead($eTableHead), null, Widget::TableBody($eTableBody), array(
 					'id' => 'events-list'
@@ -136,7 +137,7 @@
 
 			$this->__form($existing);
 		}
-		
+
 		function __form(Event $existing=NULL){
 
 			if($this->errors instanceof MessageStack && $this->errors->length() > 0){
@@ -176,7 +177,7 @@
 			}
 
 			//$isEditing = ($readonly ? true : false);
-			
+
 
 /*
 			$fields = array();
@@ -225,16 +226,16 @@
 			if(isset($_POST['fields'])) $fields = $_POST['fields'];
 */
 			$layout = new Layout; //('small', 'small', 'medium');
-			
+
 			$column_1 = $layout->createColumn(Layout::SMALL);
 			$column_2 = $layout->createColumn(Layout::SMALL);
 			$column_3 = $layout->createColumn(Layout::LARGE);
-			
+
 			$heading = __('Untitled');
 			if(!is_null($existing)){
 				$heading = $existing->about()->name;
 			}
-			
+
 			$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(__('Symphony'), __('Events'), $heading)));
 			$this->appendSubheading($heading);
 
@@ -267,7 +268,7 @@
 
 				$filters = $this->event->parameters()->filters;
 				if(!is_array($filters)) $filters = array();
-				
+
 				$options = array(
 					array('admin-only', in_array('admin-only', $filters), __('Admin Only')),
 					array('send-email', in_array('send-email', $filters), __('Send Email')),
@@ -276,11 +277,11 @@
 
 				###
 				# Delegate: AppendEventFilter
-				# Description: Allows adding of new filter rules to the Event filter 
+				# Description: Allows adding of new filter rules to the Event filter
 				# rule select box. A reference to the $options array is provided, and selected filters
 				ExtensionManager::instance()->notifyMembers(
-					'AppendEventFilter', 
-					'/blueprints/events/' . $this->_context[0] . '/', 
+					'AppendEventFilter',
+					'/blueprints/events/' . $this->_context[0] . '/',
 					array('selected' => $fields['filters'], 'options' => &$options)
 				);
 
@@ -297,7 +298,7 @@
 				$label->appendChild(new DOMText(__('Add entry ID to the parameter pool in the format of $event-name-id when saving is successful.')));
 				$fieldset->appendChild($label);
 				$column_2->appendChild($fieldset);
-				
+
 
 				$fieldset = Widget::Fieldset(__('Overrides &amp; Defaults'), '{$param}');
 
@@ -309,7 +310,7 @@
 							$s,
 							($this->event->parameters()->source == $s->handle
 								? array(
-									'overrides' => $this->event->parameters()->overrides, 
+									'overrides' => $this->event->parameters()->overrides,
 									'defaults' => $this->event->parameters()->defaults
 								)
 								: NULL
@@ -317,12 +318,12 @@
 						)
 					);
 				}
-				
+
 				//$fieldset->appendChild($div);
 				$column_3->appendChild($fieldset);
 
 				$layout->appendTo($this->Form);
-				
+
 			//endif;
 
 			/*
@@ -339,13 +340,13 @@
 			*/
 
 			//if($readonly != true){
-				
+
 				$div = $this->createElement('div');
 				$div->setAttribute('class', 'actions');
 				$div->appendChild(Widget::Input(
-					'action[save]', 
-					(!is_null($existing) ? __('Save Changes') : __('Create Event')), 
-					'submit', 
+					'action[save]',
+					(!is_null($existing) ? __('Save Changes') : __('Create Event')),
+					'submit',
 					array('accesskey' => 's')
 				));
 
@@ -377,7 +378,7 @@
 
 			$ol = new XMLElement('ol');
 			$ol->setAttribute('id', 'section-' . $section->handle);
-		
+
 			$item = $this->createElement('li');
 			$span = $this->createElement('span', 'Override');
 			$span->setAttribute('class', 'name');
@@ -396,15 +397,15 @@
 			$label = Widget::Label(__('Replacement'));
 			$label->appendChild(Widget::Input('fields[overrides][replacement][]'));
 			$item->appendChild($label);
-			
+
 			$templates->appendChild($item);
-			
-			
+
+
 			$item = $this->createElement('li');
 			$span = $this->createElement('span', 'Default Value');
 			$span->setAttribute('class', 'name');
 			$item->appendChild($span);
-			
+
 			$label = Widget::Label(__('Field'));
 			$options = array(array('system:id', false, 'System ID'));
 
@@ -418,13 +419,13 @@
 			$label = Widget::Label(__('Replacement'));
 			$label->appendChild(Widget::Input('fields[defaults][replacement][]'));
 			$item->appendChild($label);
-			
+
 			$templates->appendChild($item);
-			
+
 			if(is_array($items['overrides'])){
 				//$field_names = $items['overrides']['field'];
 				//$replacement_values = $items['overrides']['replacement'];
-				
+
 				//for($ii = 0; $ii < count($field_names); $ii++){
 				foreach($items['overrides'] as $field_name => $replacement){
 					$item = $this->createElement('li');
@@ -437,8 +438,8 @@
 
 					foreach($section->fields as $f){
 						$options[] = array(
-							General::sanitize($f->{'element-name'}), 
-							$f->{'element-name'} == $field_name, 
+							General::sanitize($f->{'element-name'}),
+							$f->{'element-name'} == $field_name,
 							General::sanitize($f->label)
 						);
 					}
@@ -452,12 +453,12 @@
 					$instances->appendChild($item);
 				}
 			}
-			
+
 			if(is_array($items['defaults'])){
-				
+
 				//$field_names = $items['defaults']['field'];
 				//$replacement_values = $items['defaults']['replacement'];
-				
+
 				//for($ii = 0; $ii < count($field_names); $ii++){
 				foreach($items['defaults'] as $field_name => $replacement){
 					$item = $this->createElement('li');
@@ -470,8 +471,8 @@
 
 					foreach($section->fields as $f){
 						$options[] = array(
-							General::sanitize($f->{'element-name'}), 
-							$f->{'element-name'} == $field_name, 
+							General::sanitize($f->{'element-name'}),
+							$f->{'element-name'} == $field_name,
 							General::sanitize($f->label)
 						);
 					}
@@ -485,14 +486,14 @@
 					$instances->appendChild($item);
 				}
 			}
-			
 
-				
+
+
 			$duplicator->appendChild($templates);
 			$duplicator->appendChild($instances);
-			
+
 			return $duplicator;
-			
+
 
 			//$fields = Symphony::Database()->fetch("SELECT `element_name`, `label` FROM `tbl_fields` WHERE `parent_section` = " . $section->get('id'));
 /*
@@ -641,28 +642,18 @@
 			if(array_key_exists('save', $_POST['action'])){
 				return $this->__save();
 			}
-			elseif(array_key_exists('delete', $_POST['action'])){
 
-				## TODO: Fix Me
-				###
-				# Delegate: Delete
-				# Description: Prior to deleting the event file. Target file path is provided.
-				#ExtensionManager::instance()->notifyMembers('Delete', getCurrentPage(), array("file" => EVENTS . "/event." . $_REQUEST['file'] . ".php"));
-
-		    	if(!General::deleteFile(EVENTS . '/' . $this->_context[1] . '.php'))
-					$this->pageAlert(__('Failed to delete <code>%s</code>. Please check permissions.', array($this->_context[1])), Alert::ERROR);
-
-		    	else redirect(URL . '/symphony/blueprints/components/');
-
+			else if(array_key_exists('delete', $_POST['action'])){
+				$this->__actionDelete(array($this->_context[1]), ADMIN_URL . '/blueprints/events/');
 			}
 		}
 
 		private function __save(){
 
 			$post = General::getPostData();
-			
+
 			$fields = $post['fields'];
-			
+
 			if($this->_context[0] == 'edit'){
 				$isEditing = true;
 				$handle = $this->_context[1];
@@ -671,22 +662,22 @@
 			//else{
 				$this->event = new Event;
 			//}
-			
+
 			$this->event->about()->name = $fields['name'];
-			
+
 			$this->event->about()->author->name = Administration::instance()->User->getFullName();
 			$this->event->about()->author->email = Administration::instance()->User->get('email');
-			
+
 			$this->event->parameters()->source = $fields['source'];
-			
+
 			if(isset($fields['output-id-on-save']) && $fields['output-id-on-save'] == 'yes'){
 				$this->event->parameters()->{'output-id-on-save'} = true;
 			}
-			
+
 			if(isset($fields['filters']) && is_array($fields['filters']) || !empty($fields['filters'])){
 				$this->event->parameters()->filters = $fields['filters'];
 			}
-			
+
 			if(isset($fields['defaults']) && is_array($fields['defaults']) || !empty($fields['defaults'])){
 				$defaults = array();
 				foreach($fields['defaults']['field'] as $index => $field){
@@ -694,7 +685,7 @@
 				}
 				$this->event->parameters()->defaults = $defaults;
 			}
-			
+
 			if(isset($fields['overrides']) && is_array($fields['overrides']) || !empty($fields['overrides'])){
 				$overrides = array();
 				foreach($fields['overrides']['field'] as $index => $field){
@@ -702,32 +693,47 @@
 				}
 				$this->event->parameters()->overrides = $overrides;
 			}
-			
+
 			$this->errors->flush();
-			
+
 			try{
 				$pathname = Event::save($this->event, $this->errors);
 				$handle = preg_replace('/.php$/i', NULL, basename($pathname));
 				redirect(URL . "/symphony/blueprints/events/edit/{$handle}/".($this->_context[0] == 'new' ? 'created' : 'saved') . '/');
 			}
-			
+
 			catch (EventException $e) {
 				$this->pageAlert($e->getMessage(), Alert::ERROR);
 			}
-			
+
 			catch (Exception $e) {
 				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
 			}
 
 		}
-		protected function __actionDelete($events, $redirect) {
+
+		protected function __actionDelete(array $events, $redirect) {
 			$success = true;
 
-			if(!is_array($events)) $events = array($events);
-
 			foreach ($events as $event) {
-				if(!General::deleteFile(EVENTS . '/event.' . $event . '.php'))
-					$this->pageAlert(__('Failed to delete <code>%s</code>. Please check permissions.', array($this->_context[1])), Alert::ERROR);
+				try{
+
+					## TODO: Fix Me
+					###
+					# Delegate: Delete
+					# Description: Prior to deleting the event file. Target file path is provided.
+					#ExtensionManager::instance()->notifyMembers('Delete', getCurrentPage(), array("file" => EVENTS . "/event." . $_REQUEST['file'] . ".php"));
+
+					Event::delete($event);
+				}
+				catch(EventException $e){
+					$success = false;
+					$this->pageAlert($e->getMessage(), Alert::ERROR);
+				}
+				catch(Exception $e){
+					$success = false;
+					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+				}
 			}
 
 			if($success) redirect($redirect);
@@ -744,7 +750,6 @@
 				}
 			}
 		}
-
 
 		function __formAction(){
 

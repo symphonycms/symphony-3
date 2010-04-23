@@ -236,7 +236,7 @@
 			return true;
 		}
 
-		public function setFromPOST($data) {
+		public function setPropertiesFromPostData($data) {
 			$data['required'] = (isset($data['required']) && $data['required'] == 'yes' ? 'yes' : 'no');
 			$data['show-column'] = (isset($data['show-column']) && $data['show-column'] == 'yes' ? 'yes' : 'no');
 			foreach($data as $key => $value){

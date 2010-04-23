@@ -65,19 +65,19 @@
 	}
 
 	Class Event{
-		
+
 		const PRIORITY_HIGH = 3;
 		const PRIORITY_NORMAL = 2;
 		const PRIORITY_LOW = 1;
-		
+
 		const ERROR_MISSING_OR_INVALID_FIELDS = 4;
 		const ERROR_FAILED_TO_WRITE = 5;
-		
+
 		protected static $_loaded;
-		
+
 		protected $_about;
 		protected $_parameters;
-		
+
 		public function __construct(){
 			$this->_about = (object)array(
 				'name'			=> NULL,
@@ -89,7 +89,7 @@
 				'version'		=> '1.0',
 				'release-date'	=> DateTimeObj::get('Y-m-d')
 			);
-			
+
 			$this->_parameters = (object)array(
 				'root-element' => NULL,
 				'source' => NULL,
@@ -99,7 +99,7 @@
 				'output-id-on-save' => false
 			);
 		}
-		
+
 		public function &about(){
 			return $this->_about;
 		}
@@ -107,7 +107,7 @@
 		public function &parameters(){
 			return $this->_parameters;
 		}
-			
+
 		public static function load($pathname){
 			if(!is_array(self::$_loaded)){
 				self::$_loaded = array();
@@ -129,18 +129,22 @@
 			return $obj;
 
 		}
-		
+
 		public static function save(Event $event, MessageStack &$errors){
-			
+
 			if (!isset($event->about()->name) || empty($event->about()->name)) {
 				$errors->append('about::name', __('This is a required field'));
 			}
-			
+
 			$event->parameters()->{'root-element'} = $handle = Lang::createFilename($event->about()->name);
 			$filename = "{$handle}.php";
 			$classname = Lang::createHandle(ucwords($event->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
 			$pathname = EVENTS . "/{$filename}";
-			
+
+			if(self::__find($handle) !== false) {
+				throw new EventException(__('An Event with the name <code>%s</code> already exists.', array($event->about()->name)));
+			}
+
 			if($errors->length() <= 0){
 				$data = array(
 					$classname,
@@ -168,8 +172,39 @@
 				}
 				throw new EventException(__('Failed to write event "%s" to disk.', array($filename)), self::ERROR_FAILED_TO_WRITE);
 			}
-			
+
 			throw new EventException(__('Event could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
+		}
+
+		public function rename(array $events) {
+			/*
+				$sections = array(
+					'old-event-name',
+					'new-event-name'
+				)
+
+			 	TODO:
+				Upon renaming an event, views need to be updated with the event
+			*/
+
+			list($old, $new) = $events;
+
+			self::delete($old);
+		}
+
+		public function delete($handle){
+			/*
+				TODO:
+				Upon deletion of the event, views need to be updated to remove
+				it's associated with the event
+			*/
+			$event = Event::loadFromName($handle);
+
+			if(!$event->allowEditorToParse()) {
+				throw new EventException(__('Event cannot be deleted, the Editor does not have permission.'));
+			}
+
+			return General::deleteFile(EVENTS . "/{$handle}.php");
 		}
 
 		public static function loadFromName($name){
@@ -192,24 +227,24 @@
 
 		    return false;
 	    }
-		
+
 		/*
 		private function __processParameters(){
-			
+
 			if(isset($this->_env) && is_array($this->_env)){
 				if(isset($this->eParamOVERRIDES) && is_array($this->eParamOVERRIDES) && !empty($this->eParamOVERRIDES)){
 					foreach($this->eParamOVERRIDES as $field => $replacement){
 						$replacement = $this->__processParametersInString(stripslashes($replacement), $this->_env);
-						
+
 						if($replacement === NULL){
 							unset($this->eParamOVERRIDES[$field]);
 							continue;
 						}
-						
+
 						$this->eParamOVERRIDES[$field] = $replacement;
 					}
 				}
-				
+
 				if(isset($this->eParamDEFAULTS) && is_array($this->eParamDEFAULTS) && !empty($this->eParamDEFAULTS)){
 					foreach($this->eParamDEFAULTS as $field => $replacement){
 						$replacement = self::__processParametersInString(stripslashes($replacement), $this->_env);
@@ -222,9 +257,9 @@
 						$this->eParamDEFAULTS[$field] = $replacement;
 					}
 				}
-			}	
+			}
 		}
-		
+
 		private static function __processParametersInString($value, array $env=NULL){
 
 			if(preg_match_all('@{\$([^}]+)}@i', $value, $matches, PREG_SET_ORDER)){
@@ -232,9 +267,9 @@
 				foreach($matches as $index => $match){
 					list($pattern, $param) = $match;
 					$replacement = self::__findParameterInEnv($param, $env);
-					
+
 					if($value == $pattern && $replacement === NULL) return NULL;
-					
+
 					$value = str_replace($pattern, $replacement, $value);
 				}
 
@@ -242,28 +277,28 @@
 
 			return $value;
 		}
-		
+
 		private static function __findParameterInEnv($needle, $env){
 
 			if(isset($env['env']['url'][$needle])){
 				return $env['env']['url'][$needle];
 			}
-			
+
 			elseif(isset($env['param'][$needle])){
 				return $env['param'][$needle];
 			}
 
-			return NULL;			
-		}		
+			return NULL;
+		}
 		*/
-		
-		## This function is required in order to edit it in the event editor page. 
+
+		## This function is required in order to edit it in the event editor page.
 		## Do not overload this function if you are creating a custom event. It is only
 		## used by the event editor
 		public function allowEditorToParse(){
 			return false;
 		}
-		
+
 		public function priority(){
 			return self::PRIORITY_NORMAL;
 		}
@@ -272,4 +307,4 @@
 			return NULL;
 		}
 	}
-	
+

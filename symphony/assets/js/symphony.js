@@ -287,6 +287,7 @@ var Symphony;
 							+ name
 							+ ']'
 						);
+						// TODO: Doesnt work for names that end with [ ]
 					});
 				});
 			});

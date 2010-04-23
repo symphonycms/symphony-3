@@ -76,30 +76,40 @@
 
 		function findAllTags(){
 
-			//  TODO: This will need to be updated once Section Editor can save multiple values
+			//  TODO: This will need to be updated once Section Editor can save multiple values for the suggestion source
 			//  foreach($this->{'suggestion-list-source'} as $item){
 
-			list($section, $field_handle) = explode("::", $this->{'suggestion-list-source'});
+			if($this->{'suggestion-list-source'} == 'existing') {
+				$section = $this->section;
+				$field_handle = $this->{'element-name'};
+			}
 
-			if(!is_array($this->{'pre-populate-source'})) return;
+			else {
+				list($section, $field_handle) = explode("::", $this->{'suggestion-list-source'});
+			}
 
 			$values = array();
 
-			foreach($this->{'pre-populate-source'} as $item) {
-				$result = Symphony::Database()->query("
-						SELECT
-							`value`
-						FROM
-							`tbl_data_%s_%s`
-						GROUP BY
-							`value`
-						HAVING
-							COUNT(`value`) >= %d
-					", array($section, $field_handle, $this->{'suggestion-source-threshold'})
-				);
+			$result = Symphony::Database()->query("
+					SELECT
+						`value`
+					FROM
+						`tbl_data_%s_%s`
+					WHERE
+						`value` REGEXP '%s'
+					GROUP BY
+						`value`
+					HAVING
+						COUNT(`value`) >= %d
+				", array(
+					$section,
+					$field_handle,
+					(!empty($this->{'validator'})) ? rtrim(trim($this->{'validator'}, '/'), '/') : '.',
+					$this->{'suggestion-source-threshold'}
+				)
+			);
 
-				if(!$result->valid()) $values = array_merge($values, $result->resultColumn('value'));
-			}
+			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
 
 			return array_unique($values);
 		}
@@ -108,10 +118,33 @@
 			return (!empty($tags)) ? implode($this->{'tag-delimiter'} . ' ', $tags) : null;
 		}
 
+		public function applyValidationRules($data) {
+			$rule = $this->{'validator'};
+
+			return ($rule ? General::validateString($data, $rule) : true);
+		}
+
 		/*-------------------------------------------------------------------------
 			Settings:
 		-------------------------------------------------------------------------*/
-
+		
+		public function setPropertiesFromPostData($data) {
+			//if(is_array($data['suggestion-list-source'])){
+			//	var_dump($data);
+			//	exit;
+			//}
+			return parent::setPropertiesFromPostData($data);
+		}
+		/*
+		public function setPropertiesFromPostData($data) {
+			$data['required'] = (isset($data['required']) && $data['required'] == 'yes' ? 'yes' : 'no');
+			$data['show-column'] = (isset($data['show-column']) && $data['show-column'] == 'yes' ? 'yes' : 'no');
+			foreach($data as $key => $value){
+				$this->$key = $value;
+			}
+		}
+		*/
+		
 		public function findDefaultSettings(array &$fields){
 			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array('existing');
 		}
@@ -152,7 +185,7 @@
 				}
 			}
 
-			$label->appendChild(Widget::Select('suggestion-list-source', $options, array('multiple' => 'multiple')));
+			$label->appendChild(Widget::Select('suggestion-list-source][', $options, array('multiple' => 'multiple')));
 			$wrapper->appendChild($label);
 
 			$group = $document->createElement('div');
