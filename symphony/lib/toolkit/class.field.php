@@ -92,7 +92,7 @@
 		const FLAG_ALL = 'all';
 
 		// Abstract functions
-		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL);
+		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null);
 
 		public static function createGUID(Field $field) {
 			return uniqid();
@@ -466,7 +466,7 @@
 
 		// TODO: Support an array of data objects. This is important for
 		// fields like Select box or anything that allows mutliple values
-		public function saveData($data=NULL, MessageStack &$errors, Entry $entry){
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;
@@ -531,11 +531,11 @@
 		}
 */
 
-		public function validateData(StdClass $data=NULL, MessageStack &$errors, Entry $entry=NULL){
+		public function validateData(MessageStack $errors, Entry $entry=NULL, $data=NULL){
 			if ($this->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
 				$errors->append(
 					$this->{'element-name'},
-					array(
+					(object)array(
 					 	'message' => __("'%s' is a required field.", array($this->label)),
 						'code' => self::ERROR_MISSING
 					)

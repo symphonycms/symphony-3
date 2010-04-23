@@ -32,7 +32,7 @@
 			return true;
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null){
 			$name = $this->{'element-name'};
 			$value = null;
 
@@ -50,8 +50,8 @@
 				'class' => 'date')
 			);
 
-			if (!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($label, $error['message']);
+			if ($errors->valid()){
+				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
 			}
 
 			$wrapper->appendChild($label);

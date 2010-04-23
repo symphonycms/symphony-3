@@ -737,7 +737,8 @@
 				$this->__form(Entry::loadFromID($this->_context['entry_id']));
 			}
 			catch(Exception $e){
-				var_dump(Symphony::Database()); die();
+				throw $e;
+				//var_dump(Symphony::Database()); die();
 			}
 		}
 
@@ -900,11 +901,11 @@
 
 						$field->displayPublishPanel(
 							$div,
-							 $this->entry->data()->{$field->{'element-name'}},
 							(isset($this->errors->{$field->{'element-name'}})
 								? $this->errors->{$field->{'element-name'}}
-								: NULL),
-							$this->entry
+								: new MessageStack),
+							$this->entry,
+							$this->entry->data()->{$field->{'element-name'}}
 						);
 
 						$fieldset->appendChild($div);
@@ -937,20 +938,20 @@
 							'class' => trim(sprintf('field field-%s %s %s',
 								$field->handle(),
 								$this->__calculateWidth($field->width),
-								($field->required == 'yes' ? 'required' : '')
+								($field->required == 'yes' ? 'required' : 'optional')
 							))
 						)
 					);
 					
 					$field->displayPublishPanel(
 						$div,
-						 $this->entry->data()->{$field->{'element-name'}},
 						(isset($this->errors->{$field->{'element-name'}})
 							? $this->errors->{$field->{'element-name'}}
-							: NULL),
-						$this->entry
+							: new MessageStack),
+						$this->entry,
+						$this->entry->data()->{$field->{'element-name'}}
 					);
-
+					
 					$fieldset->appendChild($div);
 				}
 
@@ -1037,9 +1038,9 @@
 				);
 
 				$this->errors->flush();
-				Entry::save($entry, $this->errors);
+				$status = Entry::save($entry, $this->errors);
 
-				if($this->errors->length() <= 0){
+				if($status == Entry::STATUS_OK){
 
 					// Check if there is a field to prepopulate
 					if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {
@@ -1320,9 +1321,9 @@
 				);
 
 				$this->errors->flush();
-				Entry::save($entry, $this->errors);
+				$status = Entry::save($entry, $this->errors);
 
-				if($this->errors->length() <= 0){
+				if($status == Entry::STATUS_OK){
 
 					// Check if there is a field to prepopulate
 					if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {

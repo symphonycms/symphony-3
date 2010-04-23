@@ -72,7 +72,7 @@
 		}
 
 */
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null) {
 
 			if(!is_array($data)){
 				$data = array($data);
@@ -298,7 +298,7 @@
 			return $result;
 		}
 
-		public function validateData($data=NULL, MessageStack &$errors, Entry $entry=NULL){
+		public function validateData(MessageStack $errors, Entry $entry = null, $data = null) {
 
 			if(!is_array($data)) {
 				$data = array($data);
@@ -307,7 +307,7 @@
 			if ($this->required == 'yes' && (!isset($data[0]->user_id) || strlen(trim($data[0]->user_id)) == 0)){
 				$errors->append(
 					$this->{'element-name'},
-					array(
+					(object)array(
 					 	'message' => __("'%s' is a required field.", array($this->label)),
 						'code' => self::ERROR_MISSING
 					)
@@ -317,7 +317,7 @@
 			return self::STATUS_OK;
 		}
 
-		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			// Since we are dealing with multiple
 			// values, must purge the existing data first
 			Symphony::Database()->delete(

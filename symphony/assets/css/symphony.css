@@ -73,7 +73,7 @@
 -----------------------------------------------------------------------------*/
 
 	#session {
-		line-height: 50px;
+		line-height: 45px;
 		list-style: none;
 		position: absolute;
 		right: 25px;
@@ -628,9 +628,8 @@
 	form h3 {
 		color: #666666;
 		font-size: 10pt;
-		border-width: 0 0 1px 0;
-		border-color: hsla(0, 0%, 0%, 0.15);
-		border-style: solid;
+		border-bottom: 1px dotted #dddddd;
+		border-bottom-color: hsla(0, 0%, 0%, 0.2);
 		padding-bottom: 6px;
 		margin-bottom: 15px;
 	}
@@ -825,10 +824,10 @@
 -----------------------------------------------------------------------------*/
 
 	.actions {
-		text-align: right;
 		border-top: 1px dotted #dddddd;
 		border-top-color: hsla(0, 0%, 0%, 0.2);
 		padding: 20px 30px;
+		text-align: right;
 	}
 	.actions input {
 		float: none;
@@ -1065,7 +1064,8 @@
 	.invalid:last-child {
 		margin-bottom: 0;
 	}
-	.invalid label {
+	.invalid label,
+	.invalid .label {
 		color: #cc2828;
 		font-weight: bold;
 		margin: 0;

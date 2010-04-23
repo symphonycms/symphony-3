@@ -320,7 +320,7 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry=NULL, $data=NULL) {
 			$this->_driver->addPublishHeaders($wrapper->ownerDocument);
 
 			$sortorder = $this->{'sortorder'};
@@ -395,7 +395,8 @@
 
 			$label->appendChild($input);
 
-			if (!is_null($error)) {
+			if ($errors->valid()) {
+				$error = $errors->current();
 				$label = Widget::wrapFormElementWithError($label, $error['message']);
 			}
 
@@ -406,13 +407,13 @@
 		Input:
 	-------------------------------------------------------------------------*/
 
-		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
+		public function validateData(MessageStack &$errors, Entry $entry, $data = null) {
 			$length = (integer)$this->{'text-length'};
 
 			if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
 				$errors->append(
 					$this->{'element-name'},
-					array(
+					(object)array(
 					 	'message' => __("'%s' is a required field.", array($this->label)),
 						'code' => self::ERROR_MISSING
 					)
@@ -426,7 +427,7 @@
 			if (!$this->applyValidationRules($data->value)) {
 				$errors->append(
 					$this->{'element-name'},
-					array(
+					(object)array(
 					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->label)),
 						'code' => self::ERROR_INVALID
 					)
@@ -438,7 +439,7 @@
 			if ($length > 0 and $length < strlen($data->value)) {
 				$errors->append(
 					$this->{'element-name'},
-					array(
+					(object)array(
 					 	'message' => __("'%s' must be no longer than %s characters.", array(
 							$this->{'label'},
 							$length
@@ -465,10 +466,6 @@
 			}
 */
 			return self::STATUS_OK;
-		}
-
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
-			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function applyFormatting($value) {

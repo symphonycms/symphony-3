@@ -4,7 +4,7 @@
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
-
+		
 		public function about() {
 			return array(
 				'name'			=> 'Upload',
@@ -21,19 +21,20 @@
 				),
 			);
 		}
-
+		
 	/*-------------------------------------------------------------------------
 		Utilites:
 	-------------------------------------------------------------------------*/
-
+		
 		protected $addedHeaders = false;
-
-		public function addHeaders($page) {
+		
+		public function addHeaders() {
+			$page = Symphony::Parent()->Page;
+			
 			if (!$this->addedHeaders) {
-
-				Symphony::Parent()->Page->insertNodeIntoHead(Symphony::Parent()->Page->createScriptElement(URL . '/extensions/field_upload/assets/publish.css'));
-				Symphony::Parent()->Page->insertNodeIntoHead(Symphony::Parent()->Page->createStylesheetElement(URL . '/extensions/field_upload/assets/publish.js'));
-
+				$page->insertNodeIntoHead($page->createStylesheetElement(URL . '/extensions/field_upload/assets/publish.css'));
+				$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/field_upload/assets/publish.js'));
+				
 				$this->addedHeaders = true;
 			}
 		}
