@@ -187,11 +187,35 @@
 			$doc->appendChild($root);
 			return $doc;
 	    }
-
+		
 		public function __toString(){
 			$doc = $this->toDoc();
 
 			return $doc->saveXML($doc->documentElement);
+		}
+		
+		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
+			foreach($xml as $property_name => $property_value){
+				$data[(string)$property_name] = (string)$property_value;
+			}
+			
+			// Set field GUID:
+			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
+				$data['guid'] = (string)$xml->attributes()->guid;
+			}
+			
+			$this->setPropertiesFromPostData($data);
+		}
+		
+		public static function loadFromXMLDefinition(SimpleXMLElement $xml){
+			if(!isset($xml->type)){
+				throw new FieldException('Section XML contains fields with no type specified.');
+			}
+			
+			$field = self::loadFromType((string)$xml->type);
+			$field->loadSettingsFromSimpleXMLObject($xml);
+			
+			return $field;
 		}
 
 		public function canToggleData(){

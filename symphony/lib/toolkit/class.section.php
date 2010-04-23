@@ -161,18 +161,21 @@
 			if($name == 'guid') return; //guid cannot be set manually
 			$this->_about->$name = $value;
 		}*/
-
-		public function appendField($type, array $data=NULL){
+		
+		public function appendField(Field $field){
+			$field->section = $this->handle;
+			$this->fields[] = $field;
+		}
+		
+		public function appendFieldByType($type, array $data=NULL){
 
 			$field = Field::loadFromType($type);
 
 			if(!is_null($data)){
 				$field->setPropertiesFromPostData($data);
 			}
-			$field->section = $this->handle;
 			
-			$this->fields[] = $field;
-
+			$this->appendField($field);
 			return $field;
 		}
 
@@ -228,19 +231,11 @@
 			foreach($doc as $name => $value){
 				if($name == 'fields' && isset($value->field)){
 					foreach($value->field as $field){
-						$data = array();
-						
-						foreach($field as $property_name => $property_value){
-							$data[(string)$property_name] = (string)$property_value;
-						}
-						
-						// Set field GUID:
-						if (isset($field->attributes()->guid) and trim((string)$field->attributes()->guid) != '') {
-							$data['guid'] = (string)$field->attributes()->guid;
-						}
 						
 						try{
-							$section->appendField($data['type'], $data);
+							$section->appendField(
+								Field::loadFromXMLDefinition($field)
+							);
 						}
 						
 						catch(Exception $e){

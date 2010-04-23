@@ -136,7 +136,7 @@
 
 				if (is_array($fields) and !empty($fields)) {
 					foreach ($fields as $field) {
-						$this->section->appendField($field['type'], $field);
+						$this->section->appendFieldByType($field['type'], $field);
 					}
 				}
 			}
