@@ -380,9 +380,12 @@
 				$this->Form->appendChild($input);
 			}
 
-			// Let user choose type:
+			 // Let user choose type:
 			else{
-				$label = Widget::Label(__('Type'));
+				$div = $this->createElement('div');
+				$div->setAttribute('id', 'master-switch');
+
+				$label = Widget::Label(__('Select Type'));
 
 				$options = array();
 				foreach(ExtensionManager::instance()->listByType('Data Source') as $e){
@@ -391,8 +394,10 @@
 				}
 
 				$select = Widget::Select('type', $options);
-				$select->setAttribute('id', 'master-switch');
-				$this->Form->appendChild($select);
+
+				$div->appendChild($label);
+				$div->appendChild($select);
+				$this->Form->appendChild($div);
 			}
 
 			if(is_null($this->datasource->about()->name) || strlen(trim($this->datasource->about()->name)) == 0){
