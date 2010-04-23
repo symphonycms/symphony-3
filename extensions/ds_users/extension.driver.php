@@ -32,9 +32,9 @@
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
 				if(isset($data['included-elements'])) $datasource->parameters()->{'included-elements'} = $data['included-elements'];
 
-				if(isset($data['filters']) && is_array($data['filters'])){
-					foreach($data['filters'] as $handle => $value){
-						$datasource->parameters()->filters[$handle] = $value;
+				if(isset($data['filter']) && is_array($data['filter'])){
+					foreach($data['filter'] as $handle => $value){
+						$datasource->parameters()->filter[$handle] = $value;
 					}
 				}
 			}
@@ -43,9 +43,9 @@
 		}
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
-			$page = Administration::instance()->Page;
+			$page = $wrapper->ownerDocument;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
-			
+
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
 			$right = $layout->createColumn(Layout::LARGE);
@@ -74,8 +74,7 @@
 				'class' => 'settings'
 			));
 
-			$label = Widget::Label(__('Filter Users By:'));
-
+			// Filters
 			$context = $page->createElement('div');
 			$context->setAttribute('class', 'filters-duplicator context context-' . $section_handle);
 
@@ -85,14 +84,45 @@
 			$instances = $page->createElement('ol');
 			$instances->setAttribute('class', 'instances');
 
-			$this->appendFilter($ol, __('ID'), 'id', $datasource->parameters()->filters['id']);
-			$this->appendFilter($ol, __('Username'), 'username', $datasource->parameters()->filters['username']);
-			$this->appendFilter($ol, __('First Name'), 'first-name', $datasource->parameters()->filters['first-name']);
-			$this->appendFilter($ol, __('Last Name'), 'last-name', $datasource->parameters()->filters['last-name']);
-			$this->appendFilter($ol, __('Email Address'), 'email-address', $datasource->parameters()->filters['email-address']);
+			$sortableColumns = array(
+				array(
+					'name' => __('ID'),
+					'column' => 'id',
+					'value' => $datasource->parameters()->filter['id']
+				),
+				array(
+					'name' => __('Username'),
+					'column' => 'username',
+					'value' => $datasource->parameters()->filter['username']
+				),
+				array(
+					'name' => __('First Name'),
+					'column' => 'first-name',
+					'value' => $datasource->parameters()->filter['first-name']
+				),
+				array(
+					'name' => __('Last Name'),
+					'column' => 'last-name',
+					'value' => $datasource->parameters()->filter['last-name']
+				),
+				array(
+					'name' => __('Email Address'),
+					'column' => 'email-address',
+					'value' => $datasource->parameters()->filter['email-address']
+				)
+			);
 
-			$fieldset->appendChild($label);
-			$fieldset->appendChild($ol);
+			foreach($sortableColumns as $column) {
+				$this->appendFilter($templates, $column);
+
+				if(is_array($datasource->parameters()->filter) && array_key_exists($column['column'], $datasource->parameters()->filter)) {
+					$this->appendFilter($instances, $column);
+				}
+			}
+
+			$context->appendChild($templates);
+			$context->appendChild($instances);
+			$fieldset->appendChild($context);
 			$right->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
@@ -112,35 +142,35 @@
 
 			$label = Widget::Label(__('Included Elements'));
 			$label->appendChild($select);
-			
+
 			$fieldset->appendChild($label);
 			$right->appendChild($fieldset);
-			
+
 			$layout->appendTo($wrapper);
 		}
 
-		protected function appendFilter(&$wrapper, $name, $handle, $value=NULL) {
-			$page = Administration::instance()->Page;
+		protected function appendFilter(SymphonyDOMElement $wrapper, $condition = array()) {
+			$document = $wrapper->ownerDocument;
 
-			if (!is_null($value)) {
-				$li = $page->createElement('li');
-				$li->setAttribute('class', 'unique');
-				$li->appendChild($page->createElement('h4', $name));
-				$label = Widget::Label(__('Value'));
-				$label->appendChild(Widget::Input(
-					'fields[filters][' . $handle . ']',
-					General::sanitize($value)
-				));
-				$li->appendChild($label);
-			 	$wrapper->appendChild($li);
+			$li = $document->createElement('li');
+
+			$name = $document->createElement('span', $condition['name']);
+			$name->setAttribute('class', 'name');
+			$li->appendChild($name);
+
+			$wrapper->appendChild($li);
+
+			$label = Widget::Label(__('Value'));
+			$input = Widget::Input('fields[filter][' . $condition['column'] . ']');
+
+			if(isset($condition['value'])) {
+				$input->setAttribute("value", $condition['value']);
 			}
 
-			$li = $page->createElement('li');
-			$li->setAttribute('class', 'unique template');
-			$li->appendChild($page->createElement('h4', $name));
-			$label = Widget::Label(__('Value'));
-			$label->appendChild(Widget::Input('fields[filters][' . $handle . ']'));
+			$label->appendChild($input);
+
 			$li->appendChild($label);
-		 	$wrapper->appendChild($li);
+
+			$wrapper->appendChild($li);
 		}
 	}

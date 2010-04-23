@@ -398,11 +398,15 @@
 			throw new FrontendPageNotFoundException;
 		}
 */
-		public function emptyXMLSet(DOMElement $xml=NULL){
-			if(is_null($xml)) $xml = Symphony::Parent()->Page->createElement($this->parameters()->{'root-element'});
-			$xml->appendChild($this->__noRecordsFound());
-
-			return $xml;
+		public function emptyXMLSet(DOMElement $root){
+			if(is_null($root)) {
+				throw new DataSourceException('No valid DOMDocument present');
+			}
+			else {
+				$root->appendChild(
+					$root->ownerDocument->createElement('error', __('No Record found.'))
+				);
+			}
 		}
 
 		protected function __appendIncludedElements(&$wrapper, $fields){
@@ -421,11 +425,11 @@
 		protected function __determineFilterType($value){
 			return (false === strpos($value, '+') ? Datasource::FILTER_OR : Datasource::FILTER_AND);
 		}
-
+/*
 		protected function __noRecordsFound(){
 			return Symphony::Parent()->Page->createElement('error', __('No records found.'));
 		}
-
+*/
 		//	TODO: Rewrite __processParametersInString.
 		protected function __processParametersInString($value, $env, $includeParenthesis=true, $escape=false){
 			if(trim($value) == '') return NULL;

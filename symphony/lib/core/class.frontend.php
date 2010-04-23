@@ -150,7 +150,7 @@
 		}
 
 		public function display($page=NULL){
-			
+
 			// VIEW RESOLVING --------------------------
 			try{
 				if(is_null($page)){

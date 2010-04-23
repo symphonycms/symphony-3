@@ -16,7 +16,7 @@
 				'automatically-discover-namespaces' => 'yes',
 				'namespaces' => array(),
 				'url' => NULL,
-				'xpath' => '/',
+				'xpath' => '*',
 				'root-element' => NULL,
 			);
 		}
@@ -187,6 +187,8 @@
 								$doc->createElement('error', __('XML returned is invalid.')),
 								array('valid' => 'false')
 							);
+
+							return $result;
 						}
 
 					}
@@ -213,102 +215,74 @@
 				$creation = DateTimeObj::get('c', $cachedData['creation']);
 			}
 
-			if(!$this->_force_empty_result && !is_object($result)) {
 
-				$result = new XMLDocument;
-				$root =	$result->createElement($this->parameters()->{'root-element'});
-/*
-				$ret = XSLProc::transform($xml, $doc->saveXML());
+			$result = new XMLDocument;
+			$root =	$result->createElement($this->parameters()->{'root-element'});
 
-				if(XSLProc::hasErrors()){
+			//XPath Approach, saves Transforming the Document.
+			$xDom = new XMLDocument;
+			$xDom->loadXML($xml);
 
-					$root->setAttribute('valid', 'false');
-					$root->appendChild(
-						$result->createElement('error', __('XML returned is invalid.'))
+			if($xDom->hasErrors()) {
+
+				$root->setAttribute('valid', 'false');
+				$root->appendChild(
+					$result->createElement('error', __('XML returned is invalid.'))
+				);
+
+				$messages = $result->createElement('messages');
+
+				foreach($xDom->getErrors() as $e){
+					if(strlen(trim($e->message)) == 0) continue;
+					$messages->appendChild(
+						$result->createElement('item', General::sanitize($e->message))
 					);
-
-					$messages = $result->createElement('messages');
-
-					foreach(XSLProc::getErrors() as $e){
-						if(strlen(trim($e->message)) == 0) continue;
-						$messages->appendChild(
-							$result->createElement('item', General::sanitize($e->message))
-						);
-					}
-					$root->appendChild($messages);
-
 				}
-
-				elseif(strlen(trim($ret)) == 0){
-					$this->_force_empty_result = true;
-				}
-
-				else{
-					if($writeToCache) $cache->write($cache_id, $xml);
-
-					$fragment = $result->createDocumentFragment();
-					$fragment->appendXML($ret);
-
-					$root->appendChild($fragment);
-					$root->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
-					$root->setAttribute('creation', $creation);
-				}
-*/
-
-				//	XPath Approach, saves Transforming the Document.
-				$xDom = new XMLDocument;
-				$xDom->loadXML($xml);
-
-				if($xDom->hasErrors()) {
-
-					$root->setAttribute('valid', 'false');
-					$root->appendChild(
-						$result->createElement('error', __('XML returned is invalid.'))
-					);
-
-					$messages = $result->createElement('messages');
-
-					foreach($xDom->getErrors() as $e){
-						if(strlen(trim($e->message)) == 0) continue;
-						$messages->appendChild(
-							$result->createElement('item', General::sanitize($e->message))
-						);
-					}
-					$root->appendChild($messages);
-
-				}
-
-				else {
-					if($writeToCache) $cache->write($cache_id, $xml);
-
-					$xpath = new DOMXPath($xDom);
-
-					## Namespaces
-					if(is_array($this->parameters()->namespaces) && !empty($this->parameters()->namespaces)){
-						foreach($this->parameters()->namespaces as $index => $namespace) {
-							$xpath->registerNamespace($namespace['name'], $namespace['uri']);
-						}
-					}
-
-					$xpath_list = $xpath->query($this->parameters()->xpath);
-
-					foreach($xpath_list as $node) {
-						$root->appendChild(
-							$result->importNode($node, true)
-						);
-					}
-
-					$root->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
-					$root->setAttribute('creation', $creation);
-
-					if(!$root->hasChildNodes()) $this->_force_empty_result = true;
-				}
-
-				$result->appendChild($root);
+				$root->appendChild($messages);
 
 			}
 
-			if ($this->_force_empty_result) $result = $this->emptyXMLSet();
+			else {
+				if($writeToCache) $cache->write($cache_id, $xml);
+
+				$xpath = new DOMXPath($xDom);
+
+				## Namespaces
+				if(is_array($this->parameters()->namespaces) && !empty($this->parameters()->namespaces)){
+					foreach($this->parameters()->namespaces as $index => $namespace) {
+						$xpath->registerNamespace($namespace['name'], $namespace['uri']);
+					}
+				}
+
+				$xpath_list = $xpath->query($this->parameters()->xpath);
+
+				foreach($xpath_list as $node) {
+					/*var_dump($node->saveHTML());
+					//var_dump($xml);
+					if($node instanceof XMLDocument) {
+						$fragment = $result->createDocumentFragment();
+						$fragment->appendXML($node->saveHTML());
+
+						$root->appendChild(
+							$result->createElement("fuck", "you")
+						);
+					}
+
+					else {*/
+						$root->appendChild(
+							$result->importNode($node, true)
+						);
+					//}
+
+				}
+
+				$root->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
+				$root->setAttribute('creation', $creation);
+			}
+
+			if(!$root->hasChildNodes()) $this->emptyXMLSet($root);
+
+			$result->appendChild($root);
 
 			return $result;
 		}
@@ -324,3 +298,42 @@
 
 		}
 	}
+
+
+	/*
+					$ret = XSLProc::transform($xml, $doc->saveXML());
+
+					if(XSLProc::hasErrors()){
+
+						$root->setAttribute('valid', 'false');
+						$root->appendChild(
+							$result->createElement('error', __('XML returned is invalid.'))
+						);
+
+						$messages = $result->createElement('messages');
+
+						foreach(XSLProc::getErrors() as $e){
+							if(strlen(trim($e->message)) == 0) continue;
+							$messages->appendChild(
+								$result->createElement('item', General::sanitize($e->message))
+							);
+						}
+						$root->appendChild($messages);
+
+					}
+
+					elseif(strlen(trim($ret)) == 0){
+						$this->_force_empty_result = true;
+					}
+
+					else{
+						if($writeToCache) $cache->write($cache_id, $xml);
+
+						$fragment = $result->createDocumentFragment();
+						$fragment->appendXML($ret);
+
+						$root->appendChild($fragment);
+						$root->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
+						$root->setAttribute('creation', $creation);
+					}
+	*/

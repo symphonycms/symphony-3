@@ -158,9 +158,11 @@
 			$wrapper->appendChild($label);
 		}
 
-		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
+		function displayDatasourceFilterPanel($wrapper, $data=NULL, $errors=NULL){
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+			
+			$document = $wrapper->ownerDocument;
 
 			$data = preg_split('/,\s*/i', $data);
 			$data = array_map('trim', $data);
@@ -168,12 +170,12 @@
 			$existing_options = $this->getToggleStates();
 
 			if(is_array($existing_options) && !empty($existing_options)){
-				$optionlist = Symphony::Parent()->Page->createElement('ul');
+				$optionlist = $document->createElement('ul');
 				$optionlist->setAttribute('class', 'tags');
 
 				foreach($existing_options as $option)
 					$optionlist->appendChild(
-						Symphony::Parent()->Page->createElement('li', $option)
+						$document->createElement('li', $option)
 					);
 
 				$wrapper->appendChild($optionlist);

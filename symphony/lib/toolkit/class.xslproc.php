@@ -1,7 +1,7 @@
 <?php
-	
+
 	require_once(TOOLKIT . '/class.messagestack.php');
-	
+
 	Class XSLProcException extends Exception{
 		private $error;
 
@@ -43,8 +43,10 @@
 						}
 
 						elseif(preg_match_all('/([^:]+): (.+) line (\d+)/i', $e->message, $matches, PREG_SET_ORDER)){
+							throw new Exception("Fix XSLPROC Frontend doesn't have access to Page");
+
 							$this->line = $matches[0][3];
-							$page = Symphony::parent()->Page()->pageData();
+							$page = Symphony::Parent()->Page()->pageData();
 							$this->file = VIEWS . '/' . $page['filelocation'];
 							$bFoundFile = true;
 						}

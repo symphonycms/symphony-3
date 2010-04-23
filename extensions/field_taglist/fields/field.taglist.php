@@ -357,10 +357,12 @@
 			return parent::loadDataFromDatabase($entry, true);
 		}
 
-		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
+		public function appendFormattedElement($wrapper, $data, $encode = false) {
 			if (!is_array($data) or empty($data)) return;
+			
+			$document = $wrapper->ownerDocument;
 
-			$list = Symphony::Parent()->Page->createElement($this->{'element-name'});
+			$list = $document->createElement($this->{'element-name'});
 
 			if (!is_array($data['handle']) and !is_array($data['value'])) {
 				$data = array(
@@ -370,7 +372,7 @@
 			}
 
 			foreach ($data['value'] as $index => $value) {
-				$list->appendChild(Symphony::Parent()->Page->createElement(
+				$list->appendChild($document->createElement(
 					'item', General::sanitize($value), array(
 						'handle'	=> $data['handle'][$index]
 					)
@@ -385,7 +387,7 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL) {
+		public function displayDatasourceFilterPanel($wrapper, $data=NULL, $errors=NULL) {
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
 			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
