@@ -17,6 +17,13 @@
 
 			// Set default
 			$this->{'limit'} = 20;
+			
+			$this->links = array(
+				array(
+					'section'	=> 'tests',
+					'field'		=> 'key'
+				)
+			);
 		}
 		
 		public function create(){
@@ -222,29 +229,6 @@
 				if (!empty($group->options)) $options[] = (array)$group;
 			}
 			
-			//var_dump($options); exit;
-			
-/*			$sections = SectionManager::instance()->fetch(NULL, 'ASC', 'sortorder');
-			$field_groups = array();
-
-			if(is_array($sections) && !empty($sections)){
-				foreach($sections as $section) $field_groups[$section->{'id'}] = array('fields' => $section->fetchFields(), 'section' => $section);
-			}
-
-			foreach($field_groups as $group){
-				if(!is_array($group['fields'])) continue;
-
-				$fields = array();
-
-				foreach($group['fields'] as $f){
-					if($f->{'id'} != $this->{'id'} && $f->canPrePopulate()){
-						$fields[] = array($f->{'id'}, @in_array($f->{'id'}, $this->{'related-field-id'}), $f->{'label'});
-					}
-				}
-
-				if(is_array($fields) && !empty($fields)) $options[] = array('label' => $group['section']->{'name'}, 'options' => $fields);
-			}
-*/
 			$label->appendChild(Widget::Select('related-field-id][', $options, array('multiple' => 'multiple')));
 
 			if (isset($errors->{'related-field-id'})) {
@@ -320,6 +304,31 @@
 			return true;
 		}
 		*/
+
+	    public function toDoc() {
+			$doc = new XMLDocument;
+			$doc->formatOutput = true;
+			$root = $doc->createElement('field');
+			$root->setAttribute('guid', $this->guid);
+
+			foreach ($this->properties as $name => $value) {
+				if ($name == 'guid') continue;
+				
+				if ($name == 'links') {
+					
+					
+					continue;
+				}
+				
+				$root->appendChild($doc->createElement($name, $value));
+			}
+
+			$doc->appendChild($root);
+			
+			//var_dump($doc->saveXML($root)); exit;
+			
+			return $doc;
+	    }
 
 	/*-------------------------------------------------------------------------
 		Publish:
