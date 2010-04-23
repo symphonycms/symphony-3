@@ -3,7 +3,7 @@
   <symphony>
     <default-max-upload-size>5242880</default-max-upload-size>
     <administration-path>symphony/</administration-path>
-    <pagination-maximum-rows>3</pagination-maximum-rows>
+    <pagination-maximum-rows>17</pagination-maximum-rows>
     <allow-page-subscription>1</allow-page-subscription>
     <lang>en</lang>
     <cookie-prefix>sym-</cookie-prefix>

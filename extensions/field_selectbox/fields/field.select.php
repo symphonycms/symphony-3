@@ -119,7 +119,7 @@
 			return $data;
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null) {
 			if(!is_array($data)){
 				$data = array($data);
 			}
@@ -442,7 +442,7 @@
 			return $groups;
 		}
 
-		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
+		public function validateData(MessageStack $errors, Entry $entry = null, $data = null) {
 
 			if(!is_array($data)){
 				$data = array($data);
@@ -452,12 +452,13 @@
 			foreach($data as $d){
 				$value .= $d->value;
 			}
-
-			return parent::validateData($this->processFormData($value, $entry), $errors, $entry);
+			
+			// TODO: Isn't calling processFormData a prerequisit to callid validateData?
+			return parent::validateData($errors, $entry, $this->processFormData($value, $entry));
 		}
 
 		/*	Possibly could be removed.. */
-		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 
 			// Since we are dealing with multiple
 			// values, must purge the existing data first

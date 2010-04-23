@@ -95,17 +95,7 @@
 			foreach($section->fields as $field){
 				$field_handle = $field->{'element-name'};
 
-				// Handle multiple values here
-				if(is_array($data[$field_handle])){
-					$result = array();
-					foreach($data[$field_handle] as $d){
-						$result[] = $field->processFormData($d, $this);
-					}
-				}
-				
-				else{
-					$result = $field->processFormData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
-				}
+				$result = $field->processFormData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
 				
 				$this->data()->$field_handle = $result;
 			}
@@ -155,33 +145,43 @@
 			}
 
 			$entry->findDefaultFieldData();
-
+			$status = Field::STATUS_OK;
+			
 			// Check the data
 			foreach($section->fields as $field){
-				$data = $entry->data()->{$field->{'element-name'}};
-				$field->validateData($data, $errors, $entry);
+				$field_data = $entry->data()->{$field->{'element-name'}};
+				$field_errors = new MessageStack;
+				$field_status = $field->validateData($field_errors, $entry, $field_data);
+				
+				if ($field_status != Field::STATUS_OK) {
+					$status = $field_status;
+				}
+				
+				$errors->append($field->{'element-name'}, $field_errors);
 			}
 
 			// Attempt the saving part
-			if($errors->length() == 0){
-
+			if ($status == Field::STATUS_OK){
 				// Update the meta row
 				Symphony::Database()->insert('tbl_entries', (array)$entry->meta(), Database::UPDATE_ON_DUPLICATE);
 
-				foreach($section->fields as $field){
-					if(!isset($entry->data()->{$field->{'element-name'}})) continue;
-
-					$status = $field->saveData($entry->data()->{$field->{'element-name'}}, $errors, $entry);
+				foreach ($section->fields as $field) {
+					if (!isset($entry->data()->{$field->{'element-name'}})) continue;
+					
+					$field_data = $entry->data()->{$field->{'element-name'}};
+					$field_errors = $errors->{$field->{'element-name'}};
+					
+					$status = $field->saveData($field_errors, $entry, $field_data);
+					
 					// Cannot continue if a field failed to save
-					if($status != Field::STATUS_OK){
-						break;
-					}
+					if ($status != Field::STATUS_OK) break;
 				}
 			}
 
 			// Cleanup due to failure
-			if($errors->length() > 0 && $purge_meta_on_error == true){
+			if ($status != Field::STATUS_OK && $purge_meta_on_error == true){
 				Symphony::Database()->delete('tbl_entries', array(), " `id` = {$entry->id} LIMIT 1");
+				
 				return self::STATUS_ERROR;
 			}
 
@@ -190,7 +190,11 @@
 						This will arise if you enter a value in a field, save, then come back
 						and clear the field.
 			*/
-
+			
+			if ($status != Field::STATUS_OK) {
+				return self::STATUS_ERROR;
+			}
+			
 			return self::STATUS_OK;
 		}
 

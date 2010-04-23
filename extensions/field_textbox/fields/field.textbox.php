@@ -320,7 +320,7 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry=NULL, $data=NULL) {
 			$this->_driver->addPublishHeaders($wrapper->ownerDocument);
 
 			$sortorder = $this->{'sortorder'};
@@ -465,10 +465,6 @@
 			}
 */
 			return self::STATUS_OK;
-		}
-
-		public function saveData(StdClass $data=NULL, MessageStack &$errors, Entry $entry){
-			return parent::saveData($data, $errors, $entry);
 		}
 
 		public function applyFormatting($value) {

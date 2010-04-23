@@ -116,7 +116,7 @@
 			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array('existing');
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, $errors = null) {
+		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, MessageStack $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
 			$document = $wrapper->ownerDocument;
@@ -200,7 +200,7 @@
 			return parent::prepareTableValue((object)array('value' => General::sanitize($this->__tagArrayToString($values))), $link);
 		}
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, $data=NULL, $error=NULL, Entry $entry=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null) {
 			if(is_array($data)) {
 				$values = array();
 				foreach($data as $d) {
@@ -248,7 +248,7 @@
 			return $result;
 		}
 
-		public function validateData($data=NULL, MessageStack &$errors, Entry $entry) {
+		public function validateData(MessageStack $errors, Entry $entry = null, $data = null) {
 			$data = preg_split('/' . preg_quote($this->{'delimiter'}) . '/i', $data->value, -1, PREG_SPLIT_NO_EMPTY);
 			$data = array_map('trim', $data);
 
@@ -289,7 +289,7 @@
 			return self::STATUS_OK;
 		}
 
-		public function saveData($data=NULL, MessageStack &$errors, Entry $entry) {
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			// Since we are dealing with multiple
 			// values, must purge the existing data first
 			Symphony::Database()->delete(
