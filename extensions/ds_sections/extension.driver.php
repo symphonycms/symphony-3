@@ -73,8 +73,8 @@
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
 
 			$layout = new Layout();
-			$left = $layout->createColumn(Layout::SMALL);
-			$middle = $layout->createColumn(Layout::SMALL);
+			$left = $layout->createColumn(Layout::MEDIUM);
+			$middle = $layout->createColumn(Layout::MEDIUM);
 			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
@@ -185,18 +185,6 @@
 
 			$fieldset = Widget::Fieldset(__('Limiting'), '<code>{$param}</code> or <code>Value</code>');
 			
-			// Show page # of results:
-			$label = Widget::Label(__('Show page of results'));
-			$input = Widget::Input('fields[page]', $datasource->parameters()->page);
-			
-			$label->appendChild($input);
-
-			if (isset($errors->page)) {
-				$label = Widget::wrapFormElementWithError($label, $errors->page);
-			}
-			
-			$fieldset->appendChild($label);
-			
 			// Show a maximum of # results
 			$label = Widget::Label(__('Limit results per page'));
 			$input = Widget::Input('fields[limit]', $datasource->parameters()->page);
@@ -205,6 +193,18 @@
 
 			if (isset($errors->limit)) {
 				$label = Widget::wrapFormElementWithError($label, $errors->limit);
+			}
+			
+			$fieldset->appendChild($label);
+			
+			// Show page # of results:
+			$label = Widget::Label(__('Show page of results'));
+			$input = Widget::Input('fields[page]', $datasource->parameters()->page);
+			
+			$label->appendChild($input);
+
+			if (isset($errors->page)) {
+				$label = Widget::wrapFormElementWithError($label, $errors->page);
 			}
 			
 			$fieldset->appendChild($label);
