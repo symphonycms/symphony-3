@@ -48,7 +48,8 @@
 			
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
-			$right = $layout->createColumn(Layout::LARGE);
+			$middle = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -87,7 +88,7 @@
 
 			$fieldset->appendChild($label);
 			$fieldset->appendChild($ol);
-			$right->appendChild($fieldset);
+			$middle->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 
