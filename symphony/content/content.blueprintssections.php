@@ -170,18 +170,30 @@
 			}
 
 			catch (SectionException $e) {
-				switch($e->getCode()){
+				switch ($e->getCode()) {
 					case Section::ERROR_MISSING_OR_INVALID_FIELDS:
-						$this->pageAlert(__('Could not save the layout, there are errors in your field configuration.'), Alert::ERROR);
+						$this->alerts()->append(
+							__('Could not save the layout, there are errors in your field configuration.'),
+							AlertStack::ERROR, $e
+						);
 						break;
 					case Section::ERROR_FAILED_TO_WRITE:
-						$this->pageAlert($e->getMessage(), Alert::ERROR);
+						$this->alerts()->append(
+							$e->getMessage(),
+							AlertStack::ERROR, $e
+						);
 						break;
 				}
 			}
-
+			
 			catch (Exception $e) {
-				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+				$this->alerts()->append(
+					__(
+						'An unknown error has occurred. %s',
+						array($e->getMessage())
+					),
+					AlertStack::ERROR, $e
+				);
 			}
 
 			return false;
@@ -257,11 +269,20 @@
 				}
 				catch(SectionException $e){
 					$success = false;
-					$this->pageAlert($e->getMessage(), Alert::ERROR);
+					$this->alerts()->append(
+						$e->getMessage(),
+						AlertStack::ERROR, $e
+					);
 				}
 				catch(Exception $e){
 					$success = false;
-					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+					$this->alerts()->append(
+						__(
+							'An unknown error has occurred. %s',
+							array($e->getMessage())
+						),
+						AlertStack::ERROR, $e
+					);
 				}
 			}
 
@@ -395,7 +416,7 @@
 			if(isset($callback['flag']) && !is_null($callback['flag'])){
 				switch($callback['flag']){
 					case 'saved':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 								array(
@@ -404,7 +425,7 @@
 									ADMIN_URL . '/blueprints/sections/',
 								)
 							),
-							Alert::SUCCESS
+							AlertStack::SUCCESS
 						);
 						break;
 				}
@@ -528,20 +549,20 @@
 			if (isset($callback['flag']) && !is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
-								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
+								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',
 									ADMIN_URL . '/blueprints/sections/',
 								)
 							),
-							Alert::SUCCESS
+							AlertStack::SUCCESS
 						);
 						break;
 					case 'created':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Section created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -550,7 +571,7 @@
 									ADMIN_URL . '/blueprints/sections/',
 								)
 							),
-							Alert::SUCCESS
+							AlertStack::SUCCESS
 						);
 						break;
 				}

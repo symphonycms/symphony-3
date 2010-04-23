@@ -174,6 +174,224 @@ var Symphony;
 	});
 
 /*-----------------------------------------------------------------------------
+	System Notices
+-----------------------------------------------------------------------------*/
+		
+	Symphony.Alert = {
+		seconds: 	0,
+		notices:	[],
+		faded:		false,
+		visible:	false,
+		post: function(message, type, replace) {
+			var self = Symphony.Alert;
+			var notice = $('<li />')
+				.attr('class', type)
+				.html(message)
+				.prependTo('#alerts');
+			var dismiss = $('<a />')
+				.appendTo(notice)
+				.attr('href', '#')
+				.attr('class', 'dismiss')
+				.text('Dismiss 1 of ' + (self.notices.length + 1))
+				.bind('click', function() {
+					self.hide();
+					
+					return false;
+				});
+			
+			// Add to queue:
+			self.notices.push({
+				notice:				notice,
+				dismiss:			dismiss,
+				seconds_existed:	0,
+				seconds_viewed:		0,
+				visible:			false
+			});
+			
+			self.show();
+		},
+		show: function() {
+			var self = Symphony.Alert;
+			var next = self.notices[0];
+			console.log('-show-');
+			if (!self.visible) {
+				self.visible = true;
+				next.visible = true;
+				next.notice.stop().css({
+					'margin-top':		'-30px',
+					'opacity':			'0'
+				}).show().animate(
+					{
+						'margin-top':	'0',
+						'opacity':		'1'
+					},
+					'fast', 'linear'
+				);
+			}
+			
+			else {
+				next.visible = true;
+				next.notice.show();
+				
+				if (self.faded) {
+					var current = self.notices.slice(-1)[0];
+					var pulses = 0;
+					var pulse = function() {
+						next.notice.animate(
+							{
+								'opacity':	'1'
+							},
+							'slow', 'linear',
+							function() {
+								next.notice.animate(
+									{
+										'opacity':	'0.6'
+									},
+									'slow', 'linear',
+									function() {
+										if ((pulses += 1) < 2) pulse();
+									}
+								);
+							}
+						);
+					};
+					
+					next.notice.stop();
+					pulse();
+				}
+			}
+			
+			self.update();
+		},
+		hide: function() {
+			var self = Symphony.Alert;
+			var current = self.notices.shift();
+			
+			if (self.notices.length) {
+				self.show();
+				current.notice.remove();
+			}
+			
+			else {
+				current.notice
+					.unbind('mouseout')
+					.unbind('mouseover')
+					.stop().animate(
+					{
+						'margin-top':	'-30px',
+						'opacity':		'0'
+					},
+					'fast', 'linear',
+					function() {
+						self.visible = false;
+						current.notice.remove();
+					}
+				);
+			}
+		},
+		ticker: function() {
+			var self = Symphony.Alert;
+			
+			self.notices.forEach(function(current) {
+				current.seconds_existed += 1;
+				
+				if (current.visible) {
+					current.seconds_viewed += 1;
+				}
+				
+				if (current.seconds_viewed != 10) return;
+				
+				current.notice
+					.hover(
+						function() {
+							current.notice.stop().animate(
+								{
+									'opacity':	'1'
+								},
+								'fast', 'linear',
+								function() {
+									self.faded = false;
+								}
+							);
+						},
+						function() {
+							current.notice.stop().animate(
+								{
+									'opacity':	'0.6'
+								},
+								'fast', 'linear',
+								function() {
+									self.faded = true;
+								}
+							);
+						}
+					)
+					.stop().animate(
+						{
+							'opacity':	'0.6'
+						},
+						'slow', 'linear',
+						function() {
+							self.faded = true;
+						}
+					);
+			});
+			
+			if (self.notices.length) self.update();
+		},
+		update: function() {
+			var self = Symphony.Alert;
+			
+			self.notices.forEach(function(current) {
+				var label = current.notice.find('.timeago');
+				var time = Math.floor(current.seconds_existed * 30);
+				var text = label.text();
+				
+				current.dismiss.text('Dismiss 1 of ' + (self.notices.length));
+				
+				if (time < 1) text = Symphony.Language.get('just now');
+				else if (time < 2) text = Symphony.Language.get('a minute ago');
+				else if (time < 45) text = Symphony.Language.get(
+					'{$minutes} minutes ago',
+					{'minutes': time}
+				);
+				else if (time < 90) text = Symphony.Language.get('about 1 hour ago');
+				else text = Symphony.Language.get(
+					'about {$hours} hours ago',
+					{'hours': Math.floor(time / 60)}
+				);
+			});
+		}
+	};
+	
+	// Start timers:
+	window.setInterval(Symphony.Alert.ticker, 1000);
+	
+	// TODO: Remove test notice
+	//window.setInterval(function() {
+	//	Symphony.Alert.post("This notice will appear every 30 seconds, and was added <abbr class='timeago'>just now</abbr>.", 'info');
+	//}, 30000);
+	
+	$(document).ready(function() {
+		$('#alerts > li').each(function() {
+			var notice = $(this).remove();
+			
+			// Add notice:
+			if (notice.is('.error')) {
+				Symphony.Alert.post(notice.html(), 'error');
+			}
+			
+			else if (notice.is('.success')) {
+				Symphony.Alert.post(notice.html(), 'success');
+			}
+			
+			else {
+				Symphony.Alert.post(notice.html(), 'info');
+			}
+		});
+	});
+
+/*-----------------------------------------------------------------------------
 	Events Page
 -----------------------------------------------------------------------------*/
 

@@ -141,14 +141,17 @@
 		function __form(Event $existing=NULL){
 
 			if($this->errors instanceof MessageStack && $this->errors->length() > 0){
-				$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+				$this->alerts()->append(
+					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
+					AlertStack::ERROR
+				);
 			}
 
 			if(isset($this->_context[2])){
 				switch($this->_context[2]){
 
 					case 'saved':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Event updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -157,11 +160,12 @@
 									URL . '/symphony/blueprints/events/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS
+						);
 						break;
 
 					case 'created':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Event created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -170,7 +174,8 @@
 									URL . '/symphony/blueprints/events/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS
+						);
 						break;
 
 				}
@@ -703,11 +708,20 @@
 			}
 
 			catch (EventException $e) {
-				$this->pageAlert($e->getMessage(), Alert::ERROR);
+				$this->alerts()->append(
+					$e->getMessage(),
+					AlertStack::ERROR, $e
+				);
 			}
 
 			catch (Exception $e) {
-				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+				$this->alerts()->append(
+					__(
+						'An unknown error has occurred. %s',
+						array($e->getMessage())
+					),
+					AlertStack::ERROR, $e
+				);
 			}
 
 		}
@@ -728,11 +742,20 @@
 				}
 				catch(EventException $e){
 					$success = false;
-					$this->pageAlert($e->getMessage(), Alert::ERROR);
+					$this->alerts()->append(
+						$e->getMessage(),
+						AlertStack::ERROR, $e
+					);
 				}
 				catch(Exception $e){
 					$success = false;
-					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+					$this->alerts()->append(
+						__(
+							'An unknown error has occurred. %s',
+							array($e->getMessage())
+						),
+						AlertStack::ERROR, $e
+					);
 				}
 			}
 
@@ -967,9 +990,15 @@
 				header('Content-Type: text/plain');
 
 				##Write the file
-				if(!is_writable(dirname($file)) || !$write = General::writeFile($file, $eventShell, Symphony::Configuration()->get('write_mode', 'file')))
-					$this->pageAlert(__('Failed to write Event to <code>%s</code>. Please check permissions.', array(EVENTS)), Alert::ERROR);
-
+				if(!is_writable(dirname($file)) || !$write = General::writeFile($file, $eventShell, Symphony::Configuration()->get('write_mode', 'file'))) {
+					$this->alerts()->append(
+						__(
+							'Failed to write Event to <code>%s</code>. Please check permissions.',
+							array(EVENTS)
+						),
+						AlertStack::ERROR
+					);
+				}
 				##Write Successful, add record to the database
 				else{
 

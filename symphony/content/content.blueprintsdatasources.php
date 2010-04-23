@@ -260,11 +260,20 @@
 			}
 
 			catch (DatasourceException $e) {
-				$this->pageAlert($e->getMessage(), Alert::ERROR);
+				$this->alerts()->append(
+					$e->getMessage(),
+					AlertStack::ERROR, $e
+				);
 			}
 
 			catch (Exception $e) {
-				$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+				$this->alerts()->append(
+					__(
+						'An unknown error has occurred. %s',
+						array($e->getMessage())
+					),
+					AlertStack::ERROR, $e
+				);
 			}
 
 			/*$type_file = NULL;
@@ -336,16 +345,16 @@
 
 			// Show page alert:
 			if ($this->failed) {
-				$this->pageAlert(
+				$this->alerts()->append(
 					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
-					Alert::ERROR
+					AlertStack::ERROR
 				);
 			}
 
 			else if (!is_null($this->status)) {
 				switch ($this->status) {
 					case 'saved':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Data source updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -354,12 +363,12 @@
 									URL . '/symphony/blueprints/datasources/'
 								)
 							),
-							Alert::SUCCESS
+							AlertStack::SUCCESS
 						);
 						break;
 
 					case 'created':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Data source created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -368,7 +377,7 @@
 									URL . '/symphony/blueprints/datasources/'
 								)
 							),
-							Alert::SUCCESS
+							AlertStack::SUCCESS
 						);
 						break;
 				}
@@ -626,11 +635,20 @@
 				}
 				catch(DatasourceException $e){
 					$success = false;
-					$this->pageAlert($e->getMessage(), Alert::ERROR);
+					$this->alerts()->append(
+						$e->getMessage(),
+						AlertStack::ERROR, $e
+					);
 				}
 				catch(Exception $e){
 					$success = false;
-					$this->pageAlert(__('An unknown error has occurred. %s', array($e->getMessage())), Alert::ERROR);
+					$this->alerts()->append(
+						__(
+							'An unknown error has occurred. %s',
+							array($e->getMessage())
+						),
+						AlertStack::ERROR, $e
+					);
 				}
 
 				// TODO: Delete reference from View XML
