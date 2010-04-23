@@ -257,22 +257,17 @@
 				$xpath_list = $xpath->query($this->parameters()->xpath);
 
 				foreach($xpath_list as $node) {
-					/*var_dump($node->saveHTML());
-					//var_dump($xml);
 					if($node instanceof XMLDocument) {
-						$fragment = $result->createDocumentFragment();
-						$fragment->appendXML($node->saveHTML());
-
 						$root->appendChild(
-							$result->createElement("fuck", "you")
+							$result->importNode($node->documentElement, true)
 						);
 					}
 
-					else {*/
+					else {
 						$root->appendChild(
 							$result->importNode($node, true)
 						);
-					//}
+					}
 
 				}
 

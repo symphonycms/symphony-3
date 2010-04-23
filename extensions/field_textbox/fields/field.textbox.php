@@ -605,9 +605,9 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null) {
 			//$this->_driver->addFilteringHeaders($wrapper->ownerDocument);
-			$field_id = $this->{'id'};
+			$field_handle = $this->{'element-name'};
 			$document = $wrapper->ownerDocument;
 
 			$wrapper->setAttribute('class', trim($wrapper->getAttribute('class') . ' field-textbox'));
@@ -617,12 +617,9 @@
 			$name->appendChild($document->createElement('i', $this->name()));
 			$wrapper->appendChild($name);
 
-			$prefix = ($prefix ? "[{$prefix}]" : '');
-			$postfix = ($postfix ? "[{$postfix}]" : '');
-
 			$label = Widget::Label('Value');
 			$label->appendChild(Widget::Input(
-				"fields[filter]{$prefix}[{$field_id}]{$postfix}",
+				"fields[filter]{$prefix}[{$field_handle}]",
 				($data ? General::sanitize($data) : null)
 			));
 			$wrapper->appendChild($label);
