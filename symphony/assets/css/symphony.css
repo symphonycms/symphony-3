@@ -328,6 +328,9 @@
 	#layout > .small {
 		width: 30%;
 	}
+	#layout > .medium {
+		width: 50%;
+	}
 	#layout > .large {
 		width: 70%;
 	}
