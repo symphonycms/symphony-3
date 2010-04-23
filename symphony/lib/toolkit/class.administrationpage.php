@@ -157,15 +157,15 @@
 			$ul->setAttribute('id', 'session');
 
 			$li = $this->createElement('li');
-			$anchor = $this->createElement('a', Administration::instance()->User->getFullName());
-			$anchor->setAttribute('href', ADMIN_URL . '/system/users/edit/' . Administration::instance()->User->id . '/');
-			$li->appendChild($anchor);
+			$li->appendChild(
+				Widget::Anchor(Administration::instance()->User->getFullName(), ADMIN_URL . '/system/users/edit/' . Administration::instance()->User->id . '/')
+			);
 			$ul->appendChild($li);
 
 			$li = $this->createElement('li');
-			$anchor = $this->createElement('a', __('Logout'));
-			$anchor->setAttribute('href', ADMIN_URL . '/logout/');
-			$li->appendChild($anchor);
+			$li->appendChild(
+				Widget::Anchor(__('Logout'), ADMIN_URL . '/logout/')
+			);
 			$ul->appendChild($li);
 
 			###
@@ -244,10 +244,9 @@
 										##
 
 										$xChild = $this->createElement('li');
-										$xLink = $this->createElement('a', $c['name']);
-										$xLink->setAttribute('href', ADMIN_URL . $c['link']);
-										$xChild->appendChild($xLink);
-
+										$xChild->appendChild(
+											Widget::Anchor($c['name'], ADMIN_URL . $c['link'])
+										);
 										$xChildren->appendChild($xChild);
 										$hasChildren = true;
 

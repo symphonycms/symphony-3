@@ -30,7 +30,6 @@
 		}
 
 		public function save(MessageStack &$errors){
-
 			if(strlen(trim($this->parameters()->url)) == 0){
 				$errors->append('url', __('This is a required field'));
 			}
@@ -39,6 +38,7 @@
 				$errors->append('xpath', __('This is a required field'));
 			}
 
+			//	Cache Lifetime
 			if(!is_numeric($this->parameters()->{'cache-lifetime'})){
 				$errors->append('cache-lifetime', __('Must be a valid number'));
 			}
@@ -49,6 +49,19 @@
 
 			else{
 				$this->parameters()->{'cache-lifetime'} = (int)$this->parameters()->{'cache-lifetime'};
+			}
+
+			//	Timeout
+			if(!is_numeric($this->parameters()->{'timeout'})){
+				$errors->append('timeout', __('Must be a valid number'));
+			}
+
+			elseif($this->parameters()->{'timeout'} <= 0){
+				$errors->append('timeout', __('Must be greater than zero'));
+			}
+
+			else{
+				$this->parameters()->{'timeout'} = (int)$this->parameters()->{'timeout'};
 			}
 
 			return parent::save($errors);

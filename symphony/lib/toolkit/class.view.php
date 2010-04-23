@@ -427,7 +427,7 @@
 
 			if(is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})){
 				foreach($this->about()->{'data-sources'} as $handle){
-					$ds = Datasource::loadFromName($handle);
+					$ds = Datasource::loadFromHandle($handle);
 					$fragment = $ds->render($DataSourceParameterOutput);
 
 					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){

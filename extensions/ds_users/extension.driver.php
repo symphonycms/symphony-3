@@ -76,8 +76,14 @@
 
 			$label = Widget::Label(__('Filter Users By:'));
 
-			$ol = $page->createElement('ol');
-			$ol->setAttribute('class', 'filters-duplicator');
+			$context = $page->createElement('div');
+			$context->setAttribute('class', 'filters-duplicator context context-' . $section_handle);
+
+			$templates = $page->createElement('ol');
+			$templates->setAttribute('class', 'templates');
+
+			$instances = $page->createElement('ol');
+			$instances->setAttribute('class', 'instances');
 
 			$this->appendFilter($ol, __('ID'), 'id', $datasource->parameters()->filters['id']);
 			$this->appendFilter($ol, __('Username'), 'username', $datasource->parameters()->filters['username']);

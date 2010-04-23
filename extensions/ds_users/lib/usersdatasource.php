@@ -89,7 +89,7 @@
 						}
 
 						foreach($fields as $field) {
-							$xUser->appendChild($value);
+							$xUser->appendChild($field);
 						}
 
 						$root->appendChild($xUser);

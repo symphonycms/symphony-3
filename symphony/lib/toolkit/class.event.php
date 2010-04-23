@@ -198,7 +198,7 @@
 				Upon deletion of the event, views need to be updated to remove
 				it's associated with the event
 			*/
-			$event = Event::loadFromName($handle);
+			$event = Event::loadFromHandle($handle);
 
 			if(!$event->allowEditorToParse()) {
 				throw new EventException(__('Event cannot be deleted, the Editor does not have permission.'));
@@ -207,7 +207,7 @@
 			return General::deleteFile(EVENTS . "/{$handle}.php");
 		}
 
-		public static function loadFromName($name){
+		public static function loadFromHandle($name){
 			return self::load(self::__find($name) . "/{$name}.php");
 		}
 

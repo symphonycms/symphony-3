@@ -28,9 +28,16 @@
 			if(!is_null($data)){
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
 
-				if(isset($data['namespaces']) && is_array($data['namespaces'])){
-					foreach($data['namespaces']['name'] as $index => $name){
-						$datasource->parameters()->namespaces[$index] = array('uri' => $data['namespaces']['uri'][$index], 'name' => $name);
+				$datasource->parameters()->namespaces = array();
+
+				if(is_array($data['namespaces']) && !empty($data['namespaces'])) {
+					foreach($data['namespaces']['name'] as $index => $name) {
+						if(!strlen(trim($name)) > 0) continue;
+
+						$datasource->parameters()->namespaces[$index] = array(
+							'name' => $name,
+							'uri' => $data['namespaces']['uri'][$index]
+						);
 					}
 				}
 
@@ -68,7 +75,9 @@
 							foreach ($matches[2] as $index => $uri) {
 								$name = $matches[1][$index];
 
+								// Duplicate Namespaces
 								if (in_array($name, $namespaces) or in_array($uri, $namespaces)) continue;
+								if (General::in_array_multi($name, $datasource->parameters()->namespaces)) continue;
 
 								$namespaces[] = $name;
 								$namespaces[] = $uri;
@@ -87,10 +96,10 @@
 		}
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
-		
-			$page = Administration::instance()->Page;
+
+			$page = $wrapper->ownerDocument;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
-		
+
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
 			$right = $layout->createColumn(Layout::LARGE);
@@ -125,68 +134,41 @@
 
 			$fieldset->appendChild($label);
 
-			$fragment = Symphony::Parent()->Page->createDocumentFragment();
+			$fragment = $page->createDocumentFragment();
 			$fragment->appendXML(__('Use <code>{$param}</code> syntax to specify dynamic portions of the URL.'));
 
 			$fieldset->appendChild(
-				Symphony::Parent()->Page->createElement('p', $fragment, array(
+				$page->createElement('p', $fragment, array(
 					'class' => 'help'
 				))
 			);
-			
-			$right->appendChild($fieldset);
-			
+
+			$left->appendChild($fieldset);
+
 		//	Namespace Declarations
 
-			$fieldset = Widget::Fieldset(__('Namespace Declarations'), Symphony::Parent()->Page->createElement('i', 'Optional'));
+			$fieldset = Widget::Fieldset(__('Namespace Declarations'), $page->createElement('i', 'Optional'));
 
-			$ol = Symphony::Parent()->Page->createElement('ol');
-			$ol->setAttribute('class', 'filters-duplicator');
+			$container = $page->createElement('div');
+			$container->setAttribute('class', 'filters-duplicator');
 
-			if(is_array($datasource->parameters()->namespaces))	foreach($datasource->parameters()->namespaces as $index => $namespace) {
+			$templates = $page->createElement('ol');
+			$templates->setAttribute('class', 'templates');
 
-				$li = Symphony::Parent()->Page->createElement('li');
-				$li->appendChild(Symphony::Parent()->Page->createElement('h4', 'Namespace'));
+			$instances = $page->createElement('ol');
+			$instances->setAttribute('class', 'instances');
 
-				$group = Symphony::Parent()->Page->createElement('div');
-				$group->setAttribute('class', 'group');
+			$this->appendNamespace($templates);
 
-				$label = Widget::Label(__('Name'));
-				$label->appendChild(Widget::Input("fields[namespaces][name][{$index}]", General::sanitize($namespace['name'])));
-				$group->appendChild($label);
+			if(is_array($datasource->parameters()->namespaces))
+				foreach($datasource->parameters()->namespaces as $index => $namespace) {
 
-				$label = Widget::Label(__('URI'));
-				$label->appendChild(Widget::Input("fields[namespaces][uri][{$index}]", General::sanitize($namespace['uri'])));
-				$group->appendChild($label);
-
-				$li->appendChild($group);
-				$ol->appendChild($li);
-
+				$this->appendNamespace($instances, $namespace);
 			}
 
-			else {
-
-				$li = Symphony::Parent()->Page->createElement('li');
-				$li->setAttribute('class', 'template');
-				$li->appendChild(Symphony::Parent()->Page->createElement('h4', __('Namespace')));
-
-				$group = Symphony::Parent()->Page->createElement('div');
-				$group->setAttribute('class', 'group');
-
-				$label = Widget::Label(__('Name'));
-				$label->appendChild(Widget::Input('fields[namespaces][name][]'));
-				$group->appendChild($label);
-
-				$label = Widget::Label(__('URI'));
-				$label->appendChild(Widget::Input('fields[namespaces][uri][]'));
-				$group->appendChild($label);
-
-				$li->appendChild($group);
-				$ol->appendChild($li);
-
-			}
-
-			$fieldset->appendChild($ol);
+			$container->appendChild($templates);
+			$container->appendChild($instances);
+			$fieldset->appendChild($container);
 
 			$input = Widget::Input('fields[automatically-discover-namespaces]', 'yes', 'checkbox');
 			if ($datasource->parameters()->{'automatically-discover-namespaces'} == 'yes') {
@@ -201,7 +183,7 @@
 			$help->setAttribute('class', 'help');
 			$help->setValue(__('Search the source document for namespaces, any that it finds will be added to the declarations above.'));
 			$fieldset->appendChild($help);
-			
+
 			$right->appendChild($fieldset);
 
 			$fieldset = Widget::Fieldset(__('Included Elements'));
@@ -218,13 +200,13 @@
 			$help->setAttribute('class', 'help');
 			$help->setValue(__('Use an XPath expression to select which elements from the source XML to include.'));
 			$fieldset->appendChild($help);
-			
+
 			$right->appendChild($fieldset);
 
 		//	Timeouts ------------------------------------------------------------
-		
+
 			$fieldset = Widget::Fieldset(__('Timeout Options'));
-			
+
 			$input = Widget::Input('fields[cache-lifetime]', max(0, intval($datasource->parameters()->{'cache-lifetime'})));
 			$input->setAttribute('size', 4);
 
@@ -262,7 +244,34 @@
 			$fieldset->appendChild($label);
 
 			$left->appendChild($fieldset);
-			
+
 			$layout->appendTo($wrapper);
+		}
+
+		protected function appendNamespace(SymphonyDOMElement $wrapper, $namespace = array()) {
+			$document = $wrapper->ownerDocument;
+
+			$li = $document->createElement('li');
+
+			$name = $document->createElement('span', __('Namespace'));
+			$name->setAttribute('class', 'name');
+			$li->appendChild($name);
+
+			$group = $document->createElement('div');
+			$group->setAttribute('class', 'group double');
+
+			// Name
+			$label = Widget::Label(__('Name'));
+			$label->appendChild(Widget::Input('fields[namespaces][name][]', $namespace['name']));
+			$group->appendChild($label);
+
+			// URI
+			$label = Widget::Label(__('URI'));
+			$label->appendChild(Widget::Input('fields[namespaces][uri][]', $namespace['uri']));
+			$group->appendChild($label);
+
+			$group->appendChild($label);
+			$li->appendChild($group);
+			$wrapper->appendChild($li);
 		}
 	}

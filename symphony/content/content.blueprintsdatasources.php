@@ -212,14 +212,14 @@
 					$this->status = $callback['flag'];
 				}
 
-				$this->datasource = Datasource::loadFromName($this->handle, NULL, false);
+				$this->datasource = Datasource::loadFromHandle($this->handle);
 				$this->type = $this->datasource->type();
 
 				$this->datasource = ExtensionManager::instance()->create($this->type)->prepare(
 					(isset($_POST['fields']) ? $_POST['fields'] : NULL), $this->datasource
 				);
 
-				//$this->datasource = Datasource::loadFromName($this->handle, NULL, false); //DatasourceManager::instance()->create($this->handle, NULL, false);
+				//$this->datasource = Datasource::loadFromHandle($this->handle, NULL, false); //DatasourceManager::instance()->create($this->handle, NULL, false);
 
 				if (!$this->datasource->allowEditorToParse()) {
 					redirect(URL . '/symphony/blueprints/datasources/info/' . $this->handle . '/');
@@ -453,7 +453,7 @@
 		}
 
 		function __viewInfo(){
-			$datasource = DataSource::loadFromName($this->_context[1], NULL, false);
+			$datasource = DataSource::loadFromHandle($this->_context[1]);
 			$about = $datasource->about();
 
 			$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(__('Symphony'), __('Data Source'), $about->name)));

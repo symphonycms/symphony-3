@@ -459,24 +459,24 @@
 			$group->setAttribute('class', 'group triple');
 			
 			// Parameter
-			$label = $document->createElement('label', 'Parameter');
+			$label = $document->createElement('label', __('Parameter'));
 			$label->appendChild(Widget::input('fields[conditions][parameter][]', $condition['parameter']));
 			$group->appendChild($label);
 			
 			// Logic
-			$label = $document->createElement('label', 'Logic');
+			$label = $document->createElement('label', __('Logic'));
 			$label->appendChild(Widget::select('fields[conditions][logic][]', array(
-				array('set', ($condition['logic'] == 'set'), 'is set'),
-				array('not-set', ($condition['logic'] == 'not-set'), 'is not set'),
+				array('set', ($condition['logic'] == 'set'), __('is set')),
+				array('not-set', ($condition['logic'] == 'not-set'), __('is not set')),
 			), array('class' => 'filtered')));
 			$group->appendChild($label);
 			
 			// Action
-			$label = $document->createElement('label', 'Action');
+			$label = $document->createElement('label', __('Action'));
 			$label->appendChild(Widget::select('fields[conditions][action][]', array(
 				//array('label' => 'Execution', 'options' => array(
-					array('execute', ($condition['action'] == 'execute'), 'Execute'),
-					array('do-not-execute', ($condition['action'] == 'do-not-execute'), 'Do not Execute'),
+					array('execute', ($condition['action'] == 'execute'), __('Execute')),
+					array('do-not-execute', ($condition['action'] == 'do-not-execute'), __('Do not Execute')),
 				//)),
 				//array('label' => 'Redirect', 'options' => array(
 				//	array('redirect:404', false, '404'),

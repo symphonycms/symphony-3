@@ -183,11 +183,7 @@ var Symphony;
 			multiselect:	true,
 			orderable:		true
 		});
-		
-		jQuery('form').bind('submit', function(){
-			jQuery('.event-duplicator > .templates').remove();
-		});
-		
+
 		selector.bind('change', function() {
 			var options = selector.find('option');
 
@@ -217,68 +213,68 @@ var Symphony;
 	jQuery(document).ready(function() {
 		var duplicator = jQuery('#section-duplicator');
 		var layout = jQuery('#section-layout');
-		
+
 		// Not on the section editor:
 		if (duplicator.length == 0 && layout.length == 0) return;
-		
+
 		var form = $('form');
 		var changed = false;
-		
+
 		Symphony.Language.add({
 			'Discard your changes?': false
 		});
-		
+
 		// Form has errors:
 		changed = form.find('.invalid:first').length == 1;
-		
+
 		// Listen for changes:
 		form.bind('change', function() {
 			changed = true;
 		});
-		
+
 		// Save before changing tabs:
 		$('#tab a').bind('click', function() {
 			if (changed == false) return true;
-			
+
 			return confirm(Symphony.Language.get('Discard your changes?'));
 		});
-		
+
 		if (duplicator.length) {
 			duplicator.symphonyFieldsDuplicator({
 				multiselect:	true,
 				orderable:		true
 			});
-			
+
 			if (duplicator.find('.instances > li .invalid').length) {
 				duplicator.find('.tabs > li:first')
 					.trigger('duplicator-tab-deselect');
 			}
-			
+
 			// Show errors:
 			duplicator.find('.instances > li').each(function(index) {
 				var instance = $(this);
-				
+
 				if (instance.find('.invalid').length == 0) return;
-				
+
 				duplicator.find('.tabs > li:eq(' + index + ')')
 					.trigger('duplicator-tab-select');
 			});
-			
+
 			// Update input names before submit:
 			$('form').submit(function() {
 				var expression = /^fields\[[0-9]+\]\[(.*)]$/;
-				
+
 				duplicator.find('> .content > .instances > li').each(function(index) {
 					var instance = $(this);
-					
+
 					instance.find('[name]').each(function() {
 						var input = $(this);
 						var name = input.attr('name');
 						var match = null;
-						
+
 						// Extract name:
 						if (match = name.match(expression)) name = match[1];
-						
+
 						input.attr(
 							'name',
 							'fields['
@@ -292,34 +288,34 @@ var Symphony;
 				});
 			});
 		}
-		
+
 		if (layout.length) {
 			layout.symphonyLayout();
-		
+
 			// Update input names before submit:
 			$('form').submit(function() {
 				var expression = /^layout\[[0-9]+\]\[fieldsets\]\[[0-9]+\]\[fields\]\[(.*)]$/;
-				
+
 				layout.find('> .columns > .column').each(function(column) {
 					var input = $('<input />')
 						.attr('name', 'size')
 						.attr('type', 'hidden');
-					
+
 					input.val(this.className.match(/size-([a-z]+)/)[1]);
-					
+
 					input.attr(
 						'name',
 						'layout['
 						+ column
 						+ '][size]'
 					);
-					
+
 					$(this).find('> input').remove();
 					$(this).append(input);
-					
+
 					$(this).find('> fieldset').each(function(fieldset) {
 						var input = $(this).find('> h3 > input');
-						
+
 						input.attr(
 							'name',
 							'layout['
@@ -328,10 +324,10 @@ var Symphony;
 							+ fieldset
 							+ '][name]'
 						);
-						
+
 						$(this).find('> .fields > .field input').each(function(field) {
 							var input = $(this);
-							
+
 							input.attr(
 								'name',
 								'layout['

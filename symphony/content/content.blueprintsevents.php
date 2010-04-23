@@ -129,7 +129,7 @@
 
 		public function __viewEdit(){
 
-			$existing = Event::loadFromName($this->_context[1]);
+			$existing = Event::loadFromHandle($this->_context[1]);
 
 			if(!($this->event instanceof Event)){
 				$this->event = $existing;
@@ -186,7 +186,7 @@
 
 				$handle = $this->_context[1];
 
-				$existing = Event::loadFromName($handle);
+				$existing = Event::loadFromHandle($handle);
 
 				$about = $existing->about();
 				$about=(array)$about;
@@ -657,7 +657,7 @@
 			if($this->_context[0] == 'edit'){
 				$isEditing = true;
 				$handle = $this->_context[1];
-				//$this->event = Event::loadFromName($handle);
+				//$this->event = Event::loadFromHandle($handle);
 			}
 			//else{
 				$this->event = new Event;

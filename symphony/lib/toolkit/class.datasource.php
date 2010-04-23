@@ -143,8 +143,8 @@
 		protected $_about;
 		protected $_parameters;
 
-		protected $_env; // DELETE?
-		protected $_Parent; // DELETE?
+		//protected $_env; // DELETE?
+		//protected $_Parent; // DELETE?
 		protected $_param_output_only; // DELETE?
 		protected $_dependencies;
 		protected $_force_empty_result; // DELETE?
@@ -188,7 +188,7 @@
 
 		}
 
-		public static function loadFromName($name, $environment=NULL, $process_params=true){
+		public static function loadFromHandle($name){
 			return self::load(self::__find($name) . "/{$name}.php");
 		}
 
@@ -247,10 +247,31 @@
 			return NULL;
 		}
 
+		public function __get($name){
+			if($name == 'handle'){
+				return Lang::createFilename($this->about()->name);
+			}
+		}
+
 		public function save(MessageStack &$errors){
+			$editing = (isset($this->parameters()->{'root-element'}))
+						? $this->parameters()->{'root-element'}
+						: false;
+
 			// About info:
 			if (!isset($this->about()->name) || empty($this->about()->name)) {
 				$errors->append('about::name', __('This is a required field'));
+			}
+
+			try {
+				$existing = self::loadFromHandle($this->handle);
+			}
+			catch (DataSourceException $e) {
+				//	Datasource not found, continue!
+			}
+
+			if($existing instanceof Datasource && $editing != $this->handle) {
+				throw new DataSourceException(__('A Datasource with the name <code>%s</code> already exists', array($this->about()->name)));
 			}
 
 			// Save type:
@@ -259,17 +280,12 @@
 
 				if (!file_exists($this->template())) {
 					$errors->append('write', __("Unable to find Data Source Type template '%s'.", array($this->template())));
-					throw new Exception(__("Unable to find Data Source Type template '%s'.", array($this->template())));
+					throw new DataSourceException(__("Unable to find Data Source Type template '%s'.", array($this->template())));
 				}
 
-				$this->parameters()->{'root-element'} = $handle = Lang::createFilename($this->about()->name);
-				$filename = "{$handle}.php";
+				$this->parameters()->{'root-element'} = $this->handle;
 				$classname = Lang::createHandle(ucwords($this->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
-				$pathname = DATASOURCES . "/{$filename}";
-
-				if(self::__find($handle) !== false) {
-					throw new DatasourceException(__('A Datasource with the name <code>%s</code> already exists.', array($this->about()->name)));
-				}
+				$pathname = DATASOURCES . "/" . $this->handle . ".php";
 
 				$data = array(
 					$classname,
@@ -291,13 +307,15 @@
 					vsprintf(file_get_contents($this->template()), $data),
 					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
 				)){
+					if($editing != $this->handle) General::deleteFile(DATASOURCES . '/' . $editing . '.php');
+
 					return $pathname;
 				}
 
 				$errors->append('write', __('Failed to write datasource "%s" to disk.', array($filename)));
 			}
 
-			throw new Exception('Errors were encountered whilst attempting to save.');
+			throw new DataSourceException('Errors were encountered whilst attempting to save.');
 		}
 
 		public function delete($handle){
@@ -306,10 +324,10 @@
 				Upon deletion of the event, views need to be updated to remove
 				it's associated with the event
 			*/
-			$datasource = Datasource::loadFromName($handle);
+			$datasource = Datasource::loadFromHandle($handle);
 
 			if(!$datasource->allowEditorToParse()) {
-				throw new DatasourceException(__('Datasource cannot be deleted, the Editor does not have permission.'));
+				throw new DataSourceException(__('Datasource cannot be deleted, the Editor does not have permission.'));
 			}
 
 			return General::deleteFile(DATASOURCES . "/{$handle}.php");
