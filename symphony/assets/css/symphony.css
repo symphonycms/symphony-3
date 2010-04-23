@@ -615,11 +615,10 @@
 	form {
 		margin-bottom: 20px;
 	}
-
 	form fieldset {
 		border: none;
 		-webkit-margin-bottom-collapse: separate;
-		margin: 20px 0 40px;
+		margin: 20px 0;
 		position: relative;
 	}
 	form fieldsets + fieldset {
@@ -701,6 +700,9 @@
 	form .label textarea {
 		width: 100%;
 		padding: 2px;
+	}
+	form select[multiple] {
+		height: 150px;
 	}
 	form select optgroup {
 		font-weight: bold;

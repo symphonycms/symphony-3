@@ -152,15 +152,15 @@
 
 			if(!empty($_POST)) $fields = $_POST['fields'];
 
-			$fields['body'] = General::sanitize($fields['body']);
+			$fields['body'] = $fields['body'];
 
-			$fieldset = Widget::Fieldset();
+			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			$label = Widget::Label(__('Name'));
 			$label->appendChild(Widget::Input('fields[name]', $fields['name']));
 			$fieldset->appendChild((isset($this->_errors['name']) ? Widget::wrapFormElementWithError($label, $this->_errors['name']) : $label));
 
-			$label = Widget::Label(__('Body'));
+			$label = Widget::Label(__('XSLT'));
 			$label->appendChild(
 				Widget::Textarea('fields[template]', $fields['body'], array(
 					'rows' => 30,
