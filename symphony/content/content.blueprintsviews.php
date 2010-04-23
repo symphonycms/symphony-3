@@ -230,9 +230,9 @@
 				$view->template = $_POST['fields']['template'];
 			}
 
-			$fieldset = Widget::Fieldset();
+			$fieldset = Widget::Fieldset(__('Template'));
 
-			$label = Widget::Label(__('Template'));
+			$label = Widget::Label(__('XSLT'));
 			$label->appendChild(
 				Widget::Textarea('fields[template]', $view->template, array(
 					'rows' => 30,

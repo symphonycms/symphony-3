@@ -9,14 +9,7 @@
 		-webkit-border-radius: 5px;
 		margin: 10px 0;
 		position: relative;
-	}
-	.duplicator-widget:first-child {
-		margin-top: 0;
-	}
-	.duplicator-widget:last-child {
-		margin-bottom: 0;
-	}
-	
+	}	
 	.duplicator-widget > .content {
 		display: table;
 		border-spacing: 0;
@@ -181,6 +174,7 @@
 	/* @group Templates */
 		
 		.duplicator-widget > .templates {
+			display: none;
 			background: #888888;
 			background: -moz-linear-gradient(#666666, #777777 4%, #888888, #777777 96%, #666666);background: -webkit-gradient(
 				linear, left top, left bottom,
@@ -207,10 +201,13 @@
 			float: left;
 			margin: 5px;
 			padding: 4px;
-			width: 240px;
+			width: 180px;
+			white-space: nowrap;
 		}
 		.duplicator-widget > .templates > li > * {
 			display: none;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 		.duplicator-widget > .templates > li:hover {
 			background: hsla(0, 0%, 0%, 0.2);

@@ -1,5 +1,3 @@
-/* @override http://symphony-21.local/symphony/assets/css/peripheral.css */
-
 /*-----------------------------------------------------------------------------
 	Peripheral Global
 -----------------------------------------------------------------------------*/
@@ -12,7 +10,6 @@
 	-webkit-box-sizing: border-box;
 }
 html {
-	height: 100%;	
 	background: -webkit-gradient(
 				 	radial,
 				 	50% 0,
@@ -57,20 +54,25 @@ body {
 -----------------------------------------------------------------------------*/
 
 h1 {
+	color: #fff;
 	font-size: 20px;
 	font-weight: normal;
 	margin-bottom: 20px;
+	text-shadow: 1px 1px 2px #333;
 }
 h2 { 
 	font-size: 14px;
-	color: #a54665;
-	margin: 0 0 10px 20px;
+	color: #333;
+	margin: 0 0 5px 20px;
 	text-shadow: 1px 1px 1px #fff;
 }
 h3 {
+	color: #fff;
 	margin: 20px 0;
+	text-shadow: 1px 1px 2px #333;
 }
 p {
+	color: #666;
 	padding: 0 20px;
 	margin-bottom: 20px;
 }
@@ -158,24 +160,24 @@ form.panel {
 	overflow: hidden;
 	padding: 10px 0;
 }
-fieldset {
+form fieldset {
 	border: none;
 	color: #666;
 	padding: 0;
 	margin: 0 30px;
 }
-label {
+form label {
 	display: block;
 	margin: 10px 0;
 }
-input {
+form input {
 	display: block;
 	width: 100%;
 	font-size: 10pt;
 	margin-top: 2px;
 	padding: 2px;
 }
-h1 {
+form h1 {
 	color: #666;
 	font-size: 1.8em;
 	background: none;
