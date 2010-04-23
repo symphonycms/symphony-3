@@ -118,12 +118,10 @@
 			}
 
 			$fieldset->appendChild($label);
-			$left->appendChild($fieldset);
 
 		//	Source ------------------------------------------------------------
 
-			$fieldset = Widget::Fieldset(__('Source'));
-			$label = Widget::Label(__('URL'));
+			$label = Widget::Label(__('Source URL'));
 			$label->appendChild(Widget::Input(
 				'fields[url]', General::sanitize($datasource->parameters()->url)
 			));
@@ -144,6 +142,68 @@
 			);
 
 			$left->appendChild($fieldset);
+
+		//	Timeouts ------------------------------------------------------------
+
+			$fieldset = Widget::Fieldset(__('Time Limits'));
+
+			$input = Widget::Input('fields[cache-lifetime]', max(0, intval($datasource->parameters()->{'cache-lifetime'})));
+			$input->setAttribute('size', 4);
+
+			$fragment = Symphony::Parent()->Page->createDocumentFragment();
+			$fragment->appendChild(
+				new DOMText(__('Update cached result every '))
+			);
+			$fragment->appendChild($input);
+			$fragment->appendChild(
+				new DOMText(__(' minutes'))
+			);
+			$label = Widget::Label(null, $fragment);
+
+			if(isset($errors->{'cache-lifetime'})){
+				$label = Widget::wrapFormElementWithError($label, $errors->{'cache-lifetime'});
+			}
+			$fieldset->appendChild($label);
+
+			$input = Widget::Input('fields[timeout]', max(1, intval($datasource->parameters()->{'timeout'})));
+			$input->setAttribute('size', 4);
+
+			$fragment = Symphony::Parent()->Page->createDocumentFragment();
+			$fragment->appendChild(
+				new DOMText(__('Set gateway timeout limit to '))
+			);
+			$fragment->appendChild($input);
+			$fragment->appendChild(
+				new DOMText(__(' seconds'))
+			);
+			$label = Widget::Label(null, $fragment);
+
+			if(isset($errors->{'timeout'})){
+				$label = Widget::wrapFormElementWithError($label, $errors->{'timeout'});
+			}
+			$fieldset->appendChild($label);
+
+
+			$left->appendChild($fieldset);
+
+		//	Included Elements
+
+			$fieldset = Widget::Fieldset(__('XML Processing'));
+			$label = Widget::Label(__('Included Elements'));
+			$label->appendChild(Widget::Input('fields[xpath]', General::sanitize($datasource->parameters()->xpath)));
+
+			if(isset($errors->xpath)){
+				$label = Widget::wrapFormElementWithError($label, $errors->xpath);
+			}
+
+			$fieldset->appendChild($label);
+
+			$help = Symphony::Parent()->Page->createElement('p');
+			$help->setAttribute('class', 'help');
+			$help->setValue(__('Use an XPath expression to select which elements from the source XML to include.'));
+			$fieldset->appendChild($help);
+
+			$right->appendChild($fieldset);
 
 		//	Namespace Declarations
 
@@ -175,76 +235,11 @@
 				$input->setAttribute('checked', 'checked');
 			}
 
-			$label = Widget::Label(__('Automatically discover namespaces'));
+			$label = Widget::Label(__('Automatically add discovered namespaces'));
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
 
-			$help = Symphony::Parent()->Page->createElement('p');
-			$help->setAttribute('class', 'help');
-			$help->setValue(__('Search the source document for namespaces, any that it finds will be added to the declarations above.'));
-			$fieldset->appendChild($help);
-
 			$right->appendChild($fieldset);
-
-			$fieldset = Widget::Fieldset(__('Included Elements'));
-			$label = Widget::Label(__('Included Elements'));
-			$label->appendChild(Widget::Input('fields[xpath]', General::sanitize($datasource->parameters()->xpath)));
-
-			if(isset($errors->xpath)){
-				$label = Widget::wrapFormElementWithError($label, $errors->xpath);
-			}
-
-			$fieldset->appendChild($label);
-
-			$help = Symphony::Parent()->Page->createElement('p');
-			$help->setAttribute('class', 'help');
-			$help->setValue(__('Use an XPath expression to select which elements from the source XML to include.'));
-			$fieldset->appendChild($help);
-
-			$right->appendChild($fieldset);
-
-		//	Timeouts ------------------------------------------------------------
-
-			$fieldset = Widget::Fieldset(__('Timeout Options'));
-
-			$input = Widget::Input('fields[cache-lifetime]', max(0, intval($datasource->parameters()->{'cache-lifetime'})));
-			$input->setAttribute('size', 4);
-
-			$fragment = Symphony::Parent()->Page->createDocumentFragment();
-			$fragment->appendChild(
-				new DOMText(__('Update cached result every '))
-			);
-			$fragment->appendChild($input);
-			$fragment->appendChild(
-				new DOMText(__(' minutes'))
-			);
-			$label = Widget::Label(null, $fragment);
-
-			if(isset($errors->{'cache-lifetime'})){
-				$label = Widget::wrapFormElementWithError($label, $errors->{'cache-lifetime'});
-			}
-			$fieldset->appendChild($label);
-
-			$input = Widget::Input('fields[timeout]', max(1, intval($datasource->parameters()->{'timeout'})));
-			$input->setAttribute('size', 4);
-
-			$fragment = Symphony::Parent()->Page->createDocumentFragment();
-			$fragment->appendChild(
-				new DOMText(__('Gateway timeout limit '))
-			);
-			$fragment->appendChild($input);
-			$fragment->appendChild(
-				new DOMText(__(' seconds'))
-			);
-			$label = Widget::Label(null, $fragment);
-
-			if(isset($errors->{'timeout'})){
-				$label = Widget::wrapFormElementWithError($label, $errors->{'timeout'});
-			}
-			$fieldset->appendChild($label);
-
-			$left->appendChild($fieldset);
-
 			$layout->appendTo($wrapper);
 		}
 

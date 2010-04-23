@@ -419,7 +419,7 @@
 			}
 
 		}
-
+/*
 		public function resolvePageTitle($page_id) {
 			$path = $this->resolvePage($page_id, 'title');
 
@@ -476,7 +476,7 @@
 
 			return $path;
 		}
-
+*/
 		public function customError($code, $heading, $message, $log=true, $forcekill=false, $template='general', array $additional=array()){
 			throw new SymphonyErrorPage($message, $heading, $template, $additional);
 		}

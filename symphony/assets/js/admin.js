@@ -579,7 +579,7 @@ var Symphony;
 jQuery(document).ready(function() {
 	var $ = jQuery;
 
-	$('#master-switch').bind('change', function() {
+	$('#master-switch select').bind('change', function() {
 		var select = $(this);
 
 		window.location.search = '?type=' + select.val();

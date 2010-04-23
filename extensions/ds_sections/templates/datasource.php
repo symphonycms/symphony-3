@@ -26,13 +26,10 @@
 			   'conditions' => %12$s,
 			   'filter' => %13$s,
 			   'redirect-404-on-empty' => %14$s,
-			   'append-pagination' => %15$s,
-			   'append-associated-entry-count' => %16$s,
-			   'html-encode' => %17$s,
-			   'sort-field' => %18$s,
-			   'sort-order' => %19$s,
-			   'included-elements' => %20$s,
-			   'parameter-output' => %21$s,
+			   'sort-field' => %15$s,
+			   'sort-order' => %16$s,
+			   'included-elements' => %17$s,
+			   'parameter-output' => %18$s,
 			);
 		}
 

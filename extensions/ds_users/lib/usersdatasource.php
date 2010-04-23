@@ -34,8 +34,8 @@
 
 				##	User Filtering
 				//	TODO: Check that this is working once Duplicators are ready
-				if (is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
-					foreach ($this->parameters()->filters as $field => $value){
+				if (is_array($this->parameters()->filter) && !empty($this->parameters()->filter)) {
+					foreach ($this->parameters()->filter as $field => $value){
 						if(!is_array($value) && trim($value) == '') continue;
 
 						$ret = $this->processUserFilter($field, $value);
@@ -111,9 +111,9 @@
 				));
 			}
 
-			$result->appendChild($root);
+			if ($this->_force_empty_result) $this->emptyXMLSet($root);
 
-			if ($this->_force_empty_result) $result = $this->emptyXMLSet();
+			$result->appendChild($root);
 
 			return $result;
 		}

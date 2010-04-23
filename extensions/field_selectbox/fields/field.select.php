@@ -140,7 +140,7 @@
 			}
 
 			foreach($states as $handle => $v){
-				$options[] = array(General::sanitize($v), in_array($v, $selected), General::sanitize($v));
+				$options[] = array($v, in_array($v, $selected), $v);
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
@@ -152,15 +152,17 @@
 			));
 
 			if (!is_null($error)) {
-				$label = Widget::wrapFormElementWithError($label, $error['message']);
+				$label = Widget::wrapFormElementWithError($label, $error->message);
 			}
 
 			$wrapper->appendChild($label);
 		}
 
-		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
+		function displayDatasourceFilterPanel($wrapper, $data=NULL, $errors=NULL){
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+			
+			$document = $wrapper->ownerDocument;
 
 			$data = preg_split('/,\s*/i', $data);
 			$data = array_map('trim', $data);
@@ -168,12 +170,12 @@
 			$existing_options = $this->getToggleStates();
 
 			if(is_array($existing_options) && !empty($existing_options)){
-				$optionlist = Symphony::Parent()->Page->createElement('ul');
+				$optionlist = $document->createElement('ul');
 				$optionlist->setAttribute('class', 'tags');
 
 				foreach($existing_options as $option)
 					$optionlist->appendChild(
-						Symphony::Parent()->Page->createElement('li', $option)
+						$document->createElement('li', $option)
 					);
 
 				$wrapper->appendChild($optionlist);
@@ -208,7 +210,7 @@
 				$values[] = $d->value;
 			}
 
-			return parent::prepareTableValue((object)array('value' => General::sanitize(implode(', ', $values))), $link);
+			return parent::prepareTableValue((object)array('value' => implode(', ', $values)), $link);
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
@@ -472,7 +474,7 @@
 				$data = array($data);
 			}
 			foreach($data as $d){
-				parent::saveData($d, $errors, $entry);
+				parent::saveData($errors, $entry, $d);
 			}
 			return Field::STATUS_OK;
 		}

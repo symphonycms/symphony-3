@@ -335,6 +335,10 @@
 	#layout.type-lll > .column {
 		width: 33.3%;
 	}
+	
+	#layout.type-lls > .large, #layout.type-lsl > .large, #layout.type-sll > .large {
+		width: 50%;
+	}
 
 /*-----------------------------------------------------------------------------
 	Content
@@ -653,6 +657,9 @@
 	form .help {
 		opacity: 0.5;
 	}
+	form label + p.help {
+		margin-top: -5px;
+	}
 	form fieldset h3 + .help {
 		position: absolute;
 		top: 0;
@@ -818,9 +825,42 @@
 -----------------------------------------------------------------------------*/
 
 	#master-switch {
-		float: right;
-		margin-right: 30px;
-		margin-top: 15px;
+		position: relative;
+		width: 400px;
+		left: 50%;
+		margin: -2px 0 0px -200px;
+		font-size: 9pt;
+		color: #555;
+		padding: 6px 0;
+		text-align: center;
+		background-color: #970707;
+		background: -moz-linear-gradient(
+			top,
+			hsla(0, 0%, 78%, 1),
+			hsla(0, 0%, 98%, 1) 3px,
+			hsla(0, 0%, 93%, 1)
+		);
+		background: -webkit-gradient(
+			linear,
+			left top,
+			left bottom,
+			from(hsla(0, 0%, 78%, 1)),
+			color-stop(8%, hsla(0, 0%, 98%, 1)),
+			to(hsla(0, 0%, 93%, 1))
+		);
+		border-bottom-right-radius: 5px;
+		border-bottom-left-radius: 5px;
+		-moz-border-radius-bottomright: 5px;
+		-moz-border-radius-bottomleft: 5px;
+		-webkit-border-bottom-right-radius: 5px;
+		-webkit-border-bottom-left-radius: 5px;
+		-moz-box-shadow: 0px 1px 3px #888;
+		-webkit-box-shadow: 0px 0px 2px #888;
+	}
+	
+	#master-switch label {
+		display: inline;
+		margin-right: 10px;
 	}
 
 /*-----------------------------------------------------------------------------

@@ -13,9 +13,6 @@
 			   'conditions' => array(),
 			   'filter' => array(),
 			   'redirect-404-on-empty' => false,
-			   'append-pagination' => false,
-			   'append-associated-entry-count' => false,
-			   'html-encode' => false,
 			   'sort-field' => 'system:id',
 			   'sort-order' => 'desc',
 			   'included-elements' => array(),
@@ -105,12 +102,84 @@
 		}*/
 
 		public function render(Register &$ParameterOutput){
+			$execute = true;
+
 			$doc = new XMLDocument;
 			$doc->appendChild($doc->createElement($this->parameters()->{'root-element'}));
 
-			$ParameterOutput->{'ds-fred-title'} = "I am the most awesome";
+			//	TODO: Dependancies
 
-			return $doc;
+			//	Conditions
+			//	All conditions are negative, in that, if one is found to be true,
+			//	then the datasource should not execute at all.
+			if(is_array($this->parameters()->conditions)) {
+				foreach($this->parameters()->conditions as $condition) {
+					$c = Datasource::resolveParameter($condition['parameter'], $ParameterOutput);
+
+					//	Default, Don't Execute When $c is empty -> $exe = false
+					$execute = (is_null($c)) ? false : true;
+
+					//	Option, Don't Execute When $c is set -> $exe = false
+					if($condition['logic'] == 'set') $execute = !$execute;
+
+					if($execute === true) break;
+				}
+			}
+
+			if($execute) {
+
+				if(is_array($this->parameters()->filters)) {
+
+				}
+
+				//	Retrieve Datasource Filters for each of the Fields
+				//	Apply the Sorting & Direction
+				//	Apply the limiting
+
+				//	If count of result is 0 && redirect to 404 is true, throw FrontendException
+
+				//	Inject any Output Params into the Register through ParameterOutput
+
+				//	If any of the system: mode fields are called, append them to the front of the Datasource
+				//	just after the root element.
+
+				//	Foreach of the rows in the result, call appendFormattedElement
+
+				//	Return a DOMDocument to the View::render function.
+
+				/*
+				$sort_field = $section->fetchFieldByHandle($section->{'publish-order-handle'});
+				$sort_field->buildSortingSQL($joins, $order, $section->{'publish-order-direction'});
+
+				$query = sprintf("
+					SELECT e.*
+					FROM `tbl_entries` AS e
+					%s
+					WHERE `section` = '%s'
+					%s
+					LIMIT %d, %d",
+					$joins, $section->handle, $order, $pagination['start'], $pagination['entries-per-page']
+				);
+
+				$entries = Symphony::Database()->query($query, array(
+						$section->handle,
+						$section->{'publish-order-handle'}
+					), 'EntryResult'
+				);
+				*/
+				echo "DOING MY DATASOURCE WOOOOO";
+
+
+
+				//return $doc;
+			} else {
+				echo "DON'T EXECUTE";
+
+				//return null;
+			}
+
+			var_dump($execute);
+			var_dump($this->parameters());
 		}
 
 

@@ -351,7 +351,7 @@
 			// Input box:
 			if ($this->{'text-size'} == 'single') {
 				$input = Widget::Input(
-					"fields[$element_name]", General::sanitize($data->value)
+					"fields[$element_name]", $data->value
 				);
 
 				###
@@ -363,7 +363,7 @@
 			// Text Box:
 			else {
 				$input = Widget::Textarea(
-					"fields[$element_name]", General::sanitize($data->value), array('rows' => 20, 'cols' => 50)
+					"fields[$element_name]", $data->value, array('rows' => 20, 'cols' => 50)
 				);
 
 				###
@@ -586,7 +586,7 @@
 			}
 
 			if(!is_null($link)) {
-				$link->setValue(General::sanitize($value));
+				$link->setValue($value);
 				return $link;
 			}
 
@@ -601,9 +601,9 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null, $prefix = null, $postfix = null) {
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null) {
 			//$this->_driver->addFilteringHeaders($wrapper->ownerDocument);
-			$field_id = $this->{'id'};
+			$field_handle = $this->{'element-name'};
 			$document = $wrapper->ownerDocument;
 
 			$wrapper->setAttribute('class', trim($wrapper->getAttribute('class') . ' field-textbox'));
@@ -613,12 +613,9 @@
 			$name->appendChild($document->createElement('i', $this->name()));
 			$wrapper->appendChild($name);
 
-			$prefix = ($prefix ? "[{$prefix}]" : '');
-			$postfix = ($postfix ? "[{$postfix}]" : '');
-
 			$label = Widget::Label('Value');
 			$label->appendChild(Widget::Input(
-				"fields[filter]{$prefix}[{$field_id}]{$postfix}",
+				"fields[filter]{$prefix}[{$field_handle}]",
 				($data ? General::sanitize($data) : null)
 			));
 			$wrapper->appendChild($label);
