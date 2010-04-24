@@ -110,23 +110,25 @@
 			//	TODO: Dependancies
 
 			//	Conditions
-			//	All conditions are negative, in that, if one is found to be true,
-			//	then the datasource should not execute at all.
+			//	If any one condtion returns true (that is, do not execute), the DS will not execute at all
 			if(is_array($this->parameters()->conditions)) {
 				foreach($this->parameters()->conditions as $condition) {
 					$c = Datasource::resolveParameter($condition['parameter'], $ParameterOutput);
 
-					//	Default, Don't Execute When $c is empty -> $exe = false
-					$execute = (is_null($c)) ? false : true;
+					// Is Empty
+					if($condition['logic'] == 'empty' && (is_null($c) || strlen($c) == 0)){
+						$execute = false;
+					}
+					
+					// Is Set
+					elseif($condition['logic'] == 'set' && !is_null($c)){
+						$execute = false;
+					}
 
-					//	Option, Don't Execute When $c is set -> $exe = false
-					if($condition['logic'] == 'set') $execute = !$execute;
-
-					if($execute === true) break;
 				}
 			}
 
-			if($execute) {
+			if($execute === true) {
 
 				if(is_array($this->parameters()->filters)) {
 
