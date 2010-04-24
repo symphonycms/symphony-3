@@ -478,8 +478,8 @@
 			// Logic
 			$label = $document->createElement('label', __('Logic'));
 			$label->appendChild(Widget::select('fields[conditions][logic][]', array(
-				array('empty', ($condition['logic'] == 'empty'), __('empty')),
-				array('set', ($condition['logic'] == 'set'), __('set'))
+				array('empty', ($condition['logic'] == 'empty'), __('is empty')),
+				array('set', ($condition['logic'] == 'set'), __('is set'))
 			), array('class' => 'filtered')));
 			$group->appendChild($label);
 
