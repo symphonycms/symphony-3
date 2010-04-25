@@ -54,11 +54,18 @@
 
 					}
 
-					$users = UserManager::fetchByID(array_values($user_ids));
+					$users = Symphony::Database()->query(
+						"SELECT * FROM `tbl_users` WHERE `id` IN (%s) ORDER BY `id` ASC", 
+						array(
+							implode(',', array_values($user_ids))
+						),
+						'UserResult'
+					);
+
 				}
 
 				else {
-					$users = UserManager::fetch();
+					$users = new UserIterator;
 				}
 
 				if(is_array($users) && !empty($users)) {

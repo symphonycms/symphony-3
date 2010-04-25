@@ -269,11 +269,11 @@
 					else{
 						$user_id = Administration::instance()->User->id;
 
-						$user = UserManager::fetchByID($user_id);
+						$user = User::load($user_id);
 
 						$user->set('password', md5(Symphony::Database()->escape($_POST['password'])));
 
-						if(!$user->commit() || !Administration::instance()->login($user->get('username'), $_POST['password'])){
+						if(!User::save($user) || !Administration::instance()->login($user->username, $_POST['password'])){
 							redirect(URL . "symphony/system/users/edit/{$user_id}/error/");
 						}
 

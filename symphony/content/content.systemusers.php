@@ -5,13 +5,7 @@
 
 	Class contentSystemUsers extends AdministrationPage{
 
-		private $_User;
-		private $_errors;
-
-		public function __construct(){
-			parent::__construct();
-			$this->_errors = array();
-		}
+		private $user;
 
 		public function __viewIndex(){
 			// This is the 'correct' way to append a string containing an entity
@@ -35,7 +29,7 @@
 
 			$this->appendViewOptions($viewoptions);
 
-		    $users = UserManager::fetch();
+		    $users = new UserIterator;
 
 			$aTableHead = array(
 				array(__('Name'), 'col'),
@@ -46,7 +40,7 @@
 			$aTableBody = array();
 			$colspan = count($aTableHead);
 
-			if(!is_array($users) || empty($users)) {
+			if($users->length() == 0){
 				$aTableBody = array(Widget::TableRow(
 					array(
 						Widget::TableData(__('None found.'), array(
@@ -66,28 +60,28 @@
 					## Setup each cell
 					$td1 = Widget::TableData(
 						Widget::Anchor(
-							$u->getFullName(), Administration::instance()->getCurrentPageURL() . 'edit/' . $u->get('id') . '/', array(
-								'title' => $u->get('username')
+							$u->getFullName(), Administration::instance()->getCurrentPageURL() . 'edit/' . $u->id . '/', array(
+								'title' => $u->username
 							)
 						)
 					);
 
 					$td2 = Widget::TableData(
 						Widget::Anchor(
-							$u->get('email'), 'mailto:'.$u->get('email'), array(
+							$u->email, 'mailto:'.$u->email, array(
 								'title' => 'Email this user'
 							)
 						)
 					);
 
-					if($u->get('last_seen') != NULL){
-						$td3 = Widget::TableData(DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($u->get('last_seen'))));
+					if($u->last_seen != NULL){
+						$td3 = Widget::TableData(DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($u->last_seen)));
 					}
 					else{
 						$td3 = Widget::TableData('Unknown', array('class' => 'inactive'));
 					}
 
-					$td3->appendChild(Widget::Input('items['.$u->get('id').']', NULL, 'checkbox'));
+					$td3->appendChild(Widget::Input('items['.$u->id.']', NULL, 'checkbox'));
 
 					## Add a row to the body array, assigning each cell to the row
 
@@ -127,7 +121,7 @@
 
 				foreach($checked as $user_id){
 					if(Administration::instance()->User->id == $user_id) continue;
-					UserManager::delete($user_id);
+					User::delete($user_id);
 				}
 
 				redirect(ADMIN_URL . '/system/users/');
@@ -136,10 +130,18 @@
 
 		## Both the Edit and New pages need the same form
 		public function __viewNew(){
+			if(!($this->user instanceof User)){
+				$this->user = new User;
+			}
 			$this->__form();
 		}
 
 		public function __viewEdit(){
+			
+			if(!($this->user instanceof User) && !($this->user = User::load((int)$this->_context[1]))){
+				Administration::instance()->customError(E_USER_ERROR, 'User not found', 'The user profile you requested does not exist.');
+			}
+			
 			$this->__form();
 		}
 
@@ -154,9 +156,10 @@
 
 			## Handle unknow context
 			if(!in_array($this->_context[0], array('new', 'edit'))) throw new AdministrationPageNotFoundException;
-
-			if(isset($this->_context[2])){
-				switch($this->_context[2]){
+			
+			$callback = Administration::instance()->getPageCallback();
+			if(isset($callback['flag'])){
+				switch($callback['flag']){
 
 					case 'saved':
 
@@ -193,8 +196,8 @@
 			
 			$isOwner = false;
 
-			if(isset($_POST['fields']))
-				$user = $this->_User;
+			/*if(isset($_POST['fields']))
+				$user = $this->user;
 
 			elseif($this->_context[0] == 'edit'){
 
@@ -205,27 +208,29 @@
 				}
 			}
 
-			else $user = new User;
+			else */
+			
 
-			if($this->_context[0] == 'edit' && $user->get('id') == Administration::instance()->User->id) $isOwner = true;
 
-			$this->setTitle(__(($this->_context[0] == 'new' ? '%1$s &ndash; %2$s &ndash; Untitled' : '%1$s &ndash; %2$s &ndash; %3$s'), array(__('Symphony'), __('Users'), $user->getFullName())));
-			$this->appendSubheading(($this->_context[0] == 'new' ? __('New User') : $user->getFullName()));
+			if($this->_context[0] == 'edit' && $this->user->id == Administration::instance()->User->id) $isOwner = true;
+
+			$this->setTitle(__(($this->_context[0] == 'new' ? '%1$s &ndash; %2$s &ndash; Untitled' : '%1$s &ndash; %2$s &ndash; %3$s'), array(__('Symphony'), __('Users'), $this->user->getFullName())));
+			$this->appendSubheading(($this->_context[0] == 'new' ? __('New User') : $this->user->getFullName()));
 
 			### Essentials ###
 			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			$label = Widget::Label(__('First Name'));
-			$label->appendChild(Widget::Input('fields[first_name]', $user->get('first_name')));
-			$fieldset->appendChild((isset($this->_errors['first_name']) ? Widget::wrapFormElementWithError($label, $this->_errors['first_name']) : $label));
+			$label->appendChild(Widget::Input('fields[first_name]', $this->user->{'first_name'}));
+			$fieldset->appendChild((isset($this->errors->{'first-name'}) ? Widget::wrapFormElementWithError($label, $this->errors->{'first-name'}) : $label));
 
 			$label = Widget::Label(__('Last Name'));
-			$label->appendChild(Widget::Input('fields[last_name]', $user->get('last_name')));
-			$fieldset->appendChild((isset($this->_errors['last_name']) ? Widget::wrapFormElementWithError($label, $this->_errors['last_name']) : $label));
+			$label->appendChild(Widget::Input('fields[last_name]', $this->user->{'last_name'}));
+			$fieldset->appendChild((isset($this->errors->{'last-name'}) ? Widget::wrapFormElementWithError($label, $this->errors->{'last-name'}) : $label));
 
 			$label = Widget::Label(__('Email Address'));
-			$label->appendChild(Widget::Input('fields[email]', $user->get('email')));
-			$fieldset->appendChild((isset($this->_errors['email']) ? Widget::wrapFormElementWithError($label, $this->_errors['email']) : $label));
+			$label->appendChild(Widget::Input('fields[email]', $this->user->email));
+			$fieldset->appendChild((isset($this->errors->email) ? Widget::wrapFormElementWithError($label, $this->errors->email) : $label));
 
 			$left->appendChild($fieldset);
 			###
@@ -234,8 +239,8 @@
 			$fieldset = Widget::Fieldset(__('Login Details'));
 
 			$label = Widget::Label(__('Username'));
-			$label->appendChild(Widget::Input('fields[username]', $user->get('username'), NULL));
-			$fieldset->appendChild((isset($this->_errors['username']) ? Widget::wrapFormElementWithError($label, $this->_errors['username']) : $label));
+			$label->appendChild(Widget::Input('fields[username]', $this->user->username, NULL));
+			$fieldset->appendChild((isset($this->errors->username) ? Widget::wrapFormElementWithError($label, $this->errors->username) : $label));
 
 			if($this->_context[0] == 'edit') {
 				$fieldset->setAttribute('id', 'change-password');
@@ -243,10 +248,10 @@
 
 			$label = Widget::Label(($this->_context[0] == 'edit' ? __('New Password') : __('Password')));
 			$label->appendChild(Widget::Input('fields[password]', NULL, 'password'));
-			$fieldset->appendChild((isset($this->_errors['password']) ? Widget::wrapFormElementWithError($label, $this->_errors['password']) : $label));
+			$fieldset->appendChild((isset($this->errors->password) ? Widget::wrapFormElementWithError($label, $this->errors->password) : $label));
 
 			$label = Widget::Label(($this->_context[0] == 'edit' ? __('Confirm New Password') : __('Confirm Password')));
-			if(isset($this->_errors['password-confirmation'])) $label->setAttributeArray(array('class' => 'contains-error', 'title' => $this->_errors['password-confirmation']));
+			if(isset($this->errors->{'password-confirmation'})) $label->setAttributeArray(array('class' => 'contains-error', 'title' => $this->errors->{'password-confirmation'}));
 			$label->appendChild(Widget::Input('fields[password-confirmation]', NULL, 'password'));
 			$fieldset->appendChild($label);
 
@@ -256,8 +261,8 @@
 
 			$label = Widget::Label();
 			$input = Widget::Input('fields[auth_token_active]', 'yes', 'checkbox');
-			if($user->get('auth_token_active') == 'yes') $input->setAttribute('checked', 'checked');
-			$temp = ADMIN_URL . '/login/' . $user->createAuthToken() . '/';
+			if($this->user->auth_token_active == 'yes') $input->setAttribute('checked', 'checked');
+			$temp = ADMIN_URL . '/login/' . $this->user->createAuthToken() . '/';
 
 			$label->appendChild($input);
 			$label->appendChild(new DOMText(__('Allow remote login via ')));
@@ -281,7 +286,7 @@
 
 			//if(is_array($sections) && !empty($sections))
 			foreach(new SectionIterator as $s){
-				$options[] = array($s->handle, $user->get('default_section') == $s->handle, $s->name);
+				$options[] = array($s->handle, $this->user->default_section == $s->handle, $s->name);
 			}
 
 			$label->appendChild(Widget::Select('fields[default_section]', $options));
@@ -297,11 +302,11 @@
 				$label = Widget::Label(__('Language'));
 
 				$options = array(
-					array(NULL, is_null($user->get('language')), __('System Default'))
+					array(NULL, is_null($this->user->language), __('System Default'))
 				);
 
 				foreach($languages as $code => $name) {
-					$options[] = array($code, $code == $user->get('language'), $name);
+					$options[] = array($code, $code == $this->user->language, $name);
 				}
 				$select = Widget::Select('fields[language]', $options);
 				$label->appendChild($select);
@@ -338,17 +343,17 @@
 
 				$fields = $_POST['fields'];
 
-			    $this->_User = new User;
+			    $this->user = new User;
 
-				$this->_User->email = $fields['email'];
-				$this->_User->username = $fields['username'];
-				$this->_User->first_name = General::sanitize($fields['first_name']);
-				$this->_User->last_name = General::sanitize($fields['last_name']);
-				$this->_User->last_seen = NULL;
-				$this->_User->password = (trim($fields['password']) == '' ? NULL : md5($fields['password']));
-				$this->_User->default_section = intval($fields['default_section']);
-				$this->_User->auth_token_active = ($fields['auth_token_active'] ? $fields['auth_token_active'] : 'no');
-				$this->_User->language = $fields['language'];
+				$this->user->email = $fields['email'];
+				$this->user->username = $fields['username'];
+				$this->user->first_name = General::sanitize($fields['first_name']);
+				$this->user->last_name = General::sanitize($fields['last_name']);
+				$this->user->last_seen = NULL;
+				$this->user->password = (trim($fields['password']) == '' ? NULL : md5($fields['password']));
+				$this->user->default_section = intval($fields['default_section']);
+				$this->user->auth_token_active = ($fields['auth_token_active'] ? $fields['auth_token_active'] : 'no');
+				$this->user->language = $fields['language'];
 
 				###
 				# Delegate: PreCreate
@@ -357,35 +362,40 @@
 					'PreCreate', '/system/users/new/',
 					array(
 						'fields' => $fields,
-						'user' => &$this->_User,
-						'errors' => &$this->_errors
+						'user' => &$this->user,
+						'errors' => &$this->errors
 					)
 				);
 
-				if(empty($this->_errors) && $this->_User->validate($this->_errors)):
+				if($this->errors->length() == 0 && $this->user->validate($this->errors)):
 
 					if($fields['password'] != $fields['password-confirmation']){
-						$this->_errors['password'] = $this->_errors['password-confirmation'] = __('Passwords did not match');
+						$this->errors->append('password', __('Passwords did not match'));
+						$this->errors->append('password-confirmation', __('Passwords did not match'));
 					}
 
-					elseif($user_id = $this->_User->commit()){
+					elseif($user_id = User::save($this->user)){
 
 						###
 						# Delegate: PostCreate
 						# Description: Just after creation of a new User. The ID of the User is provided.
-						ExtensionManager::instance()->notifyMembers('PostCreate', '/system/users/new/', array('user' => $this->_User));
+						ExtensionManager::instance()->notifyMembers('PostCreate', '/system/users/new/', array('user' => $this->user));
 
-			  		   redirect(ADMIN_URL . "/system/users/edit/{$this->_User->id}/created/");
+			  		   redirect(ADMIN_URL . "/system/users/edit/{$this->user->id}/:created/");
 
 					}
 
 				endif;
 
-				if(is_array($this->_errors) && !empty($this->_errors)){
-					$this->pageAlert(__('There were some problems while attempting to save. Please check below for problem fields.'), Alert::ERROR);
+				if($this->errors->length() > 0){
+					$this->alerts()->append(__('There were some problems while attempting to save. Please check below for problem fields.'), Alert::ERROR, $this->errors);
 				}
 				else{
-					$this->pageAlert(__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', array(ADMIN_URL . '/system/log/')), Alert::ERROR);
+					$this->alerts()->append(
+						__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', 
+						array(ADMIN_URL . '/system/log/')), 
+						Alert::ERROR
+					);
 				}
 
 			}
@@ -395,31 +405,27 @@
 
 			if(!$user_id = $this->_context[1]) redirect(ADMIN_URL . '/system/users/');
 
-			$isOwner = ($user_id == Administration::instance()->User->id);
-
 			if(array_key_exists('save', $_POST['action']) || array_key_exists('done', $_POST['action'])) {
 
 				$fields = $_POST['fields'];
 
-			    $this->_User = UserManager::fetchByID($user_id);
+			    $this->user = User::load($user_id);
 
-				if($fields['email'] != $this->_User->email) $changing_email = true;
+				$this->user->id = $user_id;
 
-				$this->_User->id = $user_id;
-
-				$this->_User->email = $fields['email'];
-				$this->_User->username = $fields['username'];
-				$this->_User->first_name = General::sanitize($fields['first_name']);
-				$this->_User->last_name = General::sanitize($fields['last_name']);
+				$this->user->email = $fields['email'];
+				$this->user->username = $fields['username'];
+				$this->user->first_name = General::sanitize($fields['first_name']);
+				$this->user->last_name = General::sanitize($fields['last_name']);
 
 				if(trim($fields['password']) != ''){
-					$this->_User->password = md5($fields['password']);
+					$this->user->password = md5($fields['password']);
 					$changing_password = true;
 				}
 
-				$this->_User->default_section = intval($fields['default_section']);
-				$this->_User->auth_token_active = ($fields['auth_token_active'] ? $fields['auth_token_active'] : 'no');
-				$this->_User->language = $fields['language'];
+				$this->user->default_section = intval($fields['default_section']);
+				$this->user->auth_token_active = ($fields['auth_token_active'] ? $fields['auth_token_active'] : 'no');
+				$this->user->language = $fields['language'];
 
 				###
 				# Delegate: PreSave
@@ -428,41 +434,48 @@
 					'PreSave', '/system/users/edit/',
 					array(
 						'fields' => $fields,
-						'user' => &$this->_User,
-						'errors' => &$this->_errors
+						'user' => &$this->user,
+						'errors' => &$this->errors
 					)
 				);
 
-				if(empty($this->_errors) && $this->_User->validate($this->_errors)):
+				$this->user->validate($this->errors);
+
+				if($this->errors->length() == 0):
 
 					if(($fields['password'] != '' || $fields['password-confirmation'] != '') && $fields['password'] != $fields['password-confirmation']){
-						$this->_errors['password'] = $this->_errors['password-confirmation'] = __('Passwords did not match');
+						$this->errors->append('password', __('Passwords did not match'));
+						$this->errors->append('password-confirmation', __('Passwords did not match'));
 					}
 
-					elseif($this->_User->commit()){
+					elseif(User::save($this->user)){
 
 						Symphony::Database()->delete('tbl_forgotpass', array(DateTimeObj::getGMT('c'), $user_id), " `expiry` < '%s' OR `user_id` = %d ");
 
-						if($isOwner){
-							Administration::instance()->login($this->_User->username, $this->_User->password, true);
+						// This is the logged in user, so update their session
+						if($user_id == Administration::instance()->User->id){
+							Administration::instance()->login($this->user->username, $this->user->password, true);
 						}
 
 						###
 						# Delegate: PostSave
 						# Description: Just after creation of a new User. The ID of the User is provided.
-						ExtensionManager::instance()->notifyMembers('PostSave', '/system/users/edit/', array('user' => $this->_User));
+						ExtensionManager::instance()->notifyMembers('PostSave', '/system/users/edit/', array('user' => $this->user));
 
-		  		    	redirect(ADMIN_URL . "/system/users/edit/{$this->_User->id}/saved/");
+		  		    	redirect(ADMIN_URL . "/system/users/edit/{$this->user->id}/:saved/");
 
 					}
 
 					else{
-						$this->pageAlert(
-							__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', array(ADMIN_URL . '/system/log/')),
+						$this->alerts()->append(
+							__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', 
+							array(ADMIN_URL . '/system/log/')), 
 							Alert::ERROR
 						);
 					}
 
+				else:
+					$this->alerts()->append(__('There were some problems while attempting to save. Please check below for problem fields.'), Alert::ERROR, $this->errors);
 				endif;
 
 			}
@@ -475,7 +488,7 @@
 				# Description: Prior to deleting an User. ID is provided.
 				//ExtensionManager::instance()->notifyMembers('Delete', getCurrentPage(), array('user_id' => $user_id));
 
-				UserManager::delete($user_id);
+				User::delete($user_id);
 
 				redirect(ADMIN_URL . '/system/users/');
 			}

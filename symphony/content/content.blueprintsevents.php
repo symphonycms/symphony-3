@@ -671,7 +671,7 @@
 			$this->event->about()->name = $fields['name'];
 
 			$this->event->about()->author->name = Administration::instance()->User->getFullName();
-			$this->event->about()->author->email = Administration::instance()->User->get('email');
+			$this->event->about()->author->email = Administration::instance()->User->email;
 
 			$this->event->parameters()->source = $fields['source'];
 

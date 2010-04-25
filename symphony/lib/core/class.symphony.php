@@ -12,14 +12,12 @@
 
 	require_once(TOOLKIT . '/class.page.php'); // DELETE?
 	require_once(TOOLKIT . '/class.view.php');
-	//require_once(TOOLKIT . '/class.xmlelement.php'); // DELETE?
 	require_once(TOOLKIT . '/class.widget.php');
 	require_once(TOOLKIT . '/class.general.php');
 	require_once(TOOLKIT . '/class.profiler.php'); // REPLACE?
 	require_once(TOOLKIT . '/class.user.php');
 	require_once(TOOLKIT . '/class.xslproc.php');
 
-	require_once(TOOLKIT . '/class.usermanager.php');
 	require_once(TOOLKIT . '/class.extensionmanager.php');
 
 	Class SymphonyErrorPageHandler extends GenericExceptionHandler{
@@ -281,7 +279,7 @@
 						"`id` = '%s'"
 					);
 
-					$this->User = new User($this->_user_id);
+					$this->User = User::load($this->_user_id);
 					$this->reloadLangFromAuthorPreference();
 
 					return true;
@@ -318,7 +316,7 @@
 				if ($result->valid()) {
 					$this->_user_id = $result->current()->id;
 
-					$this->User = new User($this->_user_id);
+					$this->User = User::load($this->_user_id);
 					$this->Cookie->set('username', $username);
 					$this->Cookie->set('pass', $password);
 
@@ -384,7 +382,7 @@
 				$row = $result->current();
 				$this->_user_id = $row->id;
 
-				$this->User = new User($this->_user_id);
+				$this->User = User::load($this->_user_id);
 				$this->Cookie->set('username', $row->username);
 				$this->Cookie->set('pass', $row->password);
 
@@ -406,7 +404,7 @@
 
 		public function reloadLangFromAuthorPreference(){
 
-			$lang = $this->User->get('language');
+			$lang = $this->User->language;
 			if($lang && $lang != self::lang()){
 				self::$_lang = $lang;
 				if($lang != 'en') {

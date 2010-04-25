@@ -39,7 +39,7 @@
 
 		public function getToggleStates(){
 
-		    $users = UserManager::fetch();
+		    $users = new UserIterator;
 
 			$states = array();
 			foreach($users as $u){
@@ -90,7 +90,7 @@
 				$selected[] = Administration::instance()->User->id;
 			}
 
-		    $users = UserManager::fetch();
+		    $users = new UserIterator;
 
 			$options = array();
 
@@ -133,7 +133,7 @@
 			foreach($values as $user_id){
 				if(is_null($user_id)) continue;
 
-				$user = new User($user_id);
+				$user = User::load($user_id);
 
 				if($user instanceof User){
 					if($fragment->hasChildNodes()) $fragment->appendChild(new DOMText(', '));
@@ -142,7 +142,7 @@
 						$fragment->appendChild(
 							Widget::Anchor(
 								General::sanitize($user->getFullName()),
-								ADMIN_URL . '/system/users/edit/' . $user->get('id') . '/'
+								ADMIN_URL . '/system/users/edit/' . $user->id . '/'
 							)
 						);
 					}
@@ -237,7 +237,7 @@
 
 	        $list = $wrapper->ownerDocument->createElement($this->{'element-name'});
 	        foreach($data['user_id'] as $user_id){
-	            $user = new User($user_id);
+	            $user = User::load($user_id);
 	            $list->appendChild(
 					$wrapper->ownerDocument->createElement('item', $user->getFullName(), array(
 						'id' => $user->id,
@@ -359,7 +359,7 @@
 
 		public function getExampleFormMarkup(){
 
-		    $users = UserManager::fetch();
+		    $users = new UserIterator;
 
 			$options = array();
 

@@ -325,7 +325,7 @@
 					var_export($this->fields['about']['name'], true),
 					var_export($user->getFullName(), true),
 					var_export(URL, true),
-					var_export($user->get('email'), true),
+					var_export($user->email, true),
 					var_export('1.0', true),
 					var_export(DateTimeObj::getGMT('c'), true),
 				);
