@@ -263,10 +263,13 @@
 
 			// Strip out any tag
 			$string = strip_tags($string);
-
-			// Find all legal characters (although spaces and tabs are legal, going to discount
-			// them to make the filename cleaner)
-			$count = preg_match_all('/[^\s\/?*:;{}\\\\]+/', $string, $matches);
+			
+			// Remove single and double quotes first
+			$string = preg_replace('/[\'"]+/', NULL, $string);
+			
+			// Find all legal characters (although spaces, tabs, quotes (single & double) and 
+			// commas are legal, going to remove them to make the filename cleaner)
+			$count = preg_match_all('/[^\s\/?*:;{},\\\\]+/', $string, $matches);
 			/*if($count <= 0 || $count == false){
 				preg_match_all('/[\w:;.,+=~]+/', $string, $matches);
 			}*/
