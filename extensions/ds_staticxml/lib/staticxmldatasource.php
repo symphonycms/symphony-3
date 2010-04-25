@@ -29,7 +29,7 @@
 			elseif(!General::validateXML($this->parameters()->xml, $xsl_errors)){
 
 				if(XSLProc::hasErrors()){
-					$errors->append('xml', sprintf('XSLT specified is invalid. The following error was returned: "%s near line %s"', $xsl_errors[0]->message, $xsl_errors[0]->line));
+					$errors->append('xml', sprintf('XSLT specified is invalid. The following error was returned: "%s near line %s"', $xsl_errors->current()->message, $xsl_errors->current()->line));
 				}
 				else{
 					$errors->append('xml', 'XSLT specified is invalid.');
