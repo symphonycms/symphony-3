@@ -100,12 +100,12 @@
 
 		## Move "file:write_mode" and "directory:write_mode" under the "symphony" heading
 		if(isset($settings['file']['write_mode'])){
-			$settings['symphony']['file_write_mode'] = $settings['file']['write_mode'];
+			$settings['symphony']['file-write-mode'] = $settings['file']['write_mode'];
 			unset($settings['file']['write_mode']);
 		}
 
 		if(isset($settings['directory']['write_mode'])){
-			$settings['symphony']['file_write_mode'] = $settings['directory']['write_mode'];
+			$settings['symphony']['file-write-mode'] = $settings['directory']['write_mode'];
 			unset($settings['directory']['write_mode']);
 		}
 
@@ -114,7 +114,7 @@
 			$settings['symphony']['lang'] = 'en';
 		}
 
-		if(writeConfig(DOCROOT . '/manifest', $settings, $settings['symphony']['file_write_mode']) === true){
+		if(writeConfig(DOCROOT . '/manifest', $settings, $settings['symphony']['file-write-mode']) === true){
 
 			// build a Frontend page instance to initialise database
 			require_once(CORE . '/class.frontend.php');

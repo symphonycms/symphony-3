@@ -304,7 +304,7 @@
 			}
 
 			if($simulate != true){
-				if(!is_dir(dirname($pathname)) && !mkdir(dirname($pathname), intval(Symphony::Configuration()->get('directory_write_mode', 'symphony'), 8), true)){
+				if(!is_dir(dirname($pathname)) && !mkdir(dirname($pathname), intval(Symphony::Configuration()->core()->symphony->{'directory-write-mode'}, 8), true)){
 					throw new ViewException(
 						__('Could not create view directory. Please check permissions on <code>%s</code>.', $view->path),
 						self::ERROR_FAILED_TO_WRITE
@@ -312,7 +312,7 @@
 				}
 
 				// Save the config
-				if(!General::writeFile($pathname, (string)$view,Symphony::Configuration()->core()->symphony->file_write_mode)){
+				if(!General::writeFile($pathname, (string)$view,Symphony::Configuration()->core()->symphony->{'file-write-mode'})){
 					throw new ViewException(
 						__('View configuration XML could not be written to disk. Please check permissions on <code>%s</code>.', $view->path),
 						self::ERROR_FAILED_TO_WRITE
@@ -323,7 +323,7 @@
 				$result = General::writeFile(
 					sprintf('%s/%s/%s.xsl', VIEWS, $view->path, $view->handle),
 					$view->template,
-					Symphony::Configuration()->get('file_write_mode', 'symphony')
+					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
 				);
 
 				if(!$result){
