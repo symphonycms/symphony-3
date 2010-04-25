@@ -160,7 +160,7 @@
 
 					case 'saved':
 
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'User updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -169,13 +169,13 @@
 									ADMIN_URL . '/system/users/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS);
 
 						break;
 
 					case 'created':
 
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'User created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -184,7 +184,7 @@
 									ADMIN_URL . '/system/users/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS);
 
 						break;
 
@@ -260,7 +260,7 @@
 			$temp = ADMIN_URL . '/login/' . $user->createAuthToken() . '/';
 
 			$label->appendChild($input);
-			$label->setValue(__('Allow remote login via '));
+			$label->appendChild(new DOMText(__('Allow remote login via ')));
 			$label->appendChild(
 				Widget::Anchor($temp, $temp)
 			);
