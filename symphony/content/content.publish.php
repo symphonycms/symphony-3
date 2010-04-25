@@ -1197,7 +1197,7 @@
 
 					case 'saved':
 
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Entry updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
 								array(
@@ -1206,12 +1206,12 @@
 									ADMIN_URL . '/publish/'.$this->_context['section_handle'].'/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS);
 
 						break;
 
 					case 'created':
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Entry created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Entries</a>',
 								array(
@@ -1220,7 +1220,7 @@
 									ADMIN_URL . '/publish/'.$this->_context['section_handle'].'/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS);
 						break;
 
 				}

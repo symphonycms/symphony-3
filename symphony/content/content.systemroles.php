@@ -178,7 +178,7 @@
 
 					case 'saved':
 
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Role updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Role</a>',
 								array(
@@ -187,13 +187,13 @@
 									ADMIN_URL . '/system/roles/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS);
 
 						break;
 
 					case 'created':
 
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'Role created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Roles</a>',
 								array(
@@ -202,7 +202,7 @@
 									ADMIN_URL . '/system/roles/'
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS);
 
 						break;
 

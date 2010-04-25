@@ -182,16 +182,19 @@
 					$callback['pageroot'] .= $bits[1] . '/';
 				}
 		
-				if(preg_match('/\/:([^\/]+)\/?$/', $bits[2], $matches)){
-					$callback['flag'] = $matches[1];
-					$bits[2] = str_replace($matches[0], NULL, $bits[2]);
-				}	
+				if(isset($bits[2])){
 
-				if(isset($bits[2])) $callback['context'] = preg_split('/\//', $bits[2], -1, PREG_SPLIT_NO_EMPTY);
+					if(preg_match('/^:([^\/]+)\/?$/', $bits[2], $matches) || preg_match('/\/:([^\/]+)\/?$/', $bits[2], $matches)){
+						$callback['flag'] = $matches[1];
+						$bits[2] = str_replace($matches[0], NULL, $bits[2]);
+					}
+					
+					$callback['context'] = preg_split('/\//', $bits[2], -1, PREG_SPLIT_NO_EMPTY);
+				}
 			
 				$callback['classname'] = 'content' . $callback['driver'];
 				$callback['driver'] = strtolower($callback['driver']);
-				
+
 				if(!is_file(CONTENT . '/content.' . $callback['driver'] . '.php')) return false;
 				
 			}

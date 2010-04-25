@@ -8,7 +8,6 @@
 	require_once(TOOLKIT . '/class.utility.php');
 
 	class contentBlueprintsViews extends AdministrationPage {
-		protected $_errors;
 
 		/*
 		TODO: Remove Children and buildParentBreadcrumb functions?
@@ -188,14 +187,11 @@
 
 			$filename = $view->handle . '.xsl';
 
-			$formHasErrors = ($this->_errors instanceof MessageStack && $this->_errors->length() > 0);
-			if($formHasErrors){
-				$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
-			}
+			$formHasErrors = ($this->errors instanceof MessageStack && $this->errors->length() > 0);
 
 			// Status message:
 			if(!is_null($callback['flag']) && $callback['flag'] == 'saved') {
-				$this->pageAlert(
+				$this->alerts()->append(
 					__(
 						'View updated at %s. <a href="%s">View all Views</a>',
 						array(
@@ -203,7 +199,7 @@
 							ADMIN_URL . '/blueprints/views/'
 						)
 					),
-					Alert::SUCCESS
+					AlertStack::SUCCESS
 				);
 			}
 
@@ -241,8 +237,8 @@
 				)
 			));
 
-			if(isset($this->_errors->template)) {
-				$label = Widget::wrapFormElementWithError($label, $this->_errors->template);
+			if(isset($this->errors->template)) {
+				$label = Widget::wrapFormElementWithError($label, $this->errors->template);
 			}
 
 			$fieldset->appendChild($label);
@@ -290,27 +286,27 @@
 
 			$view->template = $_POST['fields']['template'];
 
-			$this->_errors = new MessageStack;
+			$this->errors = new MessageStack;
 
 			try{
-				View::save($view, $this->_errors);
+				View::save($view, $this->errors);
 				redirect(ADMIN_URL . '/blueprints/views/template/' . $view->path . '/:saved/');
 			}
 			catch(ViewException $e){
 				switch($e->getCode()){
 					case View::ERROR_MISSING_OR_INVALID_FIELDS:
-						$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+						$this->alerts()->append(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), AlertStack::ERROR, $this->errors);
 						break;
 
 					case View::ERROR_FAILED_TO_WRITE:
-						$this->pageAlert($e->getMessage(), Alert::ERROR);
+						$this->alerts()->append($e->getMessage(), AlertStack::ERROR, $e);
 						break;
 				}
 			}
 			catch(Exception $e){
 				// Errors!!
 				// Not sure what happened!!
-				$this->pageAlert(__("An unknown error has occurred. %s", $e->getMessage()), Alert::ERROR);
+				$this->alert()->append(__("An unknown error has occurred. %s", $e->getMessage()), AlertStack::ERROR, $e);
 			}
 
 		}
@@ -388,7 +384,7 @@
 
 					case 'saved':
 
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'View updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -397,13 +393,13 @@
 									ADMIN_URL . '/blueprints/views/',
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS);
 
 						break;
 
 					case 'created':
 
-						$this->pageAlert(
+						$this->alerts()->append(
 							__(
 								'View created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
@@ -412,7 +408,7 @@
 									ADMIN_URL . '/blueprints/views/',
 								)
 							),
-							Alert::SUCCESS);
+							AlertStack::SUCCESS);
 
 						break;
 
@@ -474,8 +470,8 @@
 				'fields[title]', General::sanitize($fields['title'])
 			));
 
-			if(isset($this->_errors->title)) {
-				$label = Widget::wrapFormElementWithError($label, $this->_errors->title);
+			if(isset($this->errors->title)) {
+				$label = Widget::wrapFormElementWithError($label, $this->errors->title);
 			}
 
 			$fieldset->appendChild($label);
@@ -487,8 +483,8 @@
 			$label = Widget::Label(__('View Type'));
 			$label->appendChild(Widget::Input('fields[types]', $fields['types']));
 
-			if(isset($this->_errors->types)) {
-				$label = Widget::wrapFormElementWithError($label, $this->_errors->types);
+			if(isset($this->errors->types)) {
+				$label = Widget::wrapFormElementWithError($label, $this->errors->types);
 			}
 
 			$tags = $this->createElement('ul');
@@ -539,8 +535,8 @@
 				'fields[handle]', $fields['handle']
 			));
 
-			if(isset($this->_errors->handle)) {
-				$label = Widget::wrapFormElementWithError($label, $this->_errors->handle);
+			if(isset($this->errors->handle)) {
+				$label = Widget::wrapFormElementWithError($label, $this->errors->handle);
 			}
 
 			$fieldset->appendChild($label);
@@ -703,11 +699,11 @@
 					// Path has changed - Need to move the existing one, then save it
 					if($view->path != $path){
 
-						$this->_errors = new MessageStack;
+						$this->errors = new MessageStack;
 
 						try{
 							// Before moving or renaming, simulate saving to check for potential errors
-							View::save($view, $this->_errors, true);
+							View::save($view, $this->errors, true);
 							View::move($view, $path);
 						}
 						catch(Exception $e){
@@ -723,34 +719,34 @@
 					$view->path = $path;
 				}
 
-				$this->_errors = new MessageStack;
+				$this->errors = new MessageStack;
 
 				try{
-					View::save($view, $this->_errors);
+					View::save($view, $this->errors);
 					redirect(ADMIN_URL . '/blueprints/views/edit/' . $view->path . '/:saved/');
 				}
 				catch(ViewException $e){
 					switch($e->getCode()){
 						case View::ERROR_MISSING_OR_INVALID_FIELDS:
-							$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+							$this->alerts()->append(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), AlertStack::ERROR, $this->errors);
 							break;
 
 						case View::ERROR_FAILED_TO_WRITE:
-							$this->pageAlert($e->getMessage(), Alert::ERROR);
+							$this->alerts()->append($e->getMessage(), AlertStack::ERROR, $e);
 							break;
 					}
 				}
 				catch(Exception $e){
 					// Errors!!
 					// Not sure what happened!!
-					$this->pageAlert(__("An unknown error has occurred. %s", $e->getMessage()), Alert::ERROR);
+					$this->alerts()->append(__("An unknown error has occurred. %s", $e->getMessage()), AlertStack::ERROR, $e);
 				}
 
 				//print "<pre>";
 				//print htmlspecialchars((string)$view); die();
 
 			/*	print "<pre>";
-				print_r($this->_errors);
+				print_r($this->errors);
 //				print_r($view);
 //				print_r($fields);
 				die();
@@ -758,26 +754,26 @@
 
 
 				if(!isset($fields['title']) || trim($fields['title']) == '') {
-					$this->_errors['title'] = __('Title is a required field');
+					$this->errors['title'] = __('Title is a required field');
 				}
 
 				if(trim($fields['type']) != '' && preg_match('/(index|404|403)/i', $fields['type'])) {
 					$types = preg_split('~\s*,\s*~', strtolower($fields['type']), -1, PREG_SPLIT_NO_EMPTY);
 
 					if(in_array('index', $types) && $this->__typeUsed($page_id, 'index')) {
-						$this->_errors['type'] = __('An index type view already exists.');
+						$this->errors['type'] = __('An index type view already exists.');
 					}
 
 					elseif(in_array('404', $types) && $this->__typeUsed($page_id, '404')) {
-						$this->_errors['type'] = __('A 404 type view already exists.');
+						$this->errors['type'] = __('A 404 type view already exists.');
 					}
 
 					elseif(in_array('403', $types) && $this->__typeUsed($page_id, '403')) {
-						$this->_errors['type'] = __('A 403 type view already exists.');
+						$this->errors['type'] = __('A 403 type view already exists.');
 					}
 				}
 
-				if(empty($this->_errors)) {
+				if(empty($this->errors)) {
 					$autogenerated_handle = false;
 
 					if(empty($current)) {
@@ -849,16 +845,16 @@
 						$redirect = null;
 						$this->pageAlert(
 							__('View could not be written to disk. Please check permissions on <code>/workspace/views</code>.'),
-							Alert::ERROR
+							AlertStack::ERROR
 						);
 					}
 
 					if($duplicate) {
 						if($autogenerated_handle) {
-							$this->_errors['title'] = __('A view with that title already exists');
+							$this->errors['title'] = __('A view with that title already exists');
 
 						} else {
-							$this->_errors['handle'] = __('A view with that handle already exists');
+							$this->errors['handle'] = __('A view with that handle already exists');
 						}
 
 					// Insert the new data:
@@ -871,7 +867,7 @@
 										ADMIN_URL . '/system/log/'
 									)
 								),
-								Alert::ERROR
+								AlertStack::ERROR
 							);
 
 						} else {
@@ -889,7 +885,7 @@
 										ADMIN_URL . '/system/log/'
 									)
 								),
-								Alert::ERROR
+								AlertStack::ERROR
 							);
 
 						} else {
@@ -917,10 +913,10 @@
 					if($redirect) redirect(URL . $redirect);
 				}
 
-				if(is_array($this->_errors) && !empty($this->_errors)) {
+				if(is_array($this->errors) && !empty($this->errors)) {
 					$this->pageAlert(
 						__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
-						Alert::ERROR
+						AlertStack::ERROR
 					);
 				}*/
 			}

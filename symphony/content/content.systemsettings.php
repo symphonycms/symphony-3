@@ -27,19 +27,34 @@
 			$this->appendViewOptions($viewoptions);
 			*/
 			
-		    $bIsWritable = true;
-			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
+			if (!is_writable(CONFIG)) {
+		        $this->alerts()->append(
+					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
+				);
+			}
 
-		    if (!is_writable(CONFIG)) {
-		        $this->pageAlert(__('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'), Alert::ERROR);
-		        $bIsWritable = false;
+			// Status message:
+			$callback = Administration::instance()->getPageCallback();
 
-		    } else if ($formHasErrors) {
-		    	$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+			if(isset($callback['flag']) && !is_null($callback['flag'])){
 
-		    } else if (isset($this->_context[0]) && $this->_context[0] == 'success') {
-		    	$this->pageAlert(__('Preferences saved.'), Alert::SUCCESS);
-		    }
+				switch($callback['flag']){
+
+					case 'saved':
+
+						$this->alerts()->append(
+							__(
+								'System settings saved at %1$s.',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__)
+								)
+							),
+							AlertStack::SUCCESS);
+
+						break;
+
+				}
+			}
 
 		// SETUP PAGE
 			$layout = new Layout();
@@ -159,7 +174,7 @@
 			$div->setAttribute('class', 'actions');
 
 			$attr = array('accesskey' => 's');
-			if(!$bIsWritable) $attr['disabled'] = 'disabled';
+			if(!is_writable(CONFIG)) $attr['disabled'] = 'disabled';
 			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', $attr));
 
 			$this->Form->appendChild($div);
@@ -178,7 +193,7 @@
 			$this->appendViewOptions($viewoptions);
 
 		    $bIsWritable = true;
-			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
+			$formHasErrors = (is_array($this->errors) && !empty($this->errors));
 
 		    if (!is_writable(CONFIG)) {
 		        $this->pageAlert(__('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'), Alert::ERROR);
@@ -192,7 +207,7 @@
 		    }
 
 			elseif (isset($this->_context[0]) && $this->_context[0] == 'success') {
-		    	$this->pageAlert(__('Preferences saved.'), Alert::SUCCESS);
+		    	$this->pageAlert(__('Preferences saved.'), AlertStack::SUCCESS);
 		    }
 
 			###
@@ -266,8 +281,10 @@
 		}
 
 		public function action() {
-			##Do not proceed if the config file is read only
-		    if (!is_writable(CONFIG)) redirect(ADMIN_URL . '/system/settings/');
+			
+			if (!is_writable(CONFIG)) {
+				return;
+			}
 
 			###
 			# Delegate: CustomActions
@@ -280,9 +297,9 @@
 				###
 				# Delegate: Save
 				# Description: Saving of system preferences.
-				ExtensionManager::instance()->notifyMembers('Save', '/system/settings/', array('settings' => &$settings, 'errors' => &$this->_errors));
+				ExtensionManager::instance()->notifyMembers('Save', '/system/settings/', array('settings' => &$settings, 'errors' => &$this->errors));
 
-				if (!is_array($this->_errors) || empty($this->_errors)) {
+				if (!is_array($this->errors) || empty($this->errors)) {
 
 					if(is_array($settings) && !empty($settings)){
 						foreach($settings as $set => $values) {
@@ -294,7 +311,10 @@
 
 					Administration::instance()->saveConfig();
 
-					redirect(ADMIN_URL . '/system/preferences/success/');
+					redirect(ADMIN_URL . '/system/settings/:saved/');
+				}
+				else{
+					$this->alerts()->append(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), AlertStack::ERROR, $this->errors);
 				}
 			}
 		}
