@@ -27,8 +27,8 @@
 			if(is_null($datasource)) $datasource = new StaticXMLDataSource;
 
 			if(!is_null($data)){
-				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
-				if(isset($data['xml'])) $datasource->parameters()->{'xml'} = $data['xml'];
+				if(isset($data['about']['name'])) $datasource->about()->name = stripslashes($data['about']['name']);
+				if(isset($data['xml'])) $datasource->parameters()->{'xml'} = stripslashes($data['xml']);
 			}
 			
 			return $datasource;
