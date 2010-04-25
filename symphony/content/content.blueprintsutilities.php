@@ -259,7 +259,7 @@
 					elseif($this->_context[0] == 'new' && is_file($file)) $this->_errors['name'] = __('A Utility with that name already exists. Please choose another.');
 
 					##Write the file
-					elseif(!$write = General::writeFile($file, $fields['body'], Symphony::Configuration()->get('write_mode', 'file'))) {
+					elseif(!$write = General::writeFile($file, $fields['body'],Symphony::Configuration()->core()->symphony->{'file-write-mode'})) {
 						$this->alerts()->append(
 							__('Utility could not be written to disk. Please check permissions on <code>/workspace/utilities</code>.'),
 							AlertStack::SUCCESS

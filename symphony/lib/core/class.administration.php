@@ -230,11 +230,6 @@
 			
 			return $output;	
 		}
-		
-		//Deprecated
-		public function saveConfig(){
-			self::Configuration()->core()->save();
-		}
 	}
 	
 	return 'Administration';

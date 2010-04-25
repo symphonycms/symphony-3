@@ -141,15 +141,15 @@
 
 			self::$Configuration = new Configuration;
 
-			DateTimeObj::setDefaultTimezone(self::Configuration()->get('timezone', 'region'));
+			DateTimeObj::setDefaultTimezone(self::Configuration()->core()->region->timezone);
 
-			self::$_lang = (self::Configuration()->get('lang', 'symphony') ? self::Configuration()->get('lang', 'symphony') : 'en');
+			self::$_lang = (self::Configuration()->core()->symphony->lang ? self::Configuration()->core()->symphony->lang : 'en');
 
 			// Legacy support for __LANG__ constant
 			define_safe('__LANG__', self::lang());
 
-			define_safe('__SYM_DATE_FORMAT__', self::Configuration()->get('date_format', 'region'));
-			define_safe('__SYM_TIME_FORMAT__', self::Configuration()->get('time_format', 'region'));
+			define_safe('__SYM_DATE_FORMAT__', self::Configuration()->core()->region->date_format);
+			define_safe('__SYM_TIME_FORMAT__', self::Configuration()->core()->region->time_format);
 			define_safe('__SYM_DATETIME_FORMAT__', __SYM_DATE_FORMAT__ . ' ' . __SYM_TIME_FORMAT__);
 
 			define_safe('ADMIN', trim(self::Configuration()->core()->symphony->{'administration-path'}, '/'));
@@ -178,7 +178,7 @@
 			$cookie_path = '/' . trim($cookie_path, '/');
 
 			define_safe('__SYM_COOKIE_PATH__', $cookie_path);
-			define_safe('__SYM_COOKIE_PREFIX__', self::Configuration()->get('cookie_prefix', 'symphony'));
+			define_safe('__SYM_COOKIE_PREFIX__', self::Configuration()->core()->sympyony->cookie_prefix);
 
 			$this->Cookie = new Cookie(__SYM_COOKIE_PREFIX__, TWO_WEEKS, __SYM_COOKIE_PATH__);
 		}
@@ -232,12 +232,12 @@
 		public function initialiseLog(){
 
 			self::$Log = new Log(ACTIVITY_LOG);
-			self::$Log->setArchive((self::Configuration()->get('archive', 'log') == '1' ? true : false));
-			self::$Log->setMaxSize(intval(self::Configuration()->get('maxsize', 'log')));
+			self::$Log->setArchive((self::Configuration()->core()->log->archive == '1' ? true : false));
+			self::$Log->setMaxSize(intval(self::Configuration()->core()->log->maxsize));
 
 			if(self::$Log->open() == 1){
 				self::$Log->writeToLog('Symphony Log', true);
-				self::$Log->writeToLog('Version: '. self::Configuration()->get('version', 'symphony'), true);
+				self::$Log->writeToLog('Version: '. self::Configuration()->core()->symphony->version, true);
 				self::$Log->writeToLog('--------------------------------------------', true);
 			}
 

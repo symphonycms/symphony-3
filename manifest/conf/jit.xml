@@ -1,6 +1,6 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<cache>1</cache>
-	<quality>90</quality>
-	<trusted-sites></trusted-sites>
+  <cache>1</cache>
+  <quality>90</quality>
+  <trusted-external-sites></trusted-external-sites>
 </configuration>

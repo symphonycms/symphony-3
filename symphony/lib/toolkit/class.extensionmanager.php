@@ -157,10 +157,9 @@
 			);
 
 			$result = Symphony::Database()->query($query);
-			$delegates = $result->resultColumn('id');
 
-			if(is_array($delegates) && !empty($delegates))
-				Symphony::Database()->delete("tbl_extensions_delegates", array(implode("', '", $delegates)), "`extension_id` IN ('%s')");
+			if($result->valid())
+				Symphony::Database()->delete("tbl_extensions_delegates", array(implode("', '", $result->resultColumn('id'))), "`extension_id` IN ('%s')");
 
 			if(!$delegates_only)
 				Symphony::Database()->delete("tbl_extensions", array($name), "`name` = '%s'");
@@ -289,7 +288,7 @@
 
         public function notifyMembers($delegate, $page, $context=array()){
 
-	        if((int)Symphony::Configuration()->get('allow_page_subscription', 'symphony') != 1) return;
+	        if((int)Symphony::Configuration()->core()->symphony->{'allow-page-subscription'} != 1) return;
 
 			if (is_null(self::$_subscriptions)) {
 				self::$_subscriptions = Symphony::Database()->query("
@@ -510,8 +509,14 @@
 				array('disabled')
 			);
 
-			if($disabled->valid())
-				Symphony::Database()->delete("tbl_extensions_delegates", array(implode("', '", $disabled)), "`extension_id` IN ('%s')");
+			if($disabled->valid()){
+				try{
+					Symphony::Database()->delete("tbl_extensions_delegates", array(implode("', '", $disabled->resultColumn('id'))), "`extension_id` IN ('%s')");
+				}
+				catch(DatabaseException $e){
+
+				}
+			}
 
 		}
 

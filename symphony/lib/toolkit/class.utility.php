@@ -86,8 +86,8 @@
 		public static function save(Utility $utility){
 			$file = UTILITIES."/{$utility->name}";
 
-			FileWriter::write($file, $utility->body, Symphony::Configuration()->get('file_write_mode', 'symphony'));
-			//General::writeFile($file, $utility->body, Symphony::Configuration()->get('file_write_mode', 'symphony'));
+			FileWriter::write($file, $utility->body,Symphony::Configuration()->core()->symphony->file_write_mode);
+			//General::writeFile($file, $utility->body,Symphony::Configuration()->core()->symphony->file_write_mode);
 			
 			return file_exists($file);			
 		}

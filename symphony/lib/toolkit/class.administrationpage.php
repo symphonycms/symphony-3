@@ -69,7 +69,7 @@
 			$this->Body->appendChild($this->Form);
 
 			$h1 = $this->createElement('h1');
-			$anchor = $this->createElement('a', Symphony::Configuration()->get('sitename', 'symphony'));
+			$anchor = $this->createElement('a', Symphony::Configuration()->core()->symphony->sitename);
 			$anchor->setAttribute('href', rtrim(URL, '/') . '/');
 			$h1->appendChild($anchor);
 			$this->Form->appendChild($h1);
@@ -124,10 +124,6 @@
 			return $this->alerts;
 		}
 		
-		public function pageAlert($message=NULL, $type=AlertStack::NOTICE){
-			throw new Exception('Use the global message stack instead. $page::alerts()->append(..).');
-		}
-
 		public function appendAlert(){
 			###
 			# Delegate: AppendPageAlert
@@ -212,25 +208,6 @@
 								if($c['visible'] != 'no'){
 
 									if($can_access_child == true) {
-
-										## Make sure preferences menu only shows if multiple languages or extension preferences are available
-										if($c['name'] == __('Preferences') && $n['name'] == __('System')){
-											$extensions = Symphony::Database()->query("
-													SELECT
-														COUNT(id)
-													FROM
-														`tbl_extensions_delegates`
-													WHERE
-														`delegate` = 'AddCustomToolFieldsets'
-											");
-
-											$l = Lang::getAvailableLanguages(true);
-											if(count($l) == 1 && (!$result->valid())){
-												continue;
-											}
-
-										}
-										##
 
 										$xChild = $this->createElement('li');
 										$xChild->appendChild(

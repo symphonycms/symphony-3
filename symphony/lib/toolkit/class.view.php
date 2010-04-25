@@ -312,7 +312,7 @@
 				}
 
 				// Save the config
-				if(!General::writeFile($pathname, (string)$view, Symphony::Configuration()->get('file_write_mode', 'symphony'))){
+				if(!General::writeFile($pathname, (string)$view,Symphony::Configuration()->core()->symphony->file_write_mode)){
 					throw new ViewException(
 						__('View configuration XML could not be written to disk. Please check permissions on <code>%s</code>.', $view->path),
 						self::ERROR_FAILED_TO_WRITE

@@ -212,8 +212,8 @@
 				'this-month' => DateTimeObj::get('m'),
 				'this-day' => DateTimeObj::get('d'),
 				'timezone' => DateTimeObj::get('P'),
-				'website-name' => Symphony::Configuration()->get('sitename', 'symphony'),
-				'symphony-version' => Symphony::Configuration()->get('version', 'symphony'),
+				'website-name' =>Symphony::Configuration()->core()->symphony->sitename,
+				'symphony-version' =>Symphony::Configuration()->core()->symphony->version,
 				'upload-limit' => min(
 					ini_size_to_bytes(ini_get('upload_max_filesize')),
 					Symphony::Configuration()->get('max_upload_size','admin')

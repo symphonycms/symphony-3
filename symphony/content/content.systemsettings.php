@@ -18,14 +18,16 @@
 
 			$path = URL . '/symphony/system/settings/';
 			
-			// TODO: Check if there are any extensions that will append their junk before adding tabs
-			$viewoptions = array(
-				'Preferences'	=> $path,
-				'Extensions'	=> $path . 'extensions/'
-			);
-
-			$this->appendViewOptions($viewoptions);
+			if(Symphony::Database()->query("SELECT * FROM `tbl_extensions_delegates` WHERE `delegate` = '%s' AND `page` = '%s'", array('AddSettingsFieldsets', '/system/settings/extensions/'))->length() > 0){
 			
+				$viewoptions = array(
+					'Preferences'	=> $path,
+					'Extensions'	=> $path . 'extensions/'
+				);
+
+				$this->appendViewOptions($viewoptions);
+			
+			}
 			
 			if (!is_writable(CONFIG)) {
 		        $this->alerts()->append(
@@ -63,7 +65,7 @@
 			$right = $layout->createColumn(Layout::LARGE);
 		
 		// SITE SETUP
-			$helptext = 'Symphony version: ' . Symphony::Configuration()->get('version', 'symphony');
+			$helptext = 'Symphony version: ' .Symphony::Configuration()->core()->symphony->version;
 			$fieldset = Widget::Fieldset(__('Site Setup'), $helptext);
 
 			$label = Widget::Label(__('Site Name'));
@@ -173,11 +175,6 @@
 
 			$right->appendChild($fieldset);
 
-			###
-			# Delegate: AddCustomPreferenceFieldsets
-			# Description: Add Extension custom preferences. Use the $wrapper reference to append objects.
-			ExtensionManager::instance()->notifyMembers('AddCustomPreferenceFieldsets', '/system/settings/', array('wrapper' => &$this->Form));
-
 			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');
@@ -190,116 +187,122 @@
 			$this->Form->appendChild($div);
 		}
 
-		public function __viewTools() {
+		public function __viewExtensions() {
 			$this->appendSubheading(__('Settings'));
-
+			
 			$path = URL . '/symphony/system/settings/';
 
+			if(Symphony::Database()->query("SELECT * FROM `tbl_extensions_delegates` WHERE `delegate` = '%s' AND `page` = '%s'", array('AddSettingsFieldsets', '/system/settings/extensions/'))->length() == 0){
+		
+				// No settings for extensions here
+				redirect($path);
+			}
+			
+			// TODO: Check if there are any extensions that will append their junk before adding tabs
 			$viewoptions = array(
-				'Preferences' => $path,
-				'Tools'	=> $path . 'tools/'
+				'Preferences'	=> $path,
+				'Extensions'	=> $path . 'extensions/'
 			);
 
 			$this->appendViewOptions($viewoptions);
+			
+			/*
+			if (!is_writable(CONFIG)) {
+		        $this->alerts()->append(
+					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
+				);
+			}
+			*/
+			
+			// Status message:
+			$callback = Administration::instance()->getPageCallback();
 
-		    $bIsWritable = true;
-			$formHasErrors = (is_array($this->errors) && !empty($this->errors));
+			if(isset($callback['flag']) && !is_null($callback['flag'])){
 
-		    if (!is_writable(CONFIG)) {
-		        $this->pageAlert(__('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'), AlertStack::ERROR);
-		        $bIsWritable = false;
+				switch($callback['flag']){
 
-		    }
+					case 'saved':
 
-			elseif ($formHasErrors) {
-		    	$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), AlertStack::ERROR);
+						$this->alerts()->append(
+							__(
+								'System settings saved at %1$s.',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__)
+								)
+							),
+							AlertStack::SUCCESS);
 
-		    }
+						break;
 
-			elseif (isset($this->_context[0]) && $this->_context[0] == 'success') {
-		    	$this->pageAlert(__('Preferences saved.'), AlertStack::SUCCESS);
-		    }
+				}
+			}
+
+			$extension_fieldsets = array();
 
 			###
-			# Delegate: AddCustomToolFieldsets
-			# Description: Add Extension custom tools. Use the $wrapper reference to append objects.
-			ExtensionManager::instance()->notifyMembers('AddCustomToolFieldsets', '/system/settings/', array('wrapper' => &$this->Form));
+			# Delegate: AddSettingsFieldsets
+			# Description: Add Extension settings fieldsets. Append fieldsets to the array provided. They will be distributed evenly accross the 3 columns
+			ExtensionManager::instance()->notifyMembers('AddSettingsFieldsets', '/system/settings/extensions/', array('fieldsets' => &$extension_fieldsets));
 
-			$fieldset = $this->createElement('fieldset');
-			$fieldset->setAttribute('class', 'settings');
+			if(empty($extension_fieldsets)) redirect($path);
+			
+			$layout = new Layout();
+			$left = $layout->createColumn(Layout::LARGE);
+			$center = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::LARGE);
 
-			/*
-				Do not show sections or fields that have not changed.
-				Add .added or .removed to the table row on the field and/or section.
-				@rowspan is calculated by the number of fields + 1.
-			*/
-			$fieldset->setValue('
-				<legend>Section Update</legend>
-				<div id="sections-tool">
-					<table>
-						<thead>
-							<tr>
-								<th class="status">Status</th>
-								<th>Section</th>
-								<th>Content</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr class="added">
-								<td class="status">Added</td>
-								<td>Articles</td>
-								<td><span>Input Field</span>Title</td>
-							</tr>
-							<tr class="removed">
-								<td class="status">Removed</td>
-								<td>Articles</td>
-								<td><span>Textarea</span>Body</td>
-							</tr>
-							<tr class="removed">
-								<td class="status">Removed</td>
-								<td>Articles</td>
-								<td><span>Checkbox</span>Publish</td>
-							</tr>
-							<tr class="added">
-								<td class="status">Added</td>
-								<td>Forum</td>
-								<td>6 fields added</td>
-							</tr>
-							<tr class="removed">
-								<td class="status">Removed</td>
-								<td>Staff Members</td>
-								<td>10 fields removed</td>
-							</tr>
-						</tbody>
-					</table>
-					<div>
-						<p>Updates the database structure. <strong>332</strong> existing entries will be effected</p>
-						<input name="action[export]" type="submit" value="Update Sections" />
-					</div>
-				</div>');
-
-			$this->Form->appendChild($fieldset);
-
+			foreach($extension_fieldsets as $index => $fieldset){
+				$index += 1;
+				if($index % 3 == 0) $right->appendChild($fieldset);
+				elseif($index % 2 == 0) $center->appendChild($fieldset);
+				else $left->appendChild($fieldset);
+			}
+			
+			$layout->appendTo($this->Form);
+			
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
 
 			$attr = array('accesskey' => 's');
-			if(!$bIsWritable) $attr['disabled'] = 'disabled';
 			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', $attr));
 
 			$this->Form->appendChild($div);
 		}
+		
+		public function __actionExtensions() {
+			###
+			# Delegate: CustomSaveActions
+			# Description: This is where Extensions can hook on to custom actions they may need to provide.
+			ExtensionManager::instance()->notifyMembers('CustomSaveActions', '/system/settings/extensions/');
+			
+			if (isset($_POST['action']['save'])) {
+				$settings = $_POST['settings'];
+				
+				if ($this->errors->length() <= 0) {
 
-		public function action() {
+					if(is_array($settings) && !empty($settings)){
+						foreach($settings as $set => $values) {
+							foreach($values as $key => $val) {
+								Symphony::Configuration()->core()->set->$key = $val;
+							}
+						}
+					}
+
+					Symphony::Configuration()->save();
+
+					redirect(ADMIN_URL . '/system/settings/extensions/:saved/');
+				}
+				else{
+					$this->alerts()->append(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), AlertStack::ERROR, $this->errors);
+				}
+			}
+		}
+
+		public function __actionIndex() {
 			
 			if (!is_writable(CONFIG)) {
 				return;
 			}
-
-			###
-			# Delegate: CustomActions
-			# Description: This is where Extensions can hook on to custom actions they may need to provide.
-			ExtensionManager::instance()->notifyMembers('CustomActions', '/system/settings/');
 
 			if (isset($_POST['action']['save'])) {
 				$settings = $_POST['settings'];
@@ -342,7 +345,7 @@
 						}
 					}
 
-					Administration::instance()->saveConfig();
+					Symphony::Configuration()->save();
 
 					redirect(ADMIN_URL . '/system/settings/:saved/');
 				}

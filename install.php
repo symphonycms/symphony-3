@@ -209,7 +209,7 @@
 		$conf['public']['display_event_xml_in_source'] = 'no';
 		$conf['region']['time_format'] = 'H:i';
 		$conf['region']['date_format'] = 'd F Y';
-		$conf['maintenance_mode']['enabled'] = 'no';
+		$conf['maintenance-mode']['enabled'] = 'no';
 	
 		return $conf;
 	

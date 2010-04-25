@@ -901,7 +901,7 @@
 
 				$documentation_parts[] = $this->createElement('p', __('This is an example of the form markup you can use on your frontend:'));
 				$container = $this->createElement('form', NULL, array('method' => 'post', 'action' => '', 'enctype' => 'multipart/form-data'));
-				$container->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
+				$container->appendChild(Widget::Input('MAX_FILE_SIZE',Symphony::Configuration()->core()->admin->max_upload_size, 'hidden'));
 
 				$section = SectionManager::instance()->fetch($fields['source']);
 				$markup = NULL;
@@ -990,7 +990,7 @@
 				header('Content-Type: text/plain');
 
 				##Write the file
-				if(!is_writable(dirname($file)) || !$write = General::writeFile($file, $eventShell, Symphony::Configuration()->get('write_mode', 'file'))) {
+				if(!is_writable(dirname($file)) || !$write = General::writeFile($file, $eventShell,Symphony::Configuration()->core()->file->write_mode)) {
 					$this->alerts()->append(
 						__(
 							'Failed to write Event to <code>%s</code>. Please check permissions.',

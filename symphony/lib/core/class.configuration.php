@@ -1,15 +1,20 @@
 <?php
 
 	Class ConfigurationElement{
-		protected $_doc;
-		protected $_path;
-		protected $_properties;
+		protected $doc;
+		protected $path;
+		protected $properties;
 	
 		public function __construct($path){
-			$this->_properties = new StdClass;
-			$this->_path = $path;
-			$this->_doc = simplexml_load_file($this->_path);
-			self::__loadVariablesFromNode($this->_doc, $this->_properties);
+			$this->properties = new StdClass;
+			$this->path = $path;
+			if(!file_exists($path)){
+				$this->doc = new SimpleXMLElement('<configuration></configuration>');
+			}
+			else{
+				$this->doc = simplexml_load_file($this->path);
+				self::__loadVariablesFromNode($this->doc, $this->properties);
+			}
 		}
 	
 		protected function __loadVariablesFromNode(SimpleXMLElement $elements, StdClass &$group){
@@ -27,23 +32,23 @@
 		}
 		
 		public function properties(){
-			return $this->_properties;
+			return $this->properties;
 		}
 		
 		public function __get($name){
-			return $this->_properties->$name;
+			return $this->properties->$name;
 		}
 	
 		public function __set($name, $value){
-			$this->_properties->$name = $value;
+			$this->properties->$name = $value;
 		}
 	
 		public function __unset($name){
-			unset($this->_properties->$name);
+			unset($this->properties->$name);
 		}
 	
 		public function save(){
-			file_put_contents($this->_path, (string)$this);
+			file_put_contents($this->path, (string)$this);
 		}
 	
 		public function __toString(){
@@ -53,7 +58,7 @@
 			$root = $doc->createElement('configuration');
 			$doc->appendChild($root);
 		
-			self::__generateXML($this->_properties, $root);
+			self::__generateXML($this->properties, $root);
 		
 			return $doc->saveXML();
 		}
@@ -74,41 +79,20 @@
 	}
 	
 	Class Configuration{
-		private static $_objects;
+		private static $objects;
 
 		public function __call($handle, array $param){
-			if(!isset(self::$_objects[$handle]) || !(self::$_objects[$handle] instanceof ConfigurationElement)){
+			if(!isset(self::$objects[$handle]) || !(self::$objects[$handle] instanceof ConfigurationElement)){
 				$class = 'ConfigurationElement';
 				if(isset($param[0]) && strlen(trim($param[0])) > 0) $class = $param[0];
-				self::$_objects[$handle] = new $class(CONFIG . "/{$handle}.xml");
+				self::$objects[$handle] = new $class(CONFIG . "/{$handle}.xml");
 			}
-			return self::$_objects[$handle];
+			return self::$objects[$handle];
 		}
 		
-		// Deprecated
-		public function get($name=NULL, $index=NULL){
-			//throw new Exception("Configuration::get() has been deprecated. Did you mean <code>Symphony::Configuration()->core()->{$index}->{$name}</code>?");
-			
-			$name = str_replace('_', '-', $name);
-			$index = str_replace('_', '-', $index);
-			
-			if($index){
-				return $this->core()->$index->$name;
+		public function save(){
+			foreach(self::$objects as $handle => $obj){
+				$obj->save();
 			}
-				
-			return (array)$this->core()->$name;
-		}
-		
-		// Deprecated
-		public function set($name, $value, $index=NULL){
-			//throw new Exception("Configuration::set() has been deprecated. Did you mean <code>Symphony::Configuration()->core()->{$index}->{$name} = '{$value}'</code>?");
-			$name = str_replace('_', '-', $name);
-			$index = str_replace('_', '-', $index);
-			
-			if($index){
-				$this->core()->$index->$name = $value;
-			}
-				
-			$this->core()->$name = $value;
 		}
 	}

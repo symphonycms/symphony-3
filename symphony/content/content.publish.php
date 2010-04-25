@@ -452,7 +452,7 @@
 				EntryManager::instance()->setFetchSortingDirection('DESC');
 			}
 
-			$entries = EntryManager::instance()->fetchByPage($current_page, $section_id, Symphony::Configuration()->get('pagination_maximum_rows', 'symphony'), $where, $joins);
+			$entries = EntryManager::instance()->fetchByPage($current_page, $section_id,Symphony::Configuration()->core()->symphony->pagination_maximum_rows, $where, $joins);
 
 			$aTableHead = array();
 
@@ -793,7 +793,7 @@
 			$this->entry->section = $callback['context']['section_handle'];
 			$this->appendSubheading($subheading);
 			$this->entry->findDefaultFieldData();
-			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
+			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE',Symphony::Configuration()->core()->admin->max_upload_size, 'hidden'));
 
 			// Check if there is a field to prepopulate
 			if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {
@@ -1251,7 +1251,7 @@
 			$this->Form->setAttribute('enctype', 'multipart/form-data');
 			$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(__('Symphony'), $section->get('name'), $title)));
 			$this->appendSubheading($title);
-			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE', Symphony::Configuration()->get('max_upload_size', 'admin'), 'hidden'));
+			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE',Symphony::Configuration()->core()->admin->max_upload_size, 'hidden'));
 
 			###
 
