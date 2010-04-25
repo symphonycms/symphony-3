@@ -423,7 +423,7 @@
 					$changing_password = true;
 				}
 
-				$this->user->default_section = intval($fields['default_section']);
+				$this->user->default_section = $fields['default_section'];
 				$this->user->auth_token_active = ($fields['auth_token_active'] ? $fields['auth_token_active'] : 'no');
 				$this->user->language = $fields['language'];
 
