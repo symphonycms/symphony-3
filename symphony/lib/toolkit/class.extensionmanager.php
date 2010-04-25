@@ -1,9 +1,12 @@
 <?php
 
-	include_once(TOOLKIT . '/class.manager.php');
+	include_once(CORE . '/interface.singleton.php');
 	include_once(TOOLKIT . '/class.extension.php');
 
-    Class ExtensionManager extends Manager{
+    Class ExtensionManager implements Singleton {
+	    protected static $_pool;
+		protected static $_instance;
+	
 
 		static private $_enabled_extensions = NULL;
 		static private $_subscriptions = NULL;
@@ -31,6 +34,10 @@
 			}
 			return self::$_instance;
 		}
+		
+        public function flush(){
+	        self::$_pool = array();	        
+        }  
 
         function __getClassName($name){
 	        return "extension_{$name}";

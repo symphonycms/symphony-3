@@ -196,13 +196,13 @@
 			$formHasErrors = (is_array($this->errors) && !empty($this->errors));
 
 		    if (!is_writable(CONFIG)) {
-		        $this->pageAlert(__('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'), Alert::ERROR);
+		        $this->pageAlert(__('The Symphony configuration file, <code>/manifest/config.php</code>, is not writable. You will not be able to save changes to preferences.'), AlertStack::ERROR);
 		        $bIsWritable = false;
 
 		    }
 
 			elseif ($formHasErrors) {
-		    	$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), Alert::ERROR);
+		    	$this->pageAlert(__('An error occurred while processing this form. <a href="#error">See below for details.</a>'), AlertStack::ERROR);
 
 		    }
 

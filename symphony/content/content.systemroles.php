@@ -365,10 +365,10 @@
 				**********/
 
 				if(is_array($this->_errors) && !empty($this->_errors)){
-					$this->pageAlert(__('There were some problems while attempting to save. Please check below for problem fields.'), Alert::ERROR);
+					$this->pageAlert(__('There were some problems while attempting to save. Please check below for problem fields.'), AlertStack::ERROR);
 				}
 				else{
-					$this->pageAlert(__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', array(ADMIN_URL . '/system/log/')), Alert::ERROR);
+					$this->pageAlert(__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', array(ADMIN_URL . '/system/log/')), AlertStack::ERROR);
 				}
 
 			}

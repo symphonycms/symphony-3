@@ -209,34 +209,11 @@
 		    return false;
 	    }
 
-		protected static function __getHandleFromFilename($filename){
-			return preg_replace(array('/^data./i', '/.php$/i'), '', $filename);
-		}
-
-        protected static function __getClassName($name){
-	        return 'datasource' . $name;
-        }
-
-        protected static function __getClassPath($name){
-	        return self::__find($name);
-        }
-
-        protected static function __getDriverPath($name){
-	        return self::__getClassPath($name) . "/data.{$name}.php";
-        }
-
 		## This function is required in order to edit it in the data source editor page.
 		## Overload this function, and return false if you do not want the Data Source editor
 		## loading your Data Source
 		public function allowEditorToParse(){
 			return true;
-		}
-
-		## This function is required in order to identify what type of data source this is for
-		## use in the data source editor. It must remain intact. Do not overload this function in
-		## custom data sources.
-		public function getSource(){
-			return NULL;
 		}
 
 		public function type(){
@@ -392,11 +369,6 @@
 
 		}
 
-		// THIS FUNCTION WILL BE REMOVED IN THE NEXT
-		// VERSION, PLEASE THROW AN EXCEPTION INSTEAD
-		protected function __redirectToErrorPage(){
-			throw new FrontendPageNotFoundException;
-		}
 */
 		public function emptyXMLSet(DOMElement $root){
 			if(is_null($root)) {
@@ -425,58 +397,7 @@
 		protected function __determineFilterType($value){
 			return (false === strpos($value, '+') ? Datasource::FILTER_OR : Datasource::FILTER_AND);
 		}
-/*
-		protected function __noRecordsFound(){
-			return Symphony::Parent()->Page->createElement('error', __('No records found.'));
-		}
-
-		//	TODO: Rewrite __processParametersInString.
-		protected function __processParametersInString($value, $env, $includeParenthesis=true, $escape=false){
-			if(trim($value) == '') return NULL;
-
-			if(!$includeParenthesis) $value = '{'.$value.'}';
-
-			if(preg_match_all('@{([^}]+)}@i', $value, $matches, PREG_SET_ORDER)){
-
-				foreach($matches as $match){
-
-					list($source, $cleaned) = $match;
-
-					$replacement = NULL;
-
-					$bits = preg_split('/:/', $cleaned, -1, PREG_SPLIT_NO_EMPTY);
-
-					foreach($bits as $param){
-
-						if($param{0} != '$'){
-							$replacement = $param;
-							break;
-						}
-
-						$param = trim($param, '$');
-
-						$replacement = $this->__findParameterInEnv($param, $env);
-
-						if(is_array($replacement)){
-							$replacement = array_map(array('Datasource', 'escapeCommas'), $replacement);
-							if(count($replacement) > 1) $replacement = implode(',', $replacement);
-							else $replacement = end($replacement);
-						}
-
-						if(!empty($replacement)) break;
-
-					}
-
-					if($escape == true) $replacement = urlencode($replacement);
-					$value = str_replace($source, $replacement, $value);
-
-				}
-			}
-
-			return $value;
-		}
-*/
-
+		
 		/*
 		**	Given a string that may contain params in form of {$param}
 		**	resolve the tokens with their values
@@ -484,8 +405,8 @@
 		**	This checks both the Frontend Parameters and Datasource
 		**	Registers.
 		*/
-		public function replaceStringWithParameter($string, Register $DataSourceParameterOutput = null) {
-			if(trim($string) == '') return null;
+		public function replaceParametersInString($string, Register $DataSourceParameterOutput = null) {
+			if(strlen(trim($string)) == 0) return null;
 
 			if(preg_match_all('@{([^}]+)}@i', $string, $matches, PREG_SET_ORDER)){
 				foreach($matches as $match){
@@ -506,7 +427,7 @@
 						$replacement = $this->resolveParameter($param, $DataSourceParameterOutput);
 
 						if(is_array($replacement)){
-							$replacement = array_map(array('Datasource', 'escapeCommas'), $replacement);
+							$replacement = array_map(array('General', 'escapeCommas'), $replacement);
 							if(count($replacement) > 1) $replacement = implode(',', $replacement);
 							else $replacement = end($replacement);
 						}
@@ -533,25 +454,6 @@
 		}
 
 
-		public static function escapeCommas($string){
-			return preg_replace('/(?<!\\\\),/', "\\,", $string);
-		}
 
-		public static function removeEscapedCommas($string){
-			return preg_replace('/(?<!\\\\)\\\\,/', ',', $string);
-		}
-/*
-		protected function __findParameterInEnv($needle, $env){
-
-			if(isset($env['env']['url'][$needle])) return $env['env']['url'][$needle];
-
-			if(isset($env['env']['pool'][$needle])) return $env['env']['pool'][$needle];
-
-			if(isset($env['param'][$needle])) return $env['param'][$needle];
-
-			return NULL;
-
-		}
-*/
 	}
 

@@ -1,8 +1,5 @@
 <?php
 
-	//require_once(TOOLKIT . '/class.xsltpage.php');
-	//require_once(TOOLKIT . '/class.datasourcemanager.php');
-	require_once(TOOLKIT . '/class.eventmanager.php');
 	require_once(TOOLKIT . '/class.extensionmanager.php');
 	require_once(TOOLKIT . '/class.xmldocument.php');	
 	require_once(TOOLKIT . '/class.documentheaders.php');

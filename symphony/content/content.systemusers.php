@@ -388,13 +388,13 @@
 				endif;
 
 				if($this->errors->length() > 0){
-					$this->alerts()->append(__('There were some problems while attempting to save. Please check below for problem fields.'), Alert::ERROR, $this->errors);
+					$this->alerts()->append(__('There were some problems while attempting to save. Please check below for problem fields.'), AlertStack::ERROR, $this->errors);
 				}
 				else{
 					$this->alerts()->append(
 						__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', 
 						array(ADMIN_URL . '/system/log/')), 
-						Alert::ERROR
+						AlertStack::ERROR
 					);
 				}
 
@@ -470,12 +470,12 @@
 						$this->alerts()->append(
 							__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', 
 							array(ADMIN_URL . '/system/log/')), 
-							Alert::ERROR
+							AlertStack::ERROR
 						);
 					}
 
 				else:
-					$this->alerts()->append(__('There were some problems while attempting to save. Please check below for problem fields.'), Alert::ERROR, $this->errors);
+					$this->alerts()->append(__('There were some problems while attempting to save. Please check below for problem fields.'), AlertStack::ERROR, $this->errors);
 				endif;
 
 			}

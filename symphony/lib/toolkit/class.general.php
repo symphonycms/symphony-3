@@ -940,5 +940,14 @@
 			}
 			return rmdir($path);
 		}
+		
+		public static function escapeCommas($string){
+			return preg_replace('/(?<!\\\\),/', "\\,", $string);
+		}
+
+		public static function removeEscapedCommas($string){
+			return preg_replace('/(?<!\\\\)\\\\,/', ',', $string);
+		}
+		
 
 	}

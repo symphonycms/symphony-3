@@ -1,8 +1,6 @@
 <?php
 
 	require_once(TOOLKIT . '/class.htmldocument.php');
-	//require_once(TOOLKIT . '/class.htmlpage.php');
-	require_once(TOOLKIT . '/class.alert.php');
 	require_once(TOOLKIT . '/class.section.php');
 	require_once(TOOLKIT . '/class.layout.php');
 	require_once(TOOLKIT . '/class.alertstack.php');
@@ -11,18 +9,15 @@
 		public $_navigation;
 		public $_context;
 		protected $_alerts;
-
-		### By CZ: Should be checked
-		var $_layout;
-		### - - - - - - ###
 		
 		public function __construct(){
 			parent::__construct('1.0', 'utf-8', 'html');
+			$this->alerts = new AlertStack;
 		}
 
-		public function setTitle($val, $position=null) {
+		public function setTitle($value, $position=null) {
 			$doc = new XMLDocument;
-			$doc->loadHTML('<title>'.$val.'</title>');
+			$doc->loadHTML("<title>{$value}</title>");
 			$node = $this->importNode($doc->xpath('//title')->item(0), true);
 			return $this->insertNodeIntoHead($node, $position);
 		}
@@ -125,15 +120,11 @@
 			$this->$function();
 		}
 
-		public function alerts() {
-			if (!$this->alerts instanceof AlertStack) {
-				$this->alerts = new AlertStack;
-			}
-			
+		public function alerts(){
 			return $this->alerts;
 		}
 		
-		public function pageAlert($message=NULL, $type=Alert::NOTICE){
+		public function pageAlert($message=NULL, $type=AlertStack::NOTICE){
 			throw new Exception('Use the global message stack instead. $page::alerts()->append(..).');
 		}
 
@@ -145,8 +136,7 @@
 			ExtensionManager::instance()->notifyMembers('AppendPageAlert', '/backend/');
 			
 			if ($this->alerts()->valid()) {
-				$body = $this->xpath("/html/body")->item(0);
-				$this->alerts()->appendTo($body);
+				$this->alerts()->appendTo($this->Body);
 			}
 		}
 

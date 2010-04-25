@@ -1095,10 +1095,10 @@
 				$fields = $post['fields'];
 
 				if(Entry::STATUS_ERROR == $entry->checkPostData($fields, $this->_errors)):
-					$this->pageAlert(__('Some errors were encountered while attempting to save.'), Alert::ERROR);
+					$this->pageAlert(__('Some errors were encountered while attempting to save.'), AlertStack::ERROR);
 
 				elseif(Entry::STATUS_ERROR != $entry->setDataFromPost($fields, $error)):
-					$this->pageAlert($error['message'], Alert::ERROR);
+					$this->pageAlert($error['message'], AlertStack::ERROR);
 
 				else:
 
@@ -1109,7 +1109,7 @@
 
 					if(!$entry->commit()){
 						define_safe('__SYM_DB_INSERT_FAILED__', true);
-						$this->pageAlert(NULL, Alert::ERROR);
+						$this->pageAlert(NULL, AlertStack::ERROR);
 
 					}
 
@@ -1374,10 +1374,10 @@
 
 /*
 				if(Entry::STATUS_ERROR == $entry->checkPostData($fields, $this->_errors)):
-					$this->pageAlert(__('Some errors were encountered while attempting to save.'), Alert::ERROR);
+					$this->pageAlert(__('Some errors were encountered while attempting to save.'), AlertStack::ERROR);
 
 				elseif(Entry::STATUS_ERROR != $entry->setDataFromPost($fields, $error)):
-					$this->pageAlert($error['message'], Alert::ERROR);
+					$this->pageAlert($error['message'], AlertStack::ERROR);
 
 				else:
 
@@ -1389,7 +1389,7 @@
 
 					if(!$entry->commit()){
 						define_safe('__SYM_DB_INSERT_FAILED__', true);
-						$this->pageAlert(NULL, Alert::ERROR);
+						$this->pageAlert(NULL, AlertStack::ERROR);
 
 					}
 

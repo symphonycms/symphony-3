@@ -22,7 +22,6 @@
 	require_once(CORE . '/class.log.php');
 	require_once(CORE . '/class.datetimeobj.php');	
 	require_once(TOOLKIT . '/class.mysql.php');
-	require_once(TOOLKIT . '/class.xmlelement.php');
 	require_once(TOOLKIT . '/class.general.php');
 	require_once(TOOLKIT . '/class.widget.php');
 

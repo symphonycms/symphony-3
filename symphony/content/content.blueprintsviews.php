@@ -1,11 +1,10 @@
 <?php
 
 	require_once(TOOLKIT . '/class.administrationpage.php');
-	require_once(TOOLKIT . '/class.eventmanager.php');
-	//require_once(TOOLKIT . '/class.datasourcemanager.php');
 	require_once(TOOLKIT . '/class.messagestack.php');
 	require_once(TOOLKIT . '/class.xslproc.php');
 	require_once(TOOLKIT . '/class.utility.php');
+	require_once(TOOLKIT . '/class.event.php');
 
 	class contentBlueprintsViews extends AdministrationPage {
 
@@ -557,16 +556,16 @@
 
 			$label = Widget::Label(__('Events'));
 
-			$events = EventManager::instance()->listAll();
-
 			$options = array();
 
-			if(is_array($events) && !empty($events)) {
-				foreach ($events as $name => $about) $options[] = array(
-					$name, @in_array($name, $fields['events']), $about['name']
+			foreach (new EventIterator as $pathname){
+				$event = Event::load($pathname);
+				$handle = Event::getHandleFromFilename($pathname);
+				$options[] = array(
+					$handle, in_array($handle, (array)$fields['events']), $event->about()->name
 				);
 			}
-
+			
 			$label->appendChild(Widget::Select('fields[events][]', $options, array('multiple' => 'multiple')));
 			$fieldset->appendChild($label);
 
@@ -575,17 +574,14 @@
 			$label = Widget::Label(__('Data Sources'));
 
 			$options = array();
-
-			$iterator = new DataSourceIterator;
-			if($iterator->length() > 0){
-				foreach ($iterator as $pathname){
-					$ds = DataSource::load($pathname);
-					$handle = DataSource::getHandleFromFilename($pathname);
-					$options[] = array(
-						$handle, in_array($handle, (array)$fields['data-sources']), $ds->about()->name
-					);
-				}
+			foreach (new DataSourceIterator as $pathname){
+				$ds = DataSource::load($pathname);
+				$handle = DataSource::getHandleFromFilename($pathname);
+				$options[] = array(
+					$handle, in_array($handle, (array)$fields['data-sources']), $ds->about()->name
+				);
 			}
+			
 
 			$label->appendChild(Widget::Select('fields[data-sources][]', $options, array('multiple' => 'multiple')));
 			$fieldset->appendChild($label);
