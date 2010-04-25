@@ -162,7 +162,7 @@
 			}
 			
 			## EVENT DETAILS IN SOURCE
-			if (Frontend::instance()->isLoggedIn() &&Symphony::Configuration()->core()->public->display_event_xml_in_source == 'yes') {
+			if (Frontend::instance()->isLoggedIn() &&Symphony::Configuration()->core()->public->{'display-event-xml-in-source'} == 'yes') {
 				$output .= PHP_EOL . '<!-- ' . PHP_EOL . $this->_events_xml->generate(true) . ' -->';
 			}
 			
@@ -217,7 +217,7 @@
 
 			// Get max upload size from php and symphony config then choose the smallest
 			$upload_size_php = ini_size_to_bytes(ini_get('upload_max_filesize'));
-			$upload_size_sym =Symphony::Configuration()->core()->admin->max_upload_size;
+			$upload_size_sym =Symphony::Configuration()->core()->symphony->{'maximum-upload-size'};
 
 			$this->_param = array(
 				'today' => DateTimeObj::get('Y-m-d'),

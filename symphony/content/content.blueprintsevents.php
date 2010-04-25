@@ -901,7 +901,7 @@
 
 				$documentation_parts[] = $this->createElement('p', __('This is an example of the form markup you can use on your frontend:'));
 				$container = $this->createElement('form', NULL, array('method' => 'post', 'action' => '', 'enctype' => 'multipart/form-data'));
-				$container->appendChild(Widget::Input('MAX_FILE_SIZE',Symphony::Configuration()->core()->admin->max_upload_size, 'hidden'));
+				$container->appendChild(Widget::Input('MAX_FILE_SIZE',Symphony::Configuration()->core()->symphony->{'maximum-upload-size'}, 'hidden'));
 
 				$section = SectionManager::instance()->fetch($fields['source']);
 				$markup = NULL;

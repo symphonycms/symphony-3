@@ -190,12 +190,11 @@
 	
 		$conf = array();
 	
-		$conf['admin']['max_upload_size'] = '5242880';
-		$conf['symphony']['pagination_maximum_rows'] = '17';
+		$conf['symphony']['maximum-upload-size'] = '5242880';
+		$conf['symphony']['pagination-maximum-rows'] = '17';
 		$conf['symphony']['allow_page_subscription'] = '1';
 		$conf['symphony']['lang'] = 'en';
 		$conf['symphony']['version'] = '2.0.7';
-		$conf['symphony']['pages_table_nest_children'] = 'yes';
 		$conf['log']['archive'] = '1';
 		$conf['log']['maxsize'] = '102400';
 		$conf['symphony']['sitename'] = 'Symphony CMS';
@@ -206,9 +205,9 @@
 		$conf['database']['character_encoding'] = 'utf8';
 		$conf['database']['runtime_character_set_alter'] = '1';
 		$conf['database']['query_caching'] = 'default';
-		$conf['public']['display_event_xml_in_source'] = 'no';
-		$conf['region']['time_format'] = 'H:i';
-		$conf['region']['date_format'] = 'd F Y';
+		$conf['public']['display-event-xml-in-source'] = 'no';
+		$conf['region']['time-format'] = 'H:i';
+		$conf['region']['date-format'] = 'd F Y';
 		$conf['maintenance-mode']['enabled'] = 'no';
 	
 		return $conf;

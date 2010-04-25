@@ -617,11 +617,10 @@
 				
 				else{
 					
-					$conf['settings']['admin']['max_upload_size'] = '5242880';
-					$conf['settings']['symphony']['pagination_maximum_rows'] = '17';
+					$conf['settings']['symphony']['maximum-upload-size'] = '5242880';
+					$conf['settings']['symphony']['pagination-maximum-rows'] = '17';
 					$conf['settings']['symphony']['allow_page_subscription'] = '1';
 					$conf['settings']['symphony']['lang'] = (defined('__LANG__') ? __LANG__ : 'en');
-					$conf['settings']['symphony']['pages_table_nest_children'] = 'no';
 					$conf['settings']['log']['archive'] = '1';
 					$conf['settings']['log']['maxsize'] = '102400';
 					$conf['settings']['image']['cache'] = '1';
@@ -630,7 +629,7 @@
 					$conf['settings']['database']['character_set'] = 'utf8';
 					$conf['settings']['database']['character_encoding'] = 'utf8';
 					$conf['settings']['database']['runtime_character_set_alter'] = '1';
-					$conf['settings']['public']['display_event_xml_in_source'] = 'no';
+					$conf['settings']['public']['display-event-xml-in-source'] = 'no';
 				}
 				
 		        $conf['settings']['symphony']['version'] = kVERSION;		
@@ -644,8 +643,8 @@
 		        $conf['settings']['database']['password'] = $database['password'];
 		        $conf['settings']['database']['db'] = $database['name'];
 		        $conf['settings']['database']['tbl_prefix'] = $database['prefix'];
-				$conf['settings']['region']['time_format'] = $config['region']['time_format'];
-				$conf['settings']['region']['date_format'] = $config['region']['date_format'];
+				$conf['settings']['region']['time-format'] = $config['region']['time-format'];
+				$conf['settings']['region']['date-format'] = $config['region']['date-format'];
 				$conf['settings']['region']['timezone'] = $config['region']['timezone'];
 				
 
@@ -900,8 +899,8 @@ Options +FollowSymlinks
 		
 		$conf = getDynamicConfiguration();
 		$fields['symphony']['sitename'] = $conf['symphony']['sitename'];
-		$fields['region']['date_format'] = $conf['region']['date_format'];
-		$fields['region']['time_format'] = $conf['region']['time_format'];
+		$fields['region']['date-format'] = $conf['region']['date-format'];
+		$fields['region']['time-format'] = $conf['region']['time-format'];
 		
 	}
 	
@@ -991,7 +990,7 @@ Options +FollowSymlinks
 				//$Div->appendChild(Widget::label('Date Format', Widget::input('fields[general][sitename]', $fields['symphony']['sitename'])));
 				//$Div->appendChild(Widget::label('Time Format', Widget::input('fields[general][sitename]', $fields['symphony']['sitename'])));
 
-				$dateformat = $fields['region']['date_format'];
+				$dateformat = $fields['region']['date-format'];
 				$label = Widget::Label(__('Date Format'));
 				$dateFormats = array( 			
 					array('Y/m/d', $dateformat == 'Y/m/d', DateTimeObj::get('Y/m/d')),
@@ -999,10 +998,10 @@ Options +FollowSymlinks
 					array('m/d/y', $dateformat == 'm/d/y', DateTimeObj::get('m/d/y')),
 					array('d F Y', $dateformat == 'd F Y', DateTimeObj::get('d F Y')),
 				);
-				$label->appendChild(Widget::Select('fields[region][date_format]', $dateFormats));
+				$label->appendChild(Widget::Select('fields[region][date-format]', $dateFormats));
 				$Fieldset->appendChild($label);	
 
-				$timeformat = $fields['region']['time_format'];
+				$timeformat = $fields['region']['time-format'];
 				$label = Widget::Label(__('Time Format'));
 				
 				//$label->setAttribute('title', __('Local') . (date('I') == 1 ? ' daylight savings' : '') . ' time for ' . date_default_timezone_get());
@@ -1014,7 +1013,7 @@ Options +FollowSymlinks
 					array('g:i:s a', $timeformat == 'g:i:s a', DateTimeObj::get('g:i:s a')),
 					array('g:i a', $timeformat == 'g:i a', DateTimeObj::get('g:i a')),
 				);
-				$label->appendChild(Widget::Select('fields[region][time_format]', $timeformats));
+				$label->appendChild(Widget::Select('fields[region][time-format]', $timeformats));
 				$Fieldset->appendChild($label);
 				
 				

@@ -216,7 +216,7 @@
 				'symphony-version' =>Symphony::Configuration()->core()->symphony->version,
 				'upload-limit' => min(
 					ini_size_to_bytes(ini_get('upload_max_filesize')),
-					Symphony::Configuration()->get('max_upload_size','admin')
+					Symphony::Configuration()->core()->symphyony->{'maximum-upload-size'}
 				),
 				'root' => URL,
 				'workspace' => URL . '/workspace',

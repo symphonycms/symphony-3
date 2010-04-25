@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <symphony>
-    <default-max-upload-size>5242880</default-max-upload-size>
+    <maximum-upload-size>5242880</maximum-upload-size>
     <administration-path>symphony/</administration-path>
     <pagination-maximum-rows>17</pagination-maximum-rows>
     <allow-page-subscription>1</allow-page-subscription>
@@ -25,15 +25,5 @@
     <date-format>d F Y</date-format>
     <timezone>Australia/Melbourne</timezone>
   </region>
-  <maintenance-mode>
-    <enabled>no</enabled>
-  </maintenance-mode>
-  <sitename>Symphony 2.1</sitename>
-  <lang>en</lang>
-  <file-write-mode>0775</file-write-mode>
-  <directory-write-mode>0775</directory-write-mode>
-  <date-format>d F Y</date-format>
-  <time-format>H:i</time-format>
-  <timezone>Australia/Melbourne</timezone>
   <cache-driver>File</cache-driver>
 </configuration>

@@ -50,16 +50,8 @@
 			$title->appendChild($this->createTextNode(' ' . __('Views')));
 			$this->insertNodeIntoHead($title);
 
-			$nesting = (Symphony::Configuration()->get('pages_table_nest_children', 'symphony') == 'yes');
-
-			$heading = NULL;
-			if($nesting == true && isset($_GET['parent']) && is_numeric($_GET['parent'])){
-				$parent = (int)$_GET['parent'];
-				$heading = ' &mdash; ' . self::__buildParentBreadcrumb($parent);
-			}
-
 			$this->appendSubheading(__('Views') . $heading, Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/' . ($nesting == true && isset($parent) ? "?parent={$parent}" : NULL), array(
+				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
 					'title' => __('Create a new view'),
 					'class' => 'create button'
 				)

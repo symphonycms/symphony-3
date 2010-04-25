@@ -340,7 +340,7 @@
 					if(is_array($settings) && !empty($settings)){
 						foreach($settings as $set => $values) {
 							foreach($values as $key => $val) {
-								Symphony::Configuration()->set($key, $val, $set);
+								Symphony::Configuration()->core()->$set->$key = $val;
 							}
 						}
 					}

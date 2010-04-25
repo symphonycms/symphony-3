@@ -490,7 +490,7 @@
 						break;
 
 					case UPLOAD_ERR_FORM_SIZE:
-						$size = General::formatFilesize(Symphony::Configuration()->get('max_upload_size', 'admin'));
+						$size = General::formatFilesize(Symphony::Configuration()->core()->symphony->{'maximum-upload-size'});
 						$errors->append(
 							'upload',
 							array(

@@ -148,8 +148,8 @@
 			// Legacy support for __LANG__ constant
 			define_safe('__LANG__', self::lang());
 
-			define_safe('__SYM_DATE_FORMAT__', self::Configuration()->core()->region->date_format);
-			define_safe('__SYM_TIME_FORMAT__', self::Configuration()->core()->region->time_format);
+			define_safe('__SYM_DATE_FORMAT__', self::Configuration()->core()->region->{'date-format'});
+			define_safe('__SYM_TIME_FORMAT__', self::Configuration()->core()->region->{'time-format'});
 			define_safe('__SYM_DATETIME_FORMAT__', __SYM_DATE_FORMAT__ . ' ' . __SYM_TIME_FORMAT__);
 
 			define_safe('ADMIN', trim(self::Configuration()->core()->symphony->{'administration-path'}, '/'));
