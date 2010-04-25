@@ -17,15 +17,15 @@
 			$this->appendSubheading(__('Settings'));
 
 			$path = URL . '/symphony/system/settings/';
-
-			/*
+			
+			// TODO: Check if there are any extensions that will append their junk before adding tabs
 			$viewoptions = array(
-				'Preferences'		=>	$path,
-				'Tools'				=>	$path . 'tools/'
+				'Preferences'	=> $path,
+				'Extensions'	=> $path . 'extensions/'
 			);
 
 			$this->appendViewOptions($viewoptions);
-			*/
+			
 			
 			if (!is_writable(CONFIG)) {
 		        $this->alerts()->append(
@@ -69,7 +69,11 @@
 			$label = Widget::Label(__('Site Name'));
 			$input = Widget::Input('settings[symphony][sitename]', Symphony::Configuration()->core()->symphony->sitename);
 			$label->appendChild($input);
-
+			
+			if(isset($this->errors->{'symphony::sitename'})) {
+				$label = Widget::wrapFormElementWithError($label, $this->errors->{'symphony::sitename'});
+			}
+			
 			$fieldset->appendChild($label);
 
 		    // Get available languages
@@ -102,11 +106,17 @@
 			$label = Widget::Label(__('Date Format'));
 			$input = Widget::Input('settings[region][date-format]', Symphony::Configuration()->core()->region->{'date-format'});
 			$label->appendChild($input);
+			if(isset($this->errors->{'region::date-format'})) {
+				$label = Widget::wrapFormElementWithError($label, $this->errors->{'region::date-format'});
+			}
 			$fieldset->appendChild($label);
 
 			$label = Widget::Label(__('Time Format'));
 			$input = Widget::Input('settings[region][time-format]', Symphony::Configuration()->core()->region->{'time-format'});
 			$label->appendChild($input);
+			if(isset($this->errors->{'region::time-format'})) {
+				$label = Widget::wrapFormElementWithError($label, $this->errors->{'region::time-format'});
+			}
 			$fieldset->appendChild($label);
 
 			$label = Widget::Label(__('Timezone'));
@@ -298,8 +308,31 @@
 				# Delegate: Save
 				# Description: Saving of system preferences.
 				ExtensionManager::instance()->notifyMembers('Save', '/system/settings/', array('settings' => &$settings, 'errors' => &$this->errors));
-
-				if (!is_array($this->errors) || empty($this->errors)) {
+				
+				// Site name
+				if(strlen(trim($settings['symphony']['sitename'])) == 0){
+					$this->errors->append('symphony::sitename', __("'%s' is a required field.", array('Site Name')));
+				}
+				
+				// Date format
+				// TODO: Figure out a way to check date formats to ensure they are valid
+				if(strlen(trim($settings['region']['date-format'])) == 0){
+					$this->errors->append('region::date-format', __("'%s' is a required field.", array('Date Format')));
+				}
+				//elseif(!date_parse(DateTimeObj::get($settings['region']['date-format'] . 'H:m:s'))){
+				//	$this->errors->append('region::date-format', __("Invalid date format specified."));
+				//}
+				
+				// Time format
+				// TODO: Figure out a way to check time formats to ensure they are valid
+				if(strlen(trim($settings['region']['time-format'])) == 0){
+					$this->errors->append('region::time-format', __("'%s' is a required field.", array('Time Format')));
+				}
+				//elseif(!date_parse(DateTimeObj::get('Y-m-d' . $settings['region']['time-format']))){
+				//	$this->errors->append('region::time-format', __("Invalid time format specified."));
+				//}
+				
+				if ($this->errors->length() <= 0) {
 
 					if(is_array($settings) && !empty($settings)){
 						foreach($settings as $set => $values) {
