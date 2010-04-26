@@ -1,4 +1,6 @@
-/* @override http://symphony-21.local/symphony/assets/css/symphony.roles.css */
+/*-----------------------------------------------------------------------------
+	User Roles
+-----------------------------------------------------------------------------*/
 
 table.role-permissions .checkbox {
 	width: 60px;
@@ -133,3 +135,5 @@ table.role-permissions td span.perm-2 {
 .ui-slider-horizontal .ui-slider-range-max {
 	right: 0;
 }
+
+/*-------------------------------------------------------------------------------*/
