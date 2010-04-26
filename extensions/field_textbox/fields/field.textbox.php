@@ -529,41 +529,45 @@
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false, $mode = null) {
+			
 			if ($mode == 'unformatted') {
-				$value = trim($data['value']);
+				$value = trim($data->value);
 			}
 
 			else {
 				$mode = 'formatted';
-				$value = trim($data['value_formatted']);
+				$value = trim($data->value_formatted);
 			}
-
+			
+			$result = $wrapper->ownerDocument->createElement($this->{'element-name'});
+			
 			if ($mode == 'unformatted' or $this->{'text-cdata'} == 'yes') {
-				$value = '<![CDATA[' . $value . ']]>';
+				$value = $wrapper->ownerDocument->createCDATASection($value);
+				$result->appendChild($value);
 			}
-
-			// TODO: Remove this for 2.1 release.
-			else if ($encode) {
-				$value = General::sanitize($value);
-			}
-
-			else {
+			
+			else{
 				$value = $this->repairEntities($value);
+				$fragment = $wrapper->ownerDocument->createDocumentFragment(); 
+				$fragment->appendXML($value);
+				$result->appendChild($fragment);
 			}
-
+			
 			$attributes = array(
 				'mode'			=> $mode,
-				'handle'		=> $data['handle'],
-				'word-count'	=> $data['word_count']
+				'handle'		=> $data->handle,
+				'word-count'	=> $data->word_count
 			);
 
 			if ($this->{'text-handle'} != 'yes') {
 				unset($attributes['handle']);
 			}
-
-			$wrapper->appendChild(new XMLElement(
-				$this->{'element-name'}, $value, $attributes
-			));
+			
+			foreach($attributes as $name => $value){
+				$result->setAttribute($name, $value);
+			}
+			
+			$wrapper->appendChild($result);
 		}
 
 		public function prepareTableValue(StdClass $data, DOMElement $link = null) {

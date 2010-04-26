@@ -227,15 +227,19 @@
 				);
 			}
 			else {
+				$join = NULL;
 				$sort_field = $section->fetchFieldByHandle($section->{'publish-order-handle'});
-				$sort_field->buildSortingSQL($joins, $order, $section->{'publish-order-direction'});
-
+				$sort_field->buildSortingSQL($join, $order);
+				
+				$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
+				$order = sprintf($order, $section->{'publish-order-direction'});
+				
 				$query = sprintf("
 					SELECT e.*
 					FROM `tbl_entries` AS e
 					%s
 					WHERE `section` = '%s'
-					%s
+					ORDER BY %s
 					LIMIT %d, %d",
 					$joins, $section->handle, $order, $pagination['start'], $pagination['entries-per-page']
 				);

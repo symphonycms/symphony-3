@@ -102,7 +102,7 @@
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (isset($data->gmt) && !is_null($data->gmt)) {
-				$wrapper->appendChild(General::createXMLDateObject($data->local, $this->{'element-name'}));
+				$wrapper->appendChild(General::createXMLDateObject($wrapper->ownerDocument, $data->local, $this->{'element-name'}));
 			}
 		}
 

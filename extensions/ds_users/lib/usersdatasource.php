@@ -30,45 +30,47 @@
 			$root = $result->createElement($this->parameters()->{'root-element'});
 
 			try {
-				$user_ids = NULL;
 
 				##	User Filtering
-				//	TODO: Check that this is working once Duplicators are ready
 				if (is_array($this->parameters()->filter) && !empty($this->parameters()->filter)) {
+					
+					$user_ids = NULL;
+					$where_clauses = array();
+
+					$query = "SELECT * FROM `tbl_users` WHERE 1 %s ORDER BY `id` ASC";
+					
 					foreach ($this->parameters()->filter as $field => $value){
 						if(!is_array($value) && trim($value) == '') continue;
-
-						$ret = $this->processUserFilter($field, $this->replaceParametersInString($value, $ParameterOutput));
 						
+						$value = $this->replaceParametersInString($value, $ParameterOutput);
 						
-						if(!is_null($ret)){
-							$user_ids = (!is_null($user_ids) ? array_intersect($user_ids, $ret) : $ret);
-							continue;
+						if (!is_array($value)) {
+							$value = preg_split('/,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY);
+							$value = array_map('trim', $value);
 						}
 						
-						// Since this is an "AND" operation, if $user_ids is ever 
-						// empty, it means one of the filters has returned no results
-						break;
-						
+						$where_clauses[] = sprintf("`%s` IN ('%s')", str_replace('-', '_', $field), implode(',', $value));
+
 					}
 					
-					if(!empty($user_ids)){
-						$users = Symphony::Database()->query(
-							"SELECT * FROM `tbl_users` WHERE `id` IN (%s) ORDER BY `id` ASC", 
-							array(
-								implode(',', array_values($user_ids))
-							),
-							'UserResult'
-						);
-					}
+					// Should the $where_clauses array be empty, it means there were no valid filters. I.E. they were all empty strings.
+					// If that is the case, we still want Users to get returned, hence the "WHERE 1" part of the SQL to avoid errors.
+					if(!empty($where_clauses)) $where_clauses = 'AND' . implode(' AND ', $where_clauses);
+					else $where_clauses = NULL;
+					
+					$users = Symphony::Database()->query(sprintf($query, $where_clauses), 
+						array(),
+						'UserResult'
+					);
 					
 				}
-
-				else {
+				
+				// There are no filters, meaning we want all users, so use a UserIterator instead
+				else{
 					$users = new UserIterator;
 				}
-
-				if(is_object($users) && $users->length() > 0){
+				
+				if($users->length() > 0){
 
 					$included_fields = $this->parameters()->{'included-elements'};
 
@@ -131,9 +133,9 @@
 				}
 			}
 
-			catch (FrontendPageNotFoundException $error) {
-				FrontendPageNotFoundExceptionHandler::render($error);
-			}
+			//catch (FrontendPageNotFoundException $error) {
+			//	FrontendPageNotFoundExceptionHandler::render($error);
+			//}
 
 			catch (Exception $error) {
 				$root->appendChild($result->createElement(
@@ -148,24 +150,7 @@
 			return $result;
 		}
 
-		protected function processUserFilter($field, $filter) {
-			if (!is_array($filter)) {
-				$bits = preg_split('/,\s*/', $filter, -1, PREG_SPLIT_NO_EMPTY);
-				$bits = array_map('trim', $bits);
-			}
 
-			else {
-				$bits = $filter;
-			}
-
-			$query = sprintf("SELECT `id` FROM `tbl_users` WHERE `%s` IN ('%%s')", $field);
-
-			$result = Symphony::Database()->query($query, array(
-				implode("','", $bits)
-			));
-
-			return ($result->length() > 0 ? $result->resultColumn('id') : NULL);
-		}
 
 		public function prepareSourceColumnValue() {
 

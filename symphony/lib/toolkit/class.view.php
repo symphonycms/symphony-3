@@ -424,21 +424,7 @@
 			}
 
 			$root = $Document->documentElement;
-
-			if(is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})){
-				foreach($this->about()->{'data-sources'} as $handle){
-					$ds = Datasource::loadFromHandle($handle);
-					$fragment = $ds->render($DataSourceParameterOutput);
-
-					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
-						$node = $Document->importNode($fragment->documentElement, true);
-						$root->appendChild($node);
-					}
-
-				}
-			}
-
-
+			
 			$Events = $Document->createElement('events');
 			$root->appendChild($Events);
 
@@ -466,7 +452,28 @@
 					$this->_param[$handle] = trim($this->_param[$handle], ',');
 				}
 			}
-			*/
+			*/			
+			
+			//	TODO: Find dependancies and order
+			
+			if(is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})){
+				foreach($this->about()->{'data-sources'} as $handle){
+					$ds = Datasource::loadFromHandle($handle);
+					
+					try{
+						$fragment = $ds->render($DataSourceParameterOutput);
+					}
+					catch (FrontendPageNotFoundException $e) {
+						FrontendPageNotFoundExceptionHandler::render($e);
+					}
+
+					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
+						$node = $Document->importNode($fragment->documentElement, true);
+						$root->appendChild($node);
+					}
+
+				}
+			}
 
 			if($DataSourceParameterOutput->length() > 0){
 				foreach($DataSourceParameterOutput as $p){
@@ -484,7 +491,17 @@
 			$root->appendChild($element);
 
 			foreach($Parameters as $key => $parameter){
-				$element->appendChild($Document->createElement($key, (string)$parameter));
+				if(is_array($parameter->value) && count($parameter->value) > 1){
+					$p = $Document->createElement($key);
+					$p->setAttribute('value', (string)$parameter);
+					foreach($parameter->value as $v){
+						$p->appendChild($Document->createElement('item', (string)$v));
+					}
+					$element->appendChild($p);
+				}
+				else{
+					$element->appendChild($Document->createElement($key, (string)$parameter));
+				}
 			}
 
 			// When the XSLT executes, it uses the CWD as set here
@@ -497,12 +514,11 @@
 				throw new XSLProcException('Transformation Failed');
 			}
 
-			/*
-			header('Content-Type: text/plain');
+			header('Content-Type: text/plain; charset=utf-8');
 			$Document->formatOutput = true;
 			print $Document->saveXML();
 			die();
-			*/
+
 
 			return $output;
 		}
