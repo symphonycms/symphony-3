@@ -80,6 +80,7 @@
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
 			$middle = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -228,17 +229,11 @@
 
 			$fieldset = Widget::Fieldset(__('Output Options'));
 
-			$group = $page->createElement('div');
-			$group->setAttribute('class', 'group');
-
 			$container_parameter_output = $page->createElement('div');
-			$group->appendChild($container_parameter_output);
+			$fieldset->appendChild($container_parameter_output);
 
 			$container_xml_output = $page->createElement('div');
-			$group->appendChild($container_xml_output);
-
-			$fieldset->appendChild($group);
-
+			$fieldset->appendChild($container_xml_output);
 
 			$fieldset->appendChild(Widget::Input('fields[append-pagination]', 'no', 'hidden'));
 
@@ -276,7 +271,7 @@
 			$fieldset->appendChild($label);
 */
 
-			$middle->appendChild($fieldset);
+			$right->appendChild($fieldset);
 
 			$layout->appendTo($wrapper);
 
