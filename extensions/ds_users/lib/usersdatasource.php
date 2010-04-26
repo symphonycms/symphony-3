@@ -64,8 +64,9 @@
 					);
 					
 				}
-
-				if(!isset($users)){
+				
+				// There are no filters, meaning we want all users, so use a UserIterator instead
+				else{
 					$users = new UserIterator;
 				}
 				
