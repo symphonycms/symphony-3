@@ -268,10 +268,7 @@
 
 			catch (Exception $e) {
 				$this->alerts()->append(
-					__(
-						'An unknown error has occurred. %s',
-						array($e->getMessage())
-					),
+					__('An unknown error has occurred. <a class="more">Show trace information.</a>'),
 					AlertStack::ERROR, $e
 				);
 			}
@@ -654,10 +651,7 @@
 				catch(Exception $e){
 					$success = false;
 					$this->alerts()->append(
-						__(
-							'An unknown error has occurred. %s',
-							array($e->getMessage())
-						),
+						__('An unknown error has occurred. <a class="more">Show trace information.</a>'),
 						AlertStack::ERROR, $e
 					);
 				}

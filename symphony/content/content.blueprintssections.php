@@ -172,6 +172,8 @@
 			}
 
 			try {
+				throw new Exception('This shit sucks, man.');
+				
 				Section::save($this->section, $this->errors);
 				
 				// Rename section:
@@ -191,13 +193,13 @@
 					case Section::ERROR_MISSING_OR_INVALID_FIELDS:
 						$this->alerts()->append(
 							__('Could not save the layout, there are errors in your field configuration.'),
-							AlertStack::ERROR, $e
+							AlertStack::ERROR
 						);
 						break;
 					case Section::ERROR_FAILED_TO_WRITE:
 						$this->alerts()->append(
 							$e->getMessage(),
-							AlertStack::ERROR, $e
+							AlertStack::ERROR
 						);
 						break;
 				}
@@ -205,10 +207,7 @@
 			
 			catch (Exception $e) {
 				$this->alerts()->append(
-					__(
-						'An unknown error has occurred. <a class="more">Show trace information.</a>',
-						array($e->getMessage())
-					),
+					__('An unknown error has occurred. <a class="more">Show trace information.</a>'),
 					AlertStack::ERROR, $e
 				);
 			}
@@ -294,10 +293,7 @@
 				catch(Exception $e){
 					$success = false;
 					$this->alerts()->append(
-						__(
-							'An unknown error has occurred. %s',
-							array($e->getMessage())
-						),
+						__('An unknown error has occurred. <a class="more">Show trace information.</a>'),
 						AlertStack::ERROR, $e
 					);
 				}

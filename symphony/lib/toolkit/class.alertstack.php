@@ -49,6 +49,22 @@
 				
 				else if ($alert->info instanceof Exception) {
 					$info = $document->createElement('div');
+					$header = $document->createElement('h3');
+					$header->setValue($alert->info->getMessage());
+					$info->appendChild($header);
+					
+					$paragraph = $document->createElement('p');
+					$fragment = $document->createDocumentFragment();
+					$fragment->appendXML(__(
+						'An error occurred in <code>%s</code> around line <code>%d</code>',
+						array(
+							$alert->info->getFile(),
+							$alert->info->getLine()
+						)
+					));
+					$paragraph->appendChild($fragment);
+					$info->appendChild($paragraph);
+					
 					$ul = $document->createElement('ol');
 					$ul->setAttribute('class', 'trace-list');
 					
