@@ -322,7 +322,7 @@
 
 		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, $entry_id=NULL) {
 			$wrapper->appendChild(
-				Symphony::Parent()->Page->createElement(
+				$wrapper->ownerDocument->createElement(
 					$this->{'element-name'},
 					($encode ? General::sanitize($this->prepareTableValue($data)) : $this->prepareTableValue($data))
 				)

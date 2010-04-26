@@ -94,7 +94,13 @@
 	}
 
 	Class FrontendPageNotFoundException extends SymphonyErrorPage{
-		public function __construct($page){
+		public function __construct(View $page=NULL){
+			
+			if(is_null($page)){
+				$views = View::findFromType('404');
+				$page = array_shift($views);
+			}
+			
 			parent::__construct(
 				__('The page you requested does not exist.'),
 				__('Page Not Found'),

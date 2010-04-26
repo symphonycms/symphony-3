@@ -133,9 +133,9 @@
 				}
 			}
 
-			catch (FrontendPageNotFoundException $error) {
-				FrontendPageNotFoundExceptionHandler::render($error);
-			}
+			//catch (FrontendPageNotFoundException $error) {
+			//	FrontendPageNotFoundExceptionHandler::render($error);
+			//}
 
 			catch (Exception $error) {
 				$root->appendChild($result->createElement(

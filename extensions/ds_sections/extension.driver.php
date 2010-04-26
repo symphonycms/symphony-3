@@ -140,7 +140,7 @@
 
 			// Show a maximum of # results
 			$label = Widget::Label(__('Limit results per page'));
-			$input = Widget::Input('fields[limit]', $datasource->parameters()->page);
+			$input = Widget::Input('fields[limit]', $datasource->parameters()->limit);
 
 			$label->appendChild($input);
 

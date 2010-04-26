@@ -906,22 +906,19 @@
 			return $file_size;
 		}
 
-		public static function createXMLDateObject($timestamp, $element='date', $namespace=NULL){
-			if(!class_exists('XMLElement')) return false;
+		public static function createXMLDateObject(DOMDocument $doc, $timestamp, $element='date'){
 
-			$xDate = Symphony::Parent()->Page->createElement(($namespace ? $namespace . ':' : '') . $element,
-				DateTimeObj::get('Y-m-d', $timestamp),
-				array('time' => DateTimeObj::get('H:i', $timestamp),
-				      'weekday' => DateTimeObj::get('N', $timestamp),
-				));
+			$xDate = $doc->createElement($element, DateTimeObj::get('Y-m-d', $timestamp));
+			$xDate->setAttribute('time', DateTimeObj::get('H:i', $timestamp));
+			$xDate->setAttribute('weekday', DateTimeObj::get('N', $timestamp));
 
 			return $xDate;
 
 		}
 
-		public static function buildPaginationElement($total_entries=0, $total_pages=0, $entries_per_page=1, $current_page=1){
+		public static function buildPaginationElement(DOMDocument $doc, $total_entries=0, $total_pages=0, $entries_per_page=1, $current_page=1){
 
-			$pageinfo = Symphony::Parent()->Page->createElement('pagination');
+			$pageinfo = $doc->createElement('pagination');
 
 			$pageinfo->setAttribute('total-entries', $total_entries);
 			$pageinfo->setAttribute('total-pages', $total_pages);
