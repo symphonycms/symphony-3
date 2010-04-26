@@ -15,6 +15,7 @@
 			   'conditions' => array(),
 			   'filter' => array(),
 			   'redirect-404-on-empty' => false,
+			   'append-pagination' => false,
 			   'sort-field' => 'system:id',
 			   'sort-order' => 'desc',
 			   'included-elements' => array(),
@@ -197,19 +198,21 @@
 						$section->{'publish-order-handle'}
 					), 'EntryResult'
 				);
-			
-				$pagination->{'total-entries'} = (int)Symphony::Database()->query("SELECT FOUND_ROWS() AS `total`")->current()->total;
-				$pagination->{'total-pages'} = (int)ceil($pagination->{'total-entries'} * (1 / $pagination->{'entries-per-page'}));
 				
-				// Pagination Element
-				$root->appendChild(General::buildPaginationElement(
-					$result, $pagination->{'total-entries'}, $pagination->{'total-pages'}, $pagination->{'entries-per-page'}, $pagination->{'current-page'}
-				));
+				if(isset($this->parameters()->{'append-pagination'}) && $this->parameters()->{'append-pagination'} === true){
+					$pagination->{'total-entries'} = (int)Symphony::Database()->query("SELECT FOUND_ROWS() AS `total`")->current()->total;
+					$pagination->{'total-pages'} = (int)ceil($pagination->{'total-entries'} * (1 / $pagination->{'entries-per-page'}));
+				
+					// Pagination Element
+					$root->appendChild(General::buildPaginationElement(
+						$result, $pagination->{'total-entries'}, $pagination->{'total-pages'}, $pagination->{'entries-per-page'}, $pagination->{'current-page'}
+					));
+				}
 				
 				// Build Entry Records
 				if($entries->length() > 0){
 					
-					// Do some pre-processing on the include-elements
+					// Do some pre-processing on the include-elements.
 					if(is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 						$included_elements = (object)array('system' => array(), 'fields' => array());
 						foreach($this->parameters()->{'included-elements'} as $element){
@@ -217,11 +220,28 @@
 								$included_elements->system[] = preg_replace('/^system:/i', NULL, $element);
 							}
 							else{
-								$parts = preg_split('/:/', $element, 2, PREG_SPLIT_NO_EMPTY);
-								$included_elements->fields[] = array('element-name' => $parts[0], 'mode' => (isset($parts[1]) && strlen(trim($parts[1])) > 0 ? trim($parts[1]) : NULL));
+								list($element_name, $mode) = preg_split('/:/', $element, 2, PREG_SPLIT_NO_EMPTY);
+
+								$included_elements->fields[] = array(
+									'element-name' => $element_name,
+									'mode' => (!is_null($mode) > 0 ? trim($mode) : NULL)
+								);
 							}
 						}
 					}
+					
+					// Do some pre-processing on the param output array
+					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
+						$parameter_output = (object)array('system' => array(), 'fields' => array());
+						foreach($this->parameters()->{'parameter-output'} as $element){
+							if(preg_match('/^system:/i', $element)){
+								$parameter_output->system[preg_replace('/^system:/i', NULL, $element)] = array();
+							}
+							else{
+								$parameter_output->fields[$element] = array();
+							}
+						}
+					}	
 					
 					foreach($entries as $e){
 						
@@ -230,12 +250,17 @@
 							$entry = $result->createElement('entry');
 							$entry->setAttribute('id', $e->id);
 							$root->appendChild($entry);
-							
+
 							foreach($included_elements->system as $field){
 								switch($field){
-									case 'date':
-										$entry->appendChild(General::createXMLDateObject($result, strtotime($entry->creation_date)));
+									case 'creation-date':
+										$entry->appendChild(General::createXMLDateObject($result, strtotime($e->creation_date), 'creation-date'));
 										break;
+										
+									case 'modification-date':
+										$entry->appendChild(General::createXMLDateObject($result, strtotime($e->modification_date), 'modification-date'));
+										break;
+										
 										
 									case 'user':
 										$obj = User::load($e->user_id);
@@ -251,12 +276,47 @@
 							foreach($included_elements->fields as $field){
 								$section->fetchFieldByHandle($field['element-name'])->appendFormattedElement($entry, $e->data()->{$field['element-name']}, false, $field['mode']);
 							}
+						}
 
-						}
-						
 						if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
+							foreach($parameter_output->system as $field => $existing_values){
+								switch($field){
+									case 'id':
+										$parameter_output->system[$field][] = $e->id;
+										break;
+									
+									case 'creation-date':
+										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', strtotime($e->creation_date));
+										break;
+										
+									case 'modification-date':
+										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', strtotime($e->modification_date));
+										break;
+										
+									case 'user':
+										$parameter_output->system[$field][] = $e->user_id;
+										break;
+								}
+							}
+							
+							foreach($parameter_output->fields as $field => $existing_values){
+								
+							}
 						}
 						
+					}
+					
+					// Add in the param output values to the ParameterOutput object
+					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
+						foreach($parameter_output->system as $field => $values){
+							$key = sprintf('ds-%s-%s', $this->parameters()->{'root-element'}, $field);
+							$ParameterOutput->$key = array_unique($values);
+						}
+						
+						foreach($parameter_output->fields as $field => $values){
+							$key = sprintf('ds-%s-%s', $this->parameters()->{'root-element'}, $field);
+							$ParameterOutput->$key = array_unique($values);
+						}
 					}
 				}
 

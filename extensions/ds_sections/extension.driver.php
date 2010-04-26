@@ -239,7 +239,7 @@
 
 			$fieldset->appendChild($group);
 
-/*
+
 			$fieldset->appendChild(Widget::Input('fields[append-pagination]', 'no', 'hidden'));
 
 			$label = Widget::Label(__('Append pagination data'));
@@ -252,6 +252,7 @@
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
 
+/*
 			$fieldset->appendChild(Widget::Input('fields[append-associated-entry-count]', 'no', 'hidden'));
 
 			$label = Widget::Label(__('Append entry count'));
@@ -350,7 +351,8 @@
 				// Select boxes:
 				$sort_by_options = array(
 					array('system:id', ($section_active and $datasource->parameters()->{'sort-field'} == 'system:id'), __('System ID')),
-					array('system:date', ($section_active and $datasource->parameters()->{'sort-field'} == 'system:date'), __('System Date')),
+					array('system:creation-date', ($section_active and $datasource->parameters()->{'sort-field'} == 'system:creation-date'), __('System Creation Date')),
+					array('system:modification-date', ($section_active and $datasource->parameters()->{'sort-field'} == 'system:modification-date'), __('System Modification Date')),
 				);
 				$options_parameter_output = array(
 					array(
@@ -359,9 +361,14 @@
 						__('System ID')
 					),
 					array(
-						'system:date',
-						($section_active and in_array('system:date', $datasource->parameters()->{'parameter-output'})),
-						__('System Date')
+						'system:creation-date',
+						($section_active and in_array('system:creation-date', $datasource->parameters()->{'parameter-output'})),
+						__('System Creation Date')
+					),
+					array(
+						'system:modification-date',
+						($section_active and in_array('system:modification-date', $datasource->parameters()->{'parameter-output'})),
+						__('System Modification Date')
 					),
 					array(
 						'system:user',
@@ -372,20 +379,25 @@
 				$included_elements_options = array(
 					// TODO: Determine what system fields will be included.
 					array(
-						'system:date',
-						($section_active and in_array('system:date', $datasource->parameters()->{'included-elements'})),
-						__('system:date')
+						'system:creation-date',
+						($section_active and in_array('system:creation-date', $datasource->parameters()->{'included-elements'})),
+						__('system:creation-date')
+					),
+					array(
+						'system:modification-date',
+						($section_active and in_array('system:modification-date', $datasource->parameters()->{'included-elements'})),
+						__('system:modification-date')
 					),
 					array(
 						'system:user',
 						($section_active and in_array('system:user', $datasource->parameters()->{'included-elements'})),
 						__('system:user')
 					),
-					array(
+					/*array(
 						'system:pagination',
 						($section_active and in_array('system:pagination', $datasource->parameters()->{'included-elements'})),
 						__('system:pagination')
-					)
+					)*/
 				);
 
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
