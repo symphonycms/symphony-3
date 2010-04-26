@@ -162,7 +162,7 @@
 			$wrapper->appendChild($li);
 
 			$label = Widget::Label(__('Value'));
-			$input = Widget::Input('fields[filter][' . $condition['column'] . ']');
+			$input = Widget::Input('fields[filters][' . $condition['column'] . ']');
 
 			if(isset($condition['value'])) {
 				$input->setAttribute("value", $condition['value']);

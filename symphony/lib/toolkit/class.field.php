@@ -436,7 +436,7 @@
 			elseif ($andOperation == true){
 				foreach ($data as $value) {
 					self::$key++;
-					$value = $this->escape($value);
+					$value = Symphony::Database()->escape($value);
 					$joins .= "
 						LEFT JOIN
 							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
@@ -453,7 +453,7 @@
 				if (!is_array($data)) $data = array($data);
 
 				foreach ($data as &$value) {
-					$value = $this->escape($value);
+					$value = Symphony::Database()->escape($value);
 				}
 
 				self::$key++;
@@ -634,7 +634,7 @@
 
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
-				'fields[filter]'
+				'fields[filters]'
 				//. (!is_null($fieldnamePrefix) ? "[{$fieldnamePrefix}]" : NULL)
 				. '[' . $this->{'element-name'} . ']',
 				//. (!is_null($fieldnamePostfix) ? "[{$fieldnamePostfix}]" : NULL),

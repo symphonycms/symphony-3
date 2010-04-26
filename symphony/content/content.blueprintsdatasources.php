@@ -620,7 +620,7 @@
 				$li->setAttribute('class', 'unique');
 				$li->appendChild($this->createElement('h4', $h4_label));
 				$label = Widget::Label(__('Value'));
-				$label->appendChild(Widget::Input('fields[filter][user]['.$name.']', General::sanitize($value)));
+				$label->appendChild(Widget::Input('fields[filters][user]['.$name.']', General::sanitize($value)));
 				$li->appendChild($label);
 
 			 	$wrapper->appendChild($li);
@@ -630,7 +630,7 @@
 			$li->setAttribute('class', 'unique template');
 			$li->appendChild($this->createElement('h4', $h4_label));
 			$label = Widget::Label(__('Value'));
-			$label->appendChild(Widget::Input('fields[filter][user]['.$name.']'));
+			$label->appendChild(Widget::Input('fields[filters][user]['.$name.']'));
 			$li->appendChild($label);
 
 		 	$wrapper->appendChild($li);

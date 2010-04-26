@@ -33,7 +33,7 @@
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
 				$datasource->parameters()->section = $data['section'];
 
-				$datasource->parameters()->conditions = $datasource->parameters()->filter = array();
+				$datasource->parameters()->conditions = $datasource->parameters()->filters = array();
 
 				if(isset($data['conditions']) && is_array($data['conditions'])){
 					foreach($data['conditions']['parameter'] as $index => $parameter){
@@ -45,8 +45,8 @@
 					}
 				}
 
-				if(isset($data['filter']) && is_array($data['filter'])){
-					$datasource->parameters()->filter = $data['filter'];
+				if(isset($data['filters']) && is_array($data['filters'])){
+					$datasource->parameters()->filters = $data['filters'];
 				}
 
 				$datasource->parameters()->{'redirect-404-on-empty'} = (isset($data['redirect-404-on-empty']) && $data['redirect-404-on-empty'] == 'yes');
@@ -285,7 +285,7 @@
 			foreach ($field_groups as $section_handle => $section_data) {
 				$section = $section_data['section'];
 				$section_active = ($datasource->parameters()->section == $section_handle);
-				$filter_data = $datasource->parameters()->filter;
+				$filter_data = $datasource->parameters()->filters;
 
 				// Filters:
 				$context = $page->createElement('div');
@@ -306,7 +306,7 @@
 
 					$label = Widget::Label(__('Value'));
 					$label->appendChild(Widget::Input(
-						"fields[filter][id]", General::sanitize($filter_data['id'])
+						"fields[filters][id]", General::sanitize($filter_data['id'])
 					));
 					$li->appendChild($label);
 					$templates->appendChild($li);
@@ -319,7 +319,7 @@
 				$li->appendChild($name);
 
 				$label = Widget::Label(__('Value'));
-				$label->appendChild(Widget::Input('fields[filter][id]'));
+				$label->appendChild(Widget::Input('fields[filters][id]'));
 				$li->appendChild($label);
 				$templates->appendChild($li);
 

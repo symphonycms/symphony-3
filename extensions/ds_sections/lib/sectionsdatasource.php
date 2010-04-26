@@ -196,7 +196,13 @@
 			
 			//	Process Datasource Filters for each of the Fields
 			if(is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
+				foreach($this->parameters()->filters as $element_name => $value){
+					$value = $this->replaceParametersInString($value, $ParameterOutput);
+					$field = $section->fetchFieldByHandle($element_name);
 
+					$field->buildDSRetrivalSQL($value, $joins, $where, strpos($value, '+') === true);
+
+				}
 			}
 			
 			$query = sprintf(
