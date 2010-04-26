@@ -1120,10 +1120,21 @@
 	#alerts > li .info code {
 		color: #cccccc;
 	}
+	#alerts > li .info h2,
+	#alerts > li .info h3 {
+		color: #ffffff;
+		font-weight: bold;
+	}
+	#alerts > li .info h2,
+	#alerts > li .info h3,
 	#alerts > li .info p {
 		margin: 10px 20px;
 	}
-	
+	#alerts > li .info h2 + p,
+	#alerts > li .info h3 + p {
+		margin-top: -10px;
+	}
+
 /*-------------------------------------------------------------------------
 	System: Alerts: Lists
 -------------------------------------------------------------------------*/
@@ -1143,7 +1154,7 @@
 	}
 	
 	#alerts > li .info .trace-list {
-		margin: 0 0 0 20px;
+		margin: 20px 0 0 20px;
 	}
 	#alerts > li .info .trace-list li {
 		margin: 10px 20px;
