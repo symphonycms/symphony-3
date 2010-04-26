@@ -333,6 +333,14 @@ var Symphony;
 	});
 
 /*-----------------------------------------------------------------------------
+	Common
+-----------------------------------------------------------------------------*/
+	
+	$(document).ready(function() {
+		$('.tags').symphonyTags();
+	});
+	
+/*-----------------------------------------------------------------------------
 	Events Page
 -----------------------------------------------------------------------------*/
 
@@ -450,18 +458,18 @@ var Symphony;
 
 		if (layout.length) {
 			layout.symphonyLayout();
-
+			
 			// Update input names before submit:
 			$('form').submit(function() {
 				var expression = /^layout\[[0-9]+\]\[fieldsets\]\[[0-9]+\]\[fields\]\[(.*)]$/;
-
+				
 				layout.find('> .columns > .column').each(function(column) {
 					var input = $('<input />')
 						.attr('name', 'size')
 						.attr('type', 'hidden');
-
-					input.val(this.className.match(/size-([a-z]+)/)[1]);
-
+					
+					input.val(this.className.match(/column ([a-z]+)/)[1]);
+					
 					input.attr(
 						'name',
 						'layout['
@@ -471,7 +479,7 @@ var Symphony;
 
 					$(this).find('> input').remove();
 					$(this).append(input);
-
+					
 					$(this).find('> fieldset').each(function(fieldset) {
 						var input = $(this).find('> h3 > input');
 
@@ -497,6 +505,8 @@ var Symphony;
 								+ field
 								+ ']'
 							);
+							
+							console.log(input.attr('name'));
 						});
 					});
 				});
@@ -560,7 +570,7 @@ var Symphony;
 				link.text('▼').removeClass('hide').addClass('show');
 				children.hide().removeClass('selected');
 			}
-
+			
 			else if (link.is('.show')) {
 				link.text('▼').removeClass('show').addClass('hide');
 				children.show();
@@ -583,6 +593,7 @@ var Symphony;
 /*-----------------------------------------------------------------------------
 	rel[external]
 -----------------------------------------------------------------------------*/
+	
 	$(window).ready(function() {
 		$('a[rel=external]').live("click", function() {
 			window.open($(this).attr('href'));

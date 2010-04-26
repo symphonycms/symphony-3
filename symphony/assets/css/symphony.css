@@ -314,29 +314,39 @@
 	Layout
 -----------------------------------------------------------------------------*/
 
-	#layout {
+	#layout,
+	.columns {
 		border-spacing: 30px 0;
 		display: table;
 		margin: 0 0 10px 0;
 		table-layout: fixed;
 		width: 100%;
 	}
-	#layout > .column {
+	#layout > .column,
+	.columns > .column {
 		display: table-cell;
 		vertical-align: top;
 	}
-	#layout > .small {
+	#layout > .small,
+	.columns > .small {
 		width: 30%;
 	}
-	#layout > .large {
+	#layout > .large,
+	.columns > .large {
 		width: 70%;
 	}
 
-	#layout.type-lll > .column {
+	#layout.type-lll > .column,
+	.columns.type-lll > .column {
 		width: 33.3%;
 	}
 	
-	#layout.type-lls > .large, #layout.type-lsl > .large, #layout.type-sll > .large {
+	#layout.type-lls > .large,
+	#layout.type-lsl > .large,
+	#layout.type-sll > .large,
+	.columns.type-lls > .large,
+	.columns.type-lsl > .large,
+	.columns.type-sll > .large {
 		width: 50%;
 	}
 
@@ -811,6 +821,7 @@
 	Content: Form: Tags
 -----------------------------------------------------------------------------*/
 
+	ol.tags,
 	ul.tags {
 		list-style: none;
 		margin: -8px 0 10px 0;

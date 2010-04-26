@@ -6,9 +6,9 @@
 		};
 		
 		Symphony.Language.add({
-			'Add Item': false,
+			'Add Fieldset': false,
+			'Remove Fieldset': false,
 			'Choose Layout': false,
-			'Fieldset': false,
 			'Untitled': false
 		});
 		
@@ -18,6 +18,7 @@
 		
 		objects = objects.map(function() {
 			var object = jQuery(this).addClass('layout-widget');
+			var children = object.find('*');
 			
 			var get_columns = function(filter) {
 				var data = object.find('> .columns > *');
@@ -27,23 +28,21 @@
 				return data;
 			};
 			var get_layout_id = function(element) {
-				var layout_id = '';
+				var layout_id = 'columns type-';
 				
 				element.children().each(function(index) {
 					var column = jQuery(this);
 					
-					if (index) layout_id += '|';
-					
-					if (column.is('.size-small')) {
-						layout_id += 'small';
+					if (column.is('.small')) {
+						layout_id += 's';
 					}
 					
-					else if (column.is('.size-medium')) {
-						layout_id += 'medium';
+					else if (column.is('.medium')) {
+						layout_id += 'm';
 					}
 					
-					else if (column.is('.size-large')) {
-						layout_id += 'large';
+					else if (column.is('.large')) {
+						layout_id += 'l';
 					}
 				});
 				
@@ -85,7 +84,7 @@
 			
 		/*-------------------------------------------------------------------*/
 			
-			object.find('*').live('layout-initialize', function() {
+			children.live('layout-initialize', function() {
 				var layout = jQuery(this);
 				
 				if (!layout.data('layout-id')) {
@@ -105,25 +104,25 @@
 				});
 			});
 			
-			object.find('*').live('layouts-hide', function() {
+			children.live('layouts-hide', function() {
 				object.find('> .layouts').hide();
 			})
 			
-			object.find('*').live('layouts-show', function() {
+			children.live('layouts-show', function() {
 				object.find('> .layouts').show();
 			})
 			
-			object.find('*').live('layout-select', function() {
+			children.live('layout-select', function() {
 				var layout = jQuery(this);
 				var old_columns = get_columns();
 				var new_columns = layout.find('> div > *').clone();
-				var parent = old_columns.parents('.columns');
+				var parent = old_columns.first().closest('.columns');
 				
 				// Remove old columns:
 				parent.empty();
 				
 				// Remove placeholder text:
-				new_columns.find('span').remove();
+				new_columns.text('');
 				
 				// Insert new columns:
 				new_columns.each(function(index) {
@@ -145,13 +144,16 @@
 					});
 				});
 				
+				parent.removeClass()
+					.addClass(layout.data('layout-id'));
+				
 				active_layout_id = layout.data('layout-id');
 				object.trigger('change');
 			})
 			
 		/*-------------------------------------------------------------------*/
 			
-			object.find('*').live('column-initialize', function() {
+			children.live('column-initialize', function() {
 				var column = jQuery(this);
 				
 				// Insert default fieldset:
@@ -164,7 +166,7 @@
 			
 		/*-------------------------------------------------------------------*/
 			
-			object.find('*').live('fieldset-initialize', function() {
+			children.live('fieldset-initialize', function() {
 				var fieldset = jQuery(this);
 				
 				// Fill with default content:
@@ -199,16 +201,19 @@
 						.appendTo(fieldset);
 					
 					jQuery('<li />')
-						.addClass('menu')
+						.addClass('add')
 						.append(
 							jQuery('<span />')
-								.text(Symphony.Language.get('Add Item') + ' ▼')
+								.text(Symphony.Language.get('Add Fieldset'))
 						)
 						.appendTo(controls);
 					
 					jQuery('<li />')
 						.addClass('remove')
-						.html('<span>×</span>')
+						.append(
+							jQuery('<span />')
+								.text(Symphony.Language.get('Remove Fieldset'))
+						)
 						.appendTo(controls);
 					
 					controls.children().bind('mousedown', function() {
@@ -240,11 +245,12 @@
 				fieldset.trigger('fieldset-refresh');
 			});
 			
-			object.find('*').live('fieldset-refresh', function() {
+			children.live('fieldset-refresh', function() {
 				var fieldset = jQuery(this);
 				var remove = fieldset.find('> .controls > .remove');
+				var fields = fieldset.find('> .fields > .field');
 				
-				if (fieldset.siblings('fieldset').length) {
+				if (fieldset.siblings('fieldset').length && fields.length == 0) {
 					remove.removeClass('disabled');
 				}
 				
@@ -253,7 +259,7 @@
 				}
 			});
 			
-			object.find('*').live('fieldset-remove', function() {
+			children.live('fieldset-remove', function() {
 				var fieldset = jQuery(this);
 				var siblings = fieldset.siblings('fieldset');
 				
@@ -269,116 +275,10 @@
 				object.trigger('change');
 			});
 			
-			object.find('*').live('fieldset-change', function() {
+			children.live('fieldset-change', function() {
 				var fieldset = jQuery(this);
 				
 				fieldset.removeClass('unchanged');
-				object.trigger('change');
-			});
-			
-			object.find('*').live('fieldset-menu-show', function() {
-				var button = jQuery(this);
-				var fieldset = button.parents('fieldset:first');
-				var position = button.position();
-				var offset = button.offsetParent().position();
-				var menu = jQuery('<div />')
-					.addClass('menu');
-				var fields = jQuery('<ol />');
-				var other = jQuery('<ol />');
-				var templates = get_templates().remove();
-				var remove = function() {
-					fieldset.trigger('fieldset-menu-hide');
-					jQuery(window).unbind('mousedown', remove);
-				};
-				var add_fieldset = function() {
-					jQuery('<fieldset />')
-						.insertAfter(fieldset)
-						.trigger('fieldset-initialize');
-					
-					fieldset.siblings().add(fieldset)
-						.trigger('fieldset-refresh');
-					
-					object.trigger('change');
-				};
-				var add_field = function() {
-					jQuery(this).appendTo(fieldset.find('.fields'))
-						.unbind('mousedown', add_field)
-						.trigger('field-initialize');
-					
-					fieldset.trigger('fieldset-change');
-					object.trigger('change');
-				};
-				
-				// Append fields:
-				if (templates.length) {
-					var items = templates.get();
-					
-					items.sort(function(a, b) {
-						var text_a = Symphony.Language.createHandle(jQuery(a).text());
-						var text_b = Symphony.Language.createHandle(jQuery(b).text());
-						
-						return (text_a < text_b) ? -1 : (text_a > text_b) ? 1 : 0;
-					});
-					
-					items = jQuery(items)
-						.bind('mousedown', add_field);
-					
-					fields
-						.append(items)
-						.appendTo(menu);
-				}
-				
-				jQuery('<li />')
-					.text(Symphony.Language.get('Fieldset'))
-					.bind('mousedown', add_fieldset)
-					.appendTo(other);
-				
-				other.appendTo(menu);
-				menu
-					.css('left', (position.left + offset.left) + 'px')
-					.css('top', (position.top + offset.top + 10) + 'px')
-					.prependTo(object);
-				
-				jQuery(window).bind('mousedown', remove);
-			});
-			
-			object.find('*').live('fieldset-menu-hide', function() {
-				var fieldset = jQuery(this);
-				var menu = object.find('> .menu');
-				
-				if (menu.find('ol').length == 2) {
-					menu.find('ol:first > li')
-						.appendTo(object.find('> .templates'));
-				}
-				
-				menu.remove();
-			});
-			
-		/*-------------------------------------------------------------------*/
-			
-			object.find('*').live('field-initialize', function() {
-				var field = jQuery(this).addClass('field');
-				
-				// Controls are missing?
-				if (field.find('> .remove').length == 0) {
-					jQuery('<a />')
-						.addClass('remove')
-						.text('×')
-						.appendTo(field);
-				}
-			});
-			
-			object.find('*').live('field-remove', function() {
-				var field = jQuery(this);
-				var fieldsets = field.parents('.column')
-					.find('fieldset');
-				var templates = object.find('> .templates');
-				
-				// Remove controls:
-				field.find('.remove').remove();
-				
-				templates.prepend(field);
-				fieldsets.trigger('fieldset-refresh');
 				object.trigger('change');
 			});
 			
@@ -422,28 +322,19 @@
 			});
 			
 			// Show fieldset menu:
-			object.find('.columns .column fieldset .controls .menu').live('click', function() {
-				if (object.find('> .menu').length != 0) {
-					jQuery(this).trigger('fieldset-menu-hide');
-				}
+			object.find('.columns .column fieldset .controls .add').live('click', function() {
+				var fieldset = jQuery(this).closest('fieldset');
 				
-				jQuery(this).trigger('fieldset-menu-show');
+				jQuery('<fieldset />')
+					.insertAfter(fieldset)
+					.trigger('fieldset-initialize');
 			});
 			
 			// Remove fieldsets and fields:
-			object.find('.columns .column fieldset .remove').live('click', function() {
-				var self = jQuery(this);
-				
-				// Remove field:
-				if (self.parents('.field').length != 0) {
-					self.parents('.field').trigger('field-remove');
-				}
-				
-				else {
-					self.parents('fieldset').trigger('fieldset-remove');
-				}
-				
-				return false;
+			object.find('.columns .column fieldset .controls .remove').live('click', function() {
+				jQuery(this)
+					.closest('fieldset')
+					.trigger('fieldset-remove');
 			});
 		});
 	};

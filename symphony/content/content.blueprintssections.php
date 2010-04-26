@@ -133,14 +133,14 @@
 			// Resave fields:
 			if (!is_null($fields)) {
 				$this->section->removeAllFields();
-
+				
 				if (is_array($fields) and !empty($fields)) {
 					foreach ($fields as $field) {
 						$this->section->appendFieldByType($field['type'], $field);
 					}
 				}
 			}
-
+			
 			// Resave layout:
 			if (!is_null($layout)) {
 				foreach ($layout as &$column) {
@@ -150,7 +150,7 @@
 						$fieldset = (object)$fieldset;
 					}
 				}
-
+				
 				$this->section->layout = $layout;
 			}
 
@@ -333,37 +333,29 @@
 
 			parent::appendViewOptions($view_options);
 		}
-
-		public function appendColumn(SymphonyDOMElement $wrapper, $size = Layout::LARGE, $fieldsets = array(), &$fields = null) {
-			$document = $wrapper->ownerDocument;
-			$column = $document->createElement('li');
-			$column->setAttribute('class', 'column size-' . $size);
-
-			if (!empty($fieldsets)) foreach ($fieldsets as $data) {
-				$fieldset = $document->createElement('fieldset');
-				$header = $document->createElement('h3');
-				$list = $document->createElement('ol');
-				$list->setAttribute('class', 'fields');
-
-				$input = Widget::Input('name', $data->name);
-
-				$header->appendChild($input);
-				$fieldset->appendChild($header);
-
-				if (!empty($data->fields)) foreach ($data->fields as $data) {
-					if (!isset($fields[$data])) continue;
-
-					$field = $fields[$data];
-					unset($fields[$data]);
-
-					$this->appendField($list, $field);
-				}
-
-				$fieldset->appendChild($list);
-				$column->appendChild($fieldset);
+		
+		public function appendFieldset(SymphonyDOMElement $wrapper, $data, $fields) {
+			$fieldset = $this->createElement('fieldset');
+			$header = $this->createElement('h3');
+			$list = $this->createElement('ol');
+			$list->setAttribute('class', 'fields');
+			
+			$input = Widget::Input('name', $data->name);
+			
+			$header->appendChild($input);
+			$fieldset->appendChild($header);
+			
+			if (!empty($data->fields)) foreach ($data->fields as $data) {
+				if (!isset($fields[$data])) continue;
+				
+				$field = $fields[$data];
+				unset($fields[$data]);
+				
+				$this->appendField($list, $field);
 			}
-
-			$wrapper->appendChild($column);
+			
+			$fieldset->appendChild($list);
+			$wrapper->appendChild($fieldset);
 		}
 
 		public function appendField(SymphonyDOMElement $wrapper, Field $field) {
@@ -452,20 +444,19 @@
 
 			$templates = $this->createElement('ol');
 			$templates->setAttribute('class', 'templates');
-
-			$columns = $this->createElement('ol');
-			$columns->setAttribute('class', 'columns');
+			
+			$columns = new Layout('ol', 'li');
 
 			// Load fields:
 			$fields = $this->section->fields;
-
+			
 			foreach ($fields as $index => $field) {
 				$name = $field->{'element-name'};
 				$fields[$name] = $field;
 
 				unset($fields[$index]);
 			}
-
+			
 			// Layouts:
 			$layout_options = array(
 				array(Layout::LARGE),
@@ -475,50 +466,39 @@
 				array(Layout::LARGE, Layout::LARGE, Layout::LARGE),
 				array(Layout::LARGE, Layout::LARGE, Layout::LARGE, Layout::LARGE)
 			);
-
+			
 			foreach ($layout_options as $layout_columns) {
 				$item = $this->createElement('li');
-				$div = $this->createElement('div');
-
+				$mini_layout = new Layout();
+				
 				foreach ($layout_columns as $index => $size) {
-					$element = $this->createElement('div');
-					$element->setAttribute('class', 'column size-' . $size);
-
-					$span = $this->createElement('span', chr(97 + $index));
-					$element->appendChild($span);
-
-					$div->appendChild($element);
+					$column = $mini_layout->createColumn($size);
+					$text = $this->createTextNode(chr(97 + $index));
+					$column->appendChild($text);
 				}
-
-				$item->appendChild($div);
+				
+				$mini_layout->appendTo($item);
 				$layouts->appendChild($item);
 			}
-
-			// Default columns:
-			if (empty($this->section->layout)) {
-				$this->appendColumn($columns, Layout::LARGE);
-				$this->appendColumn($columns, Layout::SMALL);
-			}
-
+			
 			// Current columns:
-			else foreach ($this->section->layout as $column) {
-				if ($column->size == Layout::LARGE) {
-					$this->appendColumn($columns, Layout::LARGE, $column->fieldsets, $fields);
-				}
-
-				else {
-					$this->appendColumn($columns, Layout::SMALL, $column->fieldsets, $fields);
+			foreach ($this->section->layout as $data) {
+				$column = $columns->createColumn($data->size);
+				
+				if (!empty($data->fieldsets)) foreach ($data->fieldsets as $data) {
+					$this->appendFieldset($column, $data, $fields);
 				}
 			}
-
+			
 			// Templates:
 			if (is_array($fields)) foreach($fields as $position => $field) {
 				$this->appendField($templates, $field);
 			}
-
+			
 			$widget->appendChild($layouts);
 			$widget->appendChild($templates);
-			$widget->appendChild($columns);
+			$columns->appendTo($widget);
+			
 			$fieldset->appendChild($widget);
 			$content->appendChild($fieldset);
 			$layout->appendTo($this->Form);
@@ -587,35 +567,6 @@
 			if ($existing instanceof Section) {
 				$this->appendViewOptions();
 			}
-
-			/*
-			TODO: This code should become MessageStack::appendTo(...)
-
-			// Show errors:
-			function appendErrorSummary(SymphonyDOMElement $wrapper, MessageStack $messages) {
-				$document = $wrapper->ownerDocument;
-				$list = $document->createElement('ol');
-				$list->setAttribute('class', 'error-list');
-
-				foreach ($messages as $key => $message) {
-					if ($message instanceof MessageStack) {
-						$item = $document->createElement('li', $key . ':');
-
-						appendErrorSummary($item, $message);
-					}
-
-					else {
-						$item = $document->createElement('li', $key . ': ' . $message);
-					}
-
-					$list->appendChild($item);
-				}
-
-				$wrapper->appendChild($list);
-			}
-
-			appendErrorSummary($this->Form, $this->errors);
-			*/
 
 			// Essentials:
 			$fieldset = $this->createElement('fieldset');

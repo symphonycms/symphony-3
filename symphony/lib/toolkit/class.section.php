@@ -302,6 +302,8 @@
 					$section->$name = (string)$value;
 				}
 			}
+			
+			$section->sanitizeLayout();
 
 			if (isset($doc->attributes()->guid)) {
 				$section->guid = (string)$doc->attributes()->guid;
@@ -353,6 +355,8 @@
 			}
 			
 			if ($simulate) return true;
+			
+			$section->sanitizeLayout();
 			
 			$doc = $section->toDoc();
 			
@@ -582,6 +586,77 @@
 			);
 			
 			return General::deleteFile(SECTIONS . '/' . $section->handle . '.xml');
+		}
+		
+		public function sanitizeLayout() {
+			$layout = $this->layout;
+			$fields_used = array();
+			$fields_available = array();
+			
+			// Find available fields:
+			foreach ($this->fields as $field) {
+				$fields_available[] = $field->{'element-name'};
+			}
+			
+			// Make sure we have at least one column:
+			if (!is_array($layout) or empty($layout)) {
+				$layout = array(
+					(object)array(
+						'size'		=> Layout::LARGE,
+						'fieldsets'	=> array()
+					),
+					(object)array(
+						'size'		=> Layout::SMALL,
+						'fieldsets'	=> array()
+					)
+				);
+			}
+			
+			// Make sure each column has a fieldset:
+			foreach ($layout as &$column) {
+				if (!isset($column->fieldsets) or !is_array($column->fieldsets)) {
+					$column->fieldsets = array();
+				}
+				
+				if (empty($column->fieldsets)) {
+					$column->fieldsets = array(
+						(object)array(
+							'name'		=> __('Untitled'),
+							'fields'	=> array()
+						)
+					);
+				}
+				
+				foreach ($column->fieldsets as &$fieldset) {
+					if (!isset($fieldset->fields) or !is_array($fieldset->fields)) {
+						$fieldset->fields = array();
+					}
+					
+					if (empty($fieldset->fields)) {
+						$fieldset->fields = array();
+					}
+					
+					foreach ($fieldset->fields as $index => $field) {
+						if (in_array($field, $fields_available)) {
+							$fields_used[] = $field;
+						}
+						
+						else {
+							unset($fieldset->fields[$index]);
+						}
+						
+						$fields_used[] = $field;
+					}
+				}
+			}
+			
+			$fields_unused = array_diff($fields_available, $fields_used);
+			
+			if (is_array($fields_unused)) foreach ($fields_unused as $field) {
+				$layout[0]->fieldsets[0]->fields[] = $field;
+			}
+			
+			$this->layout = $layout;
 		}
 
 		public function toDoc(){

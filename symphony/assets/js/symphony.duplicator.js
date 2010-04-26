@@ -294,10 +294,12 @@
 				find(select.template_parent)
 					.trigger('duplicator-templates-hide');
 			}
-
+			
 			// Remove templates on form submit
 			form.bind('submit', function() {
-				find(select.template_parent).remove();
+				find(select.template_parent)
+					.trigger('duplicator-templates-hide')
+					.remove();
 			});
 		});
 
@@ -350,93 +352,5 @@
 
 		return duplicator;
 	};
-
-/*-----------------------------------------------------------------------------
-	Collapsed duplicator
------------------------------------------------------------------------------*/
-
-	/*
-	jQuery.fn.symphonyCollapsedDuplicator = function(custom_settings) {
-		var objects = jQuery(this).symphonyDuplicator(jQuery.extend(
-			custom_settings, {
-				collapsible:		true,
-				delay_initialize:	true
-			}
-		));
-		var settings = objects.duplicator.settings;
-
-		objects = objects.map(function() {
-			var object = this;
-			var collapse_all = null, expand_all = null;
-			var cookie_id = '', open = [];
-			var construct = function(event, instance, x) {
-				// Don't collapse on error:
-				if (instance.find('#error').length) return;
-
-				// Remember open states:
-				if (open && open.indexOf(instance.index().toString()) >= 0) return;
-
-				instance.removeClass('expanded').addClass('collapsed');
-			};
-			var refresh = function() {
-				var open = [];
-
-				object.find(settings.instances).each(function(index) {
-					if (jQuery(this).is('.expanded')) open.push(index);
-				});
-
-				Symphony.Cookie.set(cookie_id, open.join(','));
-
-				// Toggle expand/collape all buttons:
-				if (open.length) {
-					collapse_all.show();
-					expand_all.hide();
-				}
-
-				else {
-					collapse_all.hide();
-					expand_all.show();
-				}
-			};
-
-			// Make sure it has an id:
-			if (!object.attr('id')) return object;
-
-			cookie_id = 'symphony-collapsed-duplicator-' + object.attr('id');
-
-			// Read cookie:
-			if (Symphony.Cookie.get(cookie_id)) {
-				open = Symphony.Cookie.get(cookie_id).split(',');
-			}
-
-			// Collapse items as they are constructed:
-			object.bind('construct', construct);
-			object.duplicator.initialize();
-			object.unbind('construct', construct);
-
-			// Listen for changes:
-			object.bind('collapsestop', refresh);
-			object.bind('expandstop', refresh);
-			object.bind('orderstop', refresh);
-
-			// Add collapse/expand all toggle:
-			collapse_all = jQuery('<a />')
-				.addClass('collapse-all')
-				.text('Collapse All')
-				.appendTo(object.children('.controls:last'))
-				.bind('click', object.collapsible.collapseAll);
-
-			expand_all = jQuery('<a />')
-				.addClass('collapse-all')
-				.text('Expand All')
-				.appendTo(object.children('.controls:last'))
-				.bind('click', object.collapsible.expandAll);
-
-			refresh();
-		});
-
-		return objects;
-	};
-	*/
-
+	
 /*---------------------------------------------------------------------------*/
