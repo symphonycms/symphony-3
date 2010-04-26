@@ -446,15 +446,15 @@
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
-
-			$actions->appendChild(
-				Widget::Submit(
-					'action[save]', __('Create Data Source'),
-					array(
-						'accesskey' => 's'
-					)
+			
+			$save = Widget::Submit(
+				'action[save]', __('Create Data Source'),
+				array(
+					'accesskey' => 's'
 				)
 			);
+			
+			$actions->appendChild($save);
 
 			if ($this->editing == true) {
 				$save->setAttribute('value', __('Save Changes'));

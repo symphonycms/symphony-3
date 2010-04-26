@@ -297,7 +297,7 @@
 				$instances = $page->createElement('ol');
 				$instances->setAttribute('class', 'instances');
 
-				if (isset($filter_data['id'])) {
+				if (isset($filter_data['system:id'])) {
 					$li = $page->createElement('li');
 
 					$name = $page->createElement('span', __('System ID'));
@@ -306,10 +306,10 @@
 
 					$label = Widget::Label(__('Value'));
 					$label->appendChild(Widget::Input(
-						"fields[filters][id]", General::sanitize($filter_data['id'])
+						"fields[filters][system:id]", $filter_data['system:id']
 					));
 					$li->appendChild($label);
-					$templates->appendChild($li);
+					$instances->appendChild($li);
 				}
 
 				$li = $page->createElement('li');
@@ -319,7 +319,7 @@
 				$li->appendChild($name);
 
 				$label = Widget::Label(__('Value'));
-				$label->appendChild(Widget::Input('fields[filters][id]'));
+				$label->appendChild(Widget::Input('fields[filters][system:id]'));
 				$li->appendChild($label);
 				$templates->appendChild($li);
 
