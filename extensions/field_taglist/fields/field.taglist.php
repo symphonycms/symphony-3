@@ -304,8 +304,7 @@
 			foreach($data as $tag) {
 				if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
 					$errors->append(
-						$this->{'element-name'},
-						(object)array(
+						null, (object)array(
 						 	'message' => __("'%s' is a required field.", array($this->label)),
 							'code' => self::ERROR_MISSING
 						)
@@ -318,8 +317,7 @@
 
 				if (!$this->applyValidationRules($data->value)) {
 					$errors->append(
-						$this->{'element-name'},
-						(object)array(
+						null, (object)array(
 						 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->label)),
 							'code' => self::ERROR_INVALID
 						)

@@ -1117,6 +1117,9 @@
 	#alerts > li .info code {
 		color: #cccccc;
 	}
+	#alerts > li .info strong {
+		font-weight: bold;
+	}
 	#alerts > li .info h2,
 	#alerts > li .info h3 {
 		color: #ffffff;
