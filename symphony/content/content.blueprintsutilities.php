@@ -213,7 +213,7 @@
 			$div->setAttribute('class', 'actions');			
 			$div->appendChild(
 				Widget::Submit(
-					'action[save]', ($this->_context[0] == 'edit' __('Save Changes') : __('Create Utility')),
+					'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create Utility')),
 					array(
 						'accesskey' => 's'
 					)
