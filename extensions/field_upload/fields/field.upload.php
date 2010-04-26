@@ -111,7 +111,7 @@
 
 		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
 			if (!is_writable(DOCROOT . $this->{'destination'} . '/')) {
-				$messages->append('destination', __('Folder is not writable. Please check permissions.'));
+				$messages->append(null, __('Folder is not writable. Please check permissions.'));
 			}
 			
 			return parent::validateSettings($messages, $checkForDuplicates);
@@ -436,8 +436,7 @@
 			if (empty($data) or $data->error == UPLOAD_ERR_NO_FILE) {
 				if ($this->required == 'yes') {
 					$errors->append(
-						'required',
-						array(
+						null, array(
 						 	'message' => __(
 						 		"'%s' is a required field.",
 						 		array($this->label)
@@ -456,8 +455,7 @@
 			
 			if (!is_writable(DOCROOT . $this->destination . '/')) {
 				$errors->append(
-					'destination',
-					array(
+					null, array(
 					 	'message' => __(
 					 		"Destination folder, <code>%s</code>, is not writable. Please check permissions.",
 					 		array($this->destination)
@@ -478,8 +476,7 @@
 							: ini_get('upload_max_filesize')
 						);
 						$errors->append(
-							'upload',
-							array(
+							null, array(
 							 	'message' => __(
 									'File chosen in \'%s\' exceeds the maximum allowed upload size of %s specified by your host.',
 									array($this->label, $size)
@@ -492,8 +489,7 @@
 					case UPLOAD_ERR_FORM_SIZE:
 						$size = General::formatFilesize(Symphony::Configuration()->core()->symphony->{'maximum-upload-size'});
 						$errors->append(
-							'upload',
-							array(
+							null, array(
 							 	'message' => __(
 									'File chosen in \'%s\' exceeds the maximum allowed upload size of %s, specified by Symphony.',
 									array($this->label, $size)
@@ -506,8 +502,7 @@
 					case UPLOAD_ERR_PARTIAL:
 					case UPLOAD_ERR_NO_TMP_DIR:
 						$errors->append(
-							'upload',
-							array(
+							null, array(
 							 	'message' => __(
 									'File chosen in \'%s\' was only partially uploaded due to an error.',
 									array($this->label)
@@ -519,8 +514,7 @@
 
 					case UPLOAD_ERR_CANT_WRITE:
 						$errors->append(
-							'upload',
-							array(
+							null, array(
 							 	'message' => __(
 									'Uploading \'%s\' failed. Could not write temporary file to disk.',
 									array($this->label)
@@ -532,8 +526,7 @@
 
 					case UPLOAD_ERR_EXTENSION:
 						$errors->append(
-							'upload',
-							array(
+							null, array(
 							 	'message' => __(
 									'Uploading \'%s\' failed. File upload stopped by extension.',
 									array($this->label)
@@ -552,8 +545,7 @@
 				
 				if (!General::validateString($data->name, $rule)) {
 					$errors->append(
-						'validation',
-						array(
+						null, array(
 						 	'message' => __(
 								'File chosen in \'%s\' does not match allowable file types for that field.',
 								array($this->label)
@@ -570,8 +562,7 @@
 			
 			if ($data->existing != $file and file_exists($file)) {
 				$errors->append(
-					'upload',
-					array(
+					null, array(
 					 	'message' => __(
 							'A file with the name %s already exists in %s. Please rename the file first, or choose another.',
 							array($data->name, $this->destination)
@@ -595,8 +586,7 @@
 			if (isset($data->tmp_name)) {
 				if (!General::uploadFile($data->path, $data->file, $data->tmp_name, $permissions)) {
 					$errors->append(
-						'upload',
-						array(
+						null, array(
 						 	'message' => __(
 								'There was an error while trying to upload the file <code>%s</code> to the target directory <code>workspace/%s</code>.',
 								array($data->name, $path)

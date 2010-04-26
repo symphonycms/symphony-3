@@ -28,63 +28,6 @@ var Symphony;
 				return null;
 			}
 		},
-		Message: {
-			post: function(message, type) {
-				this.queue = this.queue.concat($('#notice').remove().get()); // Store previous message
-
-				$('h1').before('<div id="notice" class="' + type + '">' + message + '</div>');
-			},
-			clear: function(type) {
-				$('#notice.' + type).remove();
-
-				this.queue = $(this.queue).filter(':not(.' + type + ')').get();
-
-				if (document.getElementById('notice') === null && this.queue.length > 0) {
-					$(this.queue.pop()).insertBefore('h1'); // Show previous message
-				}
-			},
-			fade: function() {
-				$('#notice.success').animate({
-					backgroundColor: '#e4e4e0',
-					borderTopColor: '#979792',
-					borderBottomColor: '#777',
-					color: '#fff'
-				}, 'slow', 'linear', function() {
-					$(this).removeClass('success');
-				});
-			},
-			timer: function() {
-				var time = Date.parse($('abbr.timeago').attr('title'));
-				var from = new Date;
-				from.setTime(time);
-				$('abbr.timeago').text(this.distance(from, new Date));
-				window.setTimeout("Symphony.Message.timer()", 60000);
-			},
-  			distance: function(from, to) {
-  				var distance = to - from;
-				var time = Math.floor(distance / 60000);
-				if (time < 1) {
-					return Symphony.Language.get('just now');
-				}
-				if (time < 2) {
-					return Symphony.Language.get('a minute ago');
-				}
-				if (time < 45) {
-					return Symphony.Language.get('{$minutes} minutes ago', {
-						'minutes': time
-					});
-				}
-				if (time < 90) {
-					return Symphony.Language.get('about 1 hour ago');
-				}
-				else {
-					return Symphony.Language.get('about {$hours} hours ago', {
-						'hours': Math.floor(time / 60)
-					});
-				}
-			},
-			queue: []
-		}
 	};
 
 /*-----------------------------------------------------------------------------
@@ -174,14 +117,16 @@ var Symphony;
 	});
 
 /*-----------------------------------------------------------------------------
-	System Notices
+	Symphony Alerts
 -----------------------------------------------------------------------------*/
 		
 	Symphony.Alert = {
-		seconds: 	0,
-		notices:	[],
-		faded:		false,
-		visible:	false,
+		seconds: 		0,
+		notices:		[],
+		faded:			false,
+		visible:		false,
+		min_opacity:	0.8,
+		max_opacity:	1,
 		post: function(message, type, replace) {
 			var self = Symphony.Alert;
 			var notice = $('<li />')
@@ -189,7 +134,7 @@ var Symphony;
 				.html(message)
 				.prependTo('#alerts');
 			var dismiss = $('<a />')
-				.appendTo(notice)
+				.insertAfter(notice.find('.message'))
 				.attr('href', '#')
 				.attr('class', 'dismiss')
 				.text('Dismiss 1 of ' + (self.notices.length + 1))
@@ -213,7 +158,7 @@ var Symphony;
 		show: function() {
 			var self = Symphony.Alert;
 			var next = self.notices[0];
-			console.log('-show-');
+			
 			if (!self.visible) {
 				self.visible = true;
 				next.visible = true;
@@ -223,7 +168,7 @@ var Symphony;
 				}).show().animate(
 					{
 						'margin-top':	'0',
-						'opacity':		'1'
+						'opacity':		Symphony.Alert.max_opacity
 					},
 					'fast', 'linear'
 				);
@@ -239,13 +184,13 @@ var Symphony;
 					var pulse = function() {
 						next.notice.animate(
 							{
-								'opacity':	'1'
+								'opacity':	Symphony.Alert.max_opacity
 							},
 							'slow', 'linear',
 							function() {
 								next.notice.animate(
 									{
-										'opacity':	'0.6'
+										'opacity':	Symphony.Alert.min_opacity
 									},
 									'slow', 'linear',
 									function() {
@@ -306,7 +251,7 @@ var Symphony;
 						function() {
 							current.notice.stop().animate(
 								{
-									'opacity':	'1'
+									'opacity':	Symphony.Alert.max_opacity
 								},
 								'fast', 'linear',
 								function() {
@@ -317,7 +262,7 @@ var Symphony;
 						function() {
 							current.notice.stop().animate(
 								{
-									'opacity':	'0.6'
+									'opacity':	Symphony.Alert.min_opacity
 								},
 								'fast', 'linear',
 								function() {
@@ -328,7 +273,7 @@ var Symphony;
 					)
 					.stop().animate(
 						{
-							'opacity':	'0.6'
+							'opacity':	Symphony.Alert.min_opacity
 						},
 						'slow', 'linear',
 						function() {
@@ -367,11 +312,7 @@ var Symphony;
 	// Start timers:
 	window.setInterval(Symphony.Alert.ticker, 1000);
 	
-	// TODO: Remove test notice
-	//window.setInterval(function() {
-	//	Symphony.Alert.post("This notice will appear every 30 seconds, and was added <abbr class='timeago'>just now</abbr>.", 'info');
-	//}, 30000);
-	
+	// Initialize notices:
 	$(document).ready(function() {
 		$('#alerts > li').each(function() {
 			var notice = $(this).remove();
