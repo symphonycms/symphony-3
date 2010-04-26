@@ -616,7 +616,7 @@
 
 			$label = Widget::Label('Value');
 			$label->appendChild(Widget::Input(
-				"fields[filter]{$prefix}[{$field_handle}]",
+				"fields[filters]{$prefix}[{$field_handle}]",
 				($data ? General::sanitize($data) : null)
 			));
 			$wrapper->appendChild($label);

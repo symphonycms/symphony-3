@@ -455,7 +455,7 @@
 			*/			
 			
 			//	TODO: Find dependancies and order
-			
+
 			if(is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})){
 				foreach($this->about()->{'data-sources'} as $handle){
 					$ds = Datasource::loadFromHandle($handle);
@@ -513,12 +513,12 @@
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');
 			}
-
+/*
 			header('Content-Type: text/plain; charset=utf-8');
 			$Document->formatOutput = true;
 			print $Document->saveXML();
 			die();
-
+*/
 
 			return $output;
 		}

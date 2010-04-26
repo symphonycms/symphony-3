@@ -1,72 +1,4 @@
 <?php
-/*
-	Class DatasourceException extends Exception {}
-
-	Class DatasourceFilterIterator extends FilterIterator{
-		public function __construct(){
-			parent::__construct(new DirectoryIterator(DATASOURCES));
-		}
-
-		public function accept(){
-			if($this->isDir() == false && preg_match('/\.php$/i', $this->getFilename())){
-				return true;
-			}
-			return false;
-		}
-	}
-
-	Class DatasourceIterator implements Iterator{
-
-		private $_iterator;
-		private $_length;
-		private $_position;
-
-		public function __construct($path=NULL, $recurse=true){
-			$this->_iterator = new DatasourceFilterIterator;
-			$this->_length = $this->_position = 0;
-			foreach($this->_iterator as $f){
-				$this->_length++;
-			}
-			$this->_iterator->getInnerIterator()->rewind();
-		}
-
-		public function current(){
-			return Datasource::loadFromPath($this->_iterator->current()->getPathname());
-		}
-
-		public function innerIterator(){
-			return $this->_iterator;
-		}
-
-		public function next(){
-			$this->_position++;
-			$this->_iterator->next();
-		}
-
-		public function key(){
-			return $this->_iterator->key();
-		}
-
-		public function valid(){
-			return $this->_iterator->valid();
-		}
-
-		public function rewind(){
-			$this->_position = 0;
-			$this->_iterator->rewind();
-		}
-
-		public function position(){
-			return $this->_position;
-		}
-
-		public function length(){
-			return $this->_length;
-		}
-
-	}
-*/
-
 
 	Class DataSourceException extends Exception {}
 
@@ -395,7 +327,7 @@
 		}
 
 		protected function __determineFilterType($value){
-			return (false === strpos($value, '+') ? Datasource::FILTER_OR : Datasource::FILTER_AND);
+			return (false === strpos($value, '+') ? DataSource::FILTER_OR : DataSource::FILTER_AND);
 		}
 		
 		/*

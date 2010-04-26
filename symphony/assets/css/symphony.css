@@ -383,8 +383,8 @@
 	Content: Buttons
 -----------------------------------------------------------------------------*/
 
-	fieldset ~ .actions input[type=submit],
-	div ~ .actions input[type=submit],
+	fieldset .actions input[type=submit],
+	div .actions input[type=submit],
 	button,
 	.button {
 		background-color: #222;
@@ -454,7 +454,7 @@
 		);
 		border: 1px solid #cb1f2b;
 	}
-	fieldset ~ .actions input[type=submit]:hover,
+	fieldset .actions input[type=submit]:hover,
 	button:hover,
 	.button:hover {
 		color: #fff;
@@ -592,7 +592,6 @@
 		content: "\2191";
 	}
 
-
 /*-----------------------------------------------------------------------------
 	Content: Table: Settings
 -----------------------------------------------------------------------------*/
@@ -704,9 +703,6 @@
 	form .field:first-child label {
 		margin-top: 0;
 	}
-	/*form .field:last-child label {
-		margin-bottom: 0;
-	}*/
 	form label i {
 		float: right;
 		opacity: 0.5;
@@ -879,7 +875,6 @@
 		-moz-box-shadow: 0px 1px 3px #888;
 		-webkit-box-shadow: 0px 0px 2px #888;
 	}
-	
 	#master-switch label {
 		display: inline;
 		margin-right: 10px;
@@ -950,7 +945,7 @@
 		left: -25px;
 		height: 20px;
 		line-height: 22px;
-		font-size: 7pt;
+		font-size: 5.5pt;
 		margin: -2px 0;
 		position: absolute;
 		text-align: center;
@@ -967,7 +962,7 @@
 		background: hsla(0, 0%, 0%, 0.1);
 	}
 	#views-list td.toggle div span {
-		color: #aaa;
+		color: #999;
 		display: inline-block;
 		-moz-transform: matrix(-1, 0, 0, 1, 0, 0);
 		-webkit-transform: matrix(-1, 0, 0, 1, 0, 0);
@@ -1055,6 +1050,14 @@
 			hsla(0, 0%, 0%, 0.1) 3px,
 			hsla(0, 0%, 0%, 0) 10px
 		);
+		background: -webkit-gradient(
+			linear,
+			left top,
+			left bottom,
+			color-stop(0, hsla(0, 0%, 0%, 0.3)),
+			color-stop(3%, hsla(0, 0%, 0%, 0.1)),
+			color-stop(10%, hsla(0, 0%, 0%, 0))
+		);
 		border-bottom-right-radius: 5px;
 		border-bottom-left-radius: 5px;
 		-moz-border-radius-bottomright: 5px;
@@ -1134,89 +1137,89 @@
 	#alerts > li .info h3 + p {
 		margin-top: -10px;
 	}
+
+/*-------------------------------------------------------------------------
+	System: Alerts: Lists
+-------------------------------------------------------------------------*/
 	
-	/*-------------------------------------------------------------------------
-		System: Alerts: Lists
-	-------------------------------------------------------------------------*/
-		
-		#alerts > li .info .error-list {
-			margin: 0 0 0 20px;;
-		}
-		#alerts > li .info .error-list li {
-			margin: 10px 20px;
-		}
-		#alerts > li .info .error-list .error-list {
-			margin: 0;
-			list-style: none
-		}
-		#alerts > li .info .error-list .error-list li {
-			margin: 0 0 0 20px;
-		}
-		
-		#alerts > li .info .trace-list {
-			margin: 20px 0 0 20px;
-		}
-		#alerts > li .info .trace-list li {
-			margin: 10px 20px;
-		}
-		#alerts > li .info .trace-list strong {
-			display: block;
-		}
-		
-	/*-------------------------------------------------------------------------
-		System: Alerts: Tables
-	-------------------------------------------------------------------------*/
-		
-		#alerts > li .info table {
-			border-spacing: 0;
-		}
-		#alerts > li .info table th,
-		#alerts > li .info table td {
-			background: transparent;
-			border-bottom: 1px solid hsla(0, 0%, 50%, 0.15);
-			padding: 8px 0;
-			text-align: left;
-		}
-		#alerts > li .info table th {
-			color: #ffffff;
-		}
-		#alerts > li .info table th:last-child {
-			width: auto;
-		}
-		#alerts > li .info table tr:nth-child(2n) th,
-		#alerts > li .info table tr:nth-child(2n) td {
-			background: hsla(0, 0%, 50%, 0.05);
-			border-bottom: 1px solid hsla(0, 0%, 50%, 0.1);
-		}
-		#alerts > li .info table td.yes {
-			color: #ffffff;
-			font-weight: bold;
-		}
-		
-		#alerts > li .info .sync-table th,
-		#alerts > li .info .sync-table td {
-			padding: 8px 0;
-			width: 10%;
-		}
-		#alerts > li .info .sync-table th:first-child {
-			text-indent: 20px;
-			width: 25%;
-		}
-		#alerts > li .info .sync-table th:last-child {
-			width: auto;
-		}
-		
-	/*-------------------------------------------------------------------------
-		System: Alerts: Actions
-	-------------------------------------------------------------------------*/
-		
-		#alerts > li .info .actions {
-			margin: 10px 20px 0 20px;
-			overflow: hidden;
-		}
-		#alerts > li .info .actions p {
-			margin: 0;
-		}
+	#alerts > li .info .error-list {
+		margin: 0 0 0 20px;;
+	}
+	#alerts > li .info .error-list li {
+		margin: 10px 20px;
+	}
+	#alerts > li .info .error-list .error-list {
+		margin: 0;
+		list-style: none
+	}
+	#alerts > li .info .error-list .error-list li {
+		margin: 0 0 0 20px;
+	}
+	
+	#alerts > li .info .trace-list {
+		margin: 20px 0 0 20px;
+	}
+	#alerts > li .info .trace-list li {
+		margin: 10px 20px;
+	}
+	#alerts > li .info .trace-list strong {
+		display: block;
+	}
+	
+/*-------------------------------------------------------------------------
+	System: Alerts: Tables
+-------------------------------------------------------------------------*/
+	
+	#alerts > li .info table {
+		border-spacing: 0;
+	}
+	#alerts > li .info table th,
+	#alerts > li .info table td {
+		background: transparent;
+		border-bottom: 1px solid hsla(0, 0%, 50%, 0.15);
+		padding: 8px 0;
+		text-align: left;
+	}
+	#alerts > li .info table th {
+		color: #ffffff;
+	}
+	#alerts > li .info table th:last-child {
+		width: auto;
+	}
+	#alerts > li .info table tr:nth-child(2n) th,
+	#alerts > li .info table tr:nth-child(2n) td {
+		background: hsla(0, 0%, 50%, 0.05);
+		border-bottom: 1px solid hsla(0, 0%, 50%, 0.1);
+	}
+	#alerts > li .info table td.yes {
+		color: #ffffff;
+		font-weight: bold;
+	}
+	
+	#alerts > li .info .sync-table th,
+	#alerts > li .info .sync-table td {
+		padding: 8px 0;
+		width: 10%;
+	}
+	#alerts > li .info .sync-table th:first-child {
+		text-indent: 20px;
+		width: 25%;
+	}
+	#alerts > li .info .sync-table th:last-child {
+		width: auto;
+	}
+	
+/*-------------------------------------------------------------------------
+	System: Alerts: Actions
+-------------------------------------------------------------------------*/
+	
+	#alerts > li .info .actions {
+		margin: 10px 20px 0 20px;
+		overflow: hidden;
+	}
+	#alerts > li .info .actions p {
+		margin: 0;
+	}
 		
 /*-----------------------------------------------------------------------------
 	System: Errors
@@ -1256,25 +1259,28 @@
 	list-style: none;
 	color: #666;
 }
-
 #extension_stats li {
 	position: relative;
 	margin: 10px 0;
-	background: -moz-linear-gradient(top, hsl(0, 0%, 94%), hsl(0, 0%, 88%));
+	background: -moz-linear-gradient(
+		top,
+		hsl(0, 0%, 94%),
+		hsl(0, 0%, 88%)
+	);
 	background: -webkit-gradient(
-		linear, left top, left bottom,
+		linear,
+		left top,
+		left bottom,
 		from(hsl(0, 0%, 94%)),
 		to(hsl(0, 0%, 88%))
 	);
 	border: 1px solid hsla(0, 0%, 0%, 0.15);
 	-moz-border-radius: 5px;
 }
-
 #extension_stats li h4 {
 	margin-left: 10px;
 	font-weight: normal;
 }
-
 #extension_stats li p {
 	position: absolute;
 	right: 0;
@@ -1283,9 +1289,15 @@
 	text-align: center;
 	padding: 0 10px;
 	color: #555;
-	background: -moz-linear-gradient(top, hsl(0, 0%, 89%), hsl(0, 0%, 82%));
+	background: -moz-linear-gradient(
+		top,
+		hsl(0, 0%, 89%),
+		hsl(0, 0%, 82%)
+	);
 	background: -webkit-gradient(
-		linear, left top, left bottom,
+		linear,
+		left top,
+		left bottom,
 		from(hsl(0, 0%, 89%)),
 		to(hsl(0, 0%, 72%))
 	);
@@ -1293,3 +1305,5 @@
 	-moz-border-radius-topright: 5px;
 	-moz-border-radius-bottomright: 5px;
 }
+
+/*-------------------------------------------------------------------------------*/

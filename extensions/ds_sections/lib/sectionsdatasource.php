@@ -196,7 +196,35 @@
 			
 			//	Process Datasource Filters for each of the Fields
 			if(is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
+				foreach($this->parameters()->filters as $element_name => $filter_value){
+					
+					$filter_value = $this->replaceParametersInString($filter_value, $ParameterOutput);
+					
+					$filter_type = (strpos($value, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
+					
+					// This is where the filter value is split by commas or + symbol, denoting this as an OR or AND operation. Comma's have already been escaped
+					$filter_value = preg_split('/'.($filter_type == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),').'\s*/', $filter_value, -1, PREG_SPLIT_NO_EMPTY);
+					$filter_value = array_map('trim', $filter_value);
+					
+					// Remove the escapes on commas
+					$filter_value = array_map(array('General', 'removeEscapedCommas'), $filter_value);
+					
+					// Ensure the filter is an array, ready for iterating over
+					if(!is_array($filter_value)) $filter_value = array($filter_value);
+					
+					// Pre-escape the filter values. TODO: Should this be here?
+					$filter_value = array_map(array(Symphony::Database(), 'escape'), $filter_value);
+					
+					if($element_name == 'system:id'){
+						$filter_value = array_map('intval', $filter_value);
+						$where .= sprintf(" AND e.id IN (%s)", implode(',', $filter_value));
+					}
+					else{
+						$field = $section->fetchFieldByHandle($element_name);
+						$field->buildDSRetrivalSQL($filter_value, $joins, $where, $filter_type);
+					}
 
+				}
 			}
 			
 			$query = sprintf(

@@ -24,7 +24,7 @@
 			   'page' => %10$s,
 			   'section' => %11$s,
 			   'conditions' => %12$s,
-			   'filter' => %13$s,
+			   'filters' => %13$s,
 			   'redirect-404-on-empty' => %14$s,
 			   'append-pagination' => %15$s,
 			   'sort-field' => %16$s,

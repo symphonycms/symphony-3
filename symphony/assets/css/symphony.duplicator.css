@@ -171,57 +171,57 @@
 		right: 20px;
 	}
 	
-	/* @group Templates */
-		
-		.duplicator-widget > .templates {
-			display: none;
-			background: #888888;
-			background: -moz-linear-gradient(#666666, #777777 4%, #666666);
-			background: -webkit-gradient(
-				linear, left top, left bottom,
-				from(#666666),
-				to(#666666),
-				color-stop(0.04, #777777)
-			);
-			border: 1px solid #777777;
-			border-bottom-color: #606060;
-			border-top-color: #606060;
-			list-style: none;
-			margin: 0 -1px;
-			overflow: hidden;
-			padding: 10px;
-		}
-		.duplicator-widget > .templates > li {
-			background: hsla(0, 0%, 0%, 0.15);
-			-moz-border-radius: 5px;
-			-webkit-border-radius: 5px;
-			cursor: pointer;
-			display: block;
-			float: left;
-			margin: 4px;
-			width: 160px;
-			white-space: nowrap;
-		}
-		.duplicator-widget > .templates > li > * {
-			display: none;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
-		.duplicator-widget > .templates > li:hover {
-			background: hsla(0, 0%, 0%, 0.25);
-		}
-		.duplicator-widget > .templates > li > .name {
-			cursor: pointer;
-			display: block;
-			line-height: 26px;
-			padding: 0 10px;
-			color: #eeeeee;
-		}
-		.duplicator-widget > .templates > li > .name i {
-			margin: 0 0 0 1ex;
-			opacity: 0.5;
-		}
-		
-	/* @end */
-	
-/*---------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------
+	Duplicator: Templates
+-----------------------------------------------------------------------------*/
+
+	.duplicator-widget > .templates {
+		display: none;
+		background: #888888;
+		background: -moz-linear-gradient(#666666, #777777 4%, #666666);
+		background: -webkit-gradient(
+			linear, left top, left bottom,
+			from(#666666),
+			to(#666666),
+			color-stop(0.04, #777777)
+		);
+		border: 1px solid #777777;
+		border-bottom-color: #606060;
+		border-top-color: #606060;
+		list-style: none;
+		margin: 0 -1px;
+		overflow: hidden;
+		padding: 10px;
+	}
+	.duplicator-widget > .templates > li {
+		background: hsla(0, 0%, 0%, 0.15);
+		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
+		cursor: pointer;
+		display: block;
+		float: left;
+		margin: 4px;
+		width: 160px;
+		white-space: nowrap;
+	}
+	.duplicator-widget > .templates > li > * {
+		display: none;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.duplicator-widget > .templates > li:hover {
+		background: hsla(0, 0%, 0%, 0.25);
+	}
+	.duplicator-widget > .templates > li > .name {
+		cursor: pointer;
+		display: block;
+		line-height: 26px;
+		padding: 0 10px;
+		color: #eeeeee;
+	}
+	.duplicator-widget > .templates > li > .name i {
+		margin: 0 0 0 1ex;
+		opacity: 0.5;
+	}
+
+/*-------------------------------------------------------------------------------*/

@@ -53,40 +53,23 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
-			$field_id = $this->{'id'};
+		public function buildDSRetrivalSQL($data, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+			
+			self::$key++;
+				
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
 
-			if ($andOperation) {
+			if ($operation_type == DataSource::FILTER_AND) {
 				foreach ($data as $value) {
-					self::$key++;
-					$value = $this->escape($value);
-					$joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-							ON (e.id = t{$field_id}_{self::$key}.entry_id)
-					";
-					$where .= "
-						AND (t{$field_id}_{self::$key}.value = '{$value})'
-					";
+					$where .= sprintf(" AND (t%1\$s.value = '%2\$s)' ", self::$key, $value);
 				}
 
-			} else {
-				if (!is_array($data)) $data = array($data);
-
-				foreach ($data as &$value) {
-					$value = $this->escape($value);
-				}
-
-				self::$key++;
-				$data = implode("', '", $data);
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND (t{$field_id}_{self::$key}.value IN ('{$data}'))
-				";
+			} 
+			
+			else {
+				$where .= sprintf(" AND (t%1\$s.value IN ('%2\$s')) ", self::$key, implode("', '", $data));
 			}
 
 			return true;
