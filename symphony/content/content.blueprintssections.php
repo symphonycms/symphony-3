@@ -172,8 +172,6 @@
 			}
 
 			try {
-				throw new Exception('This shit sucks, man.');
-				
 				Section::save($this->section, $this->errors);
 				
 				// Rename section:
