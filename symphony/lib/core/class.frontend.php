@@ -24,10 +24,8 @@
 
 		private $parameters;
 
-		private $_result;
-		private $_position;
-		private $_current;
-		private $_keys;
+		private $position;
+		private $keys;
 
 		public function register(array $params){
 			foreach($params as $key => $value) $this->$key = $value;
@@ -35,19 +33,19 @@
 
 		public function __construct(){
 			$this->parameters = array();
-			$this->_position = 0;
+			$this->position = 0;
 		}
 
 		public function __set($name, $value){
 			$this->parameters[$name] = new Parameter($name, $value);
-			$this->_keys = array_keys($this->parameters);
+			$this->keys = array_keys($this->parameters);
 		}
 
 		public function __get($name){
-			 if(isset($this->parameters[$name]))
+			if(isset($this->parameters[$name])){
 				return $this->parameters[$name];
-
-			throw new Exception('No such parameter "' . $name . '"');
+			}
+			throw new Exception("No such parameter '{$name}'");
 		}
 
 		public function __isset($name){
@@ -59,21 +57,21 @@
 		}
 
 		public function next(){
-			$this->_position++;
+			$this->position++;
 			next($this->parameters);
 		}
 
 		public function position(){
-			return $this->_position;
+			return $this->position;
 		}
 
 		public function rewind(){
 			reset($this->parameters);
-			$this->_position = 0;
+			$this->position = 0;
 		}
 
 		public function key(){
-			return $this->_keys[$this->_position];
+			return $this->keys[$this->position];
 		}
 
 		public function length(){
@@ -81,7 +79,7 @@
 		}
 
 		public function valid(){
-			return $this->_position < $this->length();
+			return $this->position < $this->length();
 		}
 
 		public function toArray(){

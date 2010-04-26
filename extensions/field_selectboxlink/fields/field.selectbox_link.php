@@ -599,7 +599,7 @@
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
+		public function buildSortingSQL(&$joins, &$order){
 			$joins .= "INNER JOIN `tbl_entries_data_".$this->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`relation_id` $order");
 		}

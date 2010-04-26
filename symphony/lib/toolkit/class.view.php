@@ -475,7 +475,6 @@
 				}
 			}
 
-
 			if($DataSourceParameterOutput->length() > 0){
 				foreach($DataSourceParameterOutput as $p){
 					$Parameters->{$p->key} = $p->value;
@@ -492,7 +491,17 @@
 			$root->appendChild($element);
 
 			foreach($Parameters as $key => $parameter){
-				$element->appendChild($Document->createElement($key, (string)$parameter));
+				if(is_array($parameter->value) && count($parameter->value) > 1){
+					$p = $Document->createElement($key);
+					$p->setAttribute('value', (string)$parameter);
+					foreach($parameter->value as $v){
+						$p->appendChild($Document->createElement('item', (string)$v));
+					}
+					$element->appendChild($p);
+				}
+				else{
+					$element->appendChild($Document->createElement($key, (string)$parameter));
+				}
 			}
 
 			// When the XSLT executes, it uses the CWD as set here
@@ -504,13 +513,12 @@
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');
 			}
-
-			/*
+/*
 			header('Content-Type: text/plain; charset=utf-8');
 			$Document->formatOutput = true;
 			print $Document->saveXML();
 			die();
-			*/
+*/
 
 			return $output;
 		}

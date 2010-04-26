@@ -134,12 +134,6 @@
 					
 				}
 			}
-
-
-			//	Process Datasource Filters for each of the Fields
-			if(is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
-
-			}
 			
 			// Grab the section
 			try{
@@ -161,29 +155,59 @@
 		
 			$pagination->{'record-start'} = max(0, ($pagination->{'current-page'} - 1) * $pagination->{'entries-per-page'});
 			
-			$order = $joins = $where = NULL;
+			$order = $sort = $joins = $where = NULL;
 
 			//	Apply the Sorting & Direction
-			//	Apply the limiting
+			if($this->parameters()->{'sort-order'} == 'random'){
+				$sort = 'RAND()';
+			}
+			
+			else{
+				
+				$sort = (strtolower($this->parameters()->{'sort-order'}) == 'asc' ? 'ASC' : 'DESC');
+				
+				// System Field
+				if(preg_match('/^system:/i', $this->parameters()->{'sort-field'})){
+					switch(preg_replace('/^system:/i', NULL, $this->parameters()->{'sort-field'})){
+						case 'id':
+							$order = 'e.id';
+							break;
+							
+						case 'creation-date':
+							$order = 'e.creation_date';
+							break;
+							
+						case 'modification-date':
+							$order = 'e.modification_date';
+							break;
+						
+					}
+				}
+				// Non System Field
+				else{
+					$join = NULL;
+					$sort_field = $section->fetchFieldByHandle($this->parameters()->{'sort-field'});
+					$sort_field->buildSortingSQL($join, $order);
+					
+					$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
+					$order = sprintf($order, $sort);
+				}
+			}
+			
+			//	Process Datasource Filters for each of the Fields
+			if(is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
 
-			//	If count of result is 0 && redirect to 404 is true, throw FrontendException
-
-			//	Inject any Output Params into the Register through ParameterOutput
-
-			//	If any of the system: mode fields are called, append them to the front of the Datasource
-			//	just after the root element.
-
-			//	Foreach of the rows in the result, call appendFormattedElement
-
-			//	Return a DOMDocument to the View::render function.
-
-			/*
-			$sort_field = $section->fetchFieldByHandle($section->{'publish-order-handle'});
-			$sort_field->buildSortingSQL($joins, $order, $section->{'publish-order-direction'});
-			*/
+			}
 			
 			$query = sprintf(
-				'SELECT SQL_CALC_FOUND_ROWS e.* FROM `tbl_entries` AS `e` %1$s WHERE `section` = "%2$s" %3$s %4$s LIMIT %5$d, %6$d',
+				'SELECT SQL_CALC_FOUND_ROWS e.* 
+				FROM `tbl_entries` AS `e` 
+				%1$s 
+				WHERE `section` = "%2$s" 
+				%3$s 
+				ORDER BY %4$s 
+				LIMIT %5$d, %6$d',
+				
 				$joins,
 				$section->handle,
 				$where,
@@ -191,7 +215,7 @@
 				$pagination->{'record-start'},
 				$pagination->{'entries-per-page'}
 			);
-			
+
 			try{
 				$entries = Symphony::Database()->query($query, array(
 						$section->handle,

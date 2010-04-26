@@ -400,9 +400,9 @@
 			return false;
 		}
 
-		public function buildSortingSQL(&$joins, &$order, $direction = 'ASC'){
-			$joins .= "LEFT OUTER JOIN `tbl_data_%s_%s` AS `ed` ON (e.`id` = ed.`entry_id`)";
-			$order = "ORDER BY " . (in_array(strtolower($direction), array('random','rand')) ? "RAND()" : " ed.`value`" . $direction);
+		public function buildSortingSQL(&$joins, &$order){
+			$joins .= 'LEFT OUTER JOIN `tbl_data_%1$s_%2$s` AS `ed` ON (e.id = ed.entry_id)';
+			$order = 'ed.value %1$s';
 		}
 
 		/*

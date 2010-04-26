@@ -10,14 +10,13 @@
 			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
 
-		public function buildSortingSQL(&$joins, &$order, $direction = 'ASC'){
-			$joins .= "
-						LEFT OUTER JOIN
-							`tbl_data_%s_%s` AS d ON (e.`id` = d.`entry_id`)
-						JOIN
-							`tbl_users` AS u ON (d.`user_id` = u.`id`)
-						";
-			$order = sprintf('ORDER BY u.`first_name` %1$s , u.`last_name` %1$s', $direction);
+		public function buildSortingSQL(&$joins, &$order){
+			$joins = '
+				LEFT OUTER JOIN `tbl_data_%1$s_%2$s` AS `ed` ON (e.id = ed.entry_id)
+				JOIN `tbl_users` AS `u` ON (d.user_id = u.id)
+			';
+			
+			$order = 'u.first_name %1$s , u.last_name %1$s';
 		}
 
 		public function canFilter(){
