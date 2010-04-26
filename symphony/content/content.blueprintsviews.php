@@ -576,6 +576,7 @@
 			foreach (new DataSourceIterator as $pathname){
 				$ds = DataSource::load($pathname);
 				$handle = DataSource::getHandleFromFilename($pathname);
+
 				$options[] = array(
 					$handle, in_array($handle, (array)$fields['data-sources']), $ds->about()->name
 				);

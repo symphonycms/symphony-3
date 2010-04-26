@@ -7,11 +7,11 @@
 
 		protected $_sizes = array();
 		protected $_driver = null;
-		
+
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
-		
+
 		public function __construct() {
 			parent::__construct();
 
@@ -409,15 +409,7 @@
 		public function validateData(MessageStack &$errors, Entry $entry, $data = null) {
 			$length = (integer)$this->{'text-length'};
 
-			if ($this->{'required'} == 'yes' and strlen(trim($data->value)) == 0) {
-				$errors->append(
-					$this->{'element-name'},
-					(object)array(
-					 	'message' => __("'%s' is a required field.", array($this->label)),
-						'code' => self::ERROR_MISSING
-					)
-				);
-
+			if(self::STATUS_OK != parent::validateData($errors, $entry, $data)) {
 				return self::STATUS_ERROR;
 			}
 
@@ -529,7 +521,7 @@
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false, $mode = null) {
-			
+
 			if ($mode == 'unformatted') {
 				$value = trim($data->value);
 			}
@@ -538,21 +530,21 @@
 				$mode = 'formatted';
 				$value = trim($data->value_formatted);
 			}
-			
+
 			$result = $wrapper->ownerDocument->createElement($this->{'element-name'});
-			
+
 			if ($mode == 'unformatted' or $this->{'text-cdata'} == 'yes') {
 				$value = $wrapper->ownerDocument->createCDATASection($value);
 				$result->appendChild($value);
 			}
-			
+
 			else{
 				$value = $this->repairEntities($value);
-				$fragment = $wrapper->ownerDocument->createDocumentFragment(); 
+				$fragment = $wrapper->ownerDocument->createDocumentFragment();
 				$fragment->appendXML($value);
 				$result->appendChild($fragment);
 			}
-			
+
 			$attributes = array(
 				'mode'			=> $mode,
 				'handle'		=> $data->handle,
@@ -562,11 +554,11 @@
 			if ($this->{'text-handle'} != 'yes') {
 				unset($attributes['handle']);
 			}
-			
+
 			foreach($attributes as $name => $value){
 				$result->setAttribute($name, $value);
 			}
-			
+
 			$wrapper->appendChild($result);
 		}
 
