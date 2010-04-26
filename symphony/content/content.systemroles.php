@@ -335,16 +335,24 @@
 			/** FORM ACTIONS **/
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-
-			$div->appendChild(Widget::Input('action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create User')), 'submit', array('accesskey' => 's')));
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create User')),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
 
 			if($this->_context[0] == 'edit' && !$isOwner){
 				$div->appendChild(
-					$this->createElement('button', __('Delete'), array(
-						'name' => 'action[delete]',
-						'class' => 'confirm delete',
-						'title' => __('Delete this role')
-					))
+					Widget::Submit(
+						'action[delete]', __('Delete'),
+						array(
+							'class' => 'confirm delete',
+							'title' => __('Delete this role')
+						)
+					)
 				);
 			}
 

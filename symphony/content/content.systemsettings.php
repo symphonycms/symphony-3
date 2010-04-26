@@ -181,8 +181,15 @@
 			$div->setAttribute('class', 'actions');
 
 			$attr = array('accesskey' => 's');
+			
 			if(!is_writable(CONFIG)) $attr['disabled'] = 'disabled';
-			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', $attr));
+			
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', __('Save Changes'),
+					$attr
+				)
+			);
 
 			$this->Form->appendChild($div);
 		}
@@ -262,9 +269,14 @@
 			
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-
-			$attr = array('accesskey' => 's');
-			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', $attr));
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', __('Save Changes'),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
 
 			$this->Form->appendChild($div);
 		}

@@ -348,20 +348,24 @@
 
 				$div = $this->createElement('div');
 				$div->setAttribute('class', 'actions');
-				$div->appendChild(Widget::Input(
-					'action[save]',
-					(!is_null($existing) ? __('Save Changes') : __('Create Event')),
-					'submit',
-					array('accesskey' => 's')
-				));
+				$div->appendChild(
+					Widget::Submit(
+						'action[save]', (!is_null($existing) ? __('Save Changes') : __('Create Event')),
+						array(
+							'accesskey' => 's'
+						)
+					)
+				);
 
 				if(!is_null($existing)){
 					$div->appendChild(
-						$this->createElement('button', __('Delete'), array(
-							'name' => 'action[delete]',
-							'class' => 'confirm delete',
-							'title' => __('Delete this event')
-						))
+						Widget::Submit(
+							'action[delete]', __('Delete'),
+							array(
+								'class' => 'confirm delete',
+								'title' => __('Delete this event')
+							)
+						)
 					);
 				}
 

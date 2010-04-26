@@ -119,7 +119,7 @@ var Symphony;
 /*-----------------------------------------------------------------------------
 	Symphony Alerts
 -----------------------------------------------------------------------------*/
-		
+	
 	Symphony.Alert = {
 		seconds: 		0,
 		notices:		[],
@@ -129,7 +129,11 @@ var Symphony;
 		max_opacity:	1,
 		post: function(message, type, replace) {
 			var self = Symphony.Alert;
+			var block = function() {
+				return false;
+			};
 			var notice = $('<li />')
+				.hide()
 				.attr('class', type)
 				.html(message)
 				.prependTo('#alerts');
@@ -138,16 +142,24 @@ var Symphony;
 				.attr('href', '#')
 				.attr('class', 'dismiss')
 				.text('Dismiss 1 of ' + (self.notices.length + 1))
+				.bind('mousedown', block)
 				.bind('click', function() {
 					self.hide();
 					
 					return false;
+				});
+			var more = notice.find('.message a.more')
+				.bind('mousedown', block)
+				.bind('click', function() {
+					notice.find('> .info')
+						.slideToggle('fast');
 				});
 			
 			// Add to queue:
 			self.notices.push({
 				notice:				notice,
 				dismiss:			dismiss,
+				more:				more,
 				seconds_existed:	0,
 				seconds_viewed:		0,
 				visible:			false
@@ -249,6 +261,8 @@ var Symphony;
 				current.notice
 					.hover(
 						function() {
+							if (current.notice.find('.info:visible').length == 1) return;
+							
 							current.notice.stop().animate(
 								{
 									'opacity':	Symphony.Alert.max_opacity
@@ -260,6 +274,8 @@ var Symphony;
 							);
 						},
 						function() {
+							if (current.notice.find('.info:visible').length == 1) return;
+							
 							current.notice.stop().animate(
 								{
 									'opacity':	Symphony.Alert.min_opacity
@@ -270,8 +286,10 @@ var Symphony;
 								}
 							);
 						}
-					)
-					.stop().animate(
+					);
+				
+				if (current.notice.find('.info:visible').length == 0) {
+					current.notice.stop().animate(
 						{
 							'opacity':	Symphony.Alert.min_opacity
 						},
@@ -280,6 +298,7 @@ var Symphony;
 							self.faded = true;
 						}
 					);
+				}
 			});
 			
 			if (self.notices.length) self.update();

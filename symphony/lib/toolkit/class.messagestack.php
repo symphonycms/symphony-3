@@ -74,18 +74,26 @@
 			$list->setAttribute('class', 'error-list');
 
 			foreach ($this as $key => $message) {
+				if (!is_numeric($key)) {
+					$key = $key . ':';
+				}
+				
+				else {
+					$key = '';
+				}
+				
 				if ($message instanceof MessageStack) {
-					$item = $document->createElement('li', $key . ':');
+					$item = $document->createElement('li', $key);
 
 					$message->appendTo($item);
 				}
 				
 				else if (is_array($message)) {
-					$item = $document->createElement('li', $key . ': ' . implode(' ', $message));
+					$item = $document->createElement('li', $key . array_shift($message));
 				}
 
 				else {
-					$item = $document->createElement('li', $key . ': ' . $message);
+					$item = $document->createElement('li', $key . $message);
 				}
 
 				$list->appendChild($item);

@@ -260,11 +260,15 @@
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input(
-				'action[save]', __('Save Changes'),
-				'submit', array('accesskey' => 's')
-			));
-
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', __('Save Changes'),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
+			
 			$this->Form->appendChild($div);
 		}
 
@@ -585,18 +589,24 @@
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input(
-				'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create View')),
-				'submit', array('accesskey' => 's')
-			));
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create View')),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
 
 			if($this->_context[0] == 'edit'){
 				$div->appendChild(
-					$this->createElement('button', __('Delete'), array(
-						'name' => 'action[delete]',
-						'class' => 'confirm delete',
-						'title' => __('Delete this view')
-					))
+					Widget::Submit(
+						'action[delete]', __('Delete'),
+						array(
+							'class' => 'confirm delete',
+							'title' => __('Delete this view')
+						)
+					)
 				);
 			}
 

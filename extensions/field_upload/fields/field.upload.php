@@ -159,7 +159,7 @@
 
 		// Validator ----------------------------------------------------------
 
-			$this->appendValidationSelect($wrapper, $this->validator, 'validator', 'upload');
+			$this->appendValidationSelect($wrapper, $this->validator, 'validator', __('Validation Rule'), 'upload');
 
 			$options_list = $wrapper->ownerDocument->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
@@ -181,29 +181,6 @@
 
 			$wrapper->appendChild($options_list);
 		}
-
-/*
-		Deprecated
-
-		public function commit() {
-			if (!parent::commit() or $field_id === false) return false;
-
-			$field_id = $this->id;
-			$handle = $this->handle();
-
-			$fields = array(
-				'field_id'		=> $field_id,
-				'destination'	=> $this->destination,
-				'validator'		=> $this->validator,
-				'serialise'		=> ($this->serialise == 'yes' ? 'yes' : 'no')
-			);
-
-			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
-			$entry_id = Symphony::Database()->insert('tbl_fields_' . $handle, $fields);
-
-			return ($entry_id == 0 || !$entry_id) ? false : true;
-		}
-*/
 
 	/*-------------------------------------------------------------------------
 		Publish:

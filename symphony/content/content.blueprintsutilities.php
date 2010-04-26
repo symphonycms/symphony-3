@@ -210,16 +210,25 @@
 			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');
-			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create Utility')), 'submit', array('accesskey' => 's')));
+			$div->setAttribute('class', 'actions');			
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', ($this->_context[0] == 'edit' __('Save Changes') : __('Create Utility')),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
 
 			if($this->_context[0] == 'edit'){
 				$div->appendChild(
-					$this->createElement('button', __('Delete'), array(
-						'name' => 'action[delete]',
-						'class' => 'confirm delete',
-						'title' => __('Delete this utility')
-					))
+					Widget::Submit(
+						'action[delete]', __('Delete'),
+						array(
+							'class' => 'confirm delete',
+							'title' => __('Delete this utility')
+						)
+					)
 				);
 			}
 

@@ -67,7 +67,20 @@
 
 			return $obj;
 		}
-
+		
+		public static function Submit($name, $value, array $attributes = array()) {
+			if(!self::$Symphony) Widget::init();
+			
+			$obj = Widget::$Symphony->createElement('button', null, $attributes);
+			$obj->setAttribute('name', $name);
+			$obj->setAttribute('type', 'submit');
+			$obj->appendChild(
+				Widget::$Symphony->createElement('span', $value)
+			);
+			
+			return $obj;
+		}
+		
 		public static function Textarea($name, $value=null, array $attributes = array()){
 			if(!self::$Symphony) Widget::init();
 

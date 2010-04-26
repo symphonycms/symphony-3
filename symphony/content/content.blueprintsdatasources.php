@@ -447,19 +447,25 @@
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
 
-			$save = Widget::Input('action[save]', __('Create Data Source'), 'submit');
-			$save->setAttribute('accesskey', 's');
-			$actions->appendChild($save);
+			$actions->appendChild(
+				Widget::Submit(
+					'action[save]', __('Create Data Source'),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
 
 			if ($this->editing == true) {
 				$save->setAttribute('value', __('Save Changes'));
 				$actions->appendChild(
-					$this->createElement('button', __('Delete'), array(
-						'name' => 'action[delete]',
-						'class' => 'confirm delete',
-						'type' => 'submit',
-						'title' => __('Delete this data source')
-					))
+					Widget::Submit(
+						'action[delete]', __('Delete'),
+						array(
+							'class' => 'confirm delete',
+							'title' => __('Delete this data source')
+						)
+					)
 				);
 			}
 

@@ -235,6 +235,7 @@
 					},
 					
 					stop:			function() {
+						
 						object.trigger('change');
 					}
 				});

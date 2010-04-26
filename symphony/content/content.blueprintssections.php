@@ -30,6 +30,7 @@
 				array(__('Name'), 'col'),
 				array(__('Entries'), 'col'),
 				array(__('Navigation Group'), 'col'),
+				array(__('Sync Status'), 'col'),
 			);
 
 			$aTableBody = array();
@@ -77,9 +78,25 @@
 					$td2 = Widget::TableData(Widget::Anchor((string)$entry_count, ADMIN_URL . "/publish/{$s->handle}/"));
 					$td3 = Widget::TableData($s->{'navigation-group'});
 					$td3->appendChild(Widget::Input("items[{$s->handle}]", 'on', 'checkbox'));
-
+					
+					if (Section::syncroniseStatistics($s)->synced) {
+						$td4 = Widget::TableData(
+							__('Synced'), array(
+							'class' => 'content inactive'
+							)
+						);
+					}
+					
+					else {
+						$td4 = Widget::TableData(
+							__('Not synced'), array(
+							'class' => 'content'
+							)
+						);
+					}
+					
 					// Add a row to the body array, assigning each cell to the row
-					$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3));
+					$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3, $td4));
 				}
 			}
 
@@ -189,7 +206,7 @@
 			catch (Exception $e) {
 				$this->alerts()->append(
 					__(
-						'An unknown error has occurred. %s',
+						'An unknown error has occurred. <a class="more">Show trace information.</a>',
 						array($e->getMessage())
 					),
 					AlertStack::ERROR, $e
@@ -401,8 +418,100 @@
 
 			$this->__form($existing);
 		}
+		
+		protected function __sortActions($a, $b) {
+			return strnatcasecmp($a, $b);
+		}
+		
+		protected function __sortFields($a, $b) {
+			return strnatcasecmp($a->{'element-name'}, $b->{'element-name'});
+		}
+		
+		protected function appendSyncAlert(STDClass $sync) {
+			$table_fields = array();
+			$table_actions = array();
+			$table_totals = array();
+			
+			$table = $this->createElement('table');
+			$table->setAttribute('class', 'sync-table');
+			
+			// Find all fields:
+			foreach ($sync as $name => $action) if (is_array($action)) {
+				$table_actions[$name] = 0;
+				
+				foreach ($action as $data) if (isset($data->field)) {
+					$table_fields[$data->field->guid] = $data->field;
+				}
+			}
+			
+			// Sort actions:
+			uksort($table_actions, array($this, '__sortActions'));
+			
+			// Sort fields:
+			uasort($table_fields, array($this, '__sortFields'));
+			
+			// Header:
+			$row = $this->createElement('tr');
+			$row->appendChild($this->createElement('th', __('Field')));
+			
+			foreach ($table_actions as $action => $count) {
+				$row->appendChild($this->createElement('th', __(ucwords($action))));
+			}
+			
+			$table->appendChild($row);
+			
+			// Body:
+			foreach ($table_fields as $field) {
+				$row = $this->createElement('tr');				
+				$row->appendChild($this->createElement('th', $field->{'element-name'}));
+				
+				foreach ($table_actions as $action => &$count) {
+					$cell = $this->createElement('td', 'no');
+					$cell->setAttribute('class', 'no');
+					
+					if (array_key_exists($field->guid, $sync->{$action})) {
+						$cell->setValue('yes');
+						$cell->setAttribute('class', 'yes');
+						$count++;
+					}
+					
+					$row->appendChild($cell);
+				}
+				
+				$table->appendChild($row);
+			}
+			
+			// Footer:
+			$row = $this->createElement('tr');
+			$row->appendChild($this->createElement('th', __('Total')));
+			
+			foreach ($table_actions as $action => $count) {
+				$row->appendChild($this->createElement('th', (string)$count));
+			}
+			
+			$table->appendChild($row);
+			
+			$div = $this->createElement('div');
+			$div->setAttribute('class', 'actions');
+			$div->appendChild(Widget::Submit('action[sync]', __('Apply Changes')));
+			
+			$wrapper = $this->createElement('div');
+			$wrapper->appendChild($table);
+			$wrapper->appendChild(
+				$this->createElement('p', __('These changes will be applied to your database when you save this section.'))
+			);
+			
+			$this->alerts()->append(
+				__('Your section tables don\'t match your section file, save this page to update your tables. <a class="more">Show sync information.</a>'),
+				AlertStack::ERROR, $wrapper
+			);
+		}
 
 		private function __layout(Section $existing = null) {
+			$stats = Section::syncroniseStatistics($this->section);
+			
+			if ($stats->synced === false) $this->appendSyncAlert($stats);
+			
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 			if(isset($callback['flag']) && !is_null($callback['flag'])){
@@ -505,26 +614,37 @@
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', __('Save Changes'),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
 
 			if($this->_context[0] == 'edit'){
 				$div->appendChild(
-					$this->createElement('button', __('Delete'), array(
-						'name' => 'action[delete]',
-						'class' => 'confirm delete',
-						'title' => __('Delete this section'),
-						'type' => 'submit'
+					Widget::Submit(
+						'action[delete]', __('Delete'),
+						array(
+							'class' => 'confirm delete',
+							'title' => __('Delete this section'),
 						)
 					)
 				);
 			}
-
+			
 			$this->Form->appendChild($div);
 		}
 
 		private function __form(Section $existing = null){
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
+			
+			$stats = Section::syncroniseStatistics($this->section);
+			
+			if ($stats->synced === false) $this->appendSyncAlert($stats);
 
 			if (isset($callback['flag']) && !is_null($callback['flag'])) {
 				switch($callback['flag']){
@@ -560,7 +680,7 @@
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
 			$right = $layout->createColumn(Layout::LARGE);
-
+			
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 			$this->appendSubheading(($existing instanceof Section ? $existing->name : __('New Section')));
 
@@ -691,15 +811,22 @@
 
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', __('Save Changes'), 'submit', array('accesskey' => 's')));
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', __('Save Changes'),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
 
-			if($this->_context[0] == 'edit'){
+			if ($this->_context[0] == 'edit') {
 				$div->appendChild(
-					$this->createElement('button', __('Delete'), array(
-						'name' => 'action[delete]',
-						'class' => 'confirm delete',
-						'title' => __('Delete this section'),
-						'type' => 'submit'
+					Widget::Submit(
+						'action[delete]', __('Delete'),
+						array(
+							'class' => 'confirm delete',
+							'title' => __('Delete this section'),
 						)
 					)
 				);

@@ -48,7 +48,38 @@
 				}
 				
 				else if ($alert->info instanceof Exception) {
-					// TODO
+					$info = $document->createElement('div');
+					$ul = $document->createElement('ol');
+					$ul->setAttribute('class', 'trace-list');
+					
+					foreach ($alert->info->getTrace() as $trace) {
+						$li = $document->createElement('li');
+						$code = $document->createElement('code');
+						$strong = $document->createElement('strong');
+						
+						$called = array();
+						
+						if (isset($trace['class']) and !empty($trace['class'])) {
+							$called[] = $trace['class'];
+						}
+						
+						if (isset($trace['type']) and !empty($trace['type'])) {
+							$called[] = $trace['type'];
+						}
+						
+						if (isset($trace['function']) and !empty($trace['function'])) {
+							$called[] = $trace['function'];
+						}
+						
+						$code->setValue($trace['file'] . ':' . $trace['line']);
+						$strong->setValue(implode('', $called));
+						
+						$code->appendChild($strong);
+						$li->appendChild($code);
+						$ul->appendChild($li);
+					}
+					
+					$info->appendChild($ul);
 				}
 				
 				else if ($alert->info instanceof MessageStack) {

@@ -997,17 +997,25 @@
 */
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
-			$div->appendChild(Widget::Input('action[save]', (!is_null($existing) ? __('Save Changes') : __('Create Entry')), 'submit', array('accesskey' => 's')));
+			$div->appendChild(
+				Widget::Submit(
+					'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create Entry')),
+					array(
+						'accesskey' => 's'
+					)
+				)
+			);
 
 			if(!is_null($existing)){
-				$button = $this->createElement('button', __('Delete'));
-				$button->setAttributeArray(array(
-					'name' => 'action[delete]',
-					'class' => 'confirm delete',
-					'title' => __('Delete this entry'),
-					'type' => 'submit'
-				));
-				$div->appendChild($button);
+				$div->appendChild(
+					Widget::Submit(
+						'action[delete]', __('Delete'),
+						array(
+							'class' => 'confirm delete',
+							'title' => __('Delete this entry'),
+						)
+					)
+				);
 			}
 
 			$this->Form->appendChild($div);
@@ -1076,7 +1084,7 @@
 				$this->entry = $entry;
 				
 				$this->alerts()->append(
-					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
+					__('An error occurred while processing this form. <a href="#error">See below for details.</a> <a class="more">Show a list of errors.</a>'),
 					AlertStack::ERROR,
 					$this->errors
 				);
@@ -1364,7 +1372,7 @@
 				// Oh dear
 				$this->entry = $entry;
 				$this->alerts()->append(
-					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
+					__('An error occurred while processing this form. <a href="#error">See below for details.</a> <a class="more">Show a list of errors.</a>'),
 					AlertStack::ERROR
 				);
 				

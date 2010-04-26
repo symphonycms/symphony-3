@@ -404,15 +404,22 @@
 		border-radius: 5px;
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
-		font-size: 8pt;
 		color: #fff;
+		font-size: 8pt;
 		float: right;
-		padding: 3px 8px 4px;
+		height: 26px;
+		line-height: 24px;
+		padding: 0 8px;
 		text-decoration: none;
 		text-shadow: 1px 1px 0 hsla(0, 0%, 0%, 0.1);
 		white-space: nowrap;
 		cursor: pointer;
 	}
+	button span {
+		position: relative;
+		top: -1px;
+	}
+	button.create,
 	.button.create {
 		background-color: #8ac438;
 		background: -moz-linear-gradient(
@@ -429,7 +436,8 @@
 		);
 		border: 1px solid #88bd3c;
 	}
-	button.delete {
+	button.delete,
+	.button.delete {
 		float: left;
 		background-color: #b73b40;
 		background: -moz-linear-gradient(
@@ -518,7 +526,8 @@
 	table + .actions {
 		background: transparent;
 		border: none;
-		margin: 0;
+		margin: 20px 30px;
+		padding: 0;
 	}
 	table .selected {
 		background-color: #6a8ebf;
@@ -886,6 +895,11 @@
 		padding: 20px 30px;
 		text-align: right;
 	}
+	.actions p {
+		float: left;
+		line-height: 26px;
+		margin: 0;
+	}
 	.actions input {
 		float: none;
 	}
@@ -1026,9 +1040,12 @@
 	}
 
 /*-----------------------------------------------------------------------------
-	System Notification
+	System: Alerts
 -----------------------------------------------------------------------------*/
-
+	
+	#alerts {
+		list-style: none;
+	}
 	#alerts > li {
 		border: 1px solid hsla(0, 0%, 0%, 0.2);
 		border-top: none;
@@ -1047,10 +1064,10 @@
 		-moz-box-shadow: 1px 1px 6px hsla(0, 0%, 0%, 0.2);
 		-webkit-box-shadow: 1px 1px 6px hsla(0, 0%, 0%, 0.2);
 		color: #ffffff;
-		display: none;
+		display: block;
 		left: 50%;
 		margin: 0 0 0 -30%;
-		padding: 10px 100px 10px 40px;
+		padding: 10px 100px 0 10px;
 		position: absolute;
 		top: 0;
 		width: 60%;
@@ -1058,27 +1075,6 @@
 	}
 	#alerts > li a {
 		color: #dddddd;
-	}
-	#alerts > li:last-child {
-		display: block;
-	}
-	#alerts > li:before {
-		float: left;
-		margin: 0 10px 0 -30px;
-		display: block;
-		content: "!";
-		width: 11pt;
-		height: 11pt;
-		color: #000;
-		text-align: center;
-		font-weight: bold;
-		font-size: 11pt;
-		font-family: serif;
-		line-height: 13pt;
-		background-color: #fff9c9;
-		border-radius: 11pt;
-		-moz-border-radius: 11pt;
-		-webkit-border-radius: 11pt;
 	}
 	#alerts > li.error {
 		background-color: #b73b40;
@@ -1094,7 +1090,7 @@
 	}
 	#alerts > li .message,
 	#alerts > li .dismiss {
-		display: block;
+		padding-bottom: 10px;
 	}
 	#alerts > li .dismiss {
 		position: absolute;
@@ -1103,16 +1099,114 @@
 	}
 	
 	#alerts > li .info {
+		background: #222222;
+		border-bottom-right-radius: 5px;
+		border-bottom-left-radius: 5px;
+		-moz-border-radius-bottomright: 5px;
+		-moz-border-radius-bottomleft: 5px;
+		-webkit-border-bottom-right-radius: 5px;
+		-webkit-border-bottom-left-radius: 5px;
+		-moz-box-shadow: 0 0 12px hsla(0, 0%, 0%, 0.4);
+		-webkit-box-shadow: 0 0 12px hsla(0, 0%, 0%, 0.4);
+		color: #cccccc;
 		display: none;
-		/* TODO: Style this. */
+		margin: 0 -101px -1px -11px;
+		overflow: hidden;
+		padding: 10px 0;
 	}
-	#alerts > li .info .error-list {
-		margin: 10px 0;
-		list-style: none;
+	#alerts > li .info code {
+		color: #cccccc;
 	}
-	#alerts > li .info .error-list .error-list {
-		margin: 0 0 0 20px;
+	#alerts > li .info p {
+		margin: 10px 20px;
 	}
+	
+	/*-------------------------------------------------------------------------
+		System: Alerts: Lists
+	-------------------------------------------------------------------------*/
+		
+		#alerts > li .info .error-list {
+			margin: 0 0 0 20px;;
+		}
+		#alerts > li .info .error-list li {
+			margin: 10px 20px;
+		}
+		#alerts > li .info .error-list .error-list {
+			margin: 0;
+			list-style: none
+		}
+		#alerts > li .info .error-list .error-list li {
+			margin: 0 0 0 20px;
+		}
+		
+		#alerts > li .info .trace-list {
+			margin: 0 0 0 20px;
+		}
+		#alerts > li .info .trace-list li {
+			margin: 10px 20px;
+		}
+		#alerts > li .info .trace-list strong {
+			display: block;
+		}
+		
+	/*-------------------------------------------------------------------------
+		System: Alerts: Tables
+	-------------------------------------------------------------------------*/
+		
+		#alerts > li .info table {
+			border-spacing: 0;
+		}
+		#alerts > li .info table th,
+		#alerts > li .info table td {
+			background: transparent;
+			border-bottom: 1px solid hsla(0, 0%, 50%, 0.15);
+			padding: 8px 0;
+			text-align: left;
+		}
+		#alerts > li .info table th {
+			color: #ffffff;
+		}
+		#alerts > li .info table th:last-child {
+			width: auto;
+		}
+		#alerts > li .info table tr:nth-child(2n) th,
+		#alerts > li .info table tr:nth-child(2n) td {
+			background: hsla(0, 0%, 50%, 0.05);
+			border-bottom: 1px solid hsla(0, 0%, 50%, 0.1);
+		}
+		#alerts > li .info table td.yes {
+			color: #ffffff;
+			font-weight: bold;
+		}
+		
+		#alerts > li .info .sync-table th,
+		#alerts > li .info .sync-table td {
+			padding: 8px 0;
+			width: 10%;
+		}
+		#alerts > li .info .sync-table th:first-child {
+			text-indent: 20px;
+			width: 25%;
+		}
+		#alerts > li .info .sync-table th:last-child {
+			width: auto;
+		}
+		
+	/*-------------------------------------------------------------------------
+		System: Alerts: Actions
+	-------------------------------------------------------------------------*/
+		
+		#alerts > li .info .actions {
+			margin: 10px 20px 0 20px;
+			overflow: hidden;
+		}
+		#alerts > li .info .actions p {
+			margin: 0;
+		}
+		
+/*-----------------------------------------------------------------------------
+	System: Errors
+-----------------------------------------------------------------------------*/
 
 	.invalid {
 		margin: 10px 0;
