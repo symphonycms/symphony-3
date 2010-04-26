@@ -108,8 +108,8 @@
 				),
 				array(
 					'name' => __('Email Address'),
-					'column' => 'email-address',
-					'value' => $datasource->parameters()->filter['email-address']
+					'column' => 'email',
+					'value' => $datasource->parameters()->filter['email']
 				)
 			);
 
@@ -134,9 +134,9 @@
 				array('username', in_array('username', $datasource->parameters()->{"included-elements"}), 'username'),
 				array('name', in_array('name', $datasource->parameters()->{"included-elements"}), 'name'),
 				array('email-address', in_array('email-address', $datasource->parameters()->{"included-elements"}), 'email-address'),
+				array('language', in_array('language', $datasource->parameters()->{"included-elements"}), 'language'),
 				array('authentication-token', in_array('authentication-token', $datasource->parameters()->{"included-elements"}), 'authentication-token'),
 				array('default-section', in_array('default-section', $datasource->parameters()->{"included-elements"}), 'default-section'),
-				array('formatting-preference', in_array('formatting-preference', $datasource->parameters()->{"included-elements"}), 'formatting-preference')
 			));
 			$select->setAttribute('class', 'filtered');
 			$select->setAttribute('multiple', 'multiple');
