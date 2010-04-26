@@ -200,10 +200,10 @@
 					
 					$filter_value = $this->replaceParametersInString($filter_value, $ParameterOutput);
 					
-					$filter_type = (strpos($value, '+') === true ? Datasource::FILTER_AND : Datasource::FILTER_OR);
+					$filter_type = (strpos($value, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
 					
 					// This is where the filter value is split by commas or + symbol, denoting this as an OR or AND operation. Comma's have already been escaped
-					$filter_value = preg_split('/'.($filter_type == Datasource::FILTER_AND ? '\+' : '(?<!\\\\),').'\s*/', $filter_value, -1, PREG_SPLIT_NO_EMPTY);
+					$filter_value = preg_split('/'.($filter_type == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),').'\s*/', $filter_value, -1, PREG_SPLIT_NO_EMPTY);
 					$filter_value = array_map('trim', $filter_value);
 					
 					// Remove the escapes on commas

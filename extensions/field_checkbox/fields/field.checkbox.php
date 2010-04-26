@@ -53,7 +53,7 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $operation_type=Datasource::FILTER_OR) {
+		public function buildDSRetrivalSQL($data, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
 			
 			self::$key++;
 				
@@ -61,7 +61,7 @@
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
 			', self::$key, $this->section, $this->{'element-name'});
 
-			if ($operation_type == Datasource::FILTER_AND) {
+			if ($operation_type == DataSource::FILTER_AND) {
 				foreach ($data as $value) {
 					$where .= sprintf(" AND (t%1\$s.value = '%2\$s)' ", self::$key, $value);
 				}
