@@ -484,8 +484,6 @@
 			$dependencies = array();
 			
 			foreach ($datasources as $handle) {
-				Frontend::instance()->Profiler->seed();
-				
 				$pool[$handle] =& $this->DatasourceManager->create($handle, NULL, false);
 				$dependencies[$handle] = $pool[$handle]->getDependencies();
 				
@@ -495,8 +493,6 @@
 			$dsOrder = $this->__findDatasourceOrder($dependencies);
 			
 			foreach ($dsOrder as $handle) {
-				Frontend::instance()->Profiler->seed();
-				
 				$dbstats = Symphony::Database()->getStatistics();
 				$queries = $dbstats['queries'];
 				
@@ -512,8 +508,6 @@
 				
 				$dbstats = Symphony::Database()->getStatistics();
 				$queries = $dbstats['queries'] - $queries;
-				
-				Frontend::instance()->Profiler->sample($handle, PROFILE_LAP, 'Datasource', $queries);
 				
 				unset($ds);
 			}
@@ -558,7 +552,6 @@
 				uasort($pool, array($this, '__findEventOrder'));
 				
 				foreach($pool as $handle => $event){
-					Frontend::instance()->Profiler->seed();
 					
 					$dbstats = Symphony::Database()->getStatistics();
 					$queries = $dbstats['queries'];
@@ -572,8 +565,6 @@
 				
 					$dbstats = Symphony::Database()->getStatistics();
 					$queries = $dbstats['queries'] - $queries;
-
-					Frontend::instance()->Profiler->sample($handle, PROFILE_LAP, 'Datasource', $queries);
 				
 				}
 			}

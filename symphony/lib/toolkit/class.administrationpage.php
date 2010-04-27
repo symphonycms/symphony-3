@@ -81,7 +81,6 @@
 
 			if(isset($_REQUEST['action'])){
 				$this->action();
-				Administration::instance()->Profiler->sample('Page action run', PROFILE_LAP);
 			}
 
 			## Build the form
@@ -107,8 +106,6 @@
 			ExtensionManager::instance()->notifyMembers('AppendElementBelowView', '/backend/');
 
 			$this->appendAlert();
-
-			Administration::instance()->Profiler->sample('Page content created', PROFILE_LAP);
 		}
 
 		public function view(){
@@ -253,7 +250,6 @@
 			}
 
 			$this->Form->appendChild($xNav);
-			Administration::instance()->Profiler->sample('Navigation Built', PROFILE_LAP);
 		}
 
 		public function getNavigationArray(){

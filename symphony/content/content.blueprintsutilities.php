@@ -289,7 +289,7 @@
 						if($this->_existing_file && $file != UTILITIES . '/' . $this->_existing_file)
 							General::deleteFile(UTILITIES . '/' . $this->_existing_file);
 
-						## TODO: Fix me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: Edit
 						# Description: After saving the asset, the file path is provided.
@@ -303,7 +303,7 @@
 
 			elseif($this->_context[0] == 'edit' && array_key_exists('delete', $_POST['action'])){
 
-				## TODO: Fix me
+				## FIXME: Fix this delegate
 				###
 				# Delegate: Delete
 				# Description: Prior to deleting the asset file. Target file path is provided.

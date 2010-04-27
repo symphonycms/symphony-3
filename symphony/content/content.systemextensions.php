@@ -238,7 +238,7 @@
 		}
 
 		function action(){
-			$checked = is_array($_POST['items']) ? array_keys($_POST['items']) : null;
+			$checked  = array_keys($_POST['items']);
 
 			if(isset($_POST['with-selected']) && is_array($checked) && !empty($checked)){
 
@@ -248,7 +248,7 @@
 
 					case 'enable':
 
-						## TODO: Fix Me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: Enable
 						# Description: Notifies of enabling Extension. Array of selected services is provided.
@@ -263,7 +263,7 @@
 
 					case 'disable':
 
-						## TODO: Fix Me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: Disable
 						# Description: Notifies of disabling Extension. Array of selected services is provided.
@@ -277,7 +277,7 @@
 
 					case 'uninstall':
 
-						## TODO: Fix Me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: Uninstall
 						# Description: Notifies of uninstalling Extension. Array of selected services is provided.

@@ -3,7 +3,6 @@
 	require_once(TOOLKIT . '/class.administrationpage.php');
 	require_once(TOOLKIT . '/class.messagestack.php');
  	require_once(TOOLKIT . '/class.section.php');
-	//require_once(TOOLKIT . '/class.entrymanager.php');
 
 	Class contentBlueprintsSections extends AdministrationPage{
 

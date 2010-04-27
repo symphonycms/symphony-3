@@ -54,13 +54,8 @@
 				}
 			}
 
-
-			// This happens when there is an error in the page XSL. Since it is loaded
-			// in to a string then passed to the processor
-			// it does not return a file
-
-			// TODO: FIX THIS
 /*
+			// FIXME: This happens when there is an error in the page XSL. Since it is loaded in to a string then passed to the processor it does not return a file
 			if(!$bFoundFile){
 				$page = Symphony::parent()->Page()->pageData();
 				$this->file = VIEWS . '/' . $page['filelocation'];

@@ -23,8 +23,6 @@
 
 			parent::setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Login'))));
 
-			Administration::instance()->Profiler->sample('Page template created', PROFILE_LAP);
-
 			## Build the form
 			$this->Form = $this->createElement('form');
 			$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL());
@@ -169,7 +167,7 @@
 
 					if(empty($_POST['username']) || empty($_POST['password']) || !Administration::instance()->login($_POST['username'], $_POST['password'])) {
 
-						## TODO: Fix Me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: LoginFailure
 						# Description: Failed login attempt. Username is provided.
@@ -182,7 +180,7 @@
 
 					else{
 
-						## TODO: Fix Me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: LoginSuccess
 						# Description: Successful login attempt. Username is provided.
@@ -240,7 +238,7 @@
 									__('The Symphony Team'));
 
 
-						## TODO: Fix Me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: PasswordResetSuccess
 						# Description: A successful password reset has taken place. User ID is provided
@@ -250,7 +248,7 @@
 
 					else{
 
-						## TODO: Fix Me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: PasswordResetFailure
 						# Description: A failed password reset has taken place. User ID is provided
@@ -277,7 +275,7 @@
 							redirect(URL . "symphony/system/users/edit/{$user_id}/error/");
 						}
 
-						## TODO: Fix me
+						## FIXME: Fix this delegate
 						###
 						# Delegate: PasswordChanged
 						# Description: After editing an User. ID of the User is provided.
@@ -325,7 +323,7 @@
 					Symphony::Database()->delete('tbl_forgotpass', array($user->id), " `user_id` = '%d'");
 
 
-					## TODO: Fix Me
+					## FIXME: Fix this delegate
 					###
 					# Delegate: PasswordResetRequest
 					# Description: User has requested a password reset. User ID is provided.

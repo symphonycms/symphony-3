@@ -5,7 +5,6 @@
 		function __construct(){
 			$this->_status = self::STATUS_OK;
 			$this->addHeaderToPage('Content-Type', 'application/json');
-			Administration::instance()->Profiler->sample('Page template created', PROFILE_LAP);	
 		}
 		
 		public function handleFailedAuthorisation(){

@@ -25,8 +25,6 @@
 			$this->_status = self::STATUS_OK;
 			
 			$this->addHeaderToPage('Content-Type', 'text/xml');
-
-			Administration::instance()->Profiler->sample('Page template created', PROFILE_LAP);	
 		}
 		
 		public function build($context=NULL){
@@ -49,7 +47,7 @@
 				
 				case self::STATUS_BAD:
 				case self::STATUS_ERROR:
-					$status_message = '400 Bad Request';				
+					$status_message = '400 Bad Request';
 					break;
 				
 				case self::STATUS_UNAUTHORISED:
