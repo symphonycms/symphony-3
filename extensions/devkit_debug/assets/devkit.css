@@ -1,0 +1,187 @@
+/*---------------------------------------------------------------------------------
+	Params
+---------------------------------------------------------------------------------*/
+	
+	#params table {
+		border-spacing: 0;
+		color: hsl(0, 0%, 50%);
+		font: 105% monospace;
+		padding: 20px 0;
+		table-layout: fixed;
+	}
+	#params table th {
+		color: hsl(0, 0%, 80%);
+		clear: both;
+		line-height: 160%;
+		padding: 0 20px 0 20px;
+		text-align: left;
+		white-space: nowrap;
+		vertical-align: top;
+	}
+	#params table td {
+		color: hsl(210, 50%, 70%);
+		line-height: 160%;
+		padding: 0 20px 0 0;
+		vertical-align: top;
+	}
+	
+/*---------------------------------------------------------------------------------
+	Source
+---------------------------------------------------------------------------------*/
+	
+	#input {
+		background: hsl(210, 5%, 15%);
+		border-bottom: 1px solid hsl(210, 5%, 20%);
+		color: hsl(0, 0%, 80%);
+		display: block;
+		font: 105% monospace;
+		left: 0;
+		line-height: 40px;
+		padding: 0 20px;
+		position: fixed;
+		right: 270px;
+	}
+	#input input {
+		background: transparent;
+		width: 100%;
+	}
+	
+	#output {
+		background: hsl(80, 100%, 50%);
+		border-bottom: 1px solid hsl(80, 100%, 75%);
+		color: hsl(80, 100%, 5%);
+		display: block;
+		font: 105% monospace;
+		left: 0;
+		line-height: 40px;
+		padding: 0 20px;
+		position: fixed;
+		right: 270px;
+	}
+	#output + #content {
+		top: 41px;
+	}
+	
+	#source pre {
+		color: hsl(0, 0%, 40%);
+		counter-reset: markers;
+		display: table;
+		font: 105% monospace;
+		padding: 20px 0;
+		white-space: normal;
+	}
+	#source pre > .line {
+		display: table-row;
+		counter-increment: markers;
+		padding: 0 20px 0 50px;
+		white-space: pre-wrap;
+	}
+	#source pre > .line marker,
+	#source pre > .line content {
+		line-height: 160%;
+	}
+	
+	#source pre.selected > .line > .content {
+		opacity: 0.3;
+	}
+	#source pre.selected > .line.selected > .content {
+		opacity: 1;
+	}
+	
+	#source pre > .line:hover,
+	#source pre > .line.selecting,
+	#source pre > .line.deselecting {
+		background: hsl(210, 5%, 15%);
+	}
+	#source pre > .line:hover marker,
+	#source pre > .line.selecting marker,
+	#source pre > .line.deselecting marker {
+		color: hsl(210, 5%, 40%);
+	}
+	
+	#source pre > .line > .marker {
+		color: hsl(210, 5%, 20%);
+		cursor: pointer;
+		display: table-cell;
+		padding: 0 10px 0 20px;
+		text-align: right;
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		width: 1%;
+		vertical-align: top;
+	}
+	#source pre > .line > .marker:after {
+		content: counter(markers);
+	}
+	
+	#source pre > .line > .content {
+		cursor: text;
+		display: table-cell;
+		padding: 0 20px 0 0;
+	}
+	
+	#source pre > .line > .content .xpath-match,
+	#source pre > .line > .content .tag-match {
+		-moz-border-radius: 4px;
+		-webkit-border-radius: 4px;
+		-moz-box-shadow: 0 0 10px hsl(0, 0%, 5%);
+		-webkit-box-shadow: 0 0 10px hsl(0, 0%, 5%);
+		display: inline-block;
+		margin: -2px -2px;
+		padding: 1px 1px;
+		position: relative;
+	}
+	
+	#source pre > .line > .content .xpath-match {
+		background: hsl(80, 100%, 50%);
+		border: 1px solid hsl(80, 100%, 75%);
+		cursor: default;
+	}
+	#source pre > .line > .content .xpath-match,
+	#source pre > .line > .content .xpath-match * {
+		color: hsl(80, 100%, 5%) !important;
+	}
+	
+	#source pre > .line > .content .tag-match {
+		background: hsl(40, 100%, 50%);
+		border: 1px solid hsl(40, 100%, 75%);
+		cursor: pointer;
+	}
+	#source pre > .line > .content .tag-match,
+	#source pre > .line > .content .tag-match * {
+		color: hsl(40, 100%, 5%) !important;
+	}
+	
+	/*-----------------------------------------------------------------------------
+		Markup
+	-----------------------------------------------------------------------------*/
+		
+		#source .context-markup .declaration {
+			color: hsl(0, 0%, 80%);
+		}
+		
+		#source .context-markup .tag {
+			color: hsl(0, 0%, 80%);
+		}
+		
+		#source .context-markup .attribute {
+			color: hsl(0, 0%, 80%);
+		}
+		
+		#source .context-markup .entity {
+			color: hsl(80, 50%, 70%);
+		}
+		
+		#source .context-markup .value {
+			color: hsl(210, 50%, 70%);
+		}
+		
+		/*-------------------------------------------------------------------------
+			XSL
+		-------------------------------------------------------------------------*/
+			
+			#source .context-markup.xsl .xpath {
+				color: hsl(300, 50%, 70%);
+			}
+			
+/*-------------------------------------------------------------------------------*/

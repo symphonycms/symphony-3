@@ -1,0 +1,176 @@
+/*----------------------------------------------------------------------------*/
+	
+	* {
+		font: 100%/130% 'Monaco';
+		margin: 0;
+		padding: 0;
+	}
+	
+	body {
+		background: rgba(30, 30, 35, 1);
+		color: rgba(255, 255, 255, 0.4);
+		font: 75%/130% 'Monaco';
+	}
+	
+	p {
+		background: rgba(10, 10, 15, 1);
+		background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(10, 10, 15, 1)), to(rgba(20, 20, 25, 1)));
+		color: rgba(255, 255, 255, 0.8);
+		padding: 20px;
+	}
+	p a {
+		color: inherit;
+		text-decoration: none;
+	}
+	
+/*------------------------------------------------------------------------------
+	General
+------------------------------------------------------------------------------*/
+	
+	pre {
+		counter-reset: wrap-lines;
+		padding: 20px;
+		overflow: hidden;
+	}
+	
+	pre .wrap-line {
+		counter-increment: wrap-lines;
+		display: inline-block;
+		margin: 0 -20px;
+		padding: 0 0 0 60px;
+		width: 100%;
+	}
+	pre .wrap-line:hover {
+		background: rgba(255, 255, 255, 0.05);
+	}
+	pre .wrap-line:before {
+		content: counter(wrap-lines);
+		display: inline-block;
+		margin: 0 0 0 -40px;
+		padding: 0 10px 0 0;
+		text-align: right;
+		width: 30px;
+	}
+	
+	pre .error {
+		background: rgba(255, 180, 180, 0.2);
+		color: rgba(255, 255, 255, 0.9);
+		margin: -0.2em;
+		padding: 0.2em;
+	}
+	
+	pre .comment {
+		color: rgba(255, 255, 255, 0.2);
+	}
+	
+/*------------------------------------------------------------------------------
+	Markup
+------------------------------------------------------------------------------*/
+	
+	pre .context-markup .declaration {
+		color: rgba(255, 255, 255, 0.8);
+	}
+	
+	pre .context-markup .tag {
+		color: rgba(255, 255, 255, 0.8);
+	}
+	
+	pre .context-markup .attribute {
+		color: rgba(255, 255, 255, 0.6);
+	}
+	
+	pre .context-markup .entity {
+		color: rgba(225, 255, 180, 0.9);
+	}
+	
+	pre .context-markup .value {
+		color: rgba(180, 225, 255, 0.9);
+	}
+	
+	pre .context-markup .doctype,
+	pre .context-markup .cdata > .start,
+	pre .context-markup .cdata > .stop {
+		color: rgba(255, 255, 255, 0.2);
+	}
+	
+	/*--------------------------------------------------------------------------
+		XSL
+	--------------------------------------------------------------------------*/
+		
+		pre .context-markup.xsl .xpath {
+			color: rgba(255, 200, 255, 0.9);
+		}
+	
+/*------------------------------------------------------------------------------
+	Source
+------------------------------------------------------------------------------*/
+	
+	pre .context-source .keyword {
+		color: rgba(255, 255, 255, 0.8);
+	}
+	
+	pre .context-source .string {
+		color: rgba(180, 225, 255, 0.9);
+	}
+	pre .context-source .string .escape {
+		color: rgba(225, 255, 180, 0.9);
+	}
+	
+	pre .context-source .number {
+		color: rgba(225, 255, 180, 0.9);
+	}
+	
+	pre .context-source .variable {
+		color: rgba(255, 200, 255, 0.9);
+	}
+	
+	pre .context-source .class,
+	pre .context-source .function {
+		color: rgba(255, 225, 180, 0.9);
+	}
+	
+	/*--------------------------------------------------------------------------
+		CSS
+	--------------------------------------------------------------------------*/
+		
+		pre .context-source.css .selector {
+			color: rgba(255, 200, 255, 0.9);
+		}
+		
+		pre .context-source.css .property {
+			color: rgba(255, 255, 255, 0.8);
+		}
+		
+		pre .context-source.css .color {
+			color: rgba(255, 225, 180, 0.9);
+		}
+		
+	/*--------------------------------------------------------------------------
+		JS
+	--------------------------------------------------------------------------*/
+		
+		pre .context-source.js .object-key {
+			color: rgba(255, 255, 255, 0.8);
+		}
+		
+		pre .context-source.js .regexp {
+			color: rgba(180, 225, 255, 0.9);
+		}
+		pre .context-source.js .regexp .escape {
+			color: rgba(225, 255, 180, 0.9);
+		}
+		
+	/*--------------------------------------------------------------------------
+		PHP
+	--------------------------------------------------------------------------*/
+		
+		pre .context-source.php > .start,
+		pre .context-source.php > .stop {
+			color: rgba(255, 255, 255, 0.8);
+		}
+		
+		pre .context-source.php .comment.doc .docword {
+			color: rgba(255, 255, 255, 0.4);
+		}
+		
+/*----------------------------------------------------------------------------*/
