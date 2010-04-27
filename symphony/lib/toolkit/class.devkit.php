@@ -1,8 +1,206 @@
 <?php
 	
-	require_once(TOOLKIT . '/class.htmlpage.php');
+	require_once(TOOLKIT . '/class.view.php');
 	
-	class DevKit extends HTMLPage {
+	class DevKit extends View {
+		protected $document;
+		protected $data;
+		
+		public function __construct() {
+			parent::__construct();
+			
+			$imp = new DOMImplementation;
+			$dtd = $imp->createDocumentType('html');
+			
+			$this->document = $imp->createDocument('', 'html', $dtd);
+			$this->document->encoding = 'UTF-8';
+			$this->document->formatOutput = true;
+			
+			$this->data = (object)array();
+		}
+		
+		public function __isset($name) {
+			return isset($this->data->$name);
+		}
+		
+		public function __get($name) {
+			if ($name == 'title' and !isset($this->title)) {
+				$this->title = __('Untitled');
+			}
+			
+			if ($name == 'header' and !isset($this->header)) {
+				$this->title = __('Untitled');
+			}
+			
+			return $this->data->$name;
+		}
+		
+		public function __set($name, $value) {
+			$this->data->$name = $value;
+		}
+		
+		public function getCurrentURL($excludes = array()) {
+			$query = $this->getCurrentURLQuery($excludes);
+			
+			return URL . getCurrentPage() . $query;
+		}
+		
+		public function getCurrentURLQuery($excludes = array()) {
+			$excludes = array_merge(
+				$excludes, array('symphony-page', 'symphony-renderer')
+			);
+			$query = '';
+			
+			foreach ($_GET as $index => $value) {
+				if (in_array($index, $excludes)) continue;
+				
+				if (is_null($value) or $value == '') {
+					$query .= '&' . $index;
+				}
+				
+				else {
+					$query .= '&' . $index . '=' . $value;
+				}
+			}
+			
+			if ($query == '') return '';
+			
+			return '?' . ltrim($query, '&');
+		}
+		
+		protected function createScriptElement($path) {
+			$element = $this->document->createElement('script');
+			$element->setAttribute('type', 'text/javascript');
+			$element->setAttribute('src', $path);
+
+			// Creating an empty text node forces <script></script>
+			$element->appendChild($this->createTextNode(''));
+
+			return $element;
+		}
+
+		protected function createStylesheetElement($path, $type = 'screen') {
+			$element = $this->document->createElement('link');
+			$element->setAttribute('type', 'text/css');
+			$element->setAttribute('rel', 'stylesheet');
+			$element->setAttribute('media', $type);
+			$element->setAttribute('href', $path);
+			
+			return $element;
+		}
+		
+		public function render(Register &$Parameters, XMLDocument &$Document = null) {
+			//header('content-type: text/plain');
+			
+			$this->appendHead($this->document->documentElement);
+			$this->appendBody($this->document->documentElement);
+			
+			return $this->document->saveHTML();
+		}
+		
+		protected function appendHead(DOMElement $wrapper) {
+			$head = $this->document->createElement('head');
+			
+			$title = $this->document->createElement('title');
+			$title->appendChild($this->document->createTextNode(
+				__('Symphony') . ' '
+			));
+			$title->appendChild(
+				$this->document->createEntityReference('ndash')
+			);
+			$title->appendChild($this->document->createTextNode(
+				' ' . $this->title
+			));
+			$head->appendChild($title);
+			
+			$this->appendIncludes($head);
+			$wrapper->appendChild($head);
+			
+			return $head;
+		}
+		
+		protected function appendIncludes(DOMElement $wrapper) {
+			$wrapper->appendChild(
+				$this->createStylesheetElement(ADMIN_URL . '/assets/css/devkit.css')
+			);
+		}
+		
+		protected function appendBody(DOMElement $wrapper) {
+			$body = $this->document->createElement('body');
+			
+			$this->appendContent($body);
+			$this->appendSidebar($body);
+			
+			$wrapper->appendChild($body);
+			
+			return $body;
+		}
+		
+		protected function appendContent(DOMElement $wrapper) {
+			$container = $this->document->createElement('div');
+			$container->setAttribute('id', 'content');
+			
+			
+			
+			$wrapper->appendChild($container);
+			
+			return $container;
+		}
+		
+		protected function appendSidebar(DOMElement $wrapper) {
+			$container = $this->document->createElement('div');
+			$container->setAttribute('id', 'sidebar');
+			
+			$this->appendHeader($container);
+			$this->appendMenu($container);
+			$this->appendJump($container);
+			
+			$wrapper->appendChild($container);
+			
+			return $container;
+		}
+		
+		protected function appendHeader(DOMElement $wrapper) {
+			$header = $this->document->createElement('h1');
+			$link = $this->document->createElement('a');
+			$link->setAttribute('href', $this->getCurrentURL());
+			$link->appendChild($this->document->createTextNode(
+				$this->header
+			));
+			
+			$header->appendChild($link);
+			$wrapper->appendChild($header);
+			
+			return $header;
+		}
+		
+		protected function appendMenu(DOMElement $wrapper) {
+			$container = $this->document->createElement('ul');
+			$container->setAttribute('id', 'menu');
+			
+			
+			
+			$wrapper->appendChild($container);
+			
+			return $container;
+		}
+		
+		protected function appendJump(DOMElement $wrapper) {
+			$container = $this->document->createElement('ul');
+			$container->setAttribute('id', 'jump');
+			
+			
+			
+			$wrapper->appendChild($container);
+			
+			return $container;
+		}
+		
+		
+		
+		
+		
+		/*
 		protected $_query_string = '';
 		protected $_page = null;
 		protected $_pagedata = null;
@@ -159,6 +357,7 @@
 			
 			return parent::generate();
 		}
+		*/
 	}
 	
 ?>
