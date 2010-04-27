@@ -113,7 +113,7 @@
 
 				$checked = array_keys($_POST['items']);
 
-				## TODO: Fix Me
+				## FIXME: Fix this delegate
 				###
 				# Delegate: Delete
 				# Description: Prior to deleting an User. ID is provided.
@@ -490,7 +490,7 @@
 
 			elseif(array_key_exists('delete', $_POST['action'])){
 
-				## TODO: Fix Me
+				## FIXME: Fix this delegate
 				###
 				# Delegate: Delete
 				# Description: Prior to deleting an User. ID is provided.

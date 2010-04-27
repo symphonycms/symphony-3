@@ -807,8 +807,8 @@
 		border-top-color: hsla(0, 0%, 0%, 0.2);
 		-moz-column-count: 3;
 		-webkit-column-count: 3;
-		-moz-column-width: 200px;
-		-webkit-column-width: 200px;
+		-moz-column-width: 250px;
+		-webkit-column-width: 250px;
 		-moz-column-gap: 40px;
 		-webkit-column-gap: 40px;
 		-moz-column-rule: 1px dotted hsla(0, 0%, 0%, 0.2);
@@ -820,6 +820,7 @@
 	}
 	.options-list li label {
 		margin: 0;
+		display: inline-block;
 	}
 
 /*-----------------------------------------------------------------------------

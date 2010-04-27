@@ -12,12 +12,12 @@
 
 
 	/**
-	 * Field: Select Box Link
+	 * Field: Link
 	 */
 	$dictionary = array(
 
-		'Select Box Link' => 
-		'Giunzione fra sezioni',
+		'Link' => 
+		'Link',
 
 		'None' => 
 		'Nessuno',

@@ -199,9 +199,12 @@
 		**	@return Field
 		*/
 		public function fetchFieldByHandle($handle) {
-			foreach($this->fields as $field) if ($field->{'element-name'} == $handle) {
-				return $field;
+			foreach($this->fields as $field){
+				if ($field->{'element-name'} == $handle) {
+					return $field;
+				}
 			}
+			return NULL;
 		}
 
 		public static function fetchUsedNavigationGroups(){

@@ -208,8 +208,7 @@
 		}
 		
 		public function display($page){
-			
-			$this->Profiler->sample('Page build process started');
+
 			$this->__buildPage($page);
 			
 			####
@@ -218,7 +217,10 @@
 			# Global: Yes
 			ExtensionManager::instance()->notifyMembers('AdminPagePreGenerate', '/backend/', array('oPage' => &$this->Page));
 			
-			$this->Page->condenseScriptsAndStyles();
+			// Builds a super JS and CSS document
+			if(Symphony::Configuration()->core()->symphony->{'condense-scripts-and-stylesheets'} == 'yes'){
+				$this->Page->condenseScriptsAndStyles();
+			}
 			
 			$output = (string)$this->Page;
 
@@ -227,8 +229,6 @@
 			# Description: Immediately after generating the admin page. Provided with string containing page source
 			# Global: Yes
 			ExtensionManager::instance()->notifyMembers('AdminPagePostGenerate', '/backend/', array('output' => &$output));
-
-			$this->Profiler->sample('Page built');
 			
 			return $output;	
 		}

@@ -272,7 +272,7 @@ Options +FollowSymlinks
 
 				.
 
-				(!is_null($sbl_version) && version_compare($sbl_version, '1.14', '<') ? '<li>The "Select Box Link" field extension has been updated to 1.14, however this installation of Symphony appears to be running an older version ('.$sbl_version.'). Versions prior to 1.14 will not work correctly under Symphony 2.0.7. The latest version can be download via the <a href"http://symphony-cms.com/download/extensions/view/20054/">Select Box Link download page</a> on the Symphony site.</li>' : NULL)
+				(!is_null($sbl_version) && version_compare($sbl_version, '1.14', '<') ? '<li>The "Link" field extension has been updated to 1.14, however this installation of Symphony appears to be running an older version ('.$sbl_version.'). Versions prior to 1.14 will not work correctly under Symphony 2.0.7. The latest version can be download via the <a href"http://symphony-cms.com/download/extensions/view/20054/">Link download page</a> on the Symphony site.</li>' : NULL)
 
 				.'</ol>
 

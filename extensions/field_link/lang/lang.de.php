@@ -12,14 +12,14 @@
 	
 	
 	/*
-	 * EXTENSION: Field: Select Box Link
+	 * EXTENSION: Field: Link
 	 * Localisation strings
 	 */
 
 	$dictionary = array(
 	
-		'Select Box Link' =>
-		'Select Box Link',
+		'Link' =>
+		'Link',
 		
 		'None' =>
 		'Keine',

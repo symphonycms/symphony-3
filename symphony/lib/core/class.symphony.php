@@ -14,7 +14,6 @@
 	require_once(TOOLKIT . '/class.view.php');
 	require_once(TOOLKIT . '/class.widget.php');
 	require_once(TOOLKIT . '/class.general.php');
-	require_once(TOOLKIT . '/class.profiler.php'); // REPLACE?
 	require_once(TOOLKIT . '/class.user.php');
 	require_once(TOOLKIT . '/class.xslproc.php');
 
@@ -129,15 +128,12 @@
 
 		protected static $_lang;
 
-		public $Profiler;
 		public $Cookie;
 		public $User;
 
 		protected static $_instance;
 
 		protected function __construct(){
-
-			$this->Profiler = new Profiler;
 
 			self::$Configuration = new Configuration;
 
