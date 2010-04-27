@@ -409,6 +409,7 @@
 				$old_handle = $old_xpath->evaluate('string(/section/name/@handle)');
 				
 				if ($old_handle != $new_handle) {
+					$result->synced = false;
 					$result->section->rename = true;
 					$result->section->old = $old_handle;
 				}
@@ -439,6 +440,10 @@
 						'field'		=> $field
 					);
 				}
+			}
+			
+			else {
+				$result->synced = false;
 			}
 			
 			foreach ($new_xpath->query('/section/fields/field') as $node) {
@@ -520,7 +525,8 @@
 			}
 			
 			$result->synced = (
-				empty($result->remove)
+				$result->synced
+				and empty($result->remove)
 				and empty($result->rename)
 				and empty($result->create)
 				and empty($result->update)
