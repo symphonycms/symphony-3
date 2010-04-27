@@ -298,9 +298,7 @@
 				$messages->append('template', 'Template is required, and cannot be empty.');
 			}
 			elseif(!General::validateXML($view->template, $errors)) {
-<<<<<<< HEAD
-				$messages->append('template', __('This document is not well formed. The following error was returned: <code>%s</code>', array($errors->current()->message)));
-=======
+
 				$fragment = Administration::instance()->Page->createDocumentFragment();
 
 				$fragment->appendChild(new DOMText(
@@ -309,7 +307,7 @@
 				$fragment->appendChild(Administration::instance()->Page->createElement('code', $errors->current()->message));
 
 				$messages->append('template', $fragment);
->>>>>>> f891942300bc6ff7ad5b9eb41953f998bd7161da
+
 			}
 
 			if($messages->length() > 0){
