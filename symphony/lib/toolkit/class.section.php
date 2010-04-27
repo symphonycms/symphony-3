@@ -548,7 +548,7 @@
 			
 			// Update fields:
 			foreach ($stats->update as $guid => $data) {
-				$data->field->update($data->old);
+				$data->new->update($data->old);
 			}
 			
 			// Remove old sync data:
