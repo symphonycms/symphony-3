@@ -64,5 +64,10 @@
 			return $this->_Result->generate(true);
 		}
 		
+		//	TODO: Fix AJAX pages		
+		public function __toString() {
+			return "candy";
+		}
+		
 	}
 

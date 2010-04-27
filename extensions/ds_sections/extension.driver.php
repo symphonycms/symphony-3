@@ -58,11 +58,11 @@
 				if(isset($data['sort-order'])) $datasource->parameters()->{'sort-order'} = $data['sort-order'];
 				if(isset($data['limit'])) $datasource->parameters()->{'limit'} = $data['limit'];
 				if(isset($data['page'])) $datasource->parameters()->{'page'} = $data['page'];
-				
+
 				if(isset($data['included-elements'])){
 					$datasource->parameters()->{'included-elements'} = (array)$data['included-elements'];
 				}
-				
+
 				if(isset($data['parameter-output'])){
 					$datasource->parameters()->{'parameter-output'} = (array)$data['parameter-output'];
 				}
