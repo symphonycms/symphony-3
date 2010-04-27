@@ -66,7 +66,7 @@
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.duplicator.js'));
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.layout.js'));
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.tags.js'));
-//			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/admin.js'));
+			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.selectable.js'));
 			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.js'));
 
 			###

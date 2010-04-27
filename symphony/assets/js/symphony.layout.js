@@ -115,7 +115,7 @@
 			children.live('layout-select', function() {
 				var layout = jQuery(this);
 				var old_columns = get_columns();
-				var new_columns = layout.find('> div > *').clone();
+				var new_columns = layout.find('> div > *').clone(true);
 				var parent = old_columns.first().closest('.columns');
 				
 				// Remove old columns:
