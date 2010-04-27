@@ -180,8 +180,11 @@
 
 			foreach ($this->properties as $name => $value) {
 				if ($name == 'guid') continue;
-
-				$root->appendChild($doc->createElement($name, $value));
+				
+				$element = $doc->createElement($name);
+				$element->setValue($value);
+				
+				$root->appendChild($element);
 			}
 
 			$doc->appendChild($root);
@@ -825,8 +828,8 @@
 
 			return true;
 		}
-
-		public function rename($old_section, $old_name, $new_section, $new_name) {
+		
+		public function rename(Field $old) {
 			try {
 				Symphony::Database()->query(
 					'
@@ -835,7 +838,12 @@
 						RENAME TO
 							`tbl_data_%s_%s`
 					',
-					array($old_section, $old_name, $new_section, $new_name)
+					array(
+						$old->section,
+						$old->{'element-name'},
+						$this->section,
+						$this->{'element-name'}
+					)
 				);
 			}
 
@@ -846,7 +854,7 @@
 			return true;
 		}
 
-		public function update() {
+		public function update(Field $old) {
 			return true;
 		}
 	}

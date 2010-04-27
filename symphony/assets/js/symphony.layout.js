@@ -231,12 +231,17 @@
 					zindex:			1000,
 					
 					sort:			function() {
-						jQuery('.ui-sortable-helper').css('height', 'auto');
+						jQuery('.ui-sortable-helper')
+							.css('height', 'auto');
 					},
 					
-					stop:			function() {
-						
-						object.trigger('change');
+					stop:			function(event, data) {
+						jQuery(data.item)
+							.closest('fieldset')
+							.trigger('fieldset-change')
+							.trigger('fieldset-refresh');
+						fieldset
+							.trigger('fieldset-refresh');
 					}
 				});
 				
@@ -263,10 +268,6 @@
 			children.live('fieldset-remove', function() {
 				var fieldset = jQuery(this);
 				var siblings = fieldset.siblings('fieldset');
-				
-				// Move fields back to templates:
-				fieldset.find('ol.fields > li')
-					.appendTo(object.find('> .templates'));
 				
 				if (siblings.length) {
 					fieldset.remove();

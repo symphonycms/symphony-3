@@ -179,9 +179,7 @@
 					Section::rename($this->section, $old_handle);
 				}
 				
-				else {
-					Section::synchronise($this->section);
-				}
+				Section::synchronise($this->section);
 				
 				return true;
 			}
@@ -418,7 +416,7 @@
 		}
 		
 		protected function __sortFields($a, $b) {
-			return strnatcasecmp($a->{'element-name'}, $b->{'element-name'});
+			return strnatcasecmp($a->label, $b->label);
 		}
 		
 		protected function appendSyncAlert(STDClass $sync) {
@@ -431,10 +429,10 @@
 			
 			// Find all fields:
 			foreach ($sync as $name => $action) if (is_array($action)) {
-				$table_actions[$name] = 0;
+				$table_actions[$name] = count($action);
 				
-				foreach ($action as $data) if (isset($data->field)) {
-					$table_fields[$data->field->guid] = $data->field;
+				foreach ($action as $guid => $data) {
+					$table_fields[$guid] = $data;
 				}
 			}
 			
@@ -455,18 +453,38 @@
 			$table->appendChild($row);
 			
 			// Body:
-			foreach ($table_fields as $field) {
-				$row = $this->createElement('tr');				
-				$row->appendChild($this->createElement('th', $field->{'element-name'}));
+			foreach ($table_fields as $guid => $data) {
+				$row = $this->createElement('tr');
+				$cell = $this->createElement('th');
 				
-				foreach ($table_actions as $action => &$count) {
-					$cell = $this->createElement('td', 'no');
+				if (isset($sync->rename[$guid])) {
+					$cell->appendChild($this->createTextNode(
+						$data->new->label . ' '
+					));
+					
+					$span = $this->createElement('span');
+					$span->setAttribute('class', 'old');
+					$span->appendChild($this->createEntityReference('larr'));
+					$span->appendChild($this->createTextNode(
+						' ' . $data->old->label
+					));
+					
+					$cell->appendChild($span);
+				}
+				
+				else {
+					$cell->setValue($data->label);
+				}
+				
+				$row->appendChild($cell);
+				
+				foreach ($table_actions as $action => $count) {
+					$cell = $this->createElement('td', __('No'));
 					$cell->setAttribute('class', 'no');
 					
-					if (array_key_exists($field->guid, $sync->{$action})) {
-						$cell->setValue('yes');
+					if (array_key_exists($guid, $sync->{$action})) {
+						$cell->setValue(__('Yes'));
 						$cell->setAttribute('class', 'yes');
-						$count++;
 					}
 					
 					$row->appendChild($cell);
@@ -476,14 +494,16 @@
 			}
 			
 			// Footer:
+			/*
 			$row = $this->createElement('tr');
-			$row->appendChild($this->createElement('th', __('Total')));
+			$row->appendChild($this->createElement('th', __('Totals')));
 			
 			foreach ($table_actions as $action => $count) {
 				$row->appendChild($this->createElement('th', (string)$count));
 			}
 			
 			$table->appendChild($row);
+			*/
 			
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');

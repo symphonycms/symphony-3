@@ -1191,10 +1191,6 @@
 		background: hsla(0, 0%, 50%, 0.05);
 		border-bottom: 1px solid hsla(0, 0%, 50%, 0.1);
 	}
-	#alerts > li .info table td.yes {
-		color: #ffffff;
-		font-weight: bold;
-	}
 	
 	#alerts > li .info .sync-table th,
 	#alerts > li .info .sync-table td {
@@ -1207,6 +1203,13 @@
 	}
 	#alerts > li .info .sync-table th:last-child {
 		width: auto;
+	}
+	#alerts > li .info .sync-table .yes {
+		color: #ffffff;
+		font-weight: bold;
+	}
+	#alerts > li .info .sync-table .old {
+		color: #888888;
 	}
 	
 /*-------------------------------------------------------------------------
