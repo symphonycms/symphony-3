@@ -157,15 +157,15 @@
 		public function findDefaultSettings(&$fields) {
 			$fields['column-length'] = 75;
 			$fields['text-size'] = 'medium';
-			$fields['text-length'] = 0;
+			$fields['text-length'] = null;
 			$fields['text-handle'] = 'yes';
 			$fields['text-cdata'] = 'no';
 		}
 
 		public function validateSettings(MessageStack $errors, $checkForDuplicates = true) {
-			if (trim((string)$this->{'text-length'}) == '') {
+/*			if (trim((string)$this->{'text-length'}) == '') {
 				$errors->append('text-length', __('This is a required field.'));
-			}
+			}*/
 
 			if (trim((string)$this->{'column-length'}) == '') {
 				$errors->append('column-length', __('This is a required field.'));
@@ -323,6 +323,8 @@
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry=NULL, $data=NULL) {
 			$this->_driver->addPublishHeaders($wrapper->ownerDocument);
 
+			$document = $wrapper->ownerDocument;
+
 			$sortorder = $this->{'sortorder'};
 			$element_name = $this->{'element-name'};
 			$classes = array();
@@ -332,7 +334,10 @@
 
 			if ($this->{'required'} != 'yes') {
 				if ((integer)$this->{'text-length'} > 0) {
-					$optional = __('$1 of $2 remaining &ndash; Optional');
+					$optional = $document->createDocumentFragment();
+					$optional->appendChild($document->createTextNode(__('$1 of $2 remaining') . ' '));
+					$optional->appendChild($document->createEntityReference('ndash'));
+					$optional->appendChild($document->createTextNode(' ' . __('Optional')));
 				}
 
 				else {
@@ -495,7 +500,6 @@
 					'handle' => null,
 					'value' => null,
 					'value_formatted' => null,
-					'word_count' => null
 				);
 			}
 
@@ -503,7 +507,6 @@
 				$result->handle = Lang::createHandle($data);
 				$result->value = $data;
 				$result->value_formatted = $this->applyFormatting($data);
-				$result->word_count = General::countWords($data);
 			}
 
 			return $result;
@@ -548,7 +551,6 @@
 			$attributes = array(
 				'mode'			=> $mode,
 				'handle'		=> $data->handle,
-				'word-count'	=> $data->word_count
 			);
 
 			if ($this->{'text-handle'} != 'yes') {

@@ -20,6 +20,10 @@
 				var input = jQuery(this).parent().prevAll('label').find('input')[0];
 				var tag = this.className || jQuery(this).text();
 
+				if(input === undefined) {
+					input = jQuery(this).parent().prevAll('#error').find('label input')[0]
+				}
+
 				input.focus();
 
 				if (object.hasClass('singular')) {
