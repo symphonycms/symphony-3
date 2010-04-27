@@ -448,16 +448,14 @@
 			$actions->setAttribute('class', 'actions');
 
 			$save = Widget::Submit(
-				'action[save]', __('Create Data Source'),
+				'action[save]', ($this->editing) ? __('Save Changes') : __('Create Data Source'),
 				array(
 					'accesskey' => 's'
 				)
 			);
-
 			$actions->appendChild($save);
 
 			if ($this->editing == true) {
-				$save->setAttribute('value', __('Save Changes'));
 				$actions->appendChild(
 					Widget::Submit(
 						'action[delete]', __('Delete'),
@@ -468,6 +466,7 @@
 					)
 				);
 			}
+
 
 			$this->Form->appendChild($actions);
 		}
