@@ -1,5 +1,7 @@
 <?php
-
+	
+	require_once(TOOLKIT . '/class.entry.php');
+	
 	Class EventException extends Exception {}
 
 	Class EventFilterIterator extends FilterIterator{
@@ -130,83 +132,6 @@
 
 		}
 
-		public static function save(Event $event, MessageStack &$errors){
-
-			if (!isset($event->about()->name) || empty($event->about()->name)) {
-				$errors->append('about::name', __('This is a required field'));
-			}
-
-			$event->parameters()->{'root-element'} = $handle = Lang::createFilename($event->about()->name);
-			$filename = "{$handle}.php";
-			$classname = Lang::createHandle(ucwords($event->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
-			$pathname = EVENTS . "/{$filename}";
-
-			if(self::__find($handle) !== false) {
-				throw new EventException(__('An Event with the name <code>%s</code> already exists.', array($event->about()->name)));
-			}
-
-			if($errors->length() <= 0){
-				$data = array(
-					$classname,
-					// About info:
-					var_export($event->about()->name, true),
-					var_export($event->about()->author->name, true),
-					var_export($event->about()->author->website, true),
-					var_export($event->about()->author->email, true),
-					var_export($event->about()->version, true),
-					var_export($event->about()->{'release-date'}, true),
-					var_export($event->parameters()->{'root-element'}, true),
-					var_export($event->parameters()->source, true),
-					trim(General::var_export($event->parameters()->filters, true, 4)),
-					trim(General::var_export($event->parameters()->overrides, true, 4)),
-					trim(General::var_export($event->parameters()->defaults, true, 4)),
-					$event->parameters()->{'output-id-on-save'} == true ? 'true' : 'false'
-				);
-
-				if(General::writeFile(
-					$pathname,
-					vsprintf(file_get_contents(TEMPLATES . '/template.event.php'), $data),
-					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
-				)){
-					return $pathname;
-				}
-				throw new EventException(__('Failed to write event "%s" to disk.', array($filename)), self::ERROR_FAILED_TO_WRITE);
-			}
-
-			throw new EventException(__('Event could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
-		}
-
-		public function rename(array $events) {
-			/*
-				$sections = array(
-					'old-event-name',
-					'new-event-name'
-				)
-
-			 	TODO:
-				Upon renaming an event, views need to be updated with the event
-			*/
-
-			list($old, $new) = $events;
-
-			self::delete($old);
-		}
-
-		public function delete($handle){
-			/*
-				TODO:
-				Upon deletion of the event, views need to be updated to remove
-				it's associated with the event
-			*/
-			$event = Event::loadFromHandle($handle);
-
-			if(!$event->allowEditorToParse()) {
-				throw new EventException(__('Event cannot be deleted, the Editor does not have permission.'));
-			}
-
-			return General::deleteFile(EVENTS . "/{$handle}.php");
-		}
-
 		public static function loadFromHandle($name){
 			return self::load(self::__find($name) . "/{$name}.php");
 		}
@@ -228,13 +153,91 @@
 		    return false;
 	    }
 
+		public function __get($name){
+			if($name == 'handle'){
+				return Lang::createFilename($this->about()->name);
+			}
+		}
+
+		public static function save(Event $event, MessageStack &$errors){
+			$editing = (isset($event->parameters()->{'root-element'}))
+						? $event->parameters()->{'root-element'}
+						: false;
+
+			if (!isset($event->about()->name) || empty($event->about()->name)) {
+				$errors->append('about::name', __('This is a required field'));
+			}
+
+			try {
+				$existing = self::loadFromHandle($event->handle);
+			}
+			catch(EventException $e) {
+				//	Event not found, continue
+			}
+
+			if($existing instanceof Event && $editing != $event->handle) {
+				throw new EventException(__('An Event with the name <code>%s</code> already exists.', array($event->about()->name)));
+			}
+
+			$event->parameters()->{'root-element'} = $event->handle;
+			$classname = Lang::createHandle(ucwords($event->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
+			$pathname = EVENTS . "/" . $event->handle . ".php";
+
+			if($errors->length() <= 0){
+				$data = array(
+					$classname,
+					// About info:
+					var_export($event->about()->name, true),
+					var_export($event->about()->author->name, true),
+					var_export($event->about()->author->website, true),
+					var_export($event->about()->author->email, true),
+					var_export($event->about()->version, true),
+					var_export($event->about()->{'release-date'}, true),
+					var_export($event->parameters()->{'root-element'}, true),
+					var_export($event->parameters()->source, true),
+					trim(General::var_export($event->parameters()->filters, true, 4)),
+					trim(General::var_export($event->parameters()->overrides, true, 4)),
+					trim(General::var_export($event->parameters()->defaults, true, 4)),
+					$event->parameters()->{'output-id-on-save'} == true ? 'true' : 'false'
+				);
+
+				if(General::writeFile(
+					$pathname,
+					vsprintf(file_get_contents(TEMPLATES . '/template.event.txt'), $data),
+					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
+				)){
+					if($editing != $event->handle) General::deleteFile(EVENTS . '/' . $editing . '.php');
+
+					return $pathname;
+				}
+				$errors->append('write', __('Failed to write event "%s" to disk.', array($filename)));
+			}
+
+			throw new EventException(__('Event could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
+		}
+
+		public function delete($handle){
+			/*
+				TODO:
+				Upon deletion of the event, views need to be updated to remove
+				it's associated with the event
+			*/
+			$event = Event::loadFromHandle($handle);
+
+			if(!$event->allowEditorToParse()) {
+				throw new EventException(__('Event cannot be deleted, the Editor does not have permission.'));
+			}
+
+			return General::deleteFile(EVENTS . "/{$handle}.php");
+		}
+
 		/*
 		private function __processParameters(){
 
 			if(isset($this->_env) && is_array($this->_env)){
 				if(isset($this->eParamOVERRIDES) && is_array($this->eParamOVERRIDES) && !empty($this->eParamOVERRIDES)){
 					foreach($this->eParamOVERRIDES as $field => $replacement){
-						$replacement = $this->replaceParametersInString(stripslashes($replacement), $this->_env);
+						$replacement = self::replaceParametersInString(stripslashes($replacement), $this->_env);
 
 						if($replacement === NULL){
 							unset($this->eParamOVERRIDES[$field]);
@@ -303,12 +306,88 @@
 			return self::PRIORITY_NORMAL;
 		}
 
-		public function trigger(){
-			return NULL;
+		public function trigger(Register &$ParameterOutput){
+			
+			$postdata = General::getPostData();
+
+			if(!isset($postdata['action'][$this->parameters()->{'root-element'}])) return NULL;
+			
+			$result = new XMLDocument;
+			$result->appendChild($result->createElement($this->parameters()->{'root-element'}));
+			
+			$root = $result->documentElement;
+			
+			if(isset($postdata['id'])){
+				$entry = Entry::loadFromID($postdata['id']);
+				$type = 'edit';
+			}
+			else{
+				$entry = new Entry;
+				$entry->section = $this->parameters()->{'source'};
+				$entry->user_id = Frontend::instance()->User->id;
+				$type = 'create';
+			}
+
+			if(isset($postdata['fields']) && is_array($postdata['fields']) && !empty($postdata['fields'])){
+				$entry->setFieldDataFromFormArray($postdata['fields']);
+			}
+			
+			$root->setAttribute('type', $type);
+			
+			###
+			# Delegate: EntryPreCreate
+			# Description: Just prior to creation of an Entry. Entry object provided
+			ExtensionManager::instance()->notifyMembers(
+				'EntryPreCreate', '/frontend/',
+				array('entry' => &$entry)
+			);
+			
+			$errors = new MessageStack;
+			$status = Entry::save($entry, $errors);
+			
+			if($status == Entry::STATUS_OK){
+				###
+				# Delegate: EntryPostCreate
+				# Description: Creation of an Entry. New Entry object is provided.
+				ExtensionManager::instance()->notifyMembers(
+					'EntryPostCreate', '/frontend/',
+					array('entry' => $entry)
+				);
+				
+				if($this->parameters()->{'output-id-on-save'} == true){
+					$ParameterOutput->{sprintf('event-%s-id', $this->parameters()->{'root-element'})} = $entry->id;
+				}
+				
+				$root->setAttribute('result', 'success');
+
+				$root->appendChild($result->createElement(
+					'message', 
+					__("Entry %s successfully.", array(($type == 'edit' ? __('edited') : __('created'))))
+				));
+
+			}
+			else{
+				$root->setAttribute('result', 'error');
+				$root->appendChild($result->createElement(
+					'message', __('Entry encountered errors when saving.')
+				));
+				foreach($errors as $element_name => $e){
+					$element = $result->createElement($element_name);
+					foreach($e as $field => $obj){
+						$error = $result->createElement('error', $obj->message);
+						$error->setAttribute('type', $obj->code);
+						$error->setAttribute('field', $field);
+						$element->appendChild($error);
+					}
+					$root->appendChild($element);
+				}
+			}
+			
+			return $result;
 		}
-		
+
 		public static function getHandleFromFilename($filename){
-			return preg_replace('/.php$/i', NULL, $filename);
+			return preg_replace('/(.php$|\/.*\/)/i', NULL, $filename);
 		}
 	}
 

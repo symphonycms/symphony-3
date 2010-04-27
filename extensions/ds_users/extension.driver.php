@@ -32,9 +32,11 @@
 				if(isset($data['about']['name'])) $datasource->about()->name = $data['about']['name'];
 				if(isset($data['included-elements'])) $datasource->parameters()->{'included-elements'} = $data['included-elements'];
 
-				if(isset($data['filter']) && is_array($data['filter'])){
-					foreach($data['filter'] as $handle => $value){
-						$datasource->parameters()->filter[$handle] = $value;
+				$datasource->parameters()->filters = array();
+
+				if(isset($data['filters']) && is_array($data['filters'])){
+					foreach($data['filters'] as $handle => $value){
+						$datasource->parameters()->filters[$handle] = $value;
 					}
 				}
 			}
@@ -89,34 +91,34 @@
 				array(
 					'name' => __('ID'),
 					'column' => 'id',
-					'value' => $datasource->parameters()->filter['id']
+					'value' => $datasource->parameters()->filters['id']
 				),
 				array(
 					'name' => __('Username'),
 					'column' => 'username',
-					'value' => $datasource->parameters()->filter['username']
+					'value' => $datasource->parameters()->filters['username']
 				),
 				array(
 					'name' => __('First Name'),
 					'column' => 'first-name',
-					'value' => $datasource->parameters()->filter['first-name']
+					'value' => $datasource->parameters()->filters['first-name']
 				),
 				array(
 					'name' => __('Last Name'),
 					'column' => 'last-name',
-					'value' => $datasource->parameters()->filter['last-name']
+					'value' => $datasource->parameters()->filters['last-name']
 				),
 				array(
 					'name' => __('Email Address'),
 					'column' => 'email',
-					'value' => $datasource->parameters()->filter['email']
+					'value' => $datasource->parameters()->filters['email']
 				)
 			);
 
 			foreach($sortableColumns as $column) {
 				$this->appendFilter($templates, $column);
 
-				if(is_array($datasource->parameters()->filter) && array_key_exists($column['column'], $datasource->parameters()->filter)) {
+				if(is_array($datasource->parameters()->filters) && array_key_exists($column['column'], $datasource->parameters()->filters)) {
 					$this->appendFilter($instances, $column);
 				}
 			}

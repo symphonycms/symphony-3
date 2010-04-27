@@ -1,5 +1,7 @@
 <?php
-
+	
+	require_once(TOOLKIT . '/class.event.php');
+	
 	Class ViewException extends Exception {}
 
 	Class ViewFilterIterator extends FilterIterator{
@@ -296,7 +298,16 @@
 				$messages->append('template', 'Template is required, and cannot be empty.');
 			}
 			elseif(!General::validateXML($view->template, $errors)) {
-				$messages->append('template', __('This document is not well formed. The following error was returned: <code>%s</code>', array($errors[0]->message)));
+
+				$fragment = Administration::instance()->Page->createDocumentFragment();
+
+				$fragment->appendChild(new DOMText(
+					__('This document is not well formed. The following error was returned: ')
+				));
+				$fragment->appendChild(Administration::instance()->Page->createElement('code', $errors->current()->message));
+
+				$messages->append('template', $fragment);
+
 			}
 
 			if($messages->length() > 0){
@@ -412,11 +423,18 @@
 
 			General::rmdirr(VIEWS . '/' . trim($path, '/'));
 
+		}	
+
+		private function __cbSortEventsByPriority($a, $b){
+			if ($a->priority() == $b->priority()) {
+		        return 0;
+		    }
+		    return(($a->priority() > $b->priority()) ? -1 : 1);
 		}
 
 		public function render(Register &$Parameters, XMLDocument &$Document=NULL){
 
-			$DataSourceParameterOutput = new Register;
+			$ParameterOutput = new Register;
 
 			if(is_null($Document)){
 				$Document = new XMLDocument;
@@ -424,14 +442,94 @@
 			}
 
 			$root = $Document->documentElement;
-			
+
 			$Events = $Document->createElement('events');
 			$root->appendChild($Events);
+			
+			if(is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})){
+				$events = array();
+				foreach($this->about()->{'events'} as $handle){
+					$events[] = Event::loadFromHandle($handle);
+				}
+				
+				uasort($events, array($this, '__cbSortEventsByPriority'));
+				
+				foreach($events as $e){
+					$fragment = $e->trigger($ParameterOutput);
+					
+					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
+						$node = $Document->importNode($fragment->documentElement, true);
+						$Events->appendChild($node);
+					}
+				}
+			}
+			/*
 
+			private function processEvents($events, &$wrapper){
+
+				####
+				# Delegate: FrontendProcessEvents
+				# Description: Manipulate the events array and event element wrapper
+				# Global: Yes
+				ExtensionManager::instance()->notifyMembers(
+					'FrontendProcessEvents', 
+					'/frontend/', 
+					array(
+						'env' => $this->_env, 
+						'events' => &$events, 
+						'wrapper' => &$wrapper, 
+						'page_data' => $this->_pageData
+					)
+				);
+				#####
+
+				if(strlen(trim($events)) > 0){			
+
+
+					if(!is_array($events) || empty($events)) return;
+
+					$pool = array();
+					foreach($events as $handle){
+						$pool[$handle] = $this->EventManager->create($handle, array('env' => $this->_env, 'param' => $this->_param));
+					}
+
+					uasort($pool, array($this, '__findEventOrder'));
+
+					foreach($pool as $handle => $event){
+						Frontend::instance()->Profiler->seed();
+
+						$dbstats = Symphony::Database()->getStatistics();
+						$queries = $dbstats['queries'];
+
+						if($xml = $event->load()):
+
+							if(is_object($xml)) $wrapper->appendChild($xml);
+							else $wrapper->setValue($wrapper->getValue() . PHP_EOL . '	' . trim($xml));
+
+						endif;
+
+						$dbstats = Symphony::Database()->getStatistics();
+						$queries = $dbstats['queries'] - $queries;
+
+						Frontend::instance()->Profiler->sample($handle, PROFILE_LAP, 'Datasource', $queries);
+
+					}
+				}
+
+				####
+				# Delegate: FrontendEventPostProcess
+				# Description: Just after the page events have triggered. Provided with the XML object
+				# Global: Yes
+				ExtensionManager::instance()->notifyMembers('FrontendEventPostProcess', '/frontend/', array('xml' => &$wrapper));
+
+			}
+*/			
 			/*
 			$this->processEvents($page['events'], $events);
 			$this->processDatasources($page['data_sources'], $xml);
-
+			
+			
+			
 			if(is_array($this->_env['pool']) && !empty($this->_env['pool'])){
 				foreach($this->_env['pool'] as $handle => $p){
 
@@ -452,16 +550,16 @@
 					$this->_param[$handle] = trim($this->_param[$handle], ',');
 				}
 			}
-			*/			
-			
+			*/
+
 			//	TODO: Find dependancies and order
 
 			if(is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})){
 				foreach($this->about()->{'data-sources'} as $handle){
 					$ds = Datasource::loadFromHandle($handle);
-					
+
 					try{
-						$fragment = $ds->render($DataSourceParameterOutput);
+						$fragment = $ds->render($ParameterOutput);
 					}
 					catch (FrontendPageNotFoundException $e) {
 						FrontendPageNotFoundExceptionHandler::render($e);
@@ -475,8 +573,8 @@
 				}
 			}
 
-			if($DataSourceParameterOutput->length() > 0){
-				foreach($DataSourceParameterOutput as $p){
+			if($ParameterOutput->length() > 0){
+				foreach($ParameterOutput as $p){
 					$Parameters->{$p->key} = $p->value;
 				}
 			}
@@ -513,12 +611,12 @@
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');
 			}
-/*
+
 			header('Content-Type: text/plain; charset=utf-8');
 			$Document->formatOutput = true;
 			print $Document->saveXML();
 			die();
-*/
+
 
 			return $output;
 		}

@@ -279,7 +279,7 @@
 
 			$view = self::__loadExistingView(implode('/', $context));
 
-			$view->template = $_POST['fields']['template'];
+			$view->template = stripslashes($_POST['fields']['template']);
 
 			$this->errors = new MessageStack;
 
@@ -576,6 +576,7 @@
 			foreach (new DataSourceIterator as $pathname){
 				$ds = DataSource::load($pathname);
 				$handle = DataSource::getHandleFromFilename($pathname);
+
 				$options[] = array(
 					$handle, in_array($handle, (array)$fields['data-sources']), $ds->about()->name
 				);

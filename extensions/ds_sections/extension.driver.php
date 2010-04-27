@@ -106,7 +106,7 @@
 					'section'	=> $section
 				);
 
-				$options[] = array($section->handle, ($datasource->parameters()->source == $section->handle), $section->name);
+				$options[] = array($section->handle, ($datasource->parameters()->section == $section->handle), $section->name);
 			}
 
 			$label = Widget::Label(__('Section'));
@@ -298,12 +298,23 @@
 					$name = $page->createElement('span', __('System ID'));
 					$name->setAttribute('class', 'name');
 					$li->appendChild($name);
+					
+					$label = Widget::Label(__('Type'));
+					$label->appendChild(Widget::Select(
+						'fields[filters][system:id][type]',
+						array(
+							array('is', false, 'Is'),
+							array('is-not', $filter_data['system:id']['type'] == 'is-not', 'Is not')
+						)
+					));
+					$li->appendChild($label);
 
 					$label = Widget::Label(__('Value'));
 					$label->appendChild(Widget::Input(
-						"fields[filters][system:id]", $filter_data['system:id']
+						"fields[filters][system:id][value]", $filter_data['system:id']['value']
 					));
 					$li->appendChild($label);
+					
 					$instances->appendChild($li);
 				}
 
@@ -312,10 +323,21 @@
 				$name = $page->createElement('span', __('System ID'));
 				$name->setAttribute('class', 'name');
 				$li->appendChild($name);
-
-				$label = Widget::Label(__('Value'));
-				$label->appendChild(Widget::Input('fields[filters][system:id]'));
+				
+				$label = Widget::Label(__('Type'));
+				$label->appendChild(Widget::Select(
+					'fields[filters][system:id][type]',
+					array(
+						array('is', false, 'Is'),
+						array('is-not', false, 'Is not')
+					)
+				));
 				$li->appendChild($label);
+				
+				$label = Widget::Label(__('Value'));
+				$label->appendChild(Widget::Input('fields[filters][system:id][value]'));
+				$li->appendChild($label);
+				
 				$templates->appendChild($li);
 
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {

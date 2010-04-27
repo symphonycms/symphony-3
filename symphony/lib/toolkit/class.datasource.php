@@ -87,7 +87,7 @@
 		abstract public function render(Register &$ParameterOutput);
 
 		public static function getHandleFromFilename($filename){
-			return preg_replace('/.php$/i', NULL, $filename);
+			return preg_replace('/(.php$|\/.*\/)/i', NULL, $filename);
 		}
 
 		public function &about(){
@@ -330,6 +330,32 @@
 			return (false === strpos($value, '+') ? DataSource::FILTER_OR : DataSource::FILTER_AND);
 		}
 		
+		public static function determineFilterType($string){
+		 	return (strpos($string, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
+		}
+		
+		public static function prepareFilterValue($value, Register $ParameterOutput=NULL){
+			
+			if(strlen(trim($value)) == 0) return NULL;
+			
+			$value = self::replaceParametersInString($value, $ParameterOutput);
+			
+			$pattern = (self::determineFilterType($value) == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),');
+			
+			// This is where the filter value is split by commas or + symbol, denoting 
+			// this as an OR or AND operation. Comma's have already been escaped
+			$value = preg_split("/{$pattern}\s*/", $value, -1, PREG_SPLIT_NO_EMPTY);
+			$value = array_map('trim', $value);
+
+			// Remove the escapes on commas
+			$value = array_map(array('General', 'removeEscapedCommas'), $value);
+
+			// Pre-escape the filter values. TODO: Should this be here?
+			$value = array_map(array(Symphony::Database(), 'escape'), $value);
+			
+			return $value;
+		}		
+		
 		/*
 		**	Given a string that may contain params in form of {$param}
 		**	resolve the tokens with their values
@@ -337,7 +363,7 @@
 		**	This checks both the Frontend Parameters and Datasource
 		**	Registers.
 		*/
-		public function replaceParametersInString($string, Register $DataSourceParameterOutput = null) {
+		public static function replaceParametersInString($string, Register $DataSourceParameterOutput = null) {
 			if(strlen(trim($string)) == 0) return null;
 
 			if(preg_match_all('@{([^}]+)}@i', $string, $matches, PREG_SET_ORDER)){
@@ -356,7 +382,7 @@
 
 						$param = trim($param, '$');
 
-						$replacement = $this->resolveParameter($param, $DataSourceParameterOutput);
+						$replacement = self::resolveParameter($param, $DataSourceParameterOutput);
 
 						if(is_array($replacement)){
 							$replacement = array_map(array('General', 'escapeCommas'), $replacement);

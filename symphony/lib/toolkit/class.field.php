@@ -419,7 +419,8 @@
 			if(preg_match('/^regexp:/i', $string)) return true;
 		}
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+			
 			$field_id = $this->id;
 
 			if (self::isFilterRegex($data[0])){
@@ -634,13 +635,20 @@
 			$name->appendChild($document->createElement('i', $this->name()));
 			$wrapper->appendChild($name);
 
+			$label = Widget::Label(__('Type'));
+			$label->appendChild(Widget::Select(
+				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
+				array(
+					array('is', false, 'Is'),
+					array('is-not', $data['type'] == 'is-not', 'Is not')
+				)
+			));
+			$wrapper->appendChild($label);
+			
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
-				'fields[filters]'
-				//. (!is_null($fieldnamePrefix) ? "[{$fieldnamePrefix}]" : NULL)
-				. '[' . $this->{'element-name'} . ']',
-				//. (!is_null($fieldnamePostfix) ? "[{$fieldnamePostfix}]" : NULL),
-				(!is_null($data) ? General::sanitize($data) : NULL)
+				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
+				$data['value']
 			));
 			$wrapper->appendChild($label);
 		}

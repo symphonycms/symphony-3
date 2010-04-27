@@ -13,7 +13,7 @@
 			   'page' => 1,
 			   'section' => NULL,
 			   'conditions' => array(),
-			   'filter' => array(),
+			   'filters' => array(),
 			   'redirect-404-on-empty' => false,
 			   'append-pagination' => false,
 			   'sort-field' => 'system:id',
@@ -148,9 +148,9 @@
 			
 			$pagination = (object)array(
 				'total-entries' => NULL,
-				'entries-per-page' => max(1, (int)$this->replaceParametersInString($this->parameters()->limit, $ParameterOutput)),
+				'entries-per-page' => max(1, (int)self::replaceParametersInString($this->parameters()->limit, $ParameterOutput)),
 				'total-pages' => NULL,
-				'current-page' => max(1, (int)$this->replaceParametersInString($this->parameters()->page, $ParameterOutput)),
+				'current-page' => max(1, (int)self::replaceParametersInString($this->parameters()->page, $ParameterOutput)),
 			);
 		
 			$pagination->{'record-start'} = max(0, ($pagination->{'current-page'} - 1) * $pagination->{'entries-per-page'});
@@ -196,32 +196,20 @@
 			
 			//	Process Datasource Filters for each of the Fields
 			if(is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
-				foreach($this->parameters()->filters as $element_name => $filter_value){
-					
-					$filter_value = $this->replaceParametersInString($filter_value, $ParameterOutput);
-					
-					$filter_type = (strpos($value, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
-					
-					// This is where the filter value is split by commas or + symbol, denoting this as an OR or AND operation. Comma's have already been escaped
-					$filter_value = preg_split('/'.($filter_type == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),').'\s*/', $filter_value, -1, PREG_SPLIT_NO_EMPTY);
-					$filter_value = array_map('trim', $filter_value);
-					
-					// Remove the escapes on commas
-					$filter_value = array_map(array('General', 'removeEscapedCommas'), $filter_value);
-					
-					// Ensure the filter is an array, ready for iterating over
-					if(!is_array($filter_value)) $filter_value = array($filter_value);
-					
-					// Pre-escape the filter values. TODO: Should this be here?
-					$filter_value = array_map(array(Symphony::Database(), 'escape'), $filter_value);
+				foreach($this->parameters()->filters as $element_name => $filter){
 					
 					if($element_name == 'system:id'){
+						$filter_value = $this->prepareFilterValue($filter['value'], $ParameterOutput);
 						$filter_value = array_map('intval', $filter_value);
-						$where .= sprintf(" AND e.id IN (%s)", implode(',', $filter_value));
+						$where .= sprintf(
+							" AND e.id %s IN (%s)", 
+							($filter['type'] == 'is-not' ? 'NOT' : NULL), 
+							implode(',', $filter_value)
+						);
 					}
 					else{
 						$field = $section->fetchFieldByHandle($element_name);
-						$field->buildDSRetrivalSQL($filter_value, $joins, $where, $filter_type);
+						$field->buildDSRetrivalSQL($filter, $joins, $where, $ParameterOutput);
 					}
 
 				}
@@ -352,7 +340,7 @@
 							}
 							
 							foreach($parameter_output->fields as $field => $existing_values){
-								
+								//	TODO?
 							}
 						}
 						
@@ -392,7 +380,6 @@
 			return $result;
 
 		}
-
 
 		public function prepareSourceColumnValue(){
 			$section = Section::loadFromHandle($this->_parameters->section);

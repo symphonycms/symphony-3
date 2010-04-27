@@ -7,7 +7,7 @@
 			$this->_about = new StdClass;
 			$this->_parameters = (object)array(
 				'root-element' => NULL,
-				'filter' => array(),
+				'filters' => array(),
 				'included-elements' => array()
 			);
 		}
@@ -32,17 +32,17 @@
 			try {
 
 				##	User Filtering
-				if (is_array($this->parameters()->filter) && !empty($this->parameters()->filter)) {
+				if (is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
 					
 					$user_ids = NULL;
 					$where_clauses = array();
 
 					$query = "SELECT * FROM `tbl_users` WHERE 1 %s ORDER BY `id` ASC";
 					
-					foreach ($this->parameters()->filter as $field => $value){
+					foreach ($this->parameters()->filters as $field => $value){
 						if(!is_array($value) && trim($value) == '') continue;
 						
-						$value = $this->replaceParametersInString($value, $ParameterOutput);
+						$value = self::replaceParametersInString($value, $ParameterOutput);
 						
 						if (!is_array($value)) {
 							$value = preg_split('/,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY);

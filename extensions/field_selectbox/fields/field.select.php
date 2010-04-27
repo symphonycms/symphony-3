@@ -38,23 +38,13 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
 			if (!is_array($data) or empty($data)) return;
 
-			$list = Symphony::Parent()->Page->createElement($this->{'element-name'});
+			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
 
-			if (!is_array($data['handle']) and !is_array($data['value'])) {
-				$data = array(
-					'handle'	=> array($data['handle']),
-					'value'		=> array($data['value'])
-				);
-			}
-
-			foreach ($data['value'] as $index => $value) {
-				$list->appendChild(Symphony::Parent()->Page->createElement(
-					'item',
-					General::sanitize($value),
-					array(
-						'handle'	=> $data['handle'][$index]
-					)
-				));
+			foreach ($data as $d) {
+				$item = $wrapper->ownerDocument->createElement('item');
+				$item->setValue($d->value);
+				$item->setAttribute('handle', $d->handle);
+				$list->appendChild($item);
 			}
 
 			$wrapper->appendChild($list);
@@ -213,7 +203,7 @@
 			return parent::prepareTableValue((object)array('value' => implode(', ', $values)), $link);
 		}
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 			$field_id = $this->id;
 
 			if (self::isFilterRegex($data[0])) {

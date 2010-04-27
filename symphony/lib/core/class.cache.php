@@ -1,27 +1,25 @@
 <?php
 
 	require_once(TOOLKIT . '/class.mutex.php');
-	
-	/*
+
 	Class CacheResult{
 		private $data;
 		private $expiry;
 		private $creation;
 		private $key;
-		
+
 		public function __get($name){
 			return $this->$name;
 		}
-		
+
 		public function __construct($data, $key=NULL, $creation=NULL, $expiry=NULL){
 			$this->data = $data;
 			$this->key = $key;
 			$this->creation = $creation;
-			$this->expriry = $expiry;
+			$this->expiry = $expiry;
 		}
 	}
-	*/
-	
+
 	Interface iCacheDriver{
 		public function read($key);
 		public function write($key, $data, $ttl=NULL);
@@ -49,6 +47,7 @@
 		}
 
 		public function write($key, $data, $ttl=NULL){
+			$data = new CacheResult(trim($data), $key, time());
 			return self::$_connection->set($key, $data, MEMCACHE_COMPRESSED, $ttl);
 		}
 
@@ -80,6 +79,8 @@
 		}
 
 		public function write($key, $data, $ttl=NULL){
+			$data = new CacheResult(trim($data), $key, time());
+
 			return apc_store($key, $data, $ttl);
 		}
 
@@ -102,6 +103,8 @@
 
 		public function write($key, $data, $ttl=NULL){
 			if(!Mutex::acquire(md5($key), 2, TMP)) return;
+			$data = new CacheResult(trim($data), $key, time());
+
 			file_put_contents(CACHE . '/' . md5($key) . '.cache', self::__compress($data));
 			Mutex::release(md5($key), TMP);
 		}

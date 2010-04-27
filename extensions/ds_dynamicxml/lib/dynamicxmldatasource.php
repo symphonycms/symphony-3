@@ -72,11 +72,11 @@
 			$doc = new XMLDocument;
 
 			if(isset($this->parameters()->url)){
-				$this->parameters()->url = $this->replaceParametersInString($this->parameters()->url, $ParameterOutput);
+				$this->parameters()->url = self::replaceParametersInString($this->parameters()->url, $ParameterOutput);
 			}
 			
 			if(isset($this->parameters()->xpath)){
-				$this->parameters()->xpath = $this->replaceParametersInString($this->parameters()->xpath, $ParameterOutput);
+				$this->parameters()->xpath = self::replaceParametersInString($this->parameters()->xpath, $ParameterOutput);
 			}
 			
 			$cache_id = md5($this->parameters()->url . serialize($this->parameters()->namespaces) . $this->parameters()->xpath);

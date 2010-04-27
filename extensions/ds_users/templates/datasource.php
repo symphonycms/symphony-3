@@ -20,7 +20,7 @@
 
 			$this->_parameters = (object)array(
 				'root-element' => %8$s,
-				'filter' => %9$s,
+				'filters' => %9$s,
 				'included-elements' => %10$s,
 			);
 

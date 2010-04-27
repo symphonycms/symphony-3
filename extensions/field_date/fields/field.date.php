@@ -153,7 +153,7 @@
 
 		}
 
-		function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false){
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 
 			if(self::isFilterRegex($data[0])) return parent::buildDSRetrivalSQL($data, $joins, $where, $andOperation);
 

@@ -230,10 +230,10 @@
 				$join = NULL;
 				$sort_field = $section->fetchFieldByHandle($section->{'publish-order-handle'});
 				$sort_field->buildSortingSQL($join, $order);
-				
+
 				$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
 				$order = sprintf($order, $section->{'publish-order-direction'});
-				
+
 				$query = sprintf("
 					SELECT e.*
 					FROM `tbl_entries` AS e
@@ -932,12 +932,12 @@
 					),
 					AlertStack::ERROR
 				);
-				
+
 				$column = $layout->createColumn(Layout::LARGE);
 				$fieldset = $this->createElement('fieldset');
 				$header = $this->createElement('h3', __('Untitled'));
 				$fieldset->appendChild($header);
-				
+
 				if (is_array($section->fields)) foreach ($section->fields as $field) {
 					$div = $this->createElement('div', NULL, array(
 							'class' => trim(sprintf('field field-%s %s %s',
@@ -947,7 +947,7 @@
 							))
 						)
 					);
-					
+
 					$field->displayPublishPanel(
 						$div,
 						(isset($this->errors->{$field->{'element-name'}})
@@ -956,7 +956,7 @@
 						$this->entry,
 						$this->entry->data()->{$field->{'element-name'}}
 					);
-					
+
 					$fieldset->appendChild($div);
 				}
 
@@ -999,11 +999,12 @@
 				$entry->set('section_id', $section_id);
 			}
 */
+
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
 			$div->appendChild(
 				Widget::Submit(
-					'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create Entry')),
+					'action[save]', ($existing) ? __('Save Changes') : __('Create Entry'),
 					array(
 						'accesskey' => 's'
 					)
@@ -1086,7 +1087,7 @@
 
 				// Oh dear
 				$this->entry = $entry;
-				
+
 				$this->alerts()->append(
 					__('An error occurred while processing this form. <a href="#error">See below for details.</a> <a class="more">Show a list of errors.</a>'),
 					AlertStack::ERROR,
@@ -1379,7 +1380,7 @@
 					__('An error occurred while processing this form. <a href="#error">See below for details.</a> <a class="more">Show a list of errors.</a>'),
 					AlertStack::ERROR
 				);
-				
+
 				return;
 
 

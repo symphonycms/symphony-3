@@ -88,7 +88,7 @@
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::LARGE);
 			$right = $layout->createColumn(Layout::SMALL);
-			
+
 			$this->_existing_file = (isset($this->_context[1]) ? $this->_context[1] . '.xsl' : NULL);
 
 			## Handle unknown context
@@ -103,13 +103,13 @@
 				if(!is_file($file_abs) && !is_readable($file_abs)) redirect(URL . '/symphony/blueprints/utilities/new/');
 
 				$fields['name'] = $filename;
-				$fields['body'] = file_get_contents($file_abs);
+				$fields['template'] = file_get_contents($file_abs);
 
 				$this->Form->setAttribute('action', URL . '/symphony/blueprints/utilities/edit/' . $this->_context[1] . '/');
 			}
 
 			else{
-				$fields['body'] = file_get_contents(TEMPLATES . '/template.utility.txt');
+				$fields['template'] = file_get_contents(TEMPLATES . '/template.utility.txt');
 			}
 
 			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
@@ -159,8 +159,6 @@
 
 			if(!empty($_POST)) $fields = $_POST['fields'];
 
-			$fields['body'] = $fields['body'];
-
 			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			$label = Widget::Label(__('Name'));
@@ -169,14 +167,14 @@
 
 			$label = Widget::Label(__('XSLT'));
 			$label->appendChild(
-				Widget::Textarea('fields[template]', $fields['body'], array(
+				Widget::Textarea('fields[template]', $fields['template'], array(
 					'rows' => 30,
 					'cols' => 80,
 					'class'	=> 'code'
 				)
 			));
 
-			$fieldset->appendChild((isset($this->_errors['body']) ? Widget::wrapFormElementWithError($label, $this->_errors['body']) : $label));
+			$fieldset->appendChild((isset($this->_errors['template']) ? Widget::wrapFormElementWithError($label, $this->_errors['template']) : $label));
 
 			$left->appendChild($fieldset);
 
@@ -206,11 +204,11 @@
 
 				$right->appendChild($fieldset);
 			}
-			
+
 			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');
-			$div->setAttribute('class', 'actions');			
+			$div->setAttribute('class', 'actions');
 			$div->appendChild(
 				Widget::Submit(
 					'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create Utility')),
@@ -251,8 +249,17 @@
 
 				if(!isset($fields['name']) || trim($fields['name']) == '') $this->_errors['name'] = __('Name is a required field.');
 
-				if(!isset($fields['body']) || trim($fields['body']) == '') $this->_errors['body'] = __('Body is a required field.');
-				elseif(!General::validateXML($fields['body'], $errors)) $this->_errors['body'] = __('This document is not well formed. The following error was returned: <code>%s</code>', array($errors[0]->message));
+				if(!isset($fields['template']) || trim($fields['template']) == '') $this->_errors['template'] = __('XSLT is a required field.');
+				elseif(!General::validateXML($fields['template'], $errors)) {
+					$fragment = $this->createDocumentFragment();
+
+					$fragment->appendChild(new DOMText(
+						__('This document is not well formed. The following error was returned: ')
+					));
+					$fragment->appendChild($this->createElement('code', $errors->current()->message));
+
+					$this->_errors['template'] = $fragment;
+				}
 
 				if(empty($this->_errors)){
 
@@ -268,7 +275,7 @@
 					elseif($this->_context[0] == 'new' && is_file($file)) $this->_errors['name'] = __('A Utility with that name already exists. Please choose another.');
 
 					##Write the file
-					elseif(!$write = General::writeFile($file, $fields['body'],Symphony::Configuration()->core()->symphony->{'file-write-mode'})) {
+					elseif(!$write = General::writeFile($file, $fields['template'],Symphony::Configuration()->core()->symphony->{'file-write-mode'})) {
 						$this->alerts()->append(
 							__('Utility could not be written to disk. Please check permissions on <code>/workspace/utilities</code>.'),
 							AlertStack::SUCCESS
