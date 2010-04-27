@@ -408,6 +408,9 @@
 			unset($this->properties->{'suggestion-list-include-existing'});
 
 			$doc = parent::toDoc();
+			
+			$this->properties->{'suggestion-list-include-existing'} = $include_existing;
+			$this->properties->{'suggestion-list-source'} = $suggestion_list_source;
 
 			if(!is_null($suggestion_list_source)){
 				$element = $doc->createElement('suggestion-list-source');
