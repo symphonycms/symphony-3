@@ -86,10 +86,11 @@
 				);
 			}
 
-			foreach($this->{'suggestion-list-source'} as $section => $field_handle) {
+			foreach($this->{'suggestion-list-source'} as $key => $handles) {
+				list($section, $field) = $handles;
 				$sources[] = array(
 					'section' => $section,
-					'field_handle' => $field_handle
+					'field_handle' => $field
 				);
 			}
 
@@ -270,7 +271,7 @@
 						$this->{'suggestion-list-include-existing'} = true;
 					}
 				}
-				
+
 				$this->{'suggestion-list-source'} = $suggestion_list_source;
 				unset($data['suggestion-list-source']);
 			}
@@ -382,9 +383,9 @@
 			foreach($xml as $property_name => $property_value){
 				$data[(string)$property_name] = (string)$property_value;
 			}
-			
+
 			$this->{'suggestion-list-source'} = $suggestion_list_source;
-			
+
 			// Set field GUID:
 			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
 				$data['guid'] = (string)$xml->attributes()->guid;
