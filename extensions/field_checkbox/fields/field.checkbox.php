@@ -54,9 +54,9 @@
 		}
 
 		public function buildDSRetrivalSQL($data, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
-			
+
 			self::$key++;
-				
+
 			$joins .= sprintf('
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
 			', self::$key, $this->section, $this->{'element-name'});
@@ -66,8 +66,8 @@
 					$where .= sprintf(" AND (t%1\$s.value = '%2\$s)' ", self::$key, $value);
 				}
 
-			} 
-			
+			}
+
 			else {
 				$where .= sprintf(" AND (t%1\$s.value IN ('%2\$s')) ", self::$key, implode("', '", $data));
 			}
@@ -93,10 +93,14 @@
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
-			if(!$data && $this->{'required'} == 'yes') {
+			if(is_null($entry->id) && $this->{'default-state'} == 'on') {
+				$value = 'yes';
+			}
+
+			else if(is_null($data) && $this->{'required'} == 'yes') {
 				$value = null;
  			}
-			else if(!$data){
+			else if(is_null($data)) {
 				## TODO: Don't rely on $_POST
 				if(isset($_POST) && !empty($_POST)) $value = 'no';
 				elseif($this->{'default-state'} == 'on') $value = 'yes';

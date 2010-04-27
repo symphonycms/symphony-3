@@ -209,9 +209,6 @@
 					// Remove the escapes on commas
 					$filter_value = array_map(array('General', 'removeEscapedCommas'), $filter_value);
 					
-					// Ensure the filter is an array, ready for iterating over
-					if(!is_array($filter_value)) $filter_value = array($filter_value);
-					
 					// Pre-escape the filter values. TODO: Should this be here?
 					$filter_value = array_map(array(Symphony::Database(), 'escape'), $filter_value);
 					
@@ -352,7 +349,7 @@
 							}
 							
 							foreach($parameter_output->fields as $field => $existing_values){
-								
+								//	TODO?
 							}
 						}
 						

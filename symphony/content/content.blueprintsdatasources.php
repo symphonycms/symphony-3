@@ -48,8 +48,8 @@
 				array(__('Name'), 'col'),
 				array(__('Source'), 'col'),
 				array(__('Type'), 'col'),
-				array(__('Views Using'), 'col'),
-				array(__('Author'), 'col')
+				array(__('Attached On'), 'col'),
+				//array(__('Author'), 'col')
 			);
 
 			$dsTableBody = array();
@@ -86,12 +86,12 @@
 					$ds = DataSource::load($pathname);
 
 					$view_mode = ($ds->allowEditorToParse() == true ? 'edit' : 'info');
-					$handle = preg_replace('/.php$/i', NULL, basename($ds->parameters()->pathname));
+					$handle = DataSource::getHandleFromFilename($pathname);
 
 					// Name
 					$col_name = Widget::TableData(
-						Widget::Anchor($ds->about()->name,URL . "/symphony/blueprints/datasources/{$view_mode}/{$handle}/", array(
-							'title' => $handle . '.php'
+						Widget::Anchor($ds->about()->name, URL . "/symphony/blueprints/datasources/{$view_mode}/{$handle}/", array(
+							'title' => $ds->parameters()->pathname
 						))
 					);
 					$col_name->appendChild(Widget::Input("items[{$handle}]", NULL, 'checkbox'));
@@ -104,11 +104,11 @@
 						$col_source = $ds->prepareSourceColumnValue();
 					}
 
-					// Views that have this datasource Attached
+					// Attached On
 					$fragment_views = $this->createDocumentFragment();
 
 					foreach(self::$_loaded_views as $view) {
-						if(is_array($view['data-sources']) && in_array(preg_replace('/.php$/i', NULL, $pathname), $view['data-sources'])) {
+						if(is_array($view['data-sources']) && in_array($handle, $view['data-sources'])) {
 							if($fragment_views->hasChildNodes()) $fragment_views->appendChild(new DOMText(', '));
 
 							$fragment_views->appendChild(
@@ -133,6 +133,7 @@
 						$col_type = Widget::TableData($extension['name']);
 					}
 
+/*
 					// Author
 					if (isset($ds->about()->author->website)) {
 						$col_author = Widget::TableData(Widget::Anchor(
@@ -150,9 +151,11 @@
 					else {
 						$col_author = Widget::TableData($ds->about()->author->name);
 					}
+*/
+
 
 					$dsTableBody[] = Widget::TableRow(array(
-						$col_name, $col_source, $col_type, $col_views, $col_author
+						$col_name, $col_source, $col_type, $col_views//, $col_author
 					));
 				}
 			}
@@ -443,14 +446,14 @@
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
-			
+
 			$save = Widget::Submit(
 				'action[save]', __('Create Data Source'),
 				array(
 					'accesskey' => 's'
 				)
 			);
-			
+
 			$actions->appendChild($save);
 
 			if ($this->editing == true) {

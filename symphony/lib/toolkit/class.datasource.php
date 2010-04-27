@@ -87,7 +87,7 @@
 		abstract public function render(Register &$ParameterOutput);
 
 		public static function getHandleFromFilename($filename){
-			return preg_replace('/.php$/i', NULL, $filename);
+			return preg_replace('/(.php$|\/.*\/)/i', NULL, $filename);
 		}
 
 		public function &about(){

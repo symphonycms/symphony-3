@@ -74,12 +74,12 @@
 			if(isset($this->parameters()->url)){
 				$this->parameters()->url = $this->replaceParametersInString($this->parameters()->url, $ParameterOutput);
 			}
-			
+
 			if(isset($this->parameters()->xpath)){
 				$this->parameters()->xpath = $this->replaceParametersInString($this->parameters()->xpath, $ParameterOutput);
 			}
-			
-			$cache_id = md5($this->parameters()->url . serialize($this->parameters()->namespaces) . $this->parameters()->xpath);
+
+			$cache_id = md5($this->parameters()->url . serialize($this->parameters()->namespaces));
 
 			$cache = Cache::instance();
 			$cachedData = $cache->read($cache_id);
@@ -93,10 +93,12 @@
 				$timeout = (int)max(1, $this->parameters()->timeout);
 			}
 
-			if((!is_array($cachedData) || empty($cachedData)) || (time() - $cachedData['creation']) > ($this->parameters()->{'cache-timeout'} * 60)){
+			//	If cachedData doesn't exist, it'll be false.
+			if(!$cachedData instanceof CacheResult || (time() - $cachedData->creation) > ($this->parameters()->{'cache-lifetime'} * 60)){
+
 				if(Mutex::acquire($cache_id, $timeout, TMP)){
 
-					$start = precision_timer();
+					//$start = precision_timer();
 
 					$ch = new Gateway;
 
@@ -106,7 +108,7 @@
 					$xml = $ch->exec();
 					$writeToCache = true;
 
-					$end = precision_timer('STOP', $start);
+					//$end = precision_timer('STOP', $start);
 
 					$info = $ch->getInfoLast();
 
@@ -114,14 +116,14 @@
 
 					$xml = trim($xml);
 
-					if((int)$info['http_code'] != 200 || !preg_match('/(xml|plain|text)/i', $info['content_type'])){
-
+					//	Check that last CURL was okay, if it's not, don't erase last cached result, but mark it as stale.
+					if((int)$info['http_code'] != 200 || !preg_match('/(xml|plain|text)/i', $info['content_type'])) {
 						$writeToCache = false;
 
-						if(is_array($cachedData) && !empty($cachedData)){
-							$xml = trim($cachedData['data']);
+						if($cachedData instanceof CacheResult){
+							$xml = $cachedData->data;
 							$valid = false;
-							$creation = DateTimeObj::get('c', $cachedData['creation']);
+							$creation = DateTimeObj::get('c', $cachedData->creation);
 						}
 
 						else{
@@ -146,15 +148,15 @@
 							return $result;
 						}
 					}
-
-					elseif(strlen($xml) > 0 && !General::validateXML($xml, $errors)){
+					//	Check that last CURL actually returned a Valid XML document
+					else if(strlen($xml) > 0 && !General::validateXML($xml, $errors)){
 
 						$writeToCache = false;
 
-						if(is_array($cachedData) && !empty($cachedData)){
-							$xml = trim($cachedData['data']);
+						if($cachedData instanceof CacheResult){
+							$xml = $cachedData->data;
 							$valid = false;
-							$creation = DateTimeObj::get('c', $cachedData['creation']);
+							$creation = DateTimeObj::get('c', $cachedData->creation);
 						}
 
 						else{
@@ -169,16 +171,17 @@
 
 					}
 
+					//	If it's empty, just display an empty result
 					elseif(strlen($xml) == 0){
 						$this->_force_empty_result = true;
 					}
 
 				}
 
-				elseif(is_array($cachedData) && !empty($cachedData)){
-					$xml = trim($cachedData['data']);
+				else if($cachedData instanceof CacheResult){
+					$xml = $cachedData->data;
 					$valid = false;
-					$creation = DateTimeObj::get('c', $cachedData['creation']);
+					$creation = DateTimeObj::get('c', $cachedData->creation);
 					if(empty($xml)) $this->_force_empty_result = true;
 				}
 
@@ -187,15 +190,15 @@
 			}
 
 			else{
-				$xml = trim($cachedData['data']);
-				$creation = DateTimeObj::get('c', $cachedData['creation']);
+				$xml = $cachedData->data;
+				$creation = DateTimeObj::get('c', $cachedData->creation);
 			}
 
 			if(!$this->_force_empty_result) {
 				$result = new XMLDocument;
 				$root =	$result->createElement($this->parameters()->{'root-element'});
 
-				//XPath Approach, saves Transforming the Document.
+				//	XPath Approach, saves Transforming the Document.
 				$xDom = new XMLDocument;
 				$xDom->loadXML($xml);
 
@@ -219,9 +222,7 @@
 				}
 
 				else {
-					if($writeToCache){
-						$cache->write($cache_id, $xml);
-					}
+					if($writeToCache) $cache->write($cache_id, $xml);
 
 					$xpath = new DOMXPath($xDom);
 
@@ -246,7 +247,6 @@
 								$result->importNode($node, true)
 							);
 						}
-
 					}
 
 					$root->setAttribute('status', ($valid === true ? 'fresh' : 'stale'));
