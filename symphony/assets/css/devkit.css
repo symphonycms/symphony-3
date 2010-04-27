@@ -15,77 +15,80 @@
 		padding: 0;
 	}
 	body {
-		background: hsl(210, 5%, 10%);
+		background: hsl(210, 0%, 10%);
 		font: 80% sans-serif;
 		overflow: hidden;
 	}
 	
 	a {
-		color: hsl(210, 5%, 70%);
+		color: hsl(210, 0%, 70%);
 		text-decoration: none;
-		text-shadow: 2px 2px 3px hsl(210, 5%, 5%);
+		text-shadow: 2px 2px 3px hsl(210, 0%, 5%);
 	}
 	a:hover {
-		color: hsl(210, 5%, 90%);
+		color: hsl(210, 0%, 90%);
 	}
 	
 /*---------------------------------------------------------------------------------
 	Header
 ---------------------------------------------------------------------------------*/
 	
-	#header {
-		background: hsl(210, 5%, 20%);
-		border-left: 1px solid hsl(210, 5%, 30%);
+	#sidebar {
+		background: hsl(210, 0%, 2%);
+		border-left: 1px solid hsl(210, 0%, 30%);
 		bottom: 0;
 		color: #ffffff;
 		padding: 20px;
 		position: absolute;
-		text-shadow: 2px 2px 3px hsl(210, 5%, 5%);
+		text-shadow: 2px 2px 3px hsl(210, 0%, 5%);
 		right: 0;
 		top: 0;
 		width: 270px;
 	}
-	#header,
-	#header * {
+	#sidebar,
+	#sidebar * {
 		-moz-user-select: none;
 		-webkit-user-select: none;
 	}
-	#header h1 {
+	#sidebar h1 {
 		font-size: 120%;
 		margin: 0;
 	}
-	#header h1 a {
+	#sidebar h1 a {
 		color: #ffffff;
 	}
-	#header #navigation {
+	#sidebar #navigation {
 		margin: 5px 0 0 0;
 	}
-	#header #navigation li {
+	#sidebar #navigation li {
 		display: inline;
 		margin: 0 0.5em 0 0;
 	}
-	#header #jump {
+	#sidebar #jump {
 		float: left;
+		list-style: none;
 		margin: 20px 0 0 -20px;
 		overflow: hidden;
 		width: 269px;
 	}
-	#header #jump ul {
+	#sidebar #jump ul {
+		font-size: 90%;
 		list-style: none;
-	}
-	#header #jump ul ul {
 		padding: 0 0 0 10px;
 	}
-	#header #jump a {
+	#sidebar #jump ul ul {
+		font-size: 100%;
+	}
+	#sidebar #jump a {
 		display: block;
 		margin: 0 0 0 -240px;
 		padding: 5px 10px 5px 260px;
 	}
-	#header #jump a:hover {
-		background: hsl(210, 5%, 22%);
+	#sidebar #jump a:hover {
+		background: hsla(210, 0%, 25%, 0.2);
 	}
-	#header #jump a.active {
-		background: hsl(210, 5%, 25%);
+	#sidebar #jump a.active {
+		background: hsla(210, 0%, 25%, 0.3);
 		color: hsl(210, 5%, 100%);
 	}
 	
@@ -94,13 +97,37 @@
 ---------------------------------------------------------------------------------*/
 	
 	#content {
-		background: hsl(210, 5%, 10%);
+		background: hsl(210, 0%, 10%);
 		bottom: 0;
 		left: 0;
 		position: absolute;
 		overflow: auto;
 		right: 270px;
 		top: 0;
+	}
+	
+	
+	
+	
+	
+	#sidebar {
+		background: hsla(0, 0%, 5%, 0.8);
+		border: none;
+		-webkit-box-shadow: 0 0 40px hsla(0, 0%, 0%, 0.2);
+		position: fixed;
+	}
+	
+	#input,
+	#content {
+		right: 0 !important;
+	}
+	
+	body {
+		overflow: auto;
+	}
+	
+	#content {
+		position: relative;
 	}
 	
 /*-------------------------------------------------------------------------------*/

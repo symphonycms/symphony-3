@@ -2,11 +2,44 @@
 	
 	require_once(TOOLKIT . '/class.view.php');
 	
+	class URLWriter {
+		protected $url;
+		protected $params;
+		
+		public function __construct($url, array $params) {
+			$this->url = $url;
+			$this->params = (object)$params;
+		}
+		
+		public function parameters() {
+			return $this->params;
+		}
+		
+		public function __toString() {
+			$query = '';
+			
+			foreach ($this->parameters() as $index => $value) {
+				if (is_null($value) or $value == '') {
+					$query .= '&' . $index;
+				}
+				
+				else {
+					$query .= '&' . $index . '=' . $value;
+				}
+			}
+			
+			if ($query == '') return $this->url;
+			
+			return $this->url . '?' . ltrim($query, '&');
+		}
+	}
+	
 	class DevKit extends View {
 		protected $document;
 		protected $data;
+		protected $url;
 		
-		public function __construct() {
+		public function __construct(View $view) {
 			parent::__construct();
 			
 			$imp = new DOMImplementation;
@@ -16,7 +49,13 @@
 			$this->document->encoding = 'UTF-8';
 			$this->document->formatOutput = true;
 			
+			$this->view = $view;
 			$this->data = (object)array();
+			$this->url = new URLWriter(URL . getCurrentPage(), $_GET);
+			
+			// Remove symphony parameters:
+			unset($this->url->parameters()->{'symphony-page'});
+			unset($this->url->parameters()->{'symphony-renderer'});
 		}
 		
 		public function __isset($name) {
@@ -28,10 +67,6 @@
 				$this->title = __('Untitled');
 			}
 			
-			if ($name == 'header' and !isset($this->header)) {
-				$this->title = __('Untitled');
-			}
-			
 			return $this->data->$name;
 		}
 		
@@ -39,33 +74,8 @@
 			$this->data->$name = $value;
 		}
 		
-		public function getCurrentURL($excludes = array()) {
-			$query = $this->getCurrentURLQuery($excludes);
-			
-			return URL . getCurrentPage() . $query;
-		}
-		
-		public function getCurrentURLQuery($excludes = array()) {
-			$excludes = array_merge(
-				$excludes, array('symphony-page', 'symphony-renderer')
-			);
-			$query = '';
-			
-			foreach ($_GET as $index => $value) {
-				if (in_array($index, $excludes)) continue;
-				
-				if (is_null($value) or $value == '') {
-					$query .= '&' . $index;
-				}
-				
-				else {
-					$query .= '&' . $index . '=' . $value;
-				}
-			}
-			
-			if ($query == '') return '';
-			
-			return '?' . ltrim($query, '&');
+		public function templatePathname() {
+			return $this->view->templatePathname();
 		}
 		
 		protected function createScriptElement($path) {
@@ -74,7 +84,7 @@
 			$element->setAttribute('src', $path);
 
 			// Creating an empty text node forces <script></script>
-			$element->appendChild($this->createTextNode(''));
+			$element->appendChild($this->document->createTextNode(''));
 
 			return $element;
 		}
@@ -90,8 +100,6 @@
 		}
 		
 		public function render(Register &$Parameters, XMLDocument &$Document = null) {
-			//header('content-type: text/plain');
-			
 			$this->appendHead($this->document->documentElement);
 			$this->appendBody($this->document->documentElement);
 			
@@ -140,8 +148,6 @@
 			$container = $this->document->createElement('div');
 			$container->setAttribute('id', 'content');
 			
-			
-			
 			$wrapper->appendChild($container);
 			
 			return $container;
@@ -153,7 +159,11 @@
 			
 			$this->appendHeader($container);
 			$this->appendMenu($container);
-			$this->appendJump($container);
+			
+			$jump = $this->document->createElement('ul');
+			$jump->setAttribute('id', 'jump');
+			$this->appendJump($jump);
+			$container->appendChild($jump);
 			
 			$wrapper->appendChild($container);
 			
@@ -163,9 +173,9 @@
 		protected function appendHeader(DOMElement $wrapper) {
 			$header = $this->document->createElement('h1');
 			$link = $this->document->createElement('a');
-			$link->setAttribute('href', $this->getCurrentURL());
+			$link->setAttribute('href', (string)$this->url);
 			$link->appendChild($this->document->createTextNode(
-				$this->header
+				$this->view->title
 			));
 			
 			$header->appendChild($link);
@@ -186,16 +196,27 @@
 		}
 		
 		protected function appendJump(DOMElement $wrapper) {
-			$container = $this->document->createElement('ul');
-			$container->setAttribute('id', 'jump');
 			
-			
-			
-			$wrapper->appendChild($container);
-			
-			return $container;
 		}
 		
+		protected function appendJumpItem(DOMElement $wrapper, $name, $link, $active = false) {
+			$item = $this->document->createElement('li');
+			$anchor = $this->document->createElement('a');
+			$anchor->setAttribute('href', $link);
+			$anchor->setAttribute('class', 'inactive');
+			$anchor->appendChild(
+				$this->document->createTextNode($name)
+			);
+			
+			if ($active == true) {
+				$anchor->setAttribute('class', 'active');
+			}
+			
+			$item->appendChild($anchor);
+			$wrapper->appendChild($item);
+			
+			return $item;
+		}
 		
 		
 		

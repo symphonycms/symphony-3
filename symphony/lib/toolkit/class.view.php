@@ -611,12 +611,13 @@
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');
 			}
-
+			
+			/*
 			header('Content-Type: text/plain; charset=utf-8');
 			$Document->formatOutput = true;
 			print $Document->saveXML();
 			die();
-
+			*/
 
 			return $output;
 		}
