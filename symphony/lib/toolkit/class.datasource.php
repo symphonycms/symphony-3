@@ -25,6 +25,11 @@
 			$this->datasources = array();
 			$this->position = 0;
 
+			foreach(glob("{" . DATASOURCES . "/*.php, " . EXTENSIONS . "/*/data-sources/*.php}", GLOB_BRACE) as $file) {
+				$this->datasources[] = $file;
+			}
+
+			/*
 			foreach(new DataSourceFilterIterator(DATASOURCES) as $file){
 				$this->datasources[] = $file->getPathname();
 			}
@@ -36,6 +41,7 @@
 					$this->datasources[] = $file->getPathname();
 				}
 			}
+			*/
 
 		}
 
@@ -329,20 +335,20 @@
 		protected function __determineFilterType($value){
 			return (false === strpos($value, '+') ? DataSource::FILTER_OR : DataSource::FILTER_AND);
 		}
-		
+
 		public static function determineFilterType($string){
 		 	return (strpos($string, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
 		}
-		
+
 		public static function prepareFilterValue($value, Register $ParameterOutput=NULL){
-			
+
 			if(strlen(trim($value)) == 0) return NULL;
-			
+
 			$value = self::replaceParametersInString($value, $ParameterOutput);
-			
+
 			$pattern = (self::determineFilterType($value) == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),');
-			
-			// This is where the filter value is split by commas or + symbol, denoting 
+
+			// This is where the filter value is split by commas or + symbol, denoting
 			// this as an OR or AND operation. Comma's have already been escaped
 			$value = preg_split("/{$pattern}\s*/", $value, -1, PREG_SPLIT_NO_EMPTY);
 			$value = array_map('trim', $value);
@@ -352,10 +358,10 @@
 
 			// Pre-escape the filter values. TODO: Should this be here?
 			$value = array_map(array(Symphony::Database(), 'escape'), $value);
-			
+
 			return $value;
-		}		
-		
+		}
+
 		/*
 		**	Given a string that may contain params in form of {$param}
 		**	resolve the tokens with their values

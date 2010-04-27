@@ -26,7 +26,12 @@
 
 			$this->events = array();
 			$this->position = 0;
+			
+			foreach(glob("{" . EVENTS . "/*.php, " . EVENTS . "/*/events/*.php}", GLOB_BRACE) as $file) {
+				$this->events[] = $file;
+			}
 
+/*
 			foreach(new EventFilterIterator(EVENTS) as $file){
 				$this->events[] = $file->getPathname();
 			}
@@ -38,7 +43,7 @@
 					$this->events[] = $file->getPathname();
 				}
 			}
-
+*/
 		}
 
 		public function length(){

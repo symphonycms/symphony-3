@@ -160,7 +160,7 @@
 
 		public function display($page=NULL){
 
-			// VIEW RESOLVING --------------------------
+			// VIEW RESOLVING --------------------------			
 			try{
 				if(is_null($page)){
 					$views = View::findFromType('index');
@@ -188,6 +188,8 @@
 			}
 
 			catch(Exception $e){
+				var_dump($e->getMessage());
+				
 				$views = View::findFromType('404');
 				self::$view = array_shift($views);
 
