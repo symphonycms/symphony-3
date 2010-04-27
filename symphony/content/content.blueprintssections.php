@@ -439,14 +439,64 @@
 
 			// Header:
 			$row = $this->createElement('tr');
-			$row->appendChild($this->createElement('th', __('Field')));
+			$row->appendChild($this->createElement('th', __('Name')));
 
 			foreach ($table_actions as $action => $count) {
 				$row->appendChild($this->createElement('th', __(ucwords($action))));
 			}
 
 			$table->appendChild($row);
+			
+			$row = $this->createElement('tr');
+			$cell = $this->createElement('th');
+			
+			if ($sync->section->rename) {
+				$cell->appendChild($this->createTextNode(
+					$sync->section->new->name . ' '
+				));
+				
+				$span = $this->createElement('span');
+				$span->setAttribute('class', 'old');
+				$span->appendChild($this->createEntityReference('larr'));
+				$span->appendChild($this->createTextNode(
+					' ' . $sync->section->old->name
+				));
+				
+				$cell->appendChild($span);
+				$row->appendChild($cell);
+				
+				foreach ($table_actions as $action => $count) {
+					$cell = $this->createElement('td', __('No'));
+					$cell->setAttribute('class', 'no');
+					
+					if ($action == 'rename') {
+						$cell->setValue(__('Yes'));
+						$cell->setAttribute('class', 'yes');
+					}
 
+					$row->appendChild($cell);
+				}
+			}
+			
+			else {
+				$cell->setValue($sync->section->new->name);
+				$row->appendChild($cell);
+				
+				foreach ($table_actions as $action => $count) {
+					$cell = $this->createElement('td', __('No'));
+					$cell->setAttribute('class', 'no');
+					
+					if ($action == 'update') {
+						$cell->setValue(__('Yes'));
+						$cell->setAttribute('class', 'yes');
+					}
+
+					$row->appendChild($cell);
+				}
+			}
+			
+			$table->appendChild($row);
+			
 			// Body:
 			foreach ($table_fields as $guid => $data) {
 				$row = $this->createElement('tr');
