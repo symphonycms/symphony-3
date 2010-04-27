@@ -216,7 +216,13 @@
 
 			####
 			# Delegate: FrontendPostInitialise
-			ExtensionManager::instance()->notifyMembers('FrontendPostInitialise', '/frontend/');
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendPostInitialise',
+				'/frontend/',
+				array(
+					'view' => &self::$view
+				)
+			);
 
 			// SETTING UP PARAMETERS --------------------------
 			self::$Parameters = new Register;

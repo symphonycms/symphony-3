@@ -75,7 +75,7 @@
 
 			foreach ($this as $key => $message) {
 				if (!is_numeric($key)) {
-					$key = $key . ':';
+					$key = $key . ': ';
 				}
 
 				else {
@@ -91,7 +91,12 @@
 				else if (is_array($message)) {
 					$item = $document->createElement('li', $key . array_shift($message));
 				}
-
+				
+				else if ($message instanceof STDClass) {
+					$message = (array)$message;
+					$item = $document->createElement('li', $key . array_shift($message));
+				}
+				
 				else {
 					$item = $document->createElement('li', $key . $message);
 				}
