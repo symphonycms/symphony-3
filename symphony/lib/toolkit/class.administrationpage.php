@@ -25,6 +25,27 @@
 		public function Context(){
 			return $this->_context;
 		}
+		
+		public function condenseScriptsAndStyles(){
+			// Do some magic with the JS and CSS to speed stuff up
+			$scripts = $this->xpath("//head/script[@type = 'text/javascript' and not(@src='')]");
+			$super_script = NULL;
+			foreach($scripts as $s){
+				$super_script .= file_get_contents((string)$s->getAttribute('src')) . "\n";
+				$s->parentNode->removeChild($s);
+			}
+			file_put_contents(CACHE . '/admin-scripts.js', $super_script);
+			$this->insertNodeIntoHead($this->createScriptElement(URL . '/manifest/cache/admin-scripts.js'));
+			
+			$styles = $this->xpath("//head/link[@type = 'text/css' and @rel = 'stylesheet' and @media='screen']");
+			$super_style = NULL;
+			foreach($styles as $s){
+				$super_style .= file_get_contents((string)$s->getAttribute('href')) . "\n";
+				$s->parentNode->removeChild($s);
+			}
+			file_put_contents(CACHE . '/admin-styles.css', $super_style);
+			$this->insertNodeIntoHead($this->createStylesheetElement(URL . '/manifest/cache/admin-styles.css'));
+		}
 
 		public function build($context = NULL){
 			$this->_context = $context;

@@ -218,6 +218,8 @@
 			# Global: Yes
 			ExtensionManager::instance()->notifyMembers('AdminPagePreGenerate', '/backend/', array('oPage' => &$this->Page));
 			
+			$this->Page->condenseScriptsAndStyles();
+			
 			$output = (string)$this->Page;
 
 			####

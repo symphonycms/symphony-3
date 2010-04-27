@@ -159,8 +159,6 @@
 		}
 		
 		public function resolve($url=NULL){
-			
-			// VIEW RESOLVING --------------------------
 			try{
 				if(is_null($url)){
 					$views = View::findFromType('index');
