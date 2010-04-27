@@ -298,7 +298,18 @@
 				$messages->append('template', 'Template is required, and cannot be empty.');
 			}
 			elseif(!General::validateXML($view->template, $errors)) {
+<<<<<<< HEAD
 				$messages->append('template', __('This document is not well formed. The following error was returned: <code>%s</code>', array($errors->current()->message)));
+=======
+				$fragment = Administration::instance()->Page->createDocumentFragment();
+
+				$fragment->appendChild(new DOMText(
+					__('This document is not well formed. The following error was returned: ')
+				));
+				$fragment->appendChild(Administration::instance()->Page->createElement('code', $errors->current()->message));
+
+				$messages->append('template', $fragment);
+>>>>>>> f891942300bc6ff7ad5b9eb41953f998bd7161da
 			}
 
 			if($messages->length() > 0){
@@ -433,7 +444,7 @@
 			}
 
 			$root = $Document->documentElement;
-			
+
 			$Events = $Document->createElement('events');
 			$root->appendChild($Events);
 			
@@ -541,14 +552,14 @@
 					$this->_param[$handle] = trim($this->_param[$handle], ',');
 				}
 			}
-			*/			
-			
+			*/
+
 			//	TODO: Find dependancies and order
 
 			if(is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})){
 				foreach($this->about()->{'data-sources'} as $handle){
 					$ds = Datasource::loadFromHandle($handle);
-					
+
 					try{
 						$fragment = $ds->render($ParameterOutput);
 					}

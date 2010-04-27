@@ -6,7 +6,7 @@
 
 	    public function __construct(array $messages=NULL){
 			$this->messages = array();
-	
+
 	        if(!is_null($messages)){
 	            $this->messages = $messages;
 	        }
@@ -35,7 +35,7 @@
 		public function length(){
 			return count($this->messages);
 		}
-	
+
 		## TODO: This is a bit voodoo. Maybe come up with a better solution
 		private static function __sanitiseIdentifier($identifier){
 			return str_replace('_', '-', $identifier);
@@ -44,26 +44,26 @@
 		public function append($identifier, $message){
 			if($identifier == NULL) $identifier = count($this->messages);
 			$this->messages[self::__sanitiseIdentifier($identifier)] = $message;
-			
+
 			return $identifier;
 		}
 
 		public function remove($identifier){
 			$element = self::__sanitiseIdentifier($identifier);
-		
+
 			if(isset($this->messages[$identifier])){
 				unset($this->messages[$identifier]);
 			}
 		}
-		
+
 		public function flush(){
 			$this->messages = array();
 		}
-		
+
 		public function __get($identifier){
 			return (isset($this->messages[$identifier]) ? $this->messages[$identifier] : NULL);
 		}
-		
+
 		public function __isset($identifier){
 			return isset($this->messages[$identifier]);
 		}
@@ -77,17 +77,17 @@
 				if (!is_numeric($key)) {
 					$key = $key . ':';
 				}
-				
+
 				else {
 					$key = '';
 				}
-				
+
 				if ($message instanceof MessageStack) {
 					$item = $document->createElement('li', $key);
 
 					$message->appendTo($item);
 				}
-				
+
 				else if (is_array($message)) {
 					$item = $document->createElement('li', $key . array_shift($message));
 				}
@@ -102,4 +102,4 @@
 			$wrapper->appendChild($list);
 		}
 	}
-	
+
