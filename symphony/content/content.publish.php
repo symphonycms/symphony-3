@@ -168,7 +168,7 @@
 					SELECT e.*
 					FROM `tbl_entries` AS e
 					%s
-					WHERE `section` = '%s'
+					WHERE e.section = '%s'
 					ORDER BY %s
 					LIMIT %d, %d",
 					$joins, $section->handle, $order, $pagination['start'], $pagination['entries-per-page']
