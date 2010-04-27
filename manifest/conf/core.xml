@@ -23,7 +23,7 @@
   <region>
     <time-format>H:i</time-format>
     <date-format>d F Y</date-format>
-    <timezone>Australia/Melbourne</timezone>
+    <timezone>Australia/Brisbane</timezone>
   </region>
   <cache-driver>File</cache-driver>
 </configuration>

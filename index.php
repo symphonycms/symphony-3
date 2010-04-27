@@ -7,7 +7,7 @@
 
 	function renderer($handle){
 		if(!file_exists(CORE . "/class.{$handle}.php")){
-			throw new Exception('Invalid Symphony Renderer mode specified.');
+			throw new Exception('Invalid Symphony renderer handle specified.');
 		}
 
 		$classname = require_once(CORE . "/class.{$handle}.php");

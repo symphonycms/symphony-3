@@ -159,8 +159,6 @@
 		}
 		
 		public function resolve($url=NULL){
-			
-			// VIEW RESOLVING --------------------------
 			try{
 				if(is_null($url)){
 					$views = View::findFromType('index');
@@ -270,7 +268,8 @@
 			if(is_array($_GET) && !empty($_GET)){
 				foreach($_GET as $key => $val){
 					if(in_array($key, array('symphony-page', 'debug', 'profile'))) continue;
-					self::$Parameters->{"url-{$key}"} = $val;
+					// self::$Parameters->{"url-{$key}"} = $val; "url" is not prepended by $_GET params
+					self::$Parameters->{$key} = $val;
 				}
 			}
 

@@ -119,7 +119,7 @@ var Symphony;
 /*-----------------------------------------------------------------------------
 	Symphony Alerts
 -----------------------------------------------------------------------------*/
-	
+
 	Symphony.Alert = {
 		seconds: 		0,
 		notices:		[],
@@ -145,7 +145,7 @@ var Symphony;
 				.bind('mousedown', block)
 				.bind('click', function() {
 					self.hide();
-					
+
 					return false;
 				});
 			var more = notice.find('.message a.more')
@@ -154,7 +154,7 @@ var Symphony;
 					notice.find('> .info')
 						.slideToggle('fast');
 				});
-			
+
 			// Add to queue:
 			self.notices.push({
 				notice:				notice,
@@ -164,13 +164,13 @@ var Symphony;
 				seconds_viewed:		0,
 				visible:			false
 			});
-			
+
 			self.show();
 		},
 		show: function() {
 			var self = Symphony.Alert;
 			var next = self.notices[0];
-			
+
 			if (!self.visible) {
 				self.visible = true;
 				next.visible = true;
@@ -185,11 +185,11 @@ var Symphony;
 					'fast', 'linear'
 				);
 			}
-			
+
 			else {
 				next.visible = true;
 				next.notice.show();
-				
+
 				if (self.faded) {
 					var current = self.notices.slice(-1)[0];
 					var pulses = 0;
@@ -212,23 +212,23 @@ var Symphony;
 							}
 						);
 					};
-					
+
 					next.notice.stop();
 					pulse();
 				}
 			}
-			
+
 			self.update();
 		},
 		hide: function() {
 			var self = Symphony.Alert;
 			var current = self.notices.shift();
-			
+
 			if (self.notices.length) {
 				self.show();
 				current.notice.remove();
 			}
-			
+
 			else {
 				current.notice
 					.unbind('mouseout')
@@ -248,21 +248,21 @@ var Symphony;
 		},
 		ticker: function() {
 			var self = Symphony.Alert;
-			
+
 			self.notices.forEach(function(current) {
 				current.seconds_existed += 1;
-				
+
 				if (current.visible) {
 					current.seconds_viewed += 1;
 				}
-				
+
 				if (current.seconds_viewed != 10) return;
-				
+
 				current.notice
 					.hover(
 						function() {
 							if (current.notice.find('.info:visible').length == 1) return;
-							
+
 							current.notice.stop().animate(
 								{
 									'opacity':	Symphony.Alert.max_opacity
@@ -275,7 +275,7 @@ var Symphony;
 						},
 						function() {
 							if (current.notice.find('.info:visible').length == 1) return;
-							
+
 							current.notice.stop().animate(
 								{
 									'opacity':	Symphony.Alert.min_opacity
@@ -287,7 +287,7 @@ var Symphony;
 							);
 						}
 					);
-				
+
 				if (current.notice.find('.info:visible').length == 0) {
 					current.notice.stop().animate(
 						{
@@ -300,19 +300,19 @@ var Symphony;
 					);
 				}
 			});
-			
+
 			if (self.notices.length) self.update();
 		},
 		update: function() {
 			var self = Symphony.Alert;
-			
+
 			self.notices.forEach(function(current) {
 				var label = current.notice.find('.timeago');
 				var time = Math.floor(current.seconds_existed * 30);
 				var text = label.text();
-				
+
 				current.dismiss.text('Dismiss 1 of ' + (self.notices.length));
-				
+
 				if (time < 1) text = Symphony.Language.get('just now');
 				else if (time < 2) text = Symphony.Language.get('a minute ago');
 				else if (time < 45) text = Symphony.Language.get(
@@ -327,24 +327,24 @@ var Symphony;
 			});
 		}
 	};
-	
+
 	// Start timers:
 	window.setInterval(Symphony.Alert.ticker, 1000);
-	
+
 	// Initialize notices:
 	$(document).ready(function() {
 		$('#alerts > li').each(function() {
 			var notice = $(this).remove();
-			
+
 			// Add notice:
 			if (notice.is('.error')) {
 				Symphony.Alert.post(notice.html(), 'error');
 			}
-			
+
 			else if (notice.is('.success')) {
 				Symphony.Alert.post(notice.html(), 'success');
 			}
-			
+
 			else {
 				Symphony.Alert.post(notice.html(), 'info');
 			}
@@ -354,11 +354,22 @@ var Symphony;
 /*-----------------------------------------------------------------------------
 	Common
 -----------------------------------------------------------------------------*/
-	
+
 	$(document).ready(function() {
 		$('.tags').symphonyTags();
+
+		$('table:has(input)').symphonySelectable();
 	});
-	
+
+/*-----------------------------------------------------------------------------
+	Datasources Page
+-----------------------------------------------------------------------------*/
+	$(document).ready(function() {
+		$('#master-switch select').bind('change', function() {
+			window.location.search = '?type=' + $(this).val();
+		});
+	});
+
 /*-----------------------------------------------------------------------------
 	Events Page
 -----------------------------------------------------------------------------*/
@@ -477,18 +488,18 @@ var Symphony;
 
 		if (layout.length) {
 			layout.symphonyLayout();
-			
+
 			// Update input names before submit:
 			$('form').submit(function() {
 				var expression = /^layout\[[0-9]+\]\[fieldsets\]\[[0-9]+\]\[fields\]\[(.*)]$/;
-				
+
 				layout.find('> .columns > .column').each(function(column) {
 					var input = $('<input />')
 						.attr('name', 'size')
 						.attr('type', 'hidden');
-					
+
 					input.val(this.className.match(/column ([a-z]+)/)[1]);
-					
+
 					input.attr(
 						'name',
 						'layout['
@@ -498,7 +509,7 @@ var Symphony;
 
 					$(this).find('> input').remove();
 					$(this).append(input);
-					
+
 					$(this).find('> fieldset').each(function(fieldset) {
 						var input = $(this).find('> h3 > input');
 
@@ -524,7 +535,7 @@ var Symphony;
 								+ field
 								+ ']'
 							);
-							
+
 							console.log(input.attr('name'));
 						});
 					});
@@ -589,7 +600,7 @@ var Symphony;
 				link.text('▼').removeClass('hide').addClass('show');
 				children.hide().removeClass('selected');
 			}
-			
+
 			else if (link.is('.show')) {
 				link.text('▼').removeClass('show').addClass('hide');
 				children.show();
@@ -612,7 +623,7 @@ var Symphony;
 /*-----------------------------------------------------------------------------
 	rel[external]
 -----------------------------------------------------------------------------*/
-	
+
 	$(window).ready(function() {
 		$('a[rel=external]').live("click", function() {
 			window.open($(this).attr('href'));

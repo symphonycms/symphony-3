@@ -648,7 +648,7 @@
 		}
 
 		function __actionIndex(){
-			$checked = array_keys($_POST['items']);
+			$checked = is_array($_POST['items']) ? array_keys($_POST['items']) : null;
 			$callback = Administration::instance()->getPageCallback();
 
 			if(is_array($checked) && !empty($checked)){

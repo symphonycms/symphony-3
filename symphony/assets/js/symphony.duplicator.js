@@ -61,8 +61,8 @@
 
 			container.live('duplicator-template-insert', function() {
 				var template = jQuery(this);
-				var intance = jQuery('<li />')
-					.append(template.find('> :not(.name)').clone())
+				var instance = jQuery('<li />')
+					.append(template.find('> :not(.name)').clone(true))
 					.appendTo(object.find('> .content > .instances'));
 				var tab = jQuery('<li />')
 					.append(
@@ -294,7 +294,7 @@
 				find(select.template_parent)
 					.trigger('duplicator-templates-hide');
 			}
-			
+
 			// Remove templates on form submit
 			form.bind('submit', function() {
 				find(select.template_parent)
@@ -352,5 +352,5 @@
 
 		return duplicator;
 	};
-	
+
 /*---------------------------------------------------------------------------*/
