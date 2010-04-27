@@ -13,7 +13,7 @@
 			   'page' => 1,
 			   'section' => NULL,
 			   'conditions' => array(),
-			   'filter' => array(),
+			   'filters' => array(),
 			   'redirect-404-on-empty' => false,
 			   'append-pagination' => false,
 			   'sort-field' => 'system:id',
