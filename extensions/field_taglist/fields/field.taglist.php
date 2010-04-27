@@ -472,7 +472,7 @@
 			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
 		}
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 			$field_id = $this->id;
 
 			if (self::isFilterRegex($data[0])) {

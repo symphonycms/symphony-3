@@ -236,7 +236,7 @@
 			if(isset($this->_env) && is_array($this->_env)){
 				if(isset($this->eParamOVERRIDES) && is_array($this->eParamOVERRIDES) && !empty($this->eParamOVERRIDES)){
 					foreach($this->eParamOVERRIDES as $field => $replacement){
-						$replacement = $this->replaceParametersInString(stripslashes($replacement), $this->_env);
+						$replacement = self::replaceParametersInString(stripslashes($replacement), $this->_env);
 
 						if($replacement === NULL){
 							unset($this->eParamOVERRIDES[$field]);

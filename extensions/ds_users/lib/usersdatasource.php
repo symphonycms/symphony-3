@@ -42,7 +42,7 @@
 					foreach ($this->parameters()->filter as $field => $value){
 						if(!is_array($value) && trim($value) == '') continue;
 						
-						$value = $this->replaceParametersInString($value, $ParameterOutput);
+						$value = self::replaceParametersInString($value, $ParameterOutput);
 						
 						if (!is_array($value)) {
 							$value = preg_split('/,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY);

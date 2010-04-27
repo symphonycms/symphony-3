@@ -696,7 +696,7 @@
 			*/
 		}
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 			$field_id = $this->{'id'};
 
 			if (preg_match('/^(not-)?regexp:\s*/', $data[0], $matches)) {

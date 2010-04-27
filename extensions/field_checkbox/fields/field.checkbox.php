@@ -53,42 +53,53 @@
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
 
 			self::$key++;
-
+			
+			$value = DataSource::prepareFilterValue($filter['value']);
+			
 			$joins .= sprintf('
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
 			', self::$key, $this->section, $this->{'element-name'});
 
 			if ($operation_type == DataSource::FILTER_AND) {
-				foreach ($data as $value) {
-					$where .= sprintf(" AND (t%1\$s.value = '%2\$s)' ", self::$key, $value);
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (t%1\$s.value %2\$s '%3\$s') ", 
+						self::$key, 
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
 				}
 
 			}
 
 			else {
-				$where .= sprintf(" AND (t%1\$s.value IN ('%2\$s')) ", self::$key, implode("', '", $data));
+				$where .= sprintf(
+					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ", 
+					self::$key, 
+					$filter['type'] == 'is-not' ? 'NOT' : NULL, 
+					implode("', '", $value)
+				);
 			}
 
 			return true;
 		}
 
-		function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
+		public function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
 			$existing_options = array('yes', 'no');
 
-			if(is_array($existing_options) && !empty($existing_options)){
-				$optionlist = Symphony::Parent()->Page->createElement('ul');
-				$optionlist->setAttribute('class', 'tags');
+			$optionlist = Symphony::Parent()->Page->createElement('ul');
+			$optionlist->setAttribute('class', 'tags');
 
-				foreach($existing_options as $option) $optionlist->appendChild(Symphony::Parent()->Page->createElement('li', $option));
+			foreach($existing_options as $option) $optionlist->appendChild(Symphony::Parent()->Page->createElement('li', $option));
 
-				$wrapper->appendChild($optionlist);
-			}
+			$wrapper->appendChild($optionlist);
+			
 
 		}
 
