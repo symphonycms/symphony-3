@@ -699,13 +699,12 @@
 			$fields = $post['fields'];
 
 			if($this->_context[0] == 'edit'){
-				$isEditing = true;
 				$handle = $this->_context[1];
-				//$this->event = Event::loadFromHandle($handle);
+				$this->event = Event::loadFromHandle($handle);
 			}
-			//else{
+			else{
 				$this->event = new Event;
-			//}
+			}
 
 			$this->event->about()->name = $fields['name'];
 

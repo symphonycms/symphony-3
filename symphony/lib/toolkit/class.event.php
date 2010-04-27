@@ -130,20 +130,56 @@
 
 		}
 
+		public static function loadFromHandle($name){
+			return self::load(self::__find($name) . "/{$name}.php");
+		}
+
+		protected static function __find($name){
+
+		    if(is_file(EVENTS . "/{$name}.php")) return EVENTS;
+		    else{
+
+				$extensions = ExtensionManager::instance()->listInstalledHandles();
+
+				if(is_array($extensions) && !empty($extensions)){
+					foreach($extensions as $e){
+						if(is_file(EXTENSIONS . "/{$e}/events/{$name}.php")) return EXTENSIONS . "/{$e}/events";
+					}
+				}
+	    	}
+
+		    return false;
+	    }
+
+		public function __get($name){
+			if($name == 'handle'){
+				return Lang::createFilename($this->about()->name);
+			}
+		}
+
 		public static function save(Event $event, MessageStack &$errors){
+			$editing = (isset($event->parameters()->{'root-element'}))
+						? $event->parameters()->{'root-element'}
+						: false;
 
 			if (!isset($event->about()->name) || empty($event->about()->name)) {
 				$errors->append('about::name', __('This is a required field'));
 			}
 
-			$event->parameters()->{'root-element'} = $handle = Lang::createFilename($event->about()->name);
-			$filename = "{$handle}.php";
-			$classname = Lang::createHandle(ucwords($event->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
-			$pathname = EVENTS . "/{$filename}";
+			try {
+				$existing = self::loadFromHandle($event->handle);
+			}
+			catch(EventException $e) {
+				//	Event not found, continue
+			}
 
-			if(self::__find($handle) !== false) {
+			if($existing instanceof Event && $editing != $event->handle) {
 				throw new EventException(__('An Event with the name <code>%s</code> already exists.', array($event->about()->name)));
 			}
+
+			$event->parameters()->{'root-element'} = $event->handle;
+			$classname = Lang::createHandle(ucwords($event->about()->name), '_', false, true, array('/[^a-zA-Z0-9_\x7f-\xff]/' => NULL), true);
+			$pathname = EVENTS . "/" . $event->handle . ".php";
 
 			if($errors->length() <= 0){
 				$data = array(
@@ -168,28 +204,14 @@
 					vsprintf(file_get_contents(TEMPLATES . '/template.event.php'), $data),
 					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
 				)){
+					if($editing != $event->handle) General::deleteFile(EVENTS . '/' . $editing . '.php');
+
 					return $pathname;
 				}
-				throw new EventException(__('Failed to write event "%s" to disk.', array($filename)), self::ERROR_FAILED_TO_WRITE);
+				$errors->append('write', __('Failed to write event "%s" to disk.', array($filename)));
 			}
 
 			throw new EventException(__('Event could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
-		}
-
-		public function rename(array $events) {
-			/*
-				$sections = array(
-					'old-event-name',
-					'new-event-name'
-				)
-
-			 	TODO:
-				Upon renaming an event, views need to be updated with the event
-			*/
-
-			list($old, $new) = $events;
-
-			self::delete($old);
 		}
 
 		public function delete($handle){
@@ -206,27 +228,6 @@
 
 			return General::deleteFile(EVENTS . "/{$handle}.php");
 		}
-
-		public static function loadFromHandle($name){
-			return self::load(self::__find($name) . "/{$name}.php");
-		}
-
-		protected static function __find($name){
-
-		    if(is_file(EVENTS . "/{$name}.php")) return EVENTS;
-		    else{
-
-				$extensions = ExtensionManager::instance()->listInstalledHandles();
-
-				if(is_array($extensions) && !empty($extensions)){
-					foreach($extensions as $e){
-						if(is_file(EXTENSIONS . "/{$e}/events/{$name}.php")) return EXTENSIONS . "/{$e}/events";
-					}
-				}
-	    	}
-
-		    return false;
-	    }
 
 		/*
 		private function __processParameters(){
@@ -306,7 +307,7 @@
 		public function trigger(){
 			return NULL;
 		}
-		
+
 		public static function getHandleFromFilename($filename){
 			return preg_replace('/(.php$|\/.*\/)/i', NULL, $filename);
 		}
