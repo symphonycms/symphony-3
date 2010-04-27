@@ -5,20 +5,20 @@
 
 	require(DOCROOT . '/symphony/lib/boot/bundle.php');
 
-	function renderer($mode){
-		if(!file_exists(CORE . "/class.{$mode}.php")){
+	function renderer($handle){
+		if(!file_exists(CORE . "/class.{$handle}.php")){
 			throw new Exception('Invalid Symphony Renderer mode specified.');
 		}
 
-		$classname = require_once(CORE . "/class.{$mode}.php");
+		$classname = require_once(CORE . "/class.{$handle}.php");
 		return call_user_func("{$classname}::instance");
 	}
 
-	$renderer = (isset($_GET['mode']) && strtolower($_GET['mode']) == 'administration'
-		? 'administration'
+	$handle = (isset($_GET['symphony-renderer'])
+		? $_GET['symphony-renderer']
 		: 'frontend');
-
-	$output = renderer($renderer)->display(getCurrentPage());
+	
+	$output = renderer($handle)->display(getCurrentPage());
 
 	header(sprintf('Content-Length: %d', strlen($output)));
 	echo $output;
