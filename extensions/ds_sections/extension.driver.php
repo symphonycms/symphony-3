@@ -106,7 +106,7 @@
 					'section'	=> $section
 				);
 
-				$options[] = array($section->handle, ($datasource->parameters()->source == $section->handle), $section->name);
+				$options[] = array($section->handle, ($datasource->parameters()->section == $section->handle), $section->name);
 			}
 
 			$label = Widget::Label(__('Section'));

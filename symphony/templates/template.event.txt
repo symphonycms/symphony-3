@@ -30,10 +30,6 @@
 		public function allowEditorToParse() {
 			return true;
 		}
-		
-		public function trigger(){
-			
-		}
 	}
 
 	return 'Event%1$s';

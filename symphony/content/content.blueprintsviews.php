@@ -279,7 +279,7 @@
 
 			$view = self::__loadExistingView(implode('/', $context));
 
-			$view->template = $_POST['fields']['template'];
+			$view->template = stripslashes($_POST['fields']['template']);
 
 			$this->errors = new MessageStack;
 
