@@ -139,8 +139,8 @@
 	}
 
 	Class Frontend extends Symphony {
-		private static $view;
-		private static $Parameters;
+		protected static $view;
+		protected static $Parameters;
 
 		public static function instance() {
 			if (!(self::$_instance instanceof Frontend)) {
@@ -157,17 +157,17 @@
 		public static function Parameters() {
 			return self::$Parameters;
 		}
-
-		public function display($page=NULL){
-
+		
+		public function resolve($url=NULL){
+			
 			// VIEW RESOLVING --------------------------
 			try{
-				if(is_null($page)){
+				if(is_null($url)){
 					$views = View::findFromType('index');
 					self::$view = array_shift($views);
 				}
 				else{
-					self::$view = View::loadFromURL($page);
+					self::$view = View::loadFromURL($url);
 				}
 
 				if(!(self::$view instanceof View)) throw Exception('Page not found');
@@ -192,17 +192,35 @@
 				self::$view = array_shift($views);
 
 				if(!(self::$view instanceof View)){
-					throw new FrontendPageNotFoundException($page);
+					throw new FrontendPageNotFoundException($url);
 				}
+			}
+		}
+		
+		public function display($url=NULL){
+
+			####
+			# Delegate: FrontendPreInitialise
+			# Description: TODO
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendPreInitialise',
+				'/frontend/',
+				array(
+					'view' => &self::$view,
+					'url' => &$url
+				)
+			);
+
+			if(!(self::$view instanceof View)){
+				$this->resolve($url);
 			}
 
 			####
-			# Delegate: FrontendInitialised
-			ExtensionManager::instance()->notifyMembers('FrontendInitialised', '/frontend/');
-
+			# Delegate: FrontendPostInitialise
+			ExtensionManager::instance()->notifyMembers('FrontendPostInitialise', '/frontend/');
 
 			// SETTING UP PARAMETERS --------------------------
-
 			self::$Parameters = new Register;
 
 			$root_page = array_shift(explode('/', self::$view->parent()->path));
@@ -256,13 +274,6 @@
 				}
 			}
 
-			####
-			# Delegate: FrontendParamsResolve
-			# Description: Just after having resolved the page params, but prior to any commencement of output creation
-			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('FrontendParamsResolve', '/frontend/', array('parameters' => &self::$Parameters));
-
-
 			// RENDER THE VIEW --------------------------
 
 			// Can ask the view to operate on an existing
@@ -271,7 +282,36 @@
 			$Document = new XMLDocument;
 			$Document->appendChild($Document->createElement('data'));
 
-			return self::$view->render(self::$Parameters, $Document);
+			####
+			# Delegate: FrontendPreRender
+			# Description: TODO
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendPreRender',
+				'/frontend/',
+				array(
+					'view' => &self::$view,
+					'parameters' => &self::$Parameters,
+					'document' => &$Document
+				)
+			);
+
+			$output = self::$view->render(self::$Parameters, $Document);
+			
+			####
+			# Delegate: FrontendPostRender
+			# Description: TODO
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendPostRender',
+				'/frontend/',
+				array(
+					'output' => &$output
+				)
+			);
+			
+			return $output;
+			
 		}
 	}
 
