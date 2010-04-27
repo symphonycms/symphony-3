@@ -9,7 +9,7 @@
 			$this->{'suggestion-source-threshold'} = 2;
 			$this->{'tag-delimiter'} = ',';
 			$this->{'suggestion-list-include-existing'} = false;
-			
+
 		}
 
 		public function create(){
@@ -77,43 +77,44 @@
 		}
 
 		function findAllTags(){
-
-			//  TODO: This will need to be updated once Section Editor can save multiple values for the suggestion source
-			//  foreach($this->{'suggestion-list-source'} as $item){
+			$values = $sources = array();
 
 			if($this->{'suggestion-list-include-existing'} === true) {
-				$section = $this->section;
-				$field_handle = $this->{'element-name'};
+				$sources[] = array(
+					'section' => $this->section,
+					'field_handle' => $this->{'element-name'}
+				);
 			}
 
-			else {
-				
-				$section = end(array_keys($this->{'suggestion-list-source'}));
-				$field_handle = end(array_values($this->{'suggestion-list-source'})); //explode("::", $this->{'suggestion-list-source'});
+			foreach($this->{'suggestion-list-source'} as $section => $field_handle) {
+				$sources[] = array(
+					'section' => $section,
+					'field_handle' => $field_handle
+				);
 			}
 
-			$values = array();
+			foreach($sources as $source) {
+				$result = Symphony::Database()->query("
+						SELECT
+							`value`
+						FROM
+							`tbl_data_%s_%s`
+						WHERE
+							`value` REGEXP '%s'
+						GROUP BY
+							`value`
+						HAVING
+							COUNT(`value`) >= %d
+					", array(
+						$source['section'],
+						$source['field_handle'],
+						(!empty($this->{'validator'})) ? rtrim(trim($this->{'validator'}, '/'), '/') : '.',
+						$this->{'suggestion-source-threshold'}
+					)
+				);
 
-			$result = Symphony::Database()->query("
-					SELECT
-						`value`
-					FROM
-						`tbl_data_%s_%s`
-					WHERE
-						`value` REGEXP '%s'
-					GROUP BY
-						`value`
-					HAVING
-						COUNT(`value`) >= %d
-				", array(
-					$section,
-					$field_handle,
-					(!empty($this->{'validator'})) ? rtrim(trim($this->{'validator'}, '/'), '/') : '.',
-					$this->{'suggestion-source-threshold'}
-				)
-			);
-
-			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
+				if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
+			}
 
 			return array_unique($values);
 		}
@@ -131,7 +132,7 @@
 		/*-------------------------------------------------------------------------
 			Settings:
 		-------------------------------------------------------------------------*/
-		
+
 		public function findDefaultSettings(array &$fields){
 			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array('existing');
 		}
@@ -253,7 +254,7 @@
 		/*-------------------------------------------------------------------------
 			Input:
 		-------------------------------------------------------------------------*/
-		
+
 		public function setPropertiesFromPostData($data){
 			if(isset($data['suggestion-list-source'])){
 				$suggestion_list_source = array();
@@ -261,7 +262,7 @@
 				if(!is_array($data['suggestion-list-source'])) $data['suggestion-list-source'] = (array)$data['suggestion-list-source'];
 
 				foreach($data['suggestion-list-source'] as $item){
-		
+
 					if(preg_match('/::/', $item)){
 						list($section, $field) = preg_split('/::/', $item, 2, PREG_SPLIT_NO_EMPTY);
 						$suggestion_list_source[$section] = $field;
@@ -273,10 +274,10 @@
 				$this->{'suggestion-list-source'} = $suggestion_list_source;
 				unset($data['suggestion-list-source']);
 			}
-			
+
 			return parent::setPropertiesFromPostData($data);
 		}
-		
+
 		public function processFormData($data, Entry $entry=NULL){
 			$result = (object)array(
 				'value' => null,
@@ -360,9 +361,9 @@
 
 		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
 			/*
-			public 'suggestion-list-source' => 
+			public 'suggestion-list-source' =>
 		    object(SimpleXMLElement)[69]
-		      public 'item' => 
+		      public 'item' =>
 		        array
 		          0 => string 'existing' (length=8)
 		          1 => string 'categories::name' (length=16)
@@ -371,56 +372,56 @@
 
 			$suggestion_list_source = array();
 			if(isset($xml->{'suggestion-list-source'})){
-				
+
 				if(isset($xml->{'suggestion-list-source'}->attributes()->{'include-existing'})){
 					$this->{'suggestion-list-include-existing'} =
-						(string)$xml->{'suggestion-list-source'}->attributes()->{'include-existing'} == 'yes' 
-							? true 
+						(string)$xml->{'suggestion-list-source'}->attributes()->{'include-existing'} == 'yes'
+							? true
 							: false;
 				}
 
 				foreach($xml->{'suggestion-list-source'}->item as $item){
 					$suggestion_list_source[(string)$item->attributes()->section] = (string)$item->attributes()->field;
 				}
-				
+
 				$this->{'suggestion-list-source'} = $suggestion_list_source;
 			}
 			unset($xml->{'suggestion-list-source'});
 
-			
+
 			foreach($xml as $property_name => $property_value){
 				$data[(string)$property_name] = (string)$property_value;
 			}
-			
+
 			// Set field GUID:
 			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
 				$data['guid'] = (string)$xml->attributes()->guid;
 			}
-			
+
 			$this->setPropertiesFromPostData($data);
 		}
 
 		/*-------------------------------------------------------------------------
 			Output:
 		-------------------------------------------------------------------------*/
-		
+
 	    public function toDoc() {
 			$suggestion_list_source = NULL;
 			if(isset($this->properties->{'suggestion-list-source'}) && is_array($this->properties->{'suggestion-list-source'})){
 				$suggestion_list_source = $this->properties->{'suggestion-list-source'};
 			}
-			
+
 			unset($this->properties->{'suggestion-list-source'});
-			
+
 			$include_existing = ($this->{'suggestion-list-include-existing'} == true ? 'yes' : 'no');
 			unset($this->properties->{'suggestion-list-include-existing'});
 
 			$doc = parent::toDoc();
-			
+
 			if(!is_null($suggestion_list_source)){
 				$element = $doc->createElement('suggestion-list-source');
 				$element->setAttribute('include-existing', $include_existing);
-				
+
 				foreach($suggestion_list_source as $section => $field){
 					$item = $doc->createElement('item');
 					$item->setAttributeArray(array('section' => $section, 'field' => $field));
@@ -431,14 +432,14 @@
 
 			return $doc;
 	    }
-		
+
 		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false){
 			return parent::loadDataFromDatabase($entry, true);
 		}
 
 		public function appendFormattedElement($wrapper, $data, $encode = false) {
 			if (!is_array($data) or empty($data)) return;
-			
+
 			$document = $wrapper->ownerDocument;
 
 			$list = $document->createElement($this->{'element-name'});
