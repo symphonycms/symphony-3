@@ -31,6 +31,13 @@
 				else {
 					slice.removeClass('selected');
 				}
+				
+				items.each(function() {
+					var item = jQuery(this);
+					var input = item.find('input:first');
+					
+					input.get(0).checked = item.is('.selected');
+				});
 			});
 			
 			object.bind('selectable-refresh', function() {
@@ -82,7 +89,7 @@
 				
 				return false;
 			});
-			
+
 			return object;
 		});
 
