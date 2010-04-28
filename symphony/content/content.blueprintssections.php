@@ -416,6 +416,9 @@
 
 		protected function appendSyncAlert() {
 			$sync = Section::syncroniseStatistics($this->section);
+			
+			if ($sync->synced === true) return;
+			
 			$table_fields = array();
 			$table_actions = array();
 			$table_totals = array();
