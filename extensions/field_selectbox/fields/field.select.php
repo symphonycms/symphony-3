@@ -352,7 +352,7 @@
 			$document = $wrapper->ownerDocument;
 
 			$label = Widget::Label(__('Static Options'));
-			$label->appendChild($document->createElement('i', __('Optional')));
+			$label->appendChild($document->createElement('em', __('Optional')));
 			$input = Widget::Input('static-options', General::sanitize($this->{'static-options'}));
 			$label->appendChild($input);
 			$wrapper->appendChild($label);

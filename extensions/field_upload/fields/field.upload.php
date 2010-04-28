@@ -203,7 +203,7 @@
 			$label->setAttribute('class', 'label');
 
 			if ($this->required != 'yes') {
-				$label->appendChild($document->createElement('i', 'Optional'));
+				$label->appendChild($document->createElement('em', 'Optional'));
 			}
 			
 			if ($error == null and !empty($data->{'file'})) {
