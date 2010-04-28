@@ -179,6 +179,10 @@
 			return true;
 		}
 
+		public function fetchIncludableElements(){
+			return array($this->{'element-name'});
+		}
+
 		/*-------------------------------------------------------------------------
 			Database Statements:
 		-------------------------------------------------------------------------*/
@@ -673,7 +677,7 @@
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
 				$this->provideFilterTypes()
 			));
-			$wrapper->appendChild($label);
+			$wrapper->appendChild($type_label);
 
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
@@ -792,10 +796,6 @@
 			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']'));
 
 			return $label;
-		}
-
-		public function fetchIncludableElements(){
-			return array($this->{'element-name'});
 		}
 
 		public function fetchAssociatedEntrySearchValue($data, $field_id=NULL, $parent_entry_id=NULL){
