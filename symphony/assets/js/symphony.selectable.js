@@ -50,7 +50,13 @@
 			});
 			
 			// Start:
-			items.live('mousedown', function() {
+			items.live('mousedown', function(event) {
+				if (event.button != 0) {
+					items.removeClass('changing');
+					state = null;
+					return;
+				}
+				
 				var item = jQuery(this);
 				
 				state = {
