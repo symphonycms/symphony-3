@@ -632,7 +632,7 @@
 
 			$name = $document->createElement('span', $this->label);
 			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('i', $this->name()));
+			$name->appendChild($document->createElement('em', $this->name()));
 			$wrapper->appendChild($name);
 
 			$label = Widget::Label(__('Type'));
@@ -663,7 +663,7 @@
 
 			if ($this->label) {
 				$name = $document->createElement('span', $this->label);
-				$name->appendChild($document->createElement('i', $this->name()));
+				$name->appendChild($document->createElement('em', $this->name()));
 			}
 
 			else {
@@ -757,7 +757,7 @@
 			$document = $wrapper->ownerDocument;
 			$rules = ($type == 'upload' ? $upload : $validators);
 
-			$label->setValue($document->createElement('i', __('Optional')));
+			$label->setValue($document->createElement('em', __('Optional')));
 			$label->appendChild(Widget::Input($name, $selected));
 			$wrapper->appendChild($label);
 

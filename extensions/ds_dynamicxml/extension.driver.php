@@ -207,7 +207,7 @@
 
 		//	Namespace Declarations
 
-			$fieldset = Widget::Fieldset(__('Namespace Declarations'), $page->createElement('i', 'Optional'));
+			$fieldset = Widget::Fieldset(__('Namespace Declarations'), $page->createElement('em', 'Optional'));
 
 			$container = $page->createElement('div');
 			$container->setAttribute('class', 'filters-duplicator');

@@ -7,6 +7,19 @@
 		public function init(XMLDocument $doc) {
 			self::$Symphony = $doc;
 		}
+		
+		public static function Group(SymphonyDOMElement $element) {
+			$group = Widget::$Symphony->createElement('dev');
+			$group->setAttribute('class', 'group');
+			
+			foreach (func_get_args() as $node) {
+				if (!($node instanceof DOMNode)) continue;
+				
+				$group->appendChild($node);
+			}
+			
+			return $group;
+		}
 
 		## Forms
 		## First take at a generic fieldset builder for the new form layout

@@ -181,7 +181,7 @@
 
 			// Long Description
 			$label = Widget::Label(__('Long Description'));
-			$label->appendChild($document->createElement('i', __('Optional')));
+			$label->appendChild($document->createElement('em', __('Optional')));
 			$label->appendChild(Widget::Input('description', $this->{'description'}));
 			$wrapper->appendChild($label);
 

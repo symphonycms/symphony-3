@@ -351,8 +351,12 @@
 			$output = ''; $count = 0;
 			$this->disabled = array();
 			
-			while ($count++ < 1000000 and strlen($context)) {
+			while (strlen($context)) {
 				$rule = $this->getRule($context);
+				
+				if ($count++ > 1000000) {
+					throw new Exception('Processing failed, recursion limit reached.');
+				}
 				
 				if ($rule instanceof BitterRule) {
 					$state = $rule->getState($context);

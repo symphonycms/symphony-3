@@ -364,6 +364,7 @@ var Symphony;
 /*-----------------------------------------------------------------------------
 	Datasources Page
 -----------------------------------------------------------------------------*/
+	
 	$(document).ready(function() {
 		$('#master-switch select').bind('change', function() {
 			window.location.search = '?type=' + $(this).val();
