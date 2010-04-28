@@ -967,9 +967,7 @@
 
 		public function __actionIndex() {
 			$checked = is_array($_POST['items']) ? array_keys($_POST['items']) : null;
-			
-			var_dump($_POST); exit;
-			
+
 			if(is_array($checked) && !empty($checked)) {
 				switch ($_POST['with-selected']) {
 					case 'delete':
