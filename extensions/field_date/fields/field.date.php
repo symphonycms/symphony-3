@@ -31,6 +31,8 @@
 		function isSortable(){
 			return true;
 		}
+		
+		
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null){
 			$name = $this->{'element-name'};
