@@ -51,6 +51,7 @@
 
 			$this->_path = $this->_parent = $this->_template = $this->_handle = $this->_guid = NULL;
 			$this->types = array();
+			$this->{'content-type'} = 'text/html;charset=utf-8';
 		}
 
 		public function about(){
@@ -366,7 +367,8 @@
 			$root->setAttribute('guid', $this->guid);
 
 			$root->appendChild($doc->createElement('title', General::sanitize($this->title)));
-
+			$root->appendChild($doc->createElement('content-type', $this->{'content-type'}));
+			
 			if(is_array($this->{'url-parameters'}) && count($this->{'url-parameters'}) > 0){
 				$url_parameters = $doc->createElement('url-parameters');
 				foreach($this->{'url-parameters'} as $p){
