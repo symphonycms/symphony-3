@@ -414,7 +414,8 @@
 			return strnatcasecmp($a->label, $b->label);
 		}
 
-		protected function appendSyncAlert(STDClass $sync) {
+		protected function appendSyncAlert() {
+			$sync = Section::syncroniseStatistics($this->section);
 			$table_fields = array();
 			$table_actions = array();
 			$table_totals = array();
@@ -567,9 +568,7 @@
 		}
 
 		private function __layout(Section $existing = null) {
-			$stats = Section::syncroniseStatistics($this->section);
-
-			if ($stats->synced === false) $this->appendSyncAlert($stats);
+			$this->appendSyncAlert();
 
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
@@ -589,6 +588,10 @@
 						);
 						break;
 				}
+			}
+
+			if (!$this->alerts()->valid()) {
+				$this->appendSyncAlert();
 			}
 
 			$layout = new Layout();
@@ -700,11 +703,7 @@
 		private function __form(Section $existing = null){
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
-
-			$stats = Section::syncroniseStatistics($this->section);
-
-			if ($stats->synced === false) $this->appendSyncAlert($stats);
-
+			
 			if (isset($callback['flag']) && !is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
@@ -734,6 +733,10 @@
 						);
 						break;
 				}
+			}
+
+			if (!$this->alerts()->valid()) {
+				$this->appendSyncAlert();
 			}
 
 			$layout = new Layout();
