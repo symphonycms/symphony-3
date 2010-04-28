@@ -9,7 +9,7 @@
 		}
 		
 		public static function Group(SymphonyDOMElement $element) {
-			$group = Widget::$Symphony->createElement('dev');
+			$group = Widget::$Symphony->createElement('div');
 			$group->setAttribute('class', 'group');
 			
 			foreach (func_get_args() as $node) {
