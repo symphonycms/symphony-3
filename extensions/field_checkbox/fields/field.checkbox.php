@@ -195,11 +195,11 @@
 
 		}
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 
 			self::$key++;
 
-			$value = DataSource::prepareFilterValue($filter['value']);
+			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput);
 
 			$joins .= sprintf('
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)

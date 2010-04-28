@@ -145,7 +145,7 @@
 		}
 
 		protected static function __parseFilter(&$string){
-
+/*
 			$string = self::__cleanFilterString($string);
 
 			## Check its not a regexp
@@ -233,11 +233,8 @@
 			elseif(!checkdate($info['mon'], $info['mday'], $info['year'])) return false;
 
 			return true;
+*/
 		}
-
-
-
-
 
 		/*-------------------------------------------------------------------------
 			Settings:
@@ -391,7 +388,7 @@
 		}
 
 		//	TODO: Revisit this.
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL) {
 
 			self::$key++;
 

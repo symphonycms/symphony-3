@@ -203,6 +203,64 @@
 
 			$wrapper->appendChild($options_list);
 		}
+		
+		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
+
+			$suggestion_list_source = array();
+			if(isset($xml->{'suggestion-list-source'})){
+
+				if(isset($xml->{'suggestion-list-source'}->attributes()->{'include-existing'})){
+					$this->{'suggestion-list-include-existing'} =
+						(string)$xml->{'suggestion-list-source'}->attributes()->{'include-existing'} == 'yes'
+							? true
+							: false;
+				}
+
+				foreach($xml->{'suggestion-list-source'}->item as $item){
+					$key = sprintf('%s::%s', (string)$item->attributes()->section, (string)$item->attributes()->field);
+					$suggestion_list_source[$key] = array((string)$item->attributes()->section, (string)$item->attributes()->field);
+				}
+			}
+			unset($xml->{'suggestion-list-source'});
+
+
+			foreach($xml as $property_name => $property_value){
+				$data[(string)$property_name] = (string)$property_value;
+			}
+
+			$this->{'suggestion-list-source'} = $suggestion_list_source;
+
+			// Set field GUID:
+			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
+				$data['guid'] = (string)$xml->attributes()->guid;
+			}
+
+			$this->setPropertiesFromPostData($data);
+		}
+		
+		public function setPropertiesFromPostData($data){
+			if(isset($data['suggestion-list-source'])){
+
+				$suggestion_list_source = array();
+
+				if(!is_array($data['suggestion-list-source'])) $data['suggestion-list-source'] = (array)$data['suggestion-list-source'];
+
+				foreach($data['suggestion-list-source'] as $item){
+
+					if(preg_match('/::/', $item)){
+						$suggestion_list_source[$item] = preg_split('/::/', $item, 2, PREG_SPLIT_NO_EMPTY);;
+					}
+					elseif($item == 'existing'){
+						$this->{'suggestion-list-include-existing'} = true;
+					}
+				}
+
+				$this->{'suggestion-list-source'} = $suggestion_list_source;
+				unset($data['suggestion-list-source']);
+			}
+
+			return parent::setPropertiesFromPostData($data);
+		}
 
 		/*-------------------------------------------------------------------------
 			Publish:
@@ -253,30 +311,6 @@
 		/*-------------------------------------------------------------------------
 			Input:
 		-------------------------------------------------------------------------*/
-
-		public function setPropertiesFromPostData($data){
-			if(isset($data['suggestion-list-source'])){
-
-				$suggestion_list_source = array();
-
-				if(!is_array($data['suggestion-list-source'])) $data['suggestion-list-source'] = (array)$data['suggestion-list-source'];
-
-				foreach($data['suggestion-list-source'] as $item){
-
-					if(preg_match('/::/', $item)){
-						$suggestion_list_source[$item] = preg_split('/::/', $item, 2, PREG_SPLIT_NO_EMPTY);;
-					}
-					elseif($item == 'existing'){
-						$this->{'suggestion-list-include-existing'} = true;
-					}
-				}
-
-				$this->{'suggestion-list-source'} = $suggestion_list_source;
-				unset($data['suggestion-list-source']);
-			}
-
-			return parent::setPropertiesFromPostData($data);
-		}
 
 		public function processFormData($data, Entry $entry=NULL){
 			$result = (object)array(
@@ -357,39 +391,7 @@
 			return Field::STATUS_OK;
 		}
 
-		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
-
-			$suggestion_list_source = array();
-			if(isset($xml->{'suggestion-list-source'})){
-
-				if(isset($xml->{'suggestion-list-source'}->attributes()->{'include-existing'})){
-					$this->{'suggestion-list-include-existing'} =
-						(string)$xml->{'suggestion-list-source'}->attributes()->{'include-existing'} == 'yes'
-							? true
-							: false;
-				}
-
-				foreach($xml->{'suggestion-list-source'}->item as $item){
-					$key = sprintf('%s::%s', (string)$item->attributes()->section, (string)$item->attributes()->field);
-					$suggestion_list_source[$key] = array((string)$item->attributes()->section, (string)$item->attributes()->field);
-				}
-			}
-			unset($xml->{'suggestion-list-source'});
-
-
-			foreach($xml as $property_name => $property_value){
-				$data[(string)$property_name] = (string)$property_value;
-			}
-
-			$this->{'suggestion-list-source'} = $suggestion_list_source;
-
-			// Set field GUID:
-			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
-				$data['guid'] = (string)$xml->attributes()->guid;
-			}
-
-			$this->setPropertiesFromPostData($data);
-		}
+		
 
 		/*-------------------------------------------------------------------------
 			Output:
