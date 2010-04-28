@@ -47,6 +47,7 @@
 			$this->_about = new StdClass;
 			$this->_parameters = new StdClass;
 			$this->_path = $this->_parent = $this->_template = $this->_handle = $this->_guid = NULL;
+			$this->types = array();
 		}
 
 		public function about(){
