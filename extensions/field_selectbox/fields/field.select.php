@@ -290,8 +290,8 @@
 				$data->value = array($data->value);
 			}
 
-			foreach($data->value as $d){			
-				$d = $this->processFormData($d, $entry);				
+			foreach($data->value as $d){
+				$d = $this->processFormData($d, $entry);
 				parent::saveData($errors, $entry, $d);
 			}
 			return Field::STATUS_OK;
@@ -344,197 +344,6 @@
 			}
 
 		}
-	/*	
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
-
-			self::$key++;
-
-			$value = DataSource::prepareFilterValue($filter['value']);
-
-			$joins .= sprintf('
-				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});
-
-			if ($operation_type == DataSource::FILTER_AND) {
-				foreach ($value as $v) {
-					$where .= sprintf(
-						" AND (t%1\$s.value %2\$s '%3\$s') ",
-						self::$key,
-						$filter['type'] == 'is-not' ? '<>' : '=',
-						$v
-					);
-				}
-
-			}
-
-			else {
-				$where .= sprintf(
-					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
-					self::$key,
-					$filter['type'] == 'is-not' ? 'NOT' : NULL,
-					implode("', '", $value)
-				);
-			}
-
-			return true;
-		}
-*/
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
-			$field_id = $this->id;
-
-			if (self::isFilterRegex($data[0])) {
-				self::$key++;
-				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND (
-						t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
-						OR t{$field_id}_{self::$key}.handle REGEXP '{$pattern}'
-					)
-				";
-
-			} elseif ($andOperation) {
-				foreach ($data as $value) {
-					self::$key++;
-					$value = $this->escape($value);
-					$joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-							ON (e.id = t{$field_id}_{self::$key}.entry_id)
-					";
-					$where .= "
-						AND (
-							t{$field_id}_{self::$key}.value = '{$value}'
-							OR t{$field_id}_{self::$key}.handle = '{$value}'
-						)
-					";
-				}
-
-			} else {
-				if (!is_array($data)) $data = array($data);
-
-				foreach ($data as &$value) {
-					$value = $this->escape($value);
-				}
-
-				self::$key++;
-				$data = implode("', '", $data);
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND (
-						t{$field_id}_{self::$key}.value IN ('{$data}')
-						OR t{$field_id}_{self::$key}.handle IN ('{$data}')
-					)
-				";
-			}
-
-			return true;
-		}
-
-		public function processFormData($data, Entry $entry=NULL){
-
-			//if(isset($entry->data()->{$this->{'element-name'}})){
-			//	$result = $entry->data()->{$this->{'element-name'}};
-			//}
-
-			//else {
-				$result = (object)array(
-					'value' => null,
-					'handle' => null
-				);
-			//}
-
-			if(!is_null($data)){
-				$result->value = $data;
-				$result->handle = Lang::createHandle($data);
-			}
-
-			return $result;
-		}
-
-		public function validateSettings(MessageStack $messages, $checkForDuplicates=true){
-			if ($this->{'static-options'} == '' && ($this->{'dynamic-options'} == '' || $this->{'dynamic-options'} == 'none')) {
-				$messages->{'dynamic-options'} = __('At least one source must be specified, dynamic or static.');
-			}
-
-			return parent::validateSettings($messages, $checkForDuplicates);
-		}
-
-		public function findDefaultSettings(array &$fields){
-			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
-		}
-
-		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
-			parent::displaySettingsPanel($wrapper, $messages);
-
-			$document = $wrapper->ownerDocument;
-
-			$label = Widget::Label(__('Static Options'));
-			$label->appendChild($document->createElement('em', __('Optional')));
-			$input = Widget::Input('static-options', General::sanitize($this->{'static-options'}));
-			$label->appendChild($input);
-			$wrapper->appendChild($label);
-
-			$label = Widget::Label(__('Dynamic Options'));
-
-			$options = array(
-				array('', false, __('None')),
-			);
-
-			foreach (new SectionIterator as $section) {
-				if(!is_array($section->fields) || $section->handle == $document->_context[1]) continue;
-
-				$fields = array();
-
-				foreach($section->fields as $field) {
-					if($field->canPrePopulate()) {
-						$fields[] = array(
-							$section->handle . '::' .$field->{'element-name'},
-							($this->{'dynamic-options'} == $section->handle . '::' .$field->{'element-name'}),
-							$field->label
-						);
-					}
-				}
-
-				if(!empty($fields)) {
-					$options[] = array(
-						'label' => $section->name,
-						'options' => $fields
-					);
-				}
-			}
-
-			$label->appendChild(Widget::Select('dynamic-options', $options));
-
-			if(isset($errors['dynamic-options'])) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $errors['dynamic-options']));
-			else $wrapper->appendChild($label);
-
-			$options_list = $document->createElement('ul');
-			$options_list->setAttribute('class', 'options-list');
-
-			$this->appendShowColumnCheckbox($options_list);
-			$this->appendRequiredCheckbox($options_list);
-
-			## Allow selection of multiple items
-			$label = Widget::Label(__('Allow selection of multiple options'));
-
-			$input = Widget::Input('allow-multiple-selection', 'yes', 'checkbox');
-			if($this->{'allow-multiple-selection'} == 'yes') $input->setAttribute('checked', 'checked');
-
-			$label->prependChild($input);
-			$options_list->appendChild($label);
-
-			$wrapper->appendChild($options_list);
-
-		}
 
 		/*-------------------------------------------------------------------------
 			Grouping:
@@ -563,7 +372,6 @@
 
 			return $groups;
 		}
-
 
 		/*-------------------------------------------------------------------------
 			Possibly Deprecated:

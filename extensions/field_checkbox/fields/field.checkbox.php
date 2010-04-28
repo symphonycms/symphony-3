@@ -46,74 +46,39 @@
 		/*-------------------------------------------------------------------------
 			Publish:
 		-------------------------------------------------------------------------*/
-		/*-------------------------------------------------------------------------
-			Grouping:
-		-------------------------------------------------------------------------*/
 		
-		public function groupRecords($records){
-
-			if(!is_array($records) || empty($records)) return;
-
-			$groups = array($this->{'element-name'} => array());
-
-			foreach($records as $r){
-				$data = $r->getData($this->{'id'});
-
-				$value = $data->value;
-
-				if(!isset($groups[$this->{'element-name'}][$handle])){
-					$groups[$this->{'element-name'}][$handle] = array('attr' => array('value' => $value),
-																		 'records' => array(), 'groups' => array());
-				}
-
-				$groups[$this->{'element-name'}][$value]['records'][] = $r;
-
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
+			if(is_null($entry->id) && $this->{'default-state'} == 'on') {
+				$value = 'yes';
 			}
 
-			return $groups;
-		}
-		/*-------------------------------------------------------------------------
-			Deprecated:
-		-------------------------------------------------------------------------*/
-
-		
-
-
-
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
-
-			self::$key++;
-
-			$value = DataSource::prepareFilterValue($filter['value']);
-
-			$joins .= sprintf('
-				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});
-
-			if ($operation_type == DataSource::FILTER_AND) {
-				foreach ($value as $v) {
-					$where .= sprintf(
-						" AND (t%1\$s.value %2\$s '%3\$s') ",
-						self::$key,
-						$filter['type'] == 'is-not' ? '<>' : '=',
-						$v
-					);
-				}
-
+			else if(is_null($data) && $this->{'required'} == 'yes') {
+				$value = null;
+ 			}
+			else if(is_null($data)) {
+				## TODO: Don't rely on $_POST
+				if(isset($_POST) && !empty($_POST)) $value = 'no';
+				elseif($this->{'default-state'} == 'on') $value = 'yes';
+				else $value = 'no';
 			}
 
-			else {
-				$where .= sprintf(
-					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
-					self::$key,
-					$filter['type'] == 'is-not' ? 'NOT' : NULL,
-					implode("', '", $value)
-				);
-			}
+			else $value = ($data->value == 'yes' ? 'yes' : 'no');
 
-			return true;
+			$label = Widget::Label();
+			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
+
+			$label->appendChild($input);
+			$label->appendChild(new DOMText(($this->{'description'} != NULL ? $this->{'description'} : $this->{'label'})));
+
+			if ($errors->valid()) {
+				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
+			}
+			$wrapper->appendChild($label);
 		}
 		
+		/*-------------------------------------------------------------------------
+			Filtering:
+		-------------------------------------------------------------------------*/	
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 			$document = $wrapper->ownerDocument;
 
@@ -158,35 +123,80 @@
 			
 			$wrapper->appendChild($group);
 		}
+		
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
 
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
-			if(is_null($entry->id) && $this->{'default-state'} == 'on') {
-				$value = 'yes';
+			self::$key++;
+
+			$value = DataSource::prepareFilterValue($filter['value']);
+
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
+
+			if ($operation_type == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (t%1\$s.value %2\$s '%3\$s') ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
+				}
+
 			}
 
-			else if(is_null($data) && $this->{'required'} == 'yes') {
-				$value = null;
- 			}
-			else if(is_null($data)) {
-				## TODO: Don't rely on $_POST
-				if(isset($_POST) && !empty($_POST)) $value = 'no';
-				elseif($this->{'default-state'} == 'on') $value = 'yes';
-				else $value = 'no';
+			else {
+				$where .= sprintf(
+					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $value)
+				);
 			}
 
-			else $value = ($data->value == 'yes' ? 'yes' : 'no');
-
-			$label = Widget::Label();
-			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
-
-			$label->appendChild($input);
-			$label->appendChild(new DOMText(($this->{'description'} != NULL ? $this->{'description'} : $this->{'label'})));
-
-			if ($errors->valid()) {
-				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
-			}
-			$wrapper->appendChild($label);
+			return true;
 		}
+		
+		/*-------------------------------------------------------------------------
+			Grouping:
+		-------------------------------------------------------------------------*/
+		
+		public function groupRecords($records){
+
+			if(!is_array($records) || empty($records)) return;
+
+			$groups = array($this->{'element-name'} => array());
+
+			foreach($records as $r){
+				$data = $r->getData($this->{'id'});
+
+				$value = $data->value;
+
+				if(!isset($groups[$this->{'element-name'}][$handle])){
+					$groups[$this->{'element-name'}][$handle] = array('attr' => array('value' => $value),
+																		 'records' => array(), 'groups' => array());
+				}
+
+				$groups[$this->{'element-name'}][$value]['records'][] = $r;
+
+			}
+
+			return $groups;
+		}
+		/*-------------------------------------------------------------------------
+			Deprecated:
+		-------------------------------------------------------------------------*/
+
+		
+
+
+
+		
+		
+		
+
+		
 
 		public function prepareTableValue($data, DOMElement $link=NULL){
 			return ($data->value == 'yes' ? __('Yes') : __('No'));
