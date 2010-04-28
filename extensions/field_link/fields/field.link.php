@@ -651,6 +651,11 @@
 					$related_field = $section->fetchFieldByHandle($field_handle);
 					//var_dump($entry->data()->$field_handle); die();
 					$related_field->appendFormattedElement($item, $entry->data()->$field_handle);
+					
+					$item->setAttribute('id', $d->relation_id);
+					$item->setAttribute('section-handle', $section_handle);
+					$item->setAttribute('section-name', $section->name);
+					
 //					var_dump($related_field); die();
 					$list->appendChild($item);
 				}

@@ -338,13 +338,14 @@
 		 	return (strpos($string, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
 		}
 
-		public static function prepareFilterValue($value, Register $ParameterOutput=NULL, &$filterType=DataSource::FILTER_OR){
+		public static function prepareFilterValue($value, Register $ParameterOutput=NULL, &$filterOperationType=DataSource::FILTER_OR){
 
 			if(strlen(trim($value)) == 0) return NULL;
 
 			$value = self::replaceParametersInString($value, $ParameterOutput);
-
-			$pattern = (self::determineFilterType($value) == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),');
+			
+			$filterOperationType = self::determineFilterType($value);
+			$pattern = ($filterOperationType == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),');
 
 			// This is where the filter value is split by commas or + symbol, denoting
 			// this as an OR or AND operation. Comma's have already been escaped
