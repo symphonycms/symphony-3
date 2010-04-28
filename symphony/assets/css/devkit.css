@@ -57,10 +57,18 @@
 	#sidebar h1 a {
 		color: #ffffff;
 	}
-	#sidebar #navigation {
+	#sidebar h1 a.edit {
+		color: hsl(210, 0%, 70%);
+		font-size: 10pt;
+		margin: 0 0 0 10px;
+	}
+	#sidebar h1 a.edit:hover {
+		color: hsl(210, 0%, 90%);
+	}
+	#sidebar #menu {
 		margin: 5px 0 0 0;
 	}
-	#sidebar #navigation li {
+	#sidebar #menu li {
 		display: inline;
 		margin: 0 0.5em 0 0;
 	}
@@ -107,7 +115,10 @@
 	}
 	
 	
-	
+	/*
+	// TODO: DO NOT RELEASE THIS AS IS
+	// It needs a lot of tidying up.
+	*/
 	
 	
 	#sidebar {
@@ -128,7 +139,12 @@
 	}
 	
 	#content {
+		-webkit-margin-bottom-collapse: separate;
 		position: relative;
+	}
+	#source,
+	pre {
+		-webkit-margin-bottom-collapse: separate;
 	}
 	
 /*-------------------------------------------------------------------------------*/

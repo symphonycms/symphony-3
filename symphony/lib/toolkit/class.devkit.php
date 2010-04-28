@@ -1,38 +1,8 @@
 <?php
 	
+	require_once(TOOLKIT . '/class.htmldocument.php');
 	require_once(TOOLKIT . '/class.view.php');
-	
-	class URLWriter {
-		protected $url;
-		protected $params;
-		
-		public function __construct($url, array $params) {
-			$this->url = $url;
-			$this->params = (object)$params;
-		}
-		
-		public function parameters() {
-			return $this->params;
-		}
-		
-		public function __toString() {
-			$query = '';
-			
-			foreach ($this->parameters() as $index => $value) {
-				if (is_null($value) or $value == '') {
-					$query .= '&' . $index;
-				}
-				
-				else {
-					$query .= '&' . $index . '=' . $value;
-				}
-			}
-			
-			if ($query == '') return $this->url;
-			
-			return $this->url . '?' . ltrim($query, '&');
-		}
-	}
+	require_once(TOOLKIT . '/class.urlwriter.php');
 	
 	class DevKit extends View {
 		protected $document;
@@ -42,12 +12,7 @@
 		public function __construct(View $view) {
 			parent::__construct();
 			
-			$imp = new DOMImplementation;
-			$dtd = $imp->createDocumentType('html');
-			
-			$this->document = $imp->createDocument('', 'html', $dtd);
-			$this->document->encoding = 'UTF-8';
-			$this->document->formatOutput = true;
+			$this->document = new HTMLDocument();
 			
 			$this->view = $view;
 			$this->data = (object)array();
@@ -99,7 +64,9 @@
 			return $element;
 		}
 		
-		public function render(Register &$Parameters, XMLDocument &$Document = null) {
+		public function render(Register &$parameters, XMLDocument &$document) {
+			Widget::init($this->document);
+			
 			$this->appendHead($this->document->documentElement);
 			$this->appendBody($this->document->documentElement);
 			
@@ -112,6 +79,12 @@
 			$title = $this->document->createElement('title');
 			$title->appendChild($this->document->createTextNode(
 				__('Symphony') . ' '
+			));
+			$title->appendChild(
+				$this->document->createEntityReference('ndash')
+			);
+			$title->appendChild($this->document->createTextNode(
+				' ' . $this->view->title
 			));
 			$title->appendChild(
 				$this->document->createEntityReference('ndash')
@@ -172,11 +145,16 @@
 		
 		protected function appendHeader(DOMElement $wrapper) {
 			$header = $this->document->createElement('h1');
-			$link = $this->document->createElement('a');
-			$link->setAttribute('href', (string)$this->url);
-			$link->appendChild($this->document->createTextNode(
-				$this->view->title
-			));
+			
+			$link = Widget::Anchor(
+				$this->view->title, (string)$this->url
+			);
+			$header->appendChild($link);
+			
+			$link = Widget::Anchor(
+				__('Edit'), ADMIN_URL . '/blueprints/views/edit/' . $this->view->handle . '/'
+			);
+			$link->setAttribute('class', 'edit');
 			
 			$header->appendChild($link);
 			$wrapper->appendChild($header);
@@ -188,7 +166,49 @@
 			$container = $this->document->createElement('ul');
 			$container->setAttribute('id', 'menu');
 			
+			$root = $this->document->createElement('navigation');
 			
+			// Add edit link:
+			/*
+			$item = $this->document->createElement('item');
+			$item->appendChild();
+			$root->appendChild($item);
+			*/
+			
+			####
+			# Delegate: DevKiAppendtMenuItem
+			# Description: Allow navigation XML to be manipulated before it is rendered.
+			# Global: Yes
+			#$this->_page->ExtensionManager->notifyMembers(
+			ExtensionManager::instance()->notifyMembers(
+				'AppendDevKitMenuItem', '/frontend/',
+				array(
+					'wrapper'	=> $root
+				)
+			);
+			
+			if ($root->hasChildNodes()) {
+				foreach ($root->childNodes as $node) {
+					if ($node->getAttribute('active') == 'yes') {
+						$item = $this->document->createElement('li', $node->getAttribute('name'));
+					}
+					
+					else {
+						$handle = $node->getAttribute('handle');
+						
+						$url = clone $this->url;
+						$url->parameters()->$handle = null;
+						
+						$item = $this->document->createElement('li');
+						$item->appendChild(Widget::Anchor(
+							$node->getAttribute('name'),
+							'?' . (string)$url
+						));
+					}
+					
+					$container->appendChild($item);
+				}
+			}
 			
 			$wrapper->appendChild($container);
 			

@@ -2,7 +2,7 @@ var Symphony;
 
 (function($) {
 	Symphony = {
-		WEBSITE: $('script[src]')[0].src.match('(.*)/symphony')[1],
+		WEBSITE: $('script[src]:last').get(0).src.match('(.*)/symphony')[1],
 		Cookie: {
 			set: function(name, value, seconds) {
 				var expires = "";

@@ -30,19 +30,21 @@
 ---------------------------------------------------------------------------------*/
 	
 	#input {
-		background: hsl(210, 5%, 15%);
-		border-bottom: 1px solid hsl(210, 5%, 20%);
+		background: hsl(210, 0%, 15%);
+		border-bottom: 1px solid hsl(210, 0%, 20%);
 		color: hsl(0, 0%, 80%);
 		display: block;
 		font: 105% monospace;
 		left: 0;
-		line-height: 40px;
+		height: 40px;
 		padding: 0 20px;
-		position: fixed;
+		position: absolute;
 		right: 270px;
 	}
 	#input input {
 		background: transparent;
+		height: 40px;
+		line-height: 40px;
 		width: 100%;
 	}
 	
@@ -91,16 +93,16 @@
 	#source pre > .line:hover,
 	#source pre > .line.selecting,
 	#source pre > .line.deselecting {
-		background: hsl(210, 5%, 15%);
+		background: hsl(210, 0%, 15%);
 	}
 	#source pre > .line:hover marker,
 	#source pre > .line.selecting marker,
 	#source pre > .line.deselecting marker {
-		color: hsl(210, 5%, 40%);
+		color: hsl(210, 0%, 40%);
 	}
 	
 	#source pre > .line > .marker {
-		color: hsl(210, 5%, 20%);
+		color: hsl(210, 0%, 20%);
 		cursor: pointer;
 		display: table-cell;
 		padding: 0 10px 0 20px;

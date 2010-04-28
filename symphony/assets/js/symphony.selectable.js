@@ -28,8 +28,10 @@
 					var rows = row.prevAll('.selected'),
 						from = table.index(rows) + 1,
 						to = table.index(row);
-
-					table.slice(from, to)
+					
+					console.log(from, to);
+					
+					table.slice(Math.min(from, to), Math.max(from, to))
 						.addClass('selected')
 						.find('input').each(function() {
 							this.checked = !this.checked
