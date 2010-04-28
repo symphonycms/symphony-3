@@ -165,7 +165,7 @@
 		public function findDefaultSettings(&$fields) {
 			$fields['column-length'] = 75;
 			$fields['text-size'] = 'medium';
-			$fields['text-length'] = null;
+			$fields['text-length'] = 'none';
 			$fields['text-handle'] = 'yes';
 			$fields['text-cdata'] = 'no';
 		}

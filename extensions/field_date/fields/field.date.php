@@ -153,8 +153,40 @@
 
 		}
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+		//	TODO: Revisit this.
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+			
+			self::$key++;
 
+			$value = DataSource::prepareFilterValue($filter['value']);
+			
+			if(self::isFilterRegex($value)) return parent::buildDSRetrivalSQL($data, $joins, $where, $operation_type);			
+
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
+
+			if ($operation_type == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (t%1\$s.value %2\$s '%3\$s') ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
+				}
+
+			}
+
+			else {
+				$where .= sprintf(
+					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $value)
+				);
+			}
+/*
 			if(self::isFilterRegex($data[0])) return parent::buildDSRetrivalSQL($data, $joins, $where, $andOperation);
 
 			$parsed = array();
@@ -183,7 +215,7 @@
 
 				}
 			}
-
+*/
 			return true;
 		}
 

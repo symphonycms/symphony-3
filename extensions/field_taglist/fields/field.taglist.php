@@ -466,67 +466,7 @@
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 
 			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
-		}
-
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
-			$field_id = $this->id;
-
-			if (self::isFilterRegex($data[0])) {
-				self::$key++;
-				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND (
-						t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
-						OR t{$field_id}_{self::$key}.handle REGEXP '{$pattern}'
-					)
-				";
-
-			} elseif ($andOperation) {
-				foreach ($data as $value) {
-					self::$key++;
-					$value = $this->escape($value);
-					$joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-							ON (e.id = t{$field_id}_{self::$key}.entry_id)
-					";
-					$where .= "
-						AND (
-							t{$field_id}_{self::$key}.value = '{$value}'
-							OR t{$field_id}_{self::$key}.handle = '{$value}'
-						)
-					";
-				}
-
-			} else {
-				if (!is_array($data)) $data = array($data);
-
-				foreach ($data as &$value) {
-					$value = $this->escape($value);
-				}
-
-				self::$key++;
-				$data = implode("', '", $data);
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND (
-						t{$field_id}_{self::$key}.value IN ('{$data}')
-						OR t{$field_id}_{self::$key}.handle IN ('{$data}')
-					)
-				";
-			}
-
-			return true;
-		}
+		}		
 
 	}
 
