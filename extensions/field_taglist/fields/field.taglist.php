@@ -204,7 +204,6 @@
 			$wrapper->appendChild($options_list);
 		}
 
-
 		/*-------------------------------------------------------------------------
 			Publish:
 		-------------------------------------------------------------------------*/
@@ -408,7 +407,7 @@
 			unset($this->properties->{'suggestion-list-include-existing'});
 
 			$doc = parent::toDoc();
-			
+
 			$this->properties->{'suggestion-list-include-existing'} = $include_existing;
 			$this->properties->{'suggestion-list-source'} = $suggestion_list_source;
 
@@ -461,7 +460,7 @@
 		/*-------------------------------------------------------------------------
 			Filtering:
 		-------------------------------------------------------------------------*/
-		
+
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 			$document = $wrapper->ownerDocument;
 
@@ -490,10 +489,10 @@
 				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
 				$data['value']
 			));
-			
+
 			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($div);
 
-			$div->appendChild($label);		
+			$div->appendChild($label);
 
 			$wrapper->appendChild(Widget::Group(
 				$type_label, $div
