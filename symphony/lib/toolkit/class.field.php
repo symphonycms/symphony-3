@@ -180,10 +180,10 @@
 
 			foreach ($this->properties as $name => $value) {
 				if ($name == 'guid') continue;
-				
+
 				$element = $doc->createElement($name);
 				$element->setValue($value);
-				
+
 				$root->appendChild($element);
 			}
 
@@ -413,63 +413,57 @@
 			$joins .= "LEFT OUTER JOIN `tbl_entries_data_".$this->id."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
 			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`value` $order");
 		}
-		*/
+
 
 		protected static function isFilterRegex($string){
 			if(preg_match('/^regexp:/i', $string)) return true;
 		}
+		*/
+		
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+			self::$key++;
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+			$value = DataSource::prepareFilterValue($filter['value']);
+
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
+
+			if ($filter['type'] == 'regex') {
+				$where .= sprintf("
+						AND (
+							t%1\$s.value REGEXP '%2\$s'
+							OR t%1\$s.value REGEXP '%2\$s'
+						)
+					",	self::$key,	$value
+				);
+			}
 			
-			$field_id = $this->id;
-
-			if (self::isFilterRegex($data[0])){
-				self::$key++;
-				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
-				";
-
-			}
-
-			elseif ($andOperation == true){
-				foreach ($data as $value) {
-					self::$key++;
-					$value = Symphony::Database()->escape($value);
-					$joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-							ON (e.id = t{$field_id}_{self::$key}.entry_id)
-					";
-					$where .= "
-						AND t{$field_id}_{self::$key}.value = '{$value}'
-					";
+			else if ($operation_type == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (
+							t%1\$s.value %2\$s '%3\$s'
+							OR t%1\$s.handle %2\$s '%3\$s'
+						) ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
 				}
 
 			}
 
-			else{
-				if (!is_array($data)) $data = array($data);
-
-				foreach ($data as &$value) {
-					$value = Symphony::Database()->escape($value);
-				}
-
-				self::$key++;
-				$data = implode("', '", $data);
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND t{$field_id}_{self::$key}.value IN ('{$data}')
-				";
+			else {
+				$where .= sprintf(
+					" AND (
+						t%1\$s.value %2\$s IN ('%3\$s')
+						OR t%1\$s.handle %2\$s IN ('%3\$s')
+					) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $value)
+				);
 			}
 
 			return true;
@@ -483,17 +477,17 @@
 
 			else {
 				$result = (object)array(
-					'value' => NULL
+					'value' => NULL,
+					'handle' => NULL
 				);
 			}
 
 			$result->value = $data;
+			$result->handle = Lang::createHandle($data);
 
 			return $result;
 		}
 
-		// TODO: Support an array of data objects. This is important for
-		// fields like Select box or anything that allows mutliple values
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;
@@ -506,11 +500,14 @@
 				);
 				return self::STATUS_OK;
 			}
-			catch(DatabaseException $e){
-
-			}
 			catch(Exception $e){
-
+				// TODO: Is this the correct way to handle Exceptions from Fields?
+				$errors->append(
+					null, (object)array(
+					 	'message' => $e->getMessage(),
+						'code' => self::STATUS_ERROR
+					)
+				);
 			}
 			return self::STATUS_ERROR;
 		}
@@ -634,23 +631,32 @@
 			$name->setAttribute('class', 'name');
 			$name->appendChild($document->createElement('em', $this->name()));
 			$wrapper->appendChild($name);
+			
+			$group = $document->createElement('div');
+			$group->setAttribute('class', 'group');
 
 			$label = Widget::Label(__('Type'));
+			$label->setAttribute('class', 'small');
 			$label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
 				array(
 					array('is', false, 'Is'),
-					array('is-not', $data['type'] == 'is-not', 'Is not')
+					array('is-not', $data['type'] == 'is-not', 'Is not'),
+					array('contains', $data['type'] == 'contains', 'Contains'),
+					array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
+					array('regex', $data['type'] == 'regex', 'Regex'),
 				)
 			));
-			$wrapper->appendChild($label);
-			
+			$group->appendChild($label);
+
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
 				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
 				$data['value']
 			));
-			$wrapper->appendChild($label);
+			$group->appendChild($label);
+			
+			$wrapper->appendChild($group);
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, MessageStack $messages){
@@ -809,9 +815,11 @@
 					CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
 						`id` int(11) unsigned NOT NULL auto_increment,
 						`entry_id` int(11) unsigned NOT NULL,
+						`handle` varchar(255) default NULL,						
 						`value` varchar(255) default NULL,
 						PRIMARY KEY  (`id`),
 						KEY `entry_id` (`entry_id`),
+						KEY `handle` (`handle`),
 						KEY `value` (`value`)
 					)
 				',
@@ -836,7 +844,7 @@
 
 			return true;
 		}
-		
+
 		public function rename(Field $old) {
 			try {
 				Symphony::Database()->query(

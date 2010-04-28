@@ -25,8 +25,32 @@
 		public function canImport(){
 			return true;
 		}
-
-		function groupRecords($records){
+		
+		/*-------------------------------------------------------------------------
+			Utilities:
+		-------------------------------------------------------------------------*/
+		
+		public function getToggleStates(){
+			return array('yes' => __('Yes'), 'no' => __('No'));
+		}
+		
+		/*-------------------------------------------------------------------------
+			Output:
+		-------------------------------------------------------------------------*/
+		/*-------------------------------------------------------------------------
+			Input:
+		-------------------------------------------------------------------------*/
+		/*-------------------------------------------------------------------------
+			Settings:
+		-------------------------------------------------------------------------*/
+		/*-------------------------------------------------------------------------
+			Publish:
+		-------------------------------------------------------------------------*/
+		/*-------------------------------------------------------------------------
+			Grouping:
+		-------------------------------------------------------------------------*/
+		
+		public function groupRecords($records){
 
 			if(!is_array($records) || empty($records)) return;
 
@@ -48,17 +72,20 @@
 
 			return $groups;
 		}
+		/*-------------------------------------------------------------------------
+			Deprecated:
+		-------------------------------------------------------------------------*/
 
-		public function getToggleStates(){
-			return array('yes' => __('Yes'), 'no' => __('No'));
-		}
+		
+
+
 
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
 
 			self::$key++;
-			
+
 			$value = DataSource::prepareFilterValue($filter['value']);
-			
+
 			$joins .= sprintf('
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
 			', self::$key, $this->section, $this->{'element-name'});
@@ -66,8 +93,8 @@
 			if ($operation_type == DataSource::FILTER_AND) {
 				foreach ($value as $v) {
 					$where .= sprintf(
-						" AND (t%1\$s.value %2\$s '%3\$s') ", 
-						self::$key, 
+						" AND (t%1\$s.value %2\$s '%3\$s') ",
+						self::$key,
 						$filter['type'] == 'is-not' ? '<>' : '=',
 						$v
 					);
@@ -77,30 +104,59 @@
 
 			else {
 				$where .= sprintf(
-					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ", 
-					self::$key, 
-					$filter['type'] == 'is-not' ? 'NOT' : NULL, 
+					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
 					implode("', '", $value)
 				);
 			}
 
 			return true;
 		}
+		
+		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+			$document = $wrapper->ownerDocument;
 
-		public function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
+			$name = $document->createElement('span', $this->label);
+			$name->setAttribute('class', 'name');
+			$name->appendChild($document->createElement('i', $this->name()));
+			$wrapper->appendChild($name);
+			
+			$group = $document->createElement('div');
+			$group->setAttribute('class', 'group');
 
-			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+			$label = Widget::Label(__('Type'));
+			$label->setAttribute('class', 'small');
+			$label->appendChild(Widget::Select(
+				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
+				array(
+					array('is', false, 'Is'),
+					array('is-not', $data['type'] == 'is-not', 'Is not')
+				)
+			));
+			$group->appendChild($label);			
+			
+			$div = $document->createElement('div');
 
+			$label = Widget::Label(__('Value'));
+			$label->appendChild(Widget::Input(
+				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
+				$data['value']
+			));
+			
 			$existing_options = array('yes', 'no');
 
-			$optionlist = Symphony::Parent()->Page->createElement('ul');
+			$optionlist = $document->createElement('ul');
 			$optionlist->setAttribute('class', 'tags');
 
-			foreach($existing_options as $option) $optionlist->appendChild(Symphony::Parent()->Page->createElement('li', $option));
-
-			$wrapper->appendChild($optionlist);
+			foreach($existing_options as $option) $optionlist->appendChild($document->createElement('li', $option));
 			
-
+			$div->appendChild($label);
+			$div->appendChild($optionlist);
+			
+			$group->appendChild($div);
+			
+			$wrapper->appendChild($group);
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {

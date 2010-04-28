@@ -786,7 +786,7 @@
 	form .group > div > label {
 		display: block;
 		padding: 0;
-		margin: 15px 0 3px;
+		margin: 15px 0 8px;
 	}
 	form .group > div > label:first-child {
 		margin-top: 0;
@@ -794,10 +794,14 @@
 	form .group > *:first-child,
 	form .group > *:first-child label {
 		padding-left: 0;
-	}
+	}	
 	form .group > *:last-child,
 	form .group > *:last-child label {
 		padding-right: 0;
+	}
+	form .group > *:first-child.small {
+		width: 25%;
+		min-width: 150px;
 	}
 
 /*-----------------------------------------------------------------------------

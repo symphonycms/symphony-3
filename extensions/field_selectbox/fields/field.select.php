@@ -6,6 +6,25 @@
 			$this->_name = __('Select Box');
 		}
 
+		public function create(){
+			return Symphony::Database()->query(
+				sprintf(
+					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+						`id` int(11) unsigned NOT NULL auto_increment,
+						`entry_id` int(11) unsigned NOT NULL,
+						`handle` varchar(255) default NULL,
+						`value` varchar(255) default NULL,
+						PRIMARY KEY  (`id`),
+						KEY `entry_id` (`entry_id`),
+						KEY `handle` (`handle`),
+						KEY `value` (`value`)
+					)',
+					$this->section,
+					$this->{'element-name'}
+				)
+			);
+		}
+
 		public function canToggleData(){
 			return !isset($this->{'allow-multiple-selection'}) ? true : false;
 		}
@@ -35,58 +54,9 @@
 			return true;
 		}
 
-		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
-			if (!is_array($data) or empty($data)) return;
-
-			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
-
-			foreach ($data as $d) {
-				$item = $wrapper->ownerDocument->createElement('item');
-				$item->setValue($d->value);
-				$item->setAttribute('handle', $d->handle);
-				$list->appendChild($item);
-			}
-
-			$wrapper->appendChild($list);
-		}
-
-		function fetchAssociatedEntrySearchValue($data){
-			if(!is_array($data)) return $data;
-
-			return $data['value'];
-		}
-
-		function fetchAssociatedEntryCount($value){
-			$result = Symphony::Database()->query("
-				SELECT
-					`entry_id`
-				FROM
-					`tbl_entries_data_%d`
-				WHERE
-					`value` = '%s
-				",
-				$this->id,
-				$value
-			);
-
-			return ($result->valid()) ? $result->current->count : false;
-		}
-
-		function fetchAssociatedEntryIDs($value){
-			$result = Symphony::Database()->query("
-				SELECT
-					count(*) AS `count`
-				FROM
-					`tbl_entries_data_%d`
-				WHERE
-					`value` = '%s
-				",
-				$this->id,
-				$value
-			);
-
-			return ($result->valid()) ? $result->resultColumn('entry_id') : false;
-		}
+		/*-------------------------------------------------------------------------
+			Utilities:
+		-------------------------------------------------------------------------*/
 
 		public function getToggleStates() {
 			$values = preg_split('/,\s*/i', $this->{'static-options'}, -1, PREG_SPLIT_NO_EMPTY);
@@ -103,10 +73,118 @@
 			return $states;
 		}
 
-		function toggleEntryData(StdClass $data, $value, Entry $entry=NULL){
-			$data['value'] = $newState;
-			$data['handle'] = Lang::createHandle($newState);
-			return $data;
+		function findAndAddDynamicOptions(&$values){
+			list($section, $field_handle) = explode("::", $this->{'dynamic-options'});
+
+			if(!is_array($values)) $values = array();
+
+			$result = Symphony::Database()->query("
+				SELECT
+					DISTINCT `value`
+				FROM
+					`tbl_data_%s_%s`
+				", array($section, $field_handle)
+			);
+
+			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
+		}
+
+		/*-------------------------------------------------------------------------
+			Settings:
+		-------------------------------------------------------------------------*/
+
+		public function findDefaultSettings(array &$fields){
+			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
+		}
+
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
+			parent::displaySettingsPanel($wrapper, $messages);
+
+			$document = $wrapper->ownerDocument;
+
+			$label = Widget::Label(__('Static Options'));
+			$label->appendChild($document->createElement('i', __('Optional')));
+			$input = Widget::Input('static-options', General::sanitize($this->{'static-options'}));
+			$label->appendChild($input);
+			$wrapper->appendChild($label);
+
+			$label = Widget::Label(__('Dynamic Options'));
+
+			$options = array(
+				array('', false, __('None')),
+			);
+
+			foreach (new SectionIterator as $section) {
+				if(!is_array($section->fields) || $section->handle == $document->_context[1]) continue;
+
+				$fields = array();
+
+				foreach($section->fields as $field) {
+					if($field->canPrePopulate()) {
+						$fields[] = array(
+							$section->handle . '::' .$field->{'element-name'},
+							($this->{'dynamic-options'} == $section->handle . '::' .$field->{'element-name'}),
+							$field->label
+						);
+					}
+				}
+
+				if(!empty($fields)) {
+					$options[] = array(
+						'label' => $section->name,
+						'options' => $fields
+					);
+				}
+			}
+
+			$label->appendChild(Widget::Select('dynamic-options', $options));
+
+			if(isset($errors['dynamic-options'])) $wrapper->appendChild(Widget::wrapFormElementWithError($label, $errors['dynamic-options']));
+			else $wrapper->appendChild($label);
+
+			$options_list = $document->createElement('ul');
+			$options_list->setAttribute('class', 'options-list');
+
+			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
+
+			## Allow selection of multiple items
+			$label = Widget::Label(__('Allow selection of multiple options'));
+
+			$input = Widget::Input('allow-multiple-selection', 'yes', 'checkbox');
+			if($this->{'allow-multiple-selection'} == 'yes') $input->setAttribute('checked', 'checked');
+
+			$label->prependChild($input);
+			$options_list->appendChild($label);
+
+			$wrapper->appendChild($options_list);
+
+		}
+
+		public function validateSettings(MessageStack $messages, $checkForDuplicates=true){
+			if ($this->{'static-options'} == '' && ($this->{'dynamic-options'} == '' || $this->{'dynamic-options'} == 'none')) {
+				$messages->{'dynamic-options'} = __('At least one source must be specified, dynamic or static.');
+			}
+
+			return parent::validateSettings($messages, $checkForDuplicates);
+		}
+
+		/*-------------------------------------------------------------------------
+			Publish:
+		-------------------------------------------------------------------------*/
+
+		public function prepareTableValue($data, DOMElement $link=NULL){
+
+			if(!is_array($data)){
+				$data = array($data);
+			}
+
+			$values = array();
+			foreach($data as $d){
+				$values[] = $d->value;
+			}
+
+			return parent::prepareTableValue((object)array('value' => implode(', ', $values)), $link);
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
@@ -148,10 +226,104 @@
 			$wrapper->appendChild($label);
 		}
 
-		function displayDatasourceFilterPanel($wrapper, $data=NULL, $errors=NULL){
+		public function toggleEntryData(StdClass $data, $value, Entry $entry=NULL){
+			$data['value'] = $newState;
+			$data['handle'] = Lang::createHandle($newState);
+			return $data;
+		}
+
+		/*-------------------------------------------------------------------------
+			Input:
+		-------------------------------------------------------------------------*/
+
+		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false) {
+			return parent::loadDataFromDatabase($entry, true);
+		}
+
+		public function processFormData($data, Entry $entry=NULL){
+
+			//if(isset($entry->data()->{$this->{'element-name'}})){
+			//	$result = $entry->data()->{$this->{'element-name'}};
+			//}
+
+			//else {
+				$result = (object)array(
+					'value' => null,
+					'handle' => null
+				);
+			//}
+
+			if(!is_null($data)){
+				$result->value = $data;
+				$result->handle = Lang::createHandle($data);
+			}
+
+			return $result;
+		}
+
+		public function validateData(MessageStack $errors, Entry $entry = null, $data = null) {
+
+			if(!is_array($data)){
+				$data = array($data);
+			}
+
+			$value = NULL;
+			foreach($data as $d){
+				$value .= $d->value;
+			}
+
+			// TODO: Isn't calling processFormData a prerequisit to callid validateData?
+			return parent::validateData($errors, $entry, $this->processFormData($value, $entry));
+		}
+
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
+
+			// Since we are dealing with multiple
+			// values, must purge the existing data first
+			Symphony::Database()->delete(
+				sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
+				array($entry->id),
+				"`entry_id` = %s"
+			);
+
+			if(!is_array($data->value)){
+				$data->value = array($data->value);
+			}
+
+			foreach($data->value as $d){			
+				$d = $this->processFormData($d, $entry);				
+				parent::saveData($errors, $entry, $d);
+			}
+			return Field::STATUS_OK;
+		}
+
+		/*-------------------------------------------------------------------------
+			Output:
+		-------------------------------------------------------------------------*/
+
+		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
+			if (!is_array($data) or empty($data)) return;
+
+			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
+
+			foreach ($data as $d) {
+				$item = $wrapper->ownerDocument->createElement('item');
+				$item->setValue($d->value);
+				$item->setAttribute('handle', $d->handle);
+				$list->appendChild($item);
+			}
+
+			$wrapper->appendChild($list);
+		}
+
+		/*-------------------------------------------------------------------------
+			Filtering:
+		-------------------------------------------------------------------------*/
+
+		public function displayDatasourceFilterPanel($wrapper, $data=NULL, $errors=NULL){
 
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
-			
+
 			$document = $wrapper->ownerDocument;
 
 			$data = preg_split('/,\s*/i', $data);
@@ -172,37 +344,41 @@
 			}
 
 		}
+	/*	
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
 
-		function findAndAddDynamicOptions(&$values){
-			list($section, $field_handle) = explode("::", $this->{'dynamic-options'});
+			self::$key++;
 
-			if(!is_array($values)) $values = array();
+			$value = DataSource::prepareFilterValue($filter['value']);
 
-			$result = Symphony::Database()->query("
-				SELECT
-					DISTINCT `value`
-				FROM
-					`tbl_data_%s_%s`
-				", array($section, $field_handle)
-			);
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
 
-			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
-		}
+			if ($operation_type == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (t%1\$s.value %2\$s '%3\$s') ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
+				}
 
-		public function prepareTableValue($data, DOMElement $link=NULL){
-
-			if(!is_array($data)){
-				$data = array($data);
 			}
 
-			$values = array();
-			foreach($data as $d){
-				$values[] = $d->value;
+			else {
+				$where .= sprintf(
+					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $value)
+				);
 			}
 
-			return parent::prepareTableValue((object)array('value' => implode(', ', $values)), $link);
+			return true;
 		}
-
+*/
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 			$field_id = $this->id;
 
@@ -284,56 +460,6 @@
 			return $result;
 		}
 
-/*
-		Deprecated
-
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-
-			$status = self::STATUS_OK;
-
-			if(!is_array($data)) return array('value' => $data, 'handle' => Lang::createHandle($data));
-
-			if(empty($data)) return NULL;
-
-			$result = array('value' => array(), 'handle' => array());
-
-			foreach($data as $value){
-				$result['value'][] = $value;
-				$result['handle'][] = Lang::createHandle($value);
-			}
-
-			return $result;
-		}
-
-		function commit(){
-
-			if(!parent::commit()) return false;
-
-			$field_id = $this->id;
-			$handle = $this->handle();
-
-			if($field_id === false) return false;
-
-			$fields = array(
-				'field_id' => $field_id,
-				'static-options' => ($this->{'static-options'} != '') ? $this->{'static-options'} : NULL,
-				'dynamic-options' => ($this->{'dynamic-options'} != '') ? $this->{'dynamic-options'} : NULL,
-				'allow-multiple-selection' => ($this->{'allow-multiple-selection'} ? $this->{'allow-multiple-selection'} : 'no')
-			);
-
-			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
-			$f_id = Symphony::Database()->insert('tbl_fields_' . $handle, $fields);
-
-			if ($f_id == 0 || !$f_id) return false;
-
-			$this->removeSectionAssociation($field_id);
-			$this->createSectionAssociation(NULL, $field_id, $this->{'dynamic-options'});
-
-			return true;
-
-		}
-*/
-
 		public function validateSettings(MessageStack $messages, $checkForDuplicates=true){
 			if ($this->{'static-options'} == '' && ($this->{'dynamic-options'} == '' || $this->{'dynamic-options'} == 'none')) {
 				$messages->{'dynamic-options'} = __('At least one source must be specified, dynamic or static.');
@@ -410,6 +536,10 @@
 
 		}
 
+		/*-------------------------------------------------------------------------
+			Grouping:
+		-------------------------------------------------------------------------*/
+
 		function groupRecords($records){
 
 			if(!is_array($records) || empty($records)) return;
@@ -434,63 +564,47 @@
 			return $groups;
 		}
 
-		public function validateData(MessageStack $errors, Entry $entry = null, $data = null) {
 
-			if(!is_array($data)){
-				$data = array($data);
-			}
+		/*-------------------------------------------------------------------------
+			Possibly Deprecated:
+		-------------------------------------------------------------------------*/
 
-			$value = NULL;
-			foreach($data as $d){
-				$value .= $d->value;
-			}
-			
-			// TODO: Isn't calling processFormData a prerequisit to callid validateData?
-			return parent::validateData($errors, $entry, $this->processFormData($value, $entry));
+		function fetchAssociatedEntrySearchValue($data){
+			if(!is_array($data)) return $data;
+
+			return $data['value'];
 		}
 
-		/*	Possibly could be removed.. */
-		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
-
-			// Since we are dealing with multiple
-			// values, must purge the existing data first
-			Symphony::Database()->delete(
-				sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
-				array($entry->id),
-				"`entry_id` = %s"
+		function fetchAssociatedEntryCount($value){
+			$result = Symphony::Database()->query("
+				SELECT
+					`entry_id`
+				FROM
+					`tbl_entries_data_%d`
+				WHERE
+					`value` = '%s
+				",
+				$this->id,
+				$value
 			);
 
-			if(!is_array($data->value)){
-				$data->value = array($data->value);
-			}
-			foreach($data->value as $d){
-				$d = $this->processFormData($d, $entry);
-				parent::saveData($errors, $entry, $d);
-			}
-			return Field::STATUS_OK;
+			return ($result->valid()) ? $result->current->count : false;
 		}
 
-		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false) {
-			return parent::loadDataFromDatabase($entry, true);
-		}
-
-		public function createTable(){
-			return Symphony::Database()->query(
-				sprintf(
-					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` int(11) unsigned NOT NULL auto_increment,
-						`entry_id` int(11) unsigned NOT NULL,
-						`handle` varchar(255) default NULL,
-						`value` varchar(255) default NULL,
-						PRIMARY KEY  (`id`),
-						KEY `entry_id` (`entry_id`),
-						KEY `handle` (`handle`),
-						KEY `value` (`value`)
-					)',
-					$this->section,
-					$this->{'element-name'}
-				)
+		function fetchAssociatedEntryIDs($value){
+			$result = Symphony::Database()->query("
+				SELECT
+					count(*) AS `count`
+				FROM
+					`tbl_entries_data_%d`
+				WHERE
+					`value` = '%s
+				",
+				$this->id,
+				$value
 			);
+
+			return ($result->valid()) ? $result->resultColumn('entry_id') : false;
 		}
 
 		public function getExampleFormMarkup(){
