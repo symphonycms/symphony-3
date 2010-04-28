@@ -537,7 +537,11 @@
 		color: #fff;
 	}
 	table .changing {
-		background-color: red;
+		background-color: #888888;
+	}
+	table .changing td,
+	table .changing td a {
+		color: #fff;
 	}
 	
 /*-----------------------------------------------------------------------------
