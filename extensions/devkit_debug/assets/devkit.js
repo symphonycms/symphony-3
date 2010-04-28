@@ -68,8 +68,6 @@
 		self.to = null;
 		
 		self.refresh = function() {
-			console.log('-refresh-');
-			
 			var value = session.get('line');
 			
 			if (value) {
@@ -105,16 +103,12 @@
 		};
 		
 		self.clear = function() {
-			console.log('-clear-');
-			
 			source.removeClass('selected');
 			source.find('> .line')
 				.removeClass('selected selecting deselecting');
 		};
 		
 		self.draw = function() {
-			console.log('-draw-');
-			
 			var from = Math.min(self.from, self.to);
 			var to = Math.max(self.from, self.to);
 			var selector = '.line';
@@ -139,8 +133,6 @@
 		};
 		
 		self.drag_start = function() {
-			console.log('-drag-start-');
-			
 			var line = jQuery(this).parent();
 			
 			source
@@ -162,8 +154,6 @@
 		};
 		
 		self.drag_select = function() {
-			console.log('-drag-select-');
-			
 			var line = jQuery(this);
 			
 			source.find('.selecting, .deselecting')
@@ -176,8 +166,6 @@
 		};
 		
 		self.drag_stop = function() {
-			console.log('-drag-stop-');
-			
 			var last = null, hash = '';
 			var selection = []
 			
@@ -587,6 +575,10 @@
 		
 		var sidebar = jQuery('#sidebar');
 		
+		// TODO: DO NOT RELEASE THIS AS IS
+		// It needs a lot of tidying up.
+		
+		/*
 		sidebar.css({
 			'right':	'-250px',
 			'opacity':	'0.2'
@@ -609,6 +601,7 @@
 				'fast', 'linear'
 			);
 		});
+		*/
 	});
 	
 /*---------------------------------------------------------------------------*/

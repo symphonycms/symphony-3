@@ -376,8 +376,14 @@
 				'synced'	=> true,
 				'section'	=> (object)array(
 					'rename'	=> false,
-					'old'		=> $new_handle,
-					'new'		=> $new_handle
+					'old'		=> (object)array(
+						'handle'	=> $new_handle,
+						'name'		=> $section->name
+					),
+					'new'		=> (object)array(
+						'handle'	=> $new_handle,
+						'name'		=> $section->name
+					)
 				),
 				'remove'	=> array(),
 				'rename'	=> array(),
@@ -411,7 +417,8 @@
 				if ($old_handle != $new_handle) {
 					$result->synced = false;
 					$result->section->rename = true;
-					$result->section->old = $old_handle;
+					$result->section->old->handle = $old_handle;
+					$result->section->old->name = $old_xpath->evaluate('string(/section/name)');
 				}
 				
 				// Build array of old and new nodes for comparison:
@@ -537,8 +544,8 @@
 
 		public static function synchronise(Section $section) {
 			$stats = self::syncroniseStatistics($section);
-			$new_handle = $stats->section->new;
-			$old_handle = $stats->section->old;
+			$new_handle = $stats->section->new->handle;
+			$old_handle = $stats->section->old->handle;
 			
 			// Remove fields:
 			foreach ($stats->remove as $guid => $data) {

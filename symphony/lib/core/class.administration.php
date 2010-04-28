@@ -64,6 +64,8 @@
 				
 			include_once((isset($this->_callback['driverlocation']) ? $this->_callback['driverlocation'] : CONTENT) . '/content.' . $this->_callback['driver'] . '.php'); 			
 			$this->Page = new $this->_callback['classname'];
+			
+			Widget::init($this->Page);
 
 			if(!$this->isLoggedIn() && $this->_callback['driver'] != 'login'){
 				if(is_callable(array($this->Page, 'handleFailedAuthorisation'))) $this->Page->handleFailedAuthorisation();
