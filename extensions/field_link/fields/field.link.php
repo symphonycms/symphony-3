@@ -632,13 +632,30 @@
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
-			if(!is_array($data) || empty($data) || is_null($data['relation_id'])) return;
 
-			$list = new XMLElement($this->{'element-name'});
+			if(!is_array($data) || empty($data)) return;
 
-			if(!is_array($data['relation_id'])) $data['relation_id'] = array($data['relation_id']);
+			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
 
-			foreach($data['relation_id'] as $relation_id){
+			foreach($data as $d){
+				
+				$entry = Entry::loadFromID($d->relation_id);
+
+				foreach($this->{'related-fields'} as $key => $value){
+					$item = $wrapper->ownerDocument->createElement('item');
+					list($section_handle, $field_handle) = $value;
+					
+					if($section_handle != $entry->section) continue;
+					
+					$section = Section::loadFromHandle($entry->section);
+					$related_field = $section->fetchFieldByHandle($field_handle);
+					//var_dump($entry->data()->$field_handle); die();
+					$related_field->appendFormattedElement($item, $entry->data()->$field_handle);
+//					var_dump($related_field); die();
+					$list->appendChild($item);
+				}
+				/*
+				die("hmm");
 				$primary_field = $this->__findPrimaryFieldValueFromRelationID($relation_id);
 
 				$value = $primary_field['value'];
@@ -651,13 +668,13 @@
 				$item->setAttribute('section-name', General::sanitize($primary_field['section_name']));
 				$item->setValue(General::sanitize($value));
 
-				$list->appendChild($item);
+				$list->appendChild($item);*/
 			}
 
 			$wrapper->appendChild($list);
 		}
 
-		public function prepareTableValue(StdClass $data, DOMElement $link=NULL){
+		public function prepareTableValue($data, DOMElement $link=NULL){
 			$result = array();
 
 			if(!is_array($data) || (is_array($data) && !isset($data['relation_id']))) return parent::prepareTableValue(NULL);
@@ -728,6 +745,40 @@
 	-------------------------------------------------------------------------*/
 		
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+
+			self::$key++;
+
+			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput, $filterOperationType);
+
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
+
+			if ($filterOperationType == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (t%1\$s.relation_id %2\$s '%3\$s') ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
+				}
+
+			}
+
+			else {
+				$where .= sprintf(
+					" AND (t%1\$s.relation_id %2\$s IN ('%3\$s')) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $value)
+				);
+			}
+
+			return true;
+		
+			// OLD CODE ------
+
 			$field_id = $this->{'id'};
 
 			if(preg_match('/^sql:\s*/', $data[0], $matches)) {
