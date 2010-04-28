@@ -26,25 +26,19 @@
 			return $this->_context;
 		}
 		
-		public function condenseScriptsAndStyles(){
-			// Do some magic with the JS and CSS to speed stuff up
-			$scripts = $this->xpath("//head/script[@type = 'text/javascript' and not(@src='')]");
-			$super_script = NULL;
-			foreach($scripts as $s){
-				$super_script .= file_get_contents((string)$s->getAttribute('src')) . "\n";
-				$s->parentNode->removeChild($s);
-			}
-			file_put_contents(CACHE . '/admin-scripts.js', $super_script);
-			$this->insertNodeIntoHead($this->createScriptElement(URL . '/manifest/cache/admin-scripts.js'));
+		public function minify(array $files, $output_pathname, $unlink_existing=true){
 			
-			$styles = $this->xpath("//head/link[@type = 'text/css' and @rel = 'stylesheet' and @media='screen']");
-			$super_style = NULL;
-			foreach($styles as $s){
-				$super_style .= file_get_contents((string)$s->getAttribute('href')) . "\n";
-				$s->parentNode->removeChild($s);
+			if(file_exists($output_pathname) && $unlink_existing === true) unlink($output_pathname);
+			
+			foreach($files as $pathname){
+				if(!file_exists($pathname) || !is_readable($pathname)) throw new Exception("File '{$pathname}' could not be found, or is not readable.");
+				
+				$contents = file_get_contents($pathname);
+				
+				if(file_put_contents($output_pathname, $contents . "\n", FILE_APPEND) === false){
+					throw new Exception("Could not write to '{$output_pathname}.");
+				}
 			}
-			file_put_contents(CACHE . '/admin-styles.css', $super_style);
-			$this->insertNodeIntoHead($this->createStylesheetElement(URL . '/manifest/cache/admin-styles.css'));
 		}
 
 		public function build($context = NULL){
@@ -54,21 +48,61 @@
 			$this->insertNodeIntoHead($meta);
 			$meta->setAttribute('http-equiv', 'Content-Type');
 			$meta->setAttribute('content', 'text/html; charset=UTF-8');
-
-			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.css'));
-			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.duplicator.css'));
-			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/symphony.layout.css'));
-
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/jquery.js'));
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/jquery-ui.js'));
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.collapsible.js'));
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.orderable.js'));
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.duplicator.js'));
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.layout.js'));
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.tags.js'));
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.selectable.js'));
-			$this->insertNodeIntoHead($this->createScriptElement(ADMIN_URL . '/assets/js/symphony.js'));
-
+			
+			$styles = array(
+				ADMIN_URL . '/assets/css/symphony.css',
+				ADMIN_URL . '/assets/css/symphony.duplicator.css',
+				ADMIN_URL . '/assets/css/symphony.layout.css'
+			);
+			
+			$scripts = array(
+				ADMIN_URL . '/assets/js/jquery.js',
+				ADMIN_URL . '/assets/js/jquery-ui.js',
+				ADMIN_URL . '/assets/js/symphony.collapsible.js',
+				ADMIN_URL . '/assets/js/symphony.orderable.js',
+				ADMIN_URL . '/assets/js/symphony.duplicator.js',
+				ADMIN_URL . '/assets/js/symphony.layout.js',
+				ADMIN_URL . '/assets/js/symphony.tags.js',
+				ADMIN_URL . '/assets/js/symphony.selectable.js',
+				ADMIN_URL . '/assets/js/symphony.js'
+			);
+			
+			// Builds a super JS and CSS document
+			if(Symphony::Configuration()->core()->symphony->{'condense-scripts-and-stylesheets'} == 'yes'){
+				
+				if(file_exists(CACHE . '/admin-styles.css')){
+					$styles = array(URL . '/manifest/cache/admin-styles.css');
+				}
+				else{
+					try{
+						$this->minify(array_map(create_function('$a', 'return DOCROOT . "/symphony/assets/css/" . basename($a);'), $styles), CACHE . '/admin-styles.css');
+						$styles = array(URL . '/manifest/cache/admin-styles.css');
+					}
+					catch(Exception $e){
+					}
+				}
+				
+				if(file_exists(CACHE . '/admin-scripts.js')){
+					$scripts = array(URL . '/manifest/cache/admin-scripts.js');
+				}
+				else{
+					try{
+						$this->minify(array_map(create_function('$a', 'return DOCROOT . "/symphony/assets/js/" . basename($a);'), $scripts), CACHE . '/admin-scripts.js');
+						$scripts = array(URL . '/manifest/cache/admin-scripts.js');
+					}
+					catch(Exception $e){
+					}
+				}
+			}
+			
+			foreach($styles as $pathname){
+				$this->insertNodeIntoHead($this->createStylesheetElement($pathname));
+			}
+			
+			foreach($scripts as $pathname){
+				$this->insertNodeIntoHead($this->createScriptElement($pathname));
+			}
+			
 			###
 			# Delegate: InitaliseAdminPageHead
 			# Description: Allows developers to insert items into the page HEAD. Use $context['parent']->Page

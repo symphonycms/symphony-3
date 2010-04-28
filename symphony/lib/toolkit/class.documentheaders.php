@@ -8,7 +8,7 @@
 		}
 	
 		public function append($name, $value=NULL){
-			$this->headers[strtolower($name)] = $name . (is_null($value) ? NULL : ":{$value}");
+			$this->headers[strtolower($name)] = $name . (is_null($value) ? NULL : ": {$value}");
 		}
 
 		public function render(){
