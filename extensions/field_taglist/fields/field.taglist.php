@@ -59,7 +59,7 @@
 			Utilities:
 		-------------------------------------------------------------------------*/
 
-		public function prepopulateSource(&$wrapper) {
+		public function prepopulateSource($wrapper) {
 
 			$document = $wrapper->ownerDocument;
 
@@ -203,7 +203,6 @@
 
 			$wrapper->appendChild($options_list);
 		}
-
 
 		/*-------------------------------------------------------------------------
 			Publish:
@@ -408,7 +407,7 @@
 			unset($this->properties->{'suggestion-list-include-existing'});
 
 			$doc = parent::toDoc();
-			
+
 			$this->properties->{'suggestion-list-include-existing'} = $include_existing;
 			$this->properties->{'suggestion-list-source'} = $suggestion_list_source;
 
@@ -462,70 +461,42 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel($wrapper, $data=NULL, $errors=NULL) {
-			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+			$document = $wrapper->ownerDocument;
 
-			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
-		}
+			$name = $document->createElement('span', $this->label);
+			$name->setAttribute('class', 'name');
+			$name->appendChild($document->createElement('em', $this->name()));
+			$wrapper->appendChild($name);
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
-			$field_id = $this->id;
+			$type_label = Widget::Label(__('Type'));
+			$type_label->setAttribute('class', 'small');
+			$type_label->appendChild(Widget::Select(
+				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
+				array(
+					array('is', false, 'Is'),
+					array('is-not', $data['type'] == 'is-not', 'Is not'),
+					array('contains', $data['type'] == 'contains', 'Contains'),
+					array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
+					array('regex', $data['type'] == 'regex', 'Regex'),
+				)
+			));
 
-			if (self::isFilterRegex($data[0])) {
-				self::$key++;
-				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND (
-						t{$field_id}_{self::$key}.value REGEXP '{$pattern}'
-						OR t{$field_id}_{self::$key}.handle REGEXP '{$pattern}'
-					)
-				";
+			$div = $document->createElement('div');
 
-			} elseif ($andOperation) {
-				foreach ($data as $value) {
-					self::$key++;
-					$value = $this->escape($value);
-					$joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-							ON (e.id = t{$field_id}_{self::$key}.entry_id)
-					";
-					$where .= "
-						AND (
-							t{$field_id}_{self::$key}.value = '{$value}'
-							OR t{$field_id}_{self::$key}.handle = '{$value}'
-						)
-					";
-				}
+			$label = Widget::Label(__('Value'));
+			$label->appendChild(Widget::Input(
+				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
+				$data['value']
+			));
 
-			} else {
-				if (!is_array($data)) $data = array($data);
+			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($div);
 
-				foreach ($data as &$value) {
-					$value = $this->escape($value);
-				}
+			$div->appendChild($label);
 
-				self::$key++;
-				$data = implode("', '", $data);
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND (
-						t{$field_id}_{self::$key}.value IN ('{$data}')
-						OR t{$field_id}_{self::$key}.handle IN ('{$data}')
-					)
-				";
-			}
-
-			return true;
+			$wrapper->appendChild(Widget::Group(
+				$type_label, $div
+			));
 		}
 
 	}

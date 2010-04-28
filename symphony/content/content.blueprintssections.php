@@ -369,7 +369,7 @@
 
 			$name = $document->createElement('span', $field->label);
 			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('i', $field->name()));
+			$name->appendChild($document->createElement('em', $field->name()));
 			$item->appendChild($name);
 
 			$input = Widget::Input('name', $field->{'element-name'}, 'hidden');
@@ -770,7 +770,7 @@
 			));
 
 			$label = Widget::Label(__('Navigation Group'));
-			$label->appendChild($this->createElement('i', __('Created if does not exist')));
+			$label->appendChild($this->createElement('em', __('Created if does not exist')));
 			$label->appendChild(Widget::Input('essentials[navigation-group]', $this->section->{"navigation-group"}));
 
 			$fieldset->appendChild((

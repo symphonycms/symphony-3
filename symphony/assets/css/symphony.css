@@ -703,7 +703,7 @@
 	form .field:first-child label {
 		margin-top: 0;
 	}
-	form label i {
+	form label em {
 		float: right;
 		opacity: 0.5;
 	}
@@ -745,6 +745,8 @@
 	}
 	form select[multiple] {
 		min-height: 100px;
+	}
+	form label select {
 		padding: 0;
 	}
 	form .label span {
@@ -784,7 +786,7 @@
 	form .group > div > label {
 		display: block;
 		padding: 0;
-		margin: 15px 0 3px;
+		margin: 15px 0 8px;
 	}
 	form .group > div > label:first-child {
 		margin-top: 0;
@@ -792,10 +794,14 @@
 	form .group > *:first-child,
 	form .group > *:first-child label {
 		padding-left: 0;
-	}
+	}	
 	form .group > *:last-child,
 	form .group > *:last-child label {
 		padding-right: 0;
+	}
+	form .group > *:first-child.small {
+		width: 25%;
+		min-width: 150px;
 	}
 
 /*-----------------------------------------------------------------------------
@@ -807,8 +813,8 @@
 		border-top-color: hsla(0, 0%, 0%, 0.2);
 		-moz-column-count: 3;
 		-webkit-column-count: 3;
-		-moz-column-width: 250px;
-		-webkit-column-width: 250px;
+		-moz-column-width: 200px;
+		-webkit-column-width: 200px;
 		-moz-column-gap: 40px;
 		-webkit-column-gap: 40px;
 		-moz-column-rule: 1px dotted hsla(0, 0%, 0%, 0.2);

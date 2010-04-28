@@ -6,6 +6,24 @@
 			$this->_name = __('Checkbox');
 		}
 
+		public function create(){
+			return Symphony::Database()->query(
+				sprintf(
+					"CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+						`id` int(11) unsigned NOT NULL auto_increment,
+						`entry_id` int(11) unsigned NOT NULL,
+						`value` enum('yes','no') NOT NULL default '%s',
+						PRIMARY KEY  (`id`),
+						KEY `entry_id` (`entry_id`),
+						KEY `value` (`value`)
+					) TYPE=MyISAM;",
+					$this->{'section'},
+					$this->{'element-name'},
+					($this->{'default-state'} == 'on' ? 'yes' : 'no')
+				)
+			);
+		}
+
 		public function canToggleData(){
 			return ($this->{'required'} == 'no') ? true : false;
 		}
@@ -26,81 +44,61 @@
 			return true;
 		}
 
-		function groupRecords($records){
-
-			if(!is_array($records) || empty($records)) return;
-
-			$groups = array($this->{'element-name'} => array());
-
-			foreach($records as $r){
-				$data = $r->getData($this->{'id'});
-
-				$value = $data->value;
-
-				if(!isset($groups[$this->{'element-name'}][$handle])){
-					$groups[$this->{'element-name'}][$handle] = array('attr' => array('value' => $value),
-																		 'records' => array(), 'groups' => array());
-				}
-
-				$groups[$this->{'element-name'}][$value]['records'][] = $r;
-
-			}
-
-			return $groups;
-		}
+		/*-------------------------------------------------------------------------
+			Utilities:
+		-------------------------------------------------------------------------*/
 
 		public function getToggleStates(){
 			return array('yes' => __('Yes'), 'no' => __('No'));
 		}
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+		/*-------------------------------------------------------------------------
+			Settings:
+		-------------------------------------------------------------------------*/
 
-			self::$key++;
-			
-			$value = DataSource::prepareFilterValue($filter['value']);
-			
-			$joins .= sprintf('
-				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});
-
-			if ($operation_type == DataSource::FILTER_AND) {
-				foreach ($value as $v) {
-					$where .= sprintf(
-						" AND (t%1\$s.value %2\$s '%3\$s') ", 
-						self::$key, 
-						$filter['type'] == 'is-not' ? '<>' : '=',
-						$v
-					);
-				}
-
-			}
-
-			else {
-				$where .= sprintf(
-					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ", 
-					self::$key, 
-					$filter['type'] == 'is-not' ? 'NOT' : NULL, 
-					implode("', '", $value)
-				);
-			}
-
-			return true;
+		public function findDefaultSettings(&$fields){
+			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
 		}
 
-		public function displayDatasourceFilterPanel(&$wrapper, $data=NULL, $errors=NULL){
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
+			parent::displaySettingsPanel($wrapper, $messages);
 
-			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+			$document = $wrapper->ownerDocument;
 
-			$existing_options = array('yes', 'no');
+			// Long Description
+			$label = Widget::Label(__('Long Description'));
+			$label->appendChild($document->createElement('em', __('Optional')));
+			$label->appendChild(Widget::Input('description', $this->{'description'}));
+			$wrapper->appendChild($label);
 
-			$optionlist = Symphony::Parent()->Page->createElement('ul');
-			$optionlist->setAttribute('class', 'tags');
+			$options_list = $document->createElement('ul');
+			$options_list->setAttribute('class', 'options-list');
 
-			foreach($existing_options as $option) $optionlist->appendChild(Symphony::Parent()->Page->createElement('li', $option));
+			$this->appendShowColumnCheckbox($options_list);
+			$this->appendRequiredCheckbox($options_list);
 
-			$wrapper->appendChild($optionlist);
-			
+			// Default State
+			$label = Widget::Label(__('Checked by default'));
+			$input = Widget::Input('default-state', 'on', 'checkbox');
 
+			if ($this->{'default-state'} == 'on') {
+				$input->setAttribute('checked', 'checked');
+			}
+
+			$label->prependChild($input);
+			$item = $document->createElement('li');
+			$item->appendChild($label);
+			$options_list->appendChild($item);
+
+			$wrapper->appendChild($options_list);
+		}
+
+		/*-------------------------------------------------------------------------
+			Publish:
+		-------------------------------------------------------------------------*/
+
+		public function prepareTableValue($data, DOMElement $link=NULL){
+			return ($data->value == 'yes' ? __('Yes') : __('No'));
 		}
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
@@ -132,9 +130,9 @@
 			$wrapper->appendChild($label);
 		}
 
-		public function prepareTableValue($data, DOMElement $link=NULL){
-			return ($data->value == 'yes' ? __('Yes') : __('No'));
-		}
+		/*-------------------------------------------------------------------------
+			Input:
+		-------------------------------------------------------------------------*/
 
 		public function processFormData($data, Entry $entry=NULL){
 			$states = array('on', 'yes');
@@ -147,91 +145,114 @@
    			return parent::processFormData($data, $entry);
 		}
 
-/*		Deprecated
-		function commit(){
+		/*-------------------------------------------------------------------------
+			Filtering:
+		-------------------------------------------------------------------------*/
 
-			if(!parent::commit()) return false;
-
-			$field_id = $this->{'id'};
-			$handle = $this->handle();
-
-			if($field_id === false) return false;
-
-			$fields = array(
-				'field_id' => $field_id,
-				'default-state' => ($this->{'default-state'} ? $this->{'default-state'} : 'off'),
-				'description' => (trim($this->{'description'}) != '') ? $this->{'description'} : NULL
-			);
-
-			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
-			$field_id = Symphony::Database()->insert('tbl_fields_' . $handle, $fields);
-
-			return ($field_id == 0 || !$field_id) ? false : true;
-		}
-
-*/
-		public function findDefaultSettings(&$fields){
-			if(!isset($fields['default-state'])) $fields['default-state'] = 'off';
-		}
-
-		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages) {
-			parent::displaySettingsPanel($wrapper, $messages);
-
+		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 			$document = $wrapper->ownerDocument;
 
-			// Long Description
-			$label = Widget::Label(__('Long Description'));
-			$label->appendChild($document->createElement('i', __('Optional')));
-			$label->appendChild(Widget::Input('description', $this->{'description'}));
-			$wrapper->appendChild($label);
+			$name = $document->createElement('span', $this->label);
+			$name->setAttribute('class', 'name');
+			$name->appendChild($document->createElement('em', $this->name()));
+			$wrapper->appendChild($name);
 
-			$options_list = $document->createElement('ul');
-			$options_list->setAttribute('class', 'options-list');
+			$group = $document->createElement('div');
+			$group->setAttribute('class', 'group');
 
-			$this->appendShowColumnCheckbox($options_list);
-			$this->appendRequiredCheckbox($options_list);
+			$label = Widget::Label(__('Type'));
+			$label->setAttribute('class', 'small');
+			$label->appendChild(Widget::Select(
+				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
+				array(
+					array('is', false, 'Is'),
+					array('is-not', $data['type'] == 'is-not', 'Is not')
+				)
+			));
+			$group->appendChild($label);
 
-			// Default State
-			$label = Widget::Label(__('Checked by default'));
-			$input = Widget::Input('default-state', 'on', 'checkbox');
+			$div = $document->createElement('div');
 
-			if ($this->{'default-state'} == 'on') {
-				$input->setAttribute('checked', 'checked');
+			$label = Widget::Label(__('Value'));
+			$label->appendChild(Widget::Input(
+				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
+				$data['value']
+			));
+
+			$existing_options = array('yes', 'no');
+
+			$optionlist = $document->createElement('ul');
+			$optionlist->setAttribute('class', 'tags');
+
+			foreach($existing_options as $option) $optionlist->appendChild($document->createElement('li', $option));
+
+			$div->appendChild($label);
+			$div->appendChild($optionlist);
+
+			$group->appendChild($div);
+
+			$wrapper->appendChild($group);
+		}
+
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+
+			self::$key++;
+
+			$value = DataSource::prepareFilterValue($filter['value']);
+
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
+
+			if ($operation_type == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (t%1\$s.value %2\$s '%3\$s') ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
+				}
+
 			}
 
-			$label->prependChild($input);
-			$item = $document->createElement('li');
-			$item->appendChild($label);
-			$options_list->appendChild($item);
+			else {
+				$where .= sprintf(
+					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $value)
+				);
+			}
 
-			$wrapper->appendChild($options_list);
+			return true;
 		}
 
-		public function create(){
-			return Symphony::Database()->query(
-				sprintf(
-					"CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` int(11) unsigned NOT NULL auto_increment,
-						`entry_id` int(11) unsigned NOT NULL,
-						`value` enum('yes','no') NOT NULL default '%s',
-						PRIMARY KEY  (`id`),
-						KEY `entry_id` (`entry_id`),
-						KEY `value` (`value`)
-					) TYPE=MyISAM;",
-					$this->{'section'},
-					$this->{'element-name'},
-					($this->{'default-state'} == 'on' ? 'yes' : 'no')
-				)
-			);
-		}
+		/*-------------------------------------------------------------------------
+			Grouping:
+		-------------------------------------------------------------------------*/
 
-		public function getExampleFormMarkup(){
-			$label = Widget::Label($this->{'label'});
-			$label->appendChild(
-				Widget::Input('fields['.$this->{'element-name'}.']', NULL, 'checkbox', ($this->{'default-state'} == 'on' ? array('checked' => 'checked') : array()))
-			);
+		public function groupRecords($records){
 
-			return $label;
+			if(!is_array($records) || empty($records)) return;
+
+			$groups = array($this->{'element-name'} => array());
+
+			foreach($records as $r){
+				$data = $r->getData($this->{'id'});
+
+				$value = $data->value;
+
+				if(!isset($groups[$this->{'element-name'}][$handle])){
+					$groups[$this->{'element-name'}][$handle] = array('attr' => array('value' => $value),
+																		 'records' => array(), 'groups' => array());
+				}
+
+				$groups[$this->{'element-name'}][$value]['records'][] = $r;
+
+			}
+
+			return $groups;
 		}
 
 	}

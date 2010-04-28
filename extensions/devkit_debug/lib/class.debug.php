@@ -91,7 +91,13 @@
 			$this->template = $this->view->template;
 			
 			if ($this->show == 'xml' or $this->show == 'result' or $this->show == 'params') {
-				$this->output = $this->view->render($parameters, $document);
+				try {
+					$this->output = $this->view->render($parameters, $document);
+				}
+				
+				catch (Exception $e) {
+					// We may throw it later.
+				}
 			}
 			
 			if ($this->show == 'xml') {

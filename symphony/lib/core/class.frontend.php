@@ -191,7 +191,7 @@
 					self::$view = View::loadFromURL($url);
 				}
 
-				if(!(self::$view instanceof View)) throw Exception('Page not found');
+				if(!(self::$view instanceof View)) throw new Exception('Page not found');
 
 				if(!Frontend::instance()->isLoggedIn() && in_array('admin', self::$view->types)){
 
