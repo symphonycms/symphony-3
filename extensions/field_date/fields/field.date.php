@@ -55,62 +55,85 @@
 			Utilities:
 		-------------------------------------------------------------------------*/
 
-		protected function __buildSimpleFilterSQL($data, &$joins, &$where, $andOperation=false){
+		protected function __buildSimpleFilterSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+			/* 	TODO: Fix Simple SQL
+				SPRINTF EATS UP %d
+				%%d% seems to make no difference
 
-			$field_id = $this->id;
+			foreach($filter['value'] as $value) {
+				$filter['value'] = DataSource::prepareFilterValue($value);
+			}
 
-			if($andOperation):
-
-				foreach($data as $date){
-					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".self::$key."` ON `e`.`id` = `t$field_id".self::$key."`.entry_id ";
-					$where .= " AND DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') = '".DateTimeObj::get('Y-m-d', strtotime($date))."' ";
-
-					self::$key++;
+			if ($operation_type == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND DATE_FORMAT(t%1\$s.value, '%Y-%m-%%d %H:%i:%%s') %2\$s '%3\$s') ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						DateTimeObj::get('Y-m-d h:i:s', strtotime($v))
+					);
 				}
+			}
 
-			else:
+			else {
+				$parsed_values = array();
+				foreach($value as $v) $parsed_values[] = DateTimeObj::get('Y-m-d h:i:s', strtotime($v));
 
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".self::$key."` ON `e`.`id` = `t$field_id".self::$key."`.entry_id ";
-				$where .= " AND DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d %H:%i:%s') IN ('".@implode("', '", $data)."') ";
-				self::$key++;
-
-			endif;
-
-
+				$where .= sprintf(
+					" AND DATE_FORMAT(t%1\$s.value, '%Y-%m-%%d %H:%i:%%s') %2\$s IN ('%3\$s') ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $parsed_values)
+				);
+			}
+			*/
 		}
 
-		protected function __buildRangeFilterSQL($data, &$joins, &$where, $andOperation=false){
+		protected function __buildRangeFilterSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+			/* 	TODO: Fix Range SQL
+				SPRINTF EATS UP %d
+				%%d% seems to make no difference
 
-			$field_id = $this->id;
 
-			if(empty($data)) return;
+			foreach($filter['value'] as $key => $value) {
+				$filter['value'][$key] = DataSource::prepareFilterValue($value);
+			}
 
-			if($andOperation):
+			if ($operation_type == DataSource::FILTER_AND) {
+				foreach ($filter['value']['start'] as $k => $v) {
 
-				foreach($data as $date){
-					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".self::$key."` ON `e`.`id` = `t$field_id".self::$key."`.entry_id ";
-					$where .= " AND (DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') >= '".DateTimeObj::get('Y-m-d', strtotime($date['start']))."'
-								     AND DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') <= '".DateTimeObj::get('Y-m-d', strtotime($date['end']))."') ";
-
-					self::$key++;
+					$where .= sprintf(
+						" AND (
+							DATE_FORMAT(`t%1\$d.value, '%Y-%m-%d %H:%i:%s') >= '%2\$s'
+						  	AND DATE_FORMAT(`t%1\$d.value, '%Y-%m-%d %H:%i:%s') <= '%3\$s'
+						) ",
+						self::$key,
+						DateTimeObj::get('Y-m-d h:i:s', strtotime($v)),
+						DateTimeObj::get('Y-m-d h:i:s', strtotime($filter['value']['end'][$k]))
+					);
 				}
 
-			else:
+
+			} else {
 
 				$tmp = array();
 
-				foreach($data as $date){
-
-					$tmp[] = "(DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') >= '".DateTimeObj::get('Y-m-d', strtotime($date['start']))."'
-								     AND DATE_FORMAT(`t$field_id".self::$key."`.value, '%Y-%m-%d') <= '".DateTimeObj::get('Y-m-d', strtotime($date['end']))."') ";
+				foreach ($filter['value']['start'] as $k => $v) {
+					$tmp[] .= sprintf(
+						" AND (
+							DATE_FORMAT(`t%1$s.value, '%Y-%m-%d %H:%i:%s') >= '%s'
+						  	AND DATE_FORMAT(`t%1$s.value, '%Y-%m-%d %H:%i:%s') <= '%s'
+						) ",
+						self::$key,
+						DateTimeObj::get('Y-m-d h:i:s', strtotime($v)),
+						DateTimeObj::get('Y-m-d h:i:s', strtotime($filter['value']['end'][$k]))
+					);
 				}
 
-				$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id".self::$key."` ON `e`.`id` = `t$field_id".self::$key."`.entry_id ";
-				$where .= " AND (".@implode(' OR ', $tmp).") ";
+				$where .= " AND (" . implode(' OR ', $tmp). ") ";
 
-				self::$key++;
-
-			endif;
+			}
+			*/
 
 		}
 
@@ -354,8 +377,8 @@
 
 		/*-------------------------------------------------------------------------
 			Filtering:
-		-------------------------------------------------------------------------*/		
-		
+		-------------------------------------------------------------------------*/
+
 		public function provideFilterTypes() {
 			return array(
 				array('is', false, 'Is'),
@@ -365,40 +388,28 @@
 				array('later than', $data['type'] == 'later-than', 'Later than'),
 				array('later than or equalto', $data['type'] == 'later-than-or-equalto', 'Later than or equal to')
 			);
-		}		
-		
+		}
+
 		//	TODO: Revisit this.
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
 
 			self::$key++;
 
-			$value = DataSource::prepareFilterValue($filter['value']);
-
-			if(self::isFilterRegex($value)) return parent::buildDSRetrivalSQL($data, $joins, $where, $operation_type);
-
 			$joins .= sprintf('
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
 			', self::$key, $this->section, $this->{'element-name'});
 
-			if ($operation_type == DataSource::FILTER_AND) {
-				foreach ($value as $v) {
-					$where .= sprintf(
-						" AND (t%1\$s.value %2\$s '%3\$s') ",
-						self::$key,
-						$filter['type'] == 'is-not' ? '<>' : '=',
-						$v
-					);
-				}
+			$type = self::__parseFilter($filter['value']);
+			if($type == self::ERROR) return false;
 
-			}
+			switch($type) {
+				case self::RANGE:
+					$this->__buildRangeFilterSQL($filter, $joins, $where, $operation_type);
+					break;
 
-			else {
-				$where .= sprintf(
-					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
-					self::$key,
-					$filter['type'] == 'is-not' ? 'NOT' : NULL,
-					implode("', '", $value)
-				);
+				case self::SIMPLE:
+					$this->__buildSimpleFilterSQL($filter, $joins, $where, $operation_type);
+					break;
 			}
 /*
 			if(self::isFilterRegex($data[0])) return parent::buildDSRetrivalSQL($data, $joins, $where, $andOperation);

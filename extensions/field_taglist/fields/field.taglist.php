@@ -461,7 +461,8 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
+
 			$document = $wrapper->ownerDocument;
 
 			$name = $document->createElement('span', $this->label);
@@ -473,16 +474,8 @@
 			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				array(
-					array('is', false, 'Is'),
-					array('is-not', $data['type'] == 'is-not', 'Is not'),
-					array('contains', $data['type'] == 'contains', 'Contains'),
-					array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
-					array('regex', $data['type'] == 'regex', 'Regex'),
-				)
+				$this->provideFilterTypes()
 			));
-
-			$div = $document->createElement('div');
 
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
@@ -492,11 +485,10 @@
 
 			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($div);
 
-			$div->appendChild($label);
-
 			$wrapper->appendChild(Widget::Group(
 				$type_label, $div
 			));
+
 		}
 
 	}

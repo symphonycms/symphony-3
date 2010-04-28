@@ -419,7 +419,7 @@
 			if(preg_match('/^regexp:/i', $string)) return true;
 		}
 		*/
-		
+
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
 			self::$key++;
 
@@ -438,7 +438,7 @@
 					",	self::$key,	$value
 				);
 			}
-			
+
 			else if ($operation_type == DataSource::FILTER_AND) {
 				foreach ($value as $v) {
 					$where .= sprintf(
@@ -632,26 +632,11 @@
 			$name->appendChild($document->createElement('em', $this->name()));
 			$wrapper->appendChild($name);
 
-			//	Allow extensions to provide their own Filter types			
-			if(method_exists($this, 'provideFilterTypes')) {
-				$filters = $this->provideFilterTypes();
-			}
-			
-			else {
-				$filters = array(
-					array('is', false, 'Is'),
-					array('is-not', $data['type'] == 'is-not', 'Is not'),
-					array('contains', $data['type'] == 'contains', 'Contains'),
-					array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
-					array('regex', $data['type'] == 'regex', 'Regex'),
-				);
-			}
-			
 			$type_label = Widget::Label(__('Type'));
-			$type_label->setAttribute('class', 'small');			
+			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				$filters
+				$this->provideFilterTypes()
 			));
 
 			$label = Widget::Label(__('Value'));
@@ -659,18 +644,23 @@
 				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
 				$data['value']
 			));
-			
+
 			$wrapper->appendChild(Widget::Group(
 				$type_label, $label
 			));
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, MessageStack $messages){
-			//$wrapper->appendChild(Symphony::Parent()->Page->createElement('h3', ucwords($this->name())));
-			$this->appendSummaryBlock($wrapper, $messages);
+		public function provideFilterTypes() {
+			return array(
+				array('is', false, 'Is'),
+				array('is-not', $data['type'] == 'is-not', 'Is not'),
+				array('contains', $data['type'] == 'contains', 'Contains'),
+				array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
+				array('regex', $data['type'] == 'regex', 'Regex'),
+			);
 		}
 
-		public function appendSummaryBlock(SymphonyDOMElement $wrapper, MessageStack $messages) {
+		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, MessageStack $messages){
 			$document = $wrapper->ownerDocument;
 
 			if ($this->label) {
@@ -821,7 +811,7 @@
 					CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
 						`id` int(11) unsigned NOT NULL auto_increment,
 						`entry_id` int(11) unsigned NOT NULL,
-						`handle` varchar(255) default NULL,						
+						`handle` varchar(255) default NULL,
 						`value` varchar(255) default NULL,
 						PRIMARY KEY  (`id`),
 						KEY `entry_id` (`entry_id`),

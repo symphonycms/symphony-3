@@ -342,20 +342,27 @@
 
 			if(strlen(trim($value)) == 0) return NULL;
 
-			$value = self::replaceParametersInString($value, $ParameterOutput);
+			if(is_array($value)) {
+				foreach($value as $k => $v) {
+					$value[$k] = self::prepareFilterValue($v);
+				}
+			}
+			else {
+				$value = self::replaceParametersInString($value, $ParameterOutput);
 
-			$pattern = (self::determineFilterType($value) == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),');
+				$pattern = (self::determineFilterType($value) == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),');
 
-			// This is where the filter value is split by commas or + symbol, denoting
-			// this as an OR or AND operation. Comma's have already been escaped
-			$value = preg_split("/{$pattern}\s*/", $value, -1, PREG_SPLIT_NO_EMPTY);
-			$value = array_map('trim', $value);
+				// This is where the filter value is split by commas or + symbol, denoting
+				// this as an OR or AND operation. Comma's have already been escaped
+				$value = preg_split("/{$pattern}\s*/", $value, -1, PREG_SPLIT_NO_EMPTY);
+				$value = array_map('trim', $value);
 
-			// Remove the escapes on commas
-			$value = array_map(array('General', 'removeEscapedCommas'), $value);
+				// Remove the escapes on commas
+				$value = array_map(array('General', 'removeEscapedCommas'), $value);
 
-			// Pre-escape the filter values. TODO: Should this be here?
-			$value = array_map(array(Symphony::Database(), 'escape'), $value);
+				// Pre-escape the filter values. TODO: Should this be here?
+				$value = array_map(array(Symphony::Database(), 'escape'), $value);
+			}
 
 			return $value;
 		}

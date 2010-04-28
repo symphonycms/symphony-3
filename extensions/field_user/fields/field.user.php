@@ -277,52 +277,51 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
-			$field_id = $this->id;
+		//	TODO: This field will need to override the DatasourceFilterPanel so that you can actually filter
+		//	users on their fields in the sym_users table. Once done, this buildDSRetrivalSQL will have to be updated
+		//	to think use those columns. For now this just filters on USER_ID (which is Symphony 2.0.x behaviour)
 
-			if (self::isFilterRegex($data[0])) {
-				self::$key++;
-				$pattern = str_replace('regexp:', '', $this->escape($data[0]));
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND t{$field_id}_{self::$key}.user_id REGEXP '{$pattern}'
-				";
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+			self::$key++;
 
-			} elseif ($andOperation) {
-				foreach ($data as $value) {
-					self::$key++;
-					$value = $this->escape($value);
-					$joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-							ON (e.id = t{$field_id}_{self::$key}.entry_id)
-					";
-					$where .= "
-						AND t{$field_id}_{self::$key}.user_id = '{$value}'
-					";
+			$value = DataSource::prepareFilterValue($filter['value']);
+
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
+
+			if ($filter['type'] == 'regex') {
+				$where .= sprintf("
+						AND (
+							t%1\$s.user_id REGEXP '%2\$s'
+						)
+					",	self::$key,	$value
+				);
+			}
+
+			else if ($operation_type == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (
+							t%1\$s.user_id %2\$s '%3\$s'
+						) ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
 				}
 
-			} else {
-				if (!is_array($data)) $data = array($data);
+			}
 
-				foreach ($data as &$value) {
-					$value = $this->escape($value);
-				}
-
-				self::$key++;
-				$data = implode("', '", $data);
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{self::$key}
-						ON (e.id = t{$field_id}_{self::$key}.entry_id)
-				";
-				$where .= "
-					AND t{$field_id}_{self::$key}.user_id IN ('{$data}')
-				";
+			else {
+				$where .= sprintf(
+					" AND (
+						t%1\$s.user_id %2\$s IN ('%3\$s')
+					) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $value)
+				);
 			}
 
 			return true;
