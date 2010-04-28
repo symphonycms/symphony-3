@@ -27,7 +27,7 @@
 				array('large', false, __('Large Box')),
 				array('huge', false, __('Huge Box'))
 			);
-			
+
 			$this->filters = array(
 				'is'				=> 'Is',
 				'is-not'			=> 'Is not',
@@ -184,7 +184,7 @@
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			parent::displaySettingsPanel($wrapper, $errors);
-			
+
 			$driver = ExtensionManager::instance()->create('field_textbox');
 			$driver->addSettingsHeaders($this->_engine->Page);
 			$document = $wrapper->ownerDocument;
@@ -563,7 +563,7 @@
 	/*-------------------------------------------------------------------------
 		Filtering:
 	-------------------------------------------------------------------------*/
-		
+
 		public function processDatasourceFilter($data) {
 			$defaults = (object)array(
 				'value'		=> '',
@@ -572,61 +572,61 @@
 			);
 			$field_handle = $this->{'element-name'};
 			$document = $wrapper->ownerDocument;
-			
+
 			if (!is_array($data) or (is_array($data) and empty($data))) {
 				$data = $defaults;
 			}
-			
+
 			$data = (object)$data;
-			
+
 			if (!isset($data->type) or !array_key_exists($data->type, $this->filters)) {
 				$data->type = $defaults->type;
 			}
-			
+
 			if (!isset($data->negate) or $data->negate != 'yes') {
 				$data->negate = 'no';
 			}
-			
+
 			if (!isset($data->value)) {
 				$data->value = '';
 			}
-			
+
 			return $data;
 		}
-		
+
 		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null) {
 			$data = $this->processDatasourceFilter($data);
 			$document = $wrapper->ownerDocument;
-			
+
 			$name = $document->createElement('span', $this->label);
 			$name->setAttribute('class', 'name');
 			$name->appendChild($document->createElement('em', $this->name()));
 			$wrapper->appendChild($name);
-			
+
 			$type_label = Widget::Label(__('Type'));
 			$type_label->setAttribute('class', 'small');
 			$select = $document->createElement('select');
 			$select->setAttribute('name', "fields[filters][{$field_handle}][type]");
-			
+
 			foreach ($this->filters as $handle => $filter) {
 				$option = $document->createElement('option');
 				$option->setAttribute('value', $handle);
 				$option->setValue($filter);
-				
+
 				if ($handle == $data->type) {
 					$option->setAttribute('selected', 'selected');
 				}
-				
+
 				$select->appendChild($option);
 			}
-			
+
 			$type_label->appendChild($select);
 
 			$value_label = Widget::Label('Value');
 			$value_label->appendChild(Widget::Input(
 				"fields[filters][{$field_handle}][value]", $data->value
 			));
-			
+
 			$wrapper->appendChild(Widget::Group(
 				$type_label, $value_label
 			));

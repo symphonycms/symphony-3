@@ -631,32 +631,38 @@
 			$name->setAttribute('class', 'name');
 			$name->appendChild($document->createElement('em', $this->name()));
 			$wrapper->appendChild($name);
-			
-			$group = $document->createElement('div');
-			$group->setAttribute('class', 'group');
 
-			$label = Widget::Label(__('Type'));
-			$label->setAttribute('class', 'small');
-			$label->appendChild(Widget::Select(
-				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				array(
+			//	Allow extensions to provide their own Filter types			
+			if(method_exists($this, 'provideFilterTypes')) {
+				$filters = $this->provideFilterTypes();
+			}
+			
+			else {
+				$filters = array(
 					array('is', false, 'Is'),
 					array('is-not', $data['type'] == 'is-not', 'Is not'),
 					array('contains', $data['type'] == 'contains', 'Contains'),
 					array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
 					array('regex', $data['type'] == 'regex', 'Regex'),
-				)
+				);
+			}
+			
+			$type_label = Widget::Label(__('Type'));
+			$type_label->setAttribute('class', 'small');			
+			$type_label->appendChild(Widget::Select(
+				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
+				$filters
 			));
-			$group->appendChild($label);
 
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
 				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
 				$data['value']
 			));
-			$group->appendChild($label);
 			
-			$wrapper->appendChild($group);
+			$wrapper->appendChild(Widget::Group(
+				$type_label, $label
+			));
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, MessageStack $messages){

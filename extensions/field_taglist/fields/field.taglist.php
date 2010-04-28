@@ -59,7 +59,7 @@
 			Utilities:
 		-------------------------------------------------------------------------*/
 
-		public function prepopulateSource(&$wrapper) {
+		public function prepopulateSource($wrapper) {
 
 			$document = $wrapper->ownerDocument;
 
@@ -203,7 +203,6 @@
 
 			$wrapper->appendChild($options_list);
 		}
-
 
 		/*-------------------------------------------------------------------------
 			Publish:
@@ -408,7 +407,7 @@
 			unset($this->properties->{'suggestion-list-include-existing'});
 
 			$doc = parent::toDoc();
-			
+
 			$this->properties->{'suggestion-list-include-existing'} = $include_existing;
 			$this->properties->{'suggestion-list-source'} = $suggestion_list_source;
 
@@ -462,11 +461,43 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel($wrapper, $data=NULL, $errors=NULL) {
-			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+			$document = $wrapper->ownerDocument;
 
-			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($wrapper);
-		}		
+			$name = $document->createElement('span', $this->label);
+			$name->setAttribute('class', 'name');
+			$name->appendChild($document->createElement('em', $this->name()));
+			$wrapper->appendChild($name);
+
+			$type_label = Widget::Label(__('Type'));
+			$type_label->setAttribute('class', 'small');
+			$type_label->appendChild(Widget::Select(
+				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
+				array(
+					array('is', false, 'Is'),
+					array('is-not', $data['type'] == 'is-not', 'Is not'),
+					array('contains', $data['type'] == 'contains', 'Contains'),
+					array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
+					array('regex', $data['type'] == 'regex', 'Regex'),
+				)
+			));
+
+			$div = $document->createElement('div');
+
+			$label = Widget::Label(__('Value'));
+			$label->appendChild(Widget::Input(
+				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
+				$data['value']
+			));
+
+			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($div);
+
+			$div->appendChild($label);
+
+			$wrapper->appendChild(Widget::Group(
+				$type_label, $div
+			));
+		}
 
 	}
 
