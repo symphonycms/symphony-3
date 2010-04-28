@@ -181,7 +181,7 @@
 			# Global: Yes
 			#$this->_page->ExtensionManager->notifyMembers(
 			ExtensionManager::instance()->notifyMembers(
-				'AppendDevKitMenuItem', '/frontend/',
+				'DevKiAppendtMenuItem', '/frontend/',
 				array(
 					'wrapper'	=> $root
 				)

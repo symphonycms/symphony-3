@@ -38,7 +38,7 @@
 				),
 				array(
 					'page'		=> '/frontend/',
-					'delegate'	=> 'AppendDevKitMenuItem',
+					'delegate'	=> 'DevKiAppendtMenuItem',
 					'callback'	=> 'appendDevKitMenuItem'
 				)
 			);
