@@ -414,7 +414,11 @@
 			return strnatcasecmp($a->label, $b->label);
 		}
 
-		protected function appendSyncAlert(STDClass $sync) {
+		protected function appendSyncAlert() {
+			$sync = Section::syncroniseStatistics($this->section);
+			
+			if ($sync->synced === true) return;
+			
 			$table_fields = array();
 			$table_actions = array();
 			$table_totals = array();
@@ -439,14 +443,64 @@
 
 			// Header:
 			$row = $this->createElement('tr');
-			$row->appendChild($this->createElement('th', __('Field')));
+			$row->appendChild($this->createElement('th', __('Name')));
 
 			foreach ($table_actions as $action => $count) {
 				$row->appendChild($this->createElement('th', __(ucwords($action))));
 			}
 
 			$table->appendChild($row);
+			
+			$row = $this->createElement('tr');
+			$cell = $this->createElement('th');
+			
+			if ($sync->section->rename) {
+				$cell->appendChild($this->createTextNode(
+					$sync->section->new->name . ' '
+				));
+				
+				$span = $this->createElement('span');
+				$span->setAttribute('class', 'old');
+				$span->appendChild($this->createEntityReference('larr'));
+				$span->appendChild($this->createTextNode(
+					' ' . $sync->section->old->name
+				));
+				
+				$cell->appendChild($span);
+				$row->appendChild($cell);
+				
+				foreach ($table_actions as $action => $count) {
+					$cell = $this->createElement('td', __('No'));
+					$cell->setAttribute('class', 'no');
+					
+					if ($action == 'rename') {
+						$cell->setValue(__('Yes'));
+						$cell->setAttribute('class', 'yes');
+					}
 
+					$row->appendChild($cell);
+				}
+			}
+			
+			else {
+				$cell->setValue($sync->section->new->name);
+				$row->appendChild($cell);
+				
+				foreach ($table_actions as $action => $count) {
+					$cell = $this->createElement('td', __('No'));
+					$cell->setAttribute('class', 'no');
+					
+					if ($action == 'update') {
+						$cell->setValue(__('Yes'));
+						$cell->setAttribute('class', 'yes');
+					}
+
+					$row->appendChild($cell);
+				}
+			}
+			
+			$table->appendChild($row);
+			
 			// Body:
 			foreach ($table_fields as $guid => $data) {
 				$row = $this->createElement('tr');
@@ -517,9 +571,7 @@
 		}
 
 		private function __layout(Section $existing = null) {
-			$stats = Section::syncroniseStatistics($this->section);
-
-			if ($stats->synced === false) $this->appendSyncAlert($stats);
+			$this->appendSyncAlert();
 
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
@@ -539,6 +591,10 @@
 						);
 						break;
 				}
+			}
+
+			if (!$this->alerts()->valid()) {
+				$this->appendSyncAlert();
 			}
 
 			$layout = new Layout();
@@ -650,11 +706,7 @@
 		private function __form(Section $existing = null){
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
-
-			$stats = Section::syncroniseStatistics($this->section);
-
-			if ($stats->synced === false) $this->appendSyncAlert($stats);
-
+			
 			if (isset($callback['flag']) && !is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
@@ -684,6 +736,10 @@
 						);
 						break;
 				}
+			}
+
+			if (!$this->alerts()->valid()) {
+				$this->appendSyncAlert();
 			}
 
 			$layout = new Layout();

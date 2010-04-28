@@ -140,8 +140,9 @@
 
 	Class Frontend extends Symphony {
 		protected static $view;
+		protected static $Document;
 		protected static $Parameters;
-
+		
 		public static function instance() {
 			if (!(self::$_instance instanceof Frontend)) {
 				self::$_instance = new self;
@@ -154,8 +155,23 @@
 			return self::$view;
 		}
 
+		public static function Document() {
+			return self::$Document;
+		}
+
 		public static function Parameters() {
 			return self::$Parameters;
+		}
+		
+		public function __construct() {
+			parent::__construct();
+			
+			self::$Document = new XMLDocument;
+			self::$Document->appendChild(
+				self::$Document->createElement('data')
+			);
+			
+			Widget::init(self::$Document);
 		}
 		
 		public function resolve($url=NULL){
@@ -284,8 +300,6 @@
 			// Can ask the view to operate on an existing
 			// Document. Useful if we pass it around beyond
 			// the scope of View::render()
-			$Document = new XMLDocument;
-			$Document->appendChild($Document->createElement('data'));
 
 			####
 			# Delegate: FrontendPreRender
@@ -297,11 +311,11 @@
 				array(
 					'view' => &self::$view,
 					'parameters' => &self::$Parameters,
-					'document' => &$Document
+					'document' => &self::$Document
 				)
 			);
 
-			$output = self::$view->render(self::$Parameters, $Document);
+			$output = self::$view->render(self::$Parameters, self::$Document);
 			
 			####
 			# Delegate: FrontendPostRender

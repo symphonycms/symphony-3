@@ -58,6 +58,14 @@
 			return $this->errors;
 		}
 
+		##	Overloaded Methods for DOMDocument
+		public function createElement($name, $value = null, array $attributes = array()){
+			$element = parent::createElement($name);
+			if(!is_null($value)) $element->setValue($value);
+			$element->setAttributeArray($attributes);
+
+			return $element;
+		}
 	}
 
 	##	Convenience Methods for DOMElement

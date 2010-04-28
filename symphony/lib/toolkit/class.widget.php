@@ -4,15 +4,13 @@
 
 		protected static $Symphony = false;
 
-		public function init() {
-			self::$Symphony = Symphony::Parent()->Page;
+		public function init(XMLDocument $doc) {
+			self::$Symphony = $doc;
 		}
 
 		## Forms
 		## First take at a generic fieldset builder for the new form layout
 		public static function Fieldset($value=null, $help=null, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$fieldset = Widget::$Symphony->createElement('fieldset', null, $attributes);
 
 			if(!is_null($value)){
@@ -36,8 +34,6 @@
 		}
 
 		public static function Form($action, $method, array $attributes = array()){
-			if(!Widget::$Symphony) Widget::init();
-
 			$form = Widget::$Symphony->createElement('form', null, $attributes);
 			$form->setAttribute('action', $action);
 			$form->setAttribute('method', $method);
@@ -46,8 +42,6 @@
 		}
 
 		public static function Label($name=null, DOMNode $child=null, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$label = Widget::$Symphony->createElement('label', $name, $attributes);
 
 			if(!is_null($child)) $label->appendChild($child);
@@ -56,8 +50,6 @@
 		}
 
 		public static function Input($name, $value=null, $type='text', array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$obj = Widget::$Symphony->createElement('input', null, $attributes);
 			$obj->setAttribute('name', $name);
 
@@ -69,8 +61,6 @@
 		}
 		
 		public static function Submit($name, $value, array $attributes = array()) {
-			if(!self::$Symphony) Widget::init();
-			
 			$obj = Widget::$Symphony->createElement('button', null, $attributes);
 			$obj->setAttribute('name', $name);
 			$obj->setAttribute('type', 'submit');
@@ -82,8 +72,6 @@
 		}
 		
 		public static function Textarea($name, $value=null, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$obj = Widget::$Symphony->createElement('textarea', $value, $attributes);
 
 			$obj->appendChild(Widget::$Symphony->createTextNode(''));
@@ -94,8 +82,6 @@
 		}
 
 		public static function Select($name, $options, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$obj = Widget::$Symphony->createElement('select');
 			
 			$attributes['name'] = $name;
@@ -135,8 +121,6 @@
 		}
 
 		private static function __SelectBuildOption($option){
-			if(!self::$Symphony) Widget::init();
-
 			@list($value, $selected, $desc, $class, $id, $attr) = $option;
 			if(!$desc) $desc = $value;
 
@@ -156,8 +140,6 @@
 
 		##	Tables
 		public static function Table($head=null, $foot=null, $body=null, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
  			$table = Widget::$Symphony->createElement('table');
 
 			$table->setAttributeArray($attributes);
@@ -171,8 +153,6 @@
 
 		## Provided with an array of colum names, this will return an XML object
 		public static function TableHead($columns){
-			if(!self::$Symphony) Widget::init();
-
 			$thead = Widget::$Symphony->createElement('thead');
 			$tr = Widget::$Symphony->createElement('tr');
 
@@ -198,8 +178,6 @@
 		}
 
 		public static function TableBody($rows, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$tbody = Widget::$Symphony->createElement('tbody');
 			$tbody->setAttributeArray($attributes);
 
@@ -209,8 +187,6 @@
 		}
 
 		public static function TableRow($data, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$tr = Widget::$Symphony->createElement('tr');
 			$tr->setAttributeArray($attributes);
 
@@ -220,8 +196,6 @@
 		}
 
 		public static function TableData($value = null, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$td = Widget::$Symphony->createElement('td');
 			$td->setValue($value);
 
@@ -232,8 +206,6 @@
 
 		## Misc
 		public static function Anchor($value, $href, array $attributes = array()){
-			if(!self::$Symphony) Widget::init();
-
 			$a = Widget::$Symphony->createElement('a', $value, $attributes);
 			$a->setAttribute('href', $href);
 
@@ -241,8 +213,6 @@
 		}
 
 		public static function Acronym($value, array $attributes = array(), $text = null){
-			if(!self::$Symphony) Widget::init();
-
 			$doc = Widget::$Symphony->createDocumentFragment();
 			$doc->appendChild(
 				Widget::$Symphony->createElement('acronym', $value, $attributes)
@@ -258,8 +228,6 @@
 		}
 
 		public static function wrapFormElementWithError($element, $message=null){
-			if(!self::$Symphony) Widget::init();
-
 			$div = Widget::$Symphony->createElement('div');
 			$div->setAttributeArray(array('id' => 'error', 'class' => 'invalid'));
 			$div->appendChild($element);

@@ -11,12 +11,12 @@
 		public function about() {
 			return array(
 				'name'			=> 'Debug DevKit',
-				'version'		=> '1.0.5',
-				'release-date'	=> '2009-12-01',
+				'version'		=> '2.0',
+				'release-date'	=> '2010-04-28',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
-					'website'		=> 'http://pixelcarnage.com/',
-					'email'			=> 'rowan@pixelcarnage.com'
+					'website'		=> 'http://rowanlewis.com/',
+					'email'			=> 'me@rowanlewis.com'
 				),
 				'provides'		=> array(
 					'devkit'
@@ -35,6 +35,11 @@
 					'page'		=> '/frontend/',
 					'delegate'	=> 'FrontendPreRender',
 					'callback'	=> 'frontendPreRender'
+				),
+				array(
+					'page'		=> '/frontend/',
+					'delegate'	=> 'DevKiAppendtMenuItem',
+					'callback'	=> 'appendDevKitMenuItem'
 				)
 			);
 		}
@@ -52,42 +57,23 @@
 			$context['view'] = new self::$class(self::$view);
 		}
 		
-		/*
-		public function frontendDevKitResolve($context) {
-			if (false or isset($_GET['debug'])) {
-				require_once(EXTENSIONS . '/debugdevkit/content/content.debug.php');
-				
-				$context['devkit'] = new Content_DebugDevKit_Debug();
-				self::$active = true;
-			}
+		public function appendDevKitMenuItem($context) {
+			$wrapper = $context['wrapper'];
+			$document = $wrapper->ownerDocument;
 			
-			else if (false and isset($_GET['debug-edit'])) {
-				require_once(EXTENSIONS . '/debugdevkit/content/content.debug.php');
-				require_once(EXTENSIONS . '/debugdevkit/content/content.edit.php');
-				
-				$context['devkit'] = new Content_DebugDevKit_Edit();
-				self::$active = true;
-			}
-		}
-		
-		public function manipulateDevKitNavigation($context) {
-			$xml = $context['xml'];
-			$item = $xml->createElement('item');
+			$item = $document->createElement('item');
 			$item->setAttribute('name', __('Debug'));
 			$item->setAttribute('handle', 'debug');
-			$item->setAttribute('active', (self::$active ? 'yes' : 'no'));
+			$item->setAttribute('active', (self::$class ? 'yes' : 'no'));
 			
-			$parent = $xml->documentElement;
-			
-			if ($parent->hasChildNodes()) {
-				$parent->insertBefore($item, $parent->firstChild);
+			if ($wrapper->hasChildNodes()) {
+				$wrapper->insertBefore($item, $wrapper->firstChild);
 			}
 			
 			else {
-				$xml->documentElement->appendChild($item);
+				$wrapper->appendChild($item);
 			}
 		}
-		*/
 	}
 	
 ?>
