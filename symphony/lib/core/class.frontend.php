@@ -142,6 +142,7 @@
 		protected static $view;
 		protected static $Document;
 		protected static $Parameters;
+		protected static $Headers;
 		
 		public static function instance() {
 			if (!(self::$_instance instanceof Frontend)) {
@@ -155,16 +156,22 @@
 			return self::$view;
 		}
 
+		public static function Headers() {
+			return self::$Headers;
+		}
+		
 		public static function Document() {
 			return self::$Document;
 		}
-
+		
 		public static function Parameters() {
 			return self::$Parameters;
 		}
 		
 		public function __construct() {
 			parent::__construct();
+			
+			self::$Headers = new DocumentHeaders;
 			
 			self::$Document = new XMLDocument;
 			self::$Document->appendChild(
@@ -212,7 +219,11 @@
 		}
 		
 		public function display($url=NULL){
-
+			
+			// Default headers. Can be overwritten later
+			self::$Headers->append('Content-Type', 'text/html;charset=utf-8');
+			self::$Headers->append('HTTP/1.0 200 OK');
+			
 			####
 			# Delegate: FrontendPreInitialise
 			# Description: TODO
@@ -311,12 +322,13 @@
 				array(
 					'view' => &self::$view,
 					'parameters' => &self::$Parameters,
-					'document' => &self::$Document
+					'document' => &self::$Document,
+					'headers' => &self::$Headers
 				)
 			);
 
-			$output = self::$view->render(self::$Parameters, self::$Document);
-			
+			$output = self::$view->render(self::$Parameters, self::$Document, self::$Headers);
+
 			####
 			# Delegate: FrontendPostRender
 			# Description: TODO
@@ -325,9 +337,12 @@
 				'FrontendPostRender',
 				'/frontend/',
 				array(
-					'output' => &$output
+					'output' => &$output,
+					'headers' => &self::$Headers
 				)
 			);
+			
+			self::Headers()->render();
 			
 			return $output;
 			

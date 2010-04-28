@@ -1,6 +1,7 @@
 <?php
 	
 	require_once(TOOLKIT . '/class.event.php');
+	require_once(TOOLKIT . '/class.documentheaders.php');
 	
 	Class ViewException extends Exception {}
 
@@ -44,8 +45,10 @@
 		private $_guid;
 
 		public function __construct(){
+			
 			$this->_about = new StdClass;
 			$this->_parameters = new StdClass;
+
 			$this->_path = $this->_parent = $this->_template = $this->_handle = $this->_guid = NULL;
 			$this->types = array();
 		}
@@ -433,9 +436,16 @@
 		    return(($a->priority() > $b->priority()) ? -1 : 1);
 		}
 
-		public function render(Register &$Parameters, XMLDocument &$Document=NULL){
+		public function render(Register &$Parameters, XMLDocument &$Document=NULL, DocumentHeaders &$Headers=NULL){
 
 			$ParameterOutput = new Register;
+
+			if(!is_null($Headers)){
+				$Headers->append('Content-Type', $this->{'content-type'});
+			}
+			else{
+				header('Content-Type: ' . $this->{'content-type'});
+			}
 
 			if(is_null($Document)){
 				$Document = new XMLDocument;
