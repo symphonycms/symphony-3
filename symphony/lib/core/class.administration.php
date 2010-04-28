@@ -218,12 +218,7 @@
 			# Description: Immediately before generating the admin page. Provided with the page object
 			# Global: Yes
 			ExtensionManager::instance()->notifyMembers('AdminPagePreGenerate', '/backend/', array('oPage' => &$this->Page));
-			
-			// Builds a super JS and CSS document
-			if(Symphony::Configuration()->core()->symphony->{'condense-scripts-and-stylesheets'} == 'yes'){
-				$this->Page->condenseScriptsAndStyles();
-			}
-			
+
 			$output = (string)$this->Page;
 
 			####

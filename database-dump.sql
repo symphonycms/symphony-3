@@ -293,12 +293,12 @@ CREATE TABLE IF NOT EXISTS `tbl_users` (
   `last_name` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
   `email` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `last_seen` datetime DEFAULT '0000-00-00 00:00:00',
-  `default_section` int(11) NOT NULL,
+  `default_section` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `auth_token_active` enum('yes','no') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'no',
   `language` varchar(15) COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=2 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 INSERT INTO `tbl_users` (`id`, `username`, `password`, `first_name`, `last_name`, `email`, `last_seen`, `default_section`, `auth_token_active`, `language`) VALUES
