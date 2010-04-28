@@ -536,6 +536,9 @@
 	table .selected td a {
 		color: #fff;
 	}
+	table .changing {
+		background-color: red;
+	}
 	
 /*-----------------------------------------------------------------------------
 	Content: Table: Pagination
