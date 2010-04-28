@@ -447,6 +447,7 @@
 				}
 
 				$label = Widget::Label(__('Sort By'));
+				$label->setAttribute('class', 'context context-' . $section_handle);
 
 				$label->appendChild(Widget::Select('fields[sort-field]', $sort_by_options, array('class' => 'filtered')));
 				$container_sort_by->appendChild($label);

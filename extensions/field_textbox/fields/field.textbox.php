@@ -604,6 +604,7 @@
 			$wrapper->appendChild($name);
 			
 			$type_label = Widget::Label(__('Type'));
+			$type_label->setAttribute('class', 'small');
 			$select = $document->createElement('select');
 			$select->setAttribute('name', "fields[filters][{$field_handle}][type]");
 			
