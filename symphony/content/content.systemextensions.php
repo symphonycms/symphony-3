@@ -62,6 +62,7 @@
 			
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
+			$left->setAttribute('class', 'column small filters');
 			$right = $layout->createColumn(Layout::LARGE);
 			
 		## Process extensions and build lists
@@ -106,10 +107,10 @@
 			
 		## Build filter menus
 		
-			$fieldset = Widget::Fieldset(__('Filter'));
+			$h3 = $this->createElement('h3', __('Filter'));
+			$left->appendChild($h3);
 			
 			$ul = $this->createElement('ul');
-			$ul->setAttribute('class','filters');
 			
 			foreach($lists as $name => $group) {
 				foreach($group as $list => $extensions){
@@ -123,9 +124,8 @@
 					}
 				}
 			}
-			
-			$fieldset->appendChild($ul);
-			$left->appendChild($fieldset);
+	
+			$left->appendChild($ul);
 			
 		## Build table
 			
