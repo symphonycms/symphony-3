@@ -218,13 +218,17 @@
 			throw new EventException(__('Event could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
 		}
 
-		public function delete($handle){
+		public function delete($event){
 			/*
 				TODO:
 				Upon deletion of the event, views need to be updated to remove
 				it's associated with the event
 			*/
-			$event = Event::loadFromHandle($handle);
+			if(!$event instanceof DataSource) {
+				$event = Event::loadFromHandle($event);
+			}
+
+			$handle = $event->handle;
 
 			if(!$event->allowEditorToParse()) {
 				throw new EventException(__('Event cannot be deleted, the Editor does not have permission.'));
