@@ -5,8 +5,8 @@
 	class FieldTextBox extends Field {
 		const DISABLE_PROPOGATION = 1;
 
-		protected $_sizes = array();
-		protected $_driver = null;
+		protected $sizes = array();
+		protected $filters = array();
 
 	/*-------------------------------------------------------------------------
 		Definition:
@@ -16,17 +16,25 @@
 			parent::__construct();
 
 			$this->_name = 'Text Box';
-			$this->_driver = ExtensionManager::instance()->create('field_textbox');
 
 			// Set defaults:
 			$this->{'size'} = 'medium';
 
-			$this->_sizes = array(
+			$this->sizes = array(
 				array('single', false, __('Single Line')),
 				array('small', false, __('Small Box')),
 				array('medium', false, __('Medium Box')),
 				array('large', false, __('Large Box')),
 				array('huge', false, __('Huge Box'))
+			);
+
+			$this->filters = array(
+				'is'				=> 'Is',
+				'is-not'			=> 'Is not',
+				'contains'			=> 'Contains',
+				'does-not-contain'	=> 'Does not contain',
+				'boolean-search'	=> 'Boolean search',
+				'regexp-search'		=> 'Regexp search'
 			);
 		}
 
@@ -157,7 +165,7 @@
 		public function findDefaultSettings(&$fields) {
 			$fields['column-length'] = 75;
 			$fields['text-size'] = 'medium';
-			$fields['text-length'] = null;
+			$fields['text-length'] = 'none';
 			$fields['text-handle'] = 'yes';
 			$fields['text-cdata'] = 'no';
 		}
@@ -177,8 +185,9 @@
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
-			$this->_driver->addSettingsHeaders($this->_engine->Page);
 			$document = $wrapper->ownerDocument;
+			$driver = ExtensionManager::instance()->create('field_textbox');
+			$driver->addSettingsHeaders($document);
 
 		/*---------------------------------------------------------------------
 			Expression
@@ -187,7 +196,7 @@
 			$group = $document->createElement('div');
 			$group->setAttribute('class', 'group');
 
-			$values = $this->_sizes;
+			$values = $this->sizes;
 
 			foreach ($values as &$value) {
 				$value[1] = $value[0] == $this->{'text-size'};
@@ -223,7 +232,7 @@
 			$group->setAttribute('class', 'group');
 
 			$label = Widget::Label(__('Limit'));
-			$label->appendChild($document->createElement('i', __('Number of characters')));
+			$label->appendChild($document->createElement('em', __('Number of characters')));
 			$input = Widget::Input('text-length', $this->{'text-length'});
 			$label->appendChild($input);
 
@@ -238,7 +247,7 @@
 		---------------------------------------------------------------------*/
 
 			$label = Widget::Label(__('Preview'));
-			$label->appendChild($document->createElement('i', __('Number of characters')));
+			$label->appendChild($document->createElement('em', __('Number of characters')));
 			$input = Widget::Input('column-length', $this->{'column-length'});
 			$label->appendChild($input);
 
@@ -287,43 +296,14 @@
 			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-textbox');
 		}
 
-		/*
-		public function commit($propogate = null) {
-			if (!parent::commit()) return false;
-
-			if ($propogate == self::DISABLE_PROPOGATION) return true;
-
-			$field_id = $this->{'id'};
-			$handle = $this->handle();
-
-			if ($field_id === false) return false;
-
-			$fields = array(
-				'field_id'			=> $field_id,
-				'column-length'		=> max((integer)$this->{'text-length'}, 25),
-				'text-size'			=> $this->{'text-size'},
-				'text-formatter'	=> $this->{'text-formatter'},
-				'text-validator'	=> $this->{'text-validator'},
-				'text-length'		=> max((integer)$this->{'text-length'}, 0),
-				'text-cdata'		=> $this->{'text-cdata'},
-				'text-handle'		=> $this->{'text-handle'}
-			);
-
-			Symphony::Database()->delete('tbl_fields_' . $handle, array($field_id), "`field_id` = %d LIMIT 1");
-			$field_id = Symphony::Database()->insert('tbl_fields_' . $handle, $fields);
-
-			return ($field_id == 0 || !$field_id) ? false : true;
-		}
-		*/
-
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry=NULL, $data=NULL) {
-			$this->_driver->addPublishHeaders($wrapper->ownerDocument);
-
 			$document = $wrapper->ownerDocument;
+			$driver = ExtensionManager::instance()->create('field_textbox');
+			$driver->addPublishHeaders($document);
 
 			$sortorder = $this->{'sortorder'};
 			$element_name = $this->{'element-name'};
@@ -350,7 +330,7 @@
 			}
 
 			if ($optional) {
-				$label->appendChild($wrapper->ownerDocument->createElement('i', $optional));
+				$label->appendChild($wrapper->ownerDocument->createElement('em', $optional));
 			}
 
 			// Input box:
@@ -445,20 +425,6 @@
 				return self::STATUS_ERROR;
 			}
 
-/*
-			Does this still need porting?
-
-			if (!General::validateXML($this->applyFormatting($data), $errors, false, new XsltProcess)) {
-				$message = __(
-					"'%1\$s' contains invalid XML. The following error was returned: <code>%2\$s</code>", array(
-						$this->{'label'},
-						$errors[0]['message']
-					)
-				);
-
-				return self::ERROR_INVALID;
-			}
-*/
 			return self::STATUS_OK;
 		}
 
@@ -562,7 +528,7 @@
 			$wrapper->appendChild($result);
 		}
 
-		public function prepareTableValue($data, DOMElement $link = null) {
+		public function prepareTableValue(StdClass $data, DOMElement $link = null) {
 			if (empty($data) or strlen(trim($data->value)) == 0) return;
 
 			$max_length = (integer)$this->{'column-length'};
@@ -597,103 +563,71 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null) {
-			//$this->_driver->addFilteringHeaders($wrapper->ownerDocument);
-			$field_handle = $this->{'element-name'};
-			$document = $wrapper->ownerDocument;
+		public function processDatasourceFilter($data) {
+			$defaults = (object)array(
+				'value'		=> '',
+				'type'		=> 'is',
+				'negate'	=> 'no'
+			);
 
-			$wrapper->setAttribute('class', trim($wrapper->getAttribute('class') . ' field-textbox'));
+			if (!is_array($data) or (is_array($data) and empty($data))) {
+				$data = $defaults;
+			}
+
+			$data = (object)$data;
+
+			if (!isset($data->type) or !array_key_exists($data->type, $this->filters)) {
+				$data->type = $defaults->type;
+			}
+
+			if (!isset($data->negate) or $data->negate != 'yes') {
+				$data->negate = 'no';
+			}
+
+			if (!isset($data->value)) {
+				$data->value = '';
+			}
+
+			return $data;
+		}
+
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null) {
+			$data = $this->processDatasourceFilter($data);
+			$document = $wrapper->ownerDocument;
+			$field_handle = $this->{'element-name'};
 
 			$name = $document->createElement('span', $this->label);
 			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('i', $this->name()));
+			$name->appendChild($document->createElement('em', $this->name()));
 			$wrapper->appendChild($name);
 
-			$label = Widget::Label('Value');
-			$label->appendChild(Widget::Input(
-				"fields[filters]{$prefix}[{$field_handle}]",
-				($data ? General::sanitize($data) : null)
-			));
-			$wrapper->appendChild($label);
+			$type_label = Widget::Label(__('Type'));
+			$type_label->setAttribute('class', 'small');
+			$select = $document->createElement('select');
+			$select->setAttribute('name', "fields[filters][{$field_handle}][type]");
 
-			/*
-			$filters = array(
-				array(
-					'name'				=> 'boolean',
-					'filter'			=> 'boolean:',
-					'help'				=> __('Find values that match the given query. Can use operators <code>and</code> and <code>not</code>.')
-				),
-				array(
-					'name'				=> 'not-boolean',
-					'filter'			=> 'not-boolean:',
-					'help'				=> __('Find values that do not match the given query. Can use operators <code>and</code> and <code>not</code>.')
-				),
+			foreach ($this->filters as $handle => $filter) {
+				$option = $document->createElement('option');
+				$option->setAttribute('value', $handle);
+				$option->setValue($filter);
 
-				array(
-					'name'				=> 'regexp',
-					'filter'			=> 'regexp:',
-					'help'				=> __('Find values that match the given <a href="%s">MySQL regular expressions</a>.', array(
-						'http://dev.mysql.com/doc/mysql/en/Regexp.html'
-					))
-				),
-				array(
-					'name'				=> 'not-regexp',
-					'filter'			=> 'not-regexp:',
-					'help'				=> __('Find values that do not match the given <a href="%s">MySQL regular expressions</a>.', array(
-						'http://dev.mysql.com/doc/mysql/en/Regexp.html'
-					))
-				),
+				if ($handle == $data->type) {
+					$option->setAttribute('selected', 'selected');
+				}
 
-				array(
-					'name'				=> 'contains',
-					'filter'			=> 'contains:',
-					'help'				=> __('Find values that contain the given string.')
-				),
-				array(
-					'name'				=> 'not-contains',
-					'filter'			=> 'not-contains:',
-					'help'				=> __('Find values that do not contain the given string.')
-				),
-
-				array(
-					'name'				=> 'starts-with',
-					'filter'			=> 'starts-with:',
-					'help'				=> __('Find values that start with the given string.')
-				),
-				array(
-					'name'				=> 'not-starts-with',
-					'filter'			=> 'not-starts-with:',
-					'help'				=> __('Find values that do not start with the given string.')
-				),
-
-				array(
-					'name'				=> 'ends-with',
-					'filter'			=> 'ends-with:',
-					'help'				=> __('Find values that end with the given string.')
-				),
-				array(
-					'name'				=> 'not-ends-with',
-					'filter'			=> 'not-ends-with:',
-					'help'				=> __('Find values that do not end with the given string.')
-				)
-			);
-
-			$list = new XMLElement('ul');
-
-			foreach ($filters as $value) {
-				$item = new XMLElement('li', $value['name']);
-				$item->setAttribute('title', $value['filter']);
-				$item->setAttribute('alt', General::sanitize($value['help']));
-				$list->appendChild($item);
+				$select->appendChild($option);
 			}
 
-			$help = new XMLElement('p');
-			$help->setAttribute('class', 'help');
-			$help->setValue(__('Find values that are an exact match for the given string.'));
+			$type_label->appendChild($select);
 
-			$wrapper->appendChild($list);
-			$wrapper->appendChild($help);
-			*/
+			$value_label = Widget::Label('Value');
+			$value_label->appendChild(Widget::Input(
+				"fields[filters][{$field_handle}][value]", $data->value
+			));
+
+			$wrapper->appendChild(Widget::Group(
+				$type_label, $value_label
+			));
 		}
 
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {

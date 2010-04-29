@@ -210,6 +210,7 @@
 
 			self::$lastXML = $xml;
 			self::$lastXSL = $xsl;
+			$result = null;
 
 			libxml_use_internal_errors(true);
 

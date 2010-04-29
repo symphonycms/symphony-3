@@ -115,7 +115,11 @@
 			else if ($name == 'guid' and !isset($this->guid)) {
 				$this->guid = Field::createGUID($this);
 			}
-
+			
+			if (!isset($this->properties->$name)) {
+				return null;
+			}
+			
 			return $this->properties->$name;
 		}
 

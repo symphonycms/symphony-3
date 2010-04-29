@@ -236,11 +236,9 @@
 			$xNav->setAttribute('id', 'nav');
 
 			foreach($nav as $n){
-				$n_bits = explode('/', $n['link'], 3);
-
 				$can_access = true;
 
-				if($n['visible'] != 'no'){
+				if(!isset($n['visible']) or $n['visible'] != 'no'){
 
 					if($can_access == true) {
 
