@@ -34,7 +34,7 @@
 				'contains'			=> 'Contains',
 				'does-not-contain'	=> 'Does not contain',
 				'boolean-search'	=> 'Boolean search',
-				'regexp-search'		=> 'Regexp search'
+				'regex-search'		=> 'Regex search'
 			);
 		}
 
@@ -527,34 +527,7 @@
 
 			$wrapper->appendChild($result);
 		}
-
-		public function prepareTableValue(StdClass $data, DOMElement $link = null) {
-			if (empty($data) or strlen(trim($data->value)) == 0) return;
-
-			$max_length = (integer)$this->{'column-length'};
-			$max_length = ($max_length ? $max_length : 75);
-
-			$value = strip_tags($data->value);
-
-			if ($max_length < strlen($value)) {
-				$lines = explode("\n", wordwrap($value, $max_length - 1, "\n"));
-				$value = array_shift($lines);
-				$value = rtrim($value, "\n\t !?.,:;");
-				$value .= '&#x2026;';
-			}
-
-			if ($max_length > 75) {
-				$value = wordwrap($value, 75, '<br />');
-			}
-
-			if(!is_null($link)) {
-				$link->setValue($value);
-				return $link;
-			}
-
-			return $value;
-		}
-
+		
 		public function getParameterPoolValue($data) {
 			return $data['handle'];
 		}
@@ -562,232 +535,42 @@
 	/*-------------------------------------------------------------------------
 		Filtering:
 	-------------------------------------------------------------------------*/
-
-		public function processDatasourceFilter($data) {
-			$defaults = (object)array(
-				'value'		=> '',
-				'type'		=> 'is',
-				'negate'	=> 'no'
+		
+		public function fetchFilterTypes($data) {
+			$filters = parent::fetchFilterTypes($data);
+			$filters[] = array(
+				'boolean-search', $data->type == 'boolean-search', 'Boolean Search'
 			);
-
-			if (!is_array($data) or (is_array($data) and empty($data))) {
-				$data = $defaults;
-			}
-
-			$data = (object)$data;
-
-			if (!isset($data->type) or !array_key_exists($data->type, $this->filters)) {
-				$data->type = $defaults->type;
-			}
-
-			if (!isset($data->negate) or $data->negate != 'yes') {
-				$data->negate = 'no';
-			}
-
-			if (!isset($data->value)) {
-				$data->value = '';
-			}
-
-			return $data;
+			
+			return $filters;
 		}
-
-		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data = null, $errors = null) {
-			$data = $this->processDatasourceFilter($data);
-			$document = $wrapper->ownerDocument;
-			$field_handle = $this->{'element-name'};
-
-			$name = $document->createElement('span', $this->label);
-			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('em', $this->name()));
-			$wrapper->appendChild($name);
-
-			$type_label = Widget::Label(__('Type'));
-			$type_label->setAttribute('class', 'small');
-			$select = $document->createElement('select');
-			$select->setAttribute('name', "fields[filters][{$field_handle}][type]");
-
-			foreach ($this->filters as $handle => $filter) {
-				$option = $document->createElement('option');
-				$option->setAttribute('value', $handle);
-				$option->setValue($filter);
-
-				if ($handle == $data->type) {
-					$option->setAttribute('selected', 'selected');
-				}
-
-				$select->appendChild($option);
-			}
-
-			$type_label->appendChild($select);
-
-			$value_label = Widget::Label('Value');
-			$value_label->appendChild(Widget::Input(
-				"fields[filters][{$field_handle}][value]", $data->value
-			));
-
-			$wrapper->appendChild(Widget::Group(
-				$type_label, $value_label
-			));
-		}
-
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
-			$filter = $this->processDatasourceFilter($filter);
-			$value = DataSource::prepareFilterValue($filter->value);
-			
-			// TODO: Copy behaviour of old function.
-			
-			self::$key++;
-			
-			$joins .= sprintf('
-				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});
-			
-			// Exact matches:
-			if ($filter->type == 'is' or $filter->type == 'is-not') {
-				
-			}
-			
-			else if ($filter->type == 'contains' or $filter->type == 'does-not-contain') {
-				
-			}
+		
+		public function buildFilterQuery($filter, &$joins, &$where, Register $parameter_output) {
+			$filter = $this->processFilter($filter);
+			$filter_join = DataSource::FILTER_OR;
+			$db = Symphony::Database();
 			
 			// Boolean searches:
-			else if ($filter->type == 'boolean-search') {
+			if ($filter->type == 'boolean-search') {
+				$handle = $this->buildFilterJoin($joins);
+				$value = trim($filter->value);
+				$mode = (preg_match('/^not(\W)/i', $value) ? '-' : '+');
 				
-			}
-			
-			// Boolean searches:
-			else if ($filter->type == 'boolean-search') {
-				
-			}
-			
-			// Regex search:
-			else if ($filter->type == 'regex-search') {
-				
-			}
-			
-			return true;
-		}
-
-		public function xbuildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
-			$field_id = $this->{'id'};
-
-			if (preg_match('/^(not-)?regexp:\s*/', $data[0], $matches)) {
-				$data = trim(array_pop(explode(':', $data[0], 2)));
-				$negate = ($matches[1] == '' ? '' : 'NOT');
-
-				$data = $this->cleanValue($data);
-				$this->_key++;
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-				";
-				$where .= "
-					AND {$negate}(
-						t{$field_id}_{$this->_key}.handle REGEXP '{$data}'
-						OR t{$field_id}_{$this->_key}.value REGEXP '{$data}'
-					)
-				";
-			}
-
-			else if (preg_match('/^(not-)?boolean:\s*/', $data[0], $matches)) {
-				$data = trim(array_pop(explode(':', implode(' + ', $data), 2)));
-				$negate = ($matches[1] == '' ? '' : 'NOT');
-
-				if ($data == '') return true;
-
-				// Negative match?
-				if (preg_match('/^not(\W)/i', $data)) {
-					$mode = '-';
-
-				} else {
-					$mode = '+';
-				}
-
 				// Replace ' and ' with ' +':
-				$data = preg_replace('/(\W)and(\W)/i', '\\1+\\2', $data);
-				$data = preg_replace('/(^)and(\W)|(\W)and($)/i', '\\2\\3', $data);
-				$data = preg_replace('/(\W)not(\W)/i', '\\1-\\2', $data);
-				$data = preg_replace('/(^)not(\W)|(\W)not($)/i', '\\2\\3', $data);
-				$data = preg_replace('/([\+\-])\s*/', '\\1', $mode . $data);
-
-				$data = $this->cleanValue($data);
-				$this->_key++;
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-				";
-				$where .= "
-					AND {$negate}(MATCH (t{$field_id}_{$this->_key}.value) AGAINST ('{$data}' IN BOOLEAN MODE))
-				";
+				$value = preg_replace('/(\W)and(\W)/i', '\\1+\\2', $value);
+				$value = preg_replace('/(^)and(\W)|(\W)and($)/i', '\\2\\3', $value);
+				$value = preg_replace('/(\W)not(\W)/i', '\\1-\\2', $value);
+				$value = preg_replace('/(^)not(\W)|(\W)not($)/i', '\\2\\3', $value);
+				$value = preg_replace('/([\+\-])\s*/', '\\1', $mode . $value);
+				
+				$statement = $db->prepareQuery("MATCH ({$handle}.value) AGAINST ('%s' IN BOOLEAN MODE)", array($value));
+				
+				$where .= "AND (\n\t" . $statement . "\n)";
+				
+				return true;
 			}
-
-			else if (preg_match('/^(not-)?((starts|ends)-with|contains):\s*/', $data[0], $matches)) {
-				$data = trim(array_pop(explode(':', $data[0], 2)));
-				$negate = ($matches[1] == '' ? '' : 'NOT');
-				$data = $this->cleanValue($data);
-
-				if ($matches[2] == 'ends-with') $data = "%{$data}";
-				if ($matches[2] == 'starts-with') $data = "{$data}%";
-				if ($matches[2] == 'contains') $data = "%{$data}%";
-
-				$this->_key++;
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-				";
-				$where .= "
-					AND {$negate}(
-						t{$field_id}_{$this->_key}.handle LIKE '{$data}'
-						OR t{$field_id}_{$this->_key}.value LIKE '{$data}'
-					)
-				";
-			}
-
-			else if ($andOperation) {
-				foreach ($data as $value) {
-					$this->_key++;
-					$value = $this->cleanValue($value);
-					$joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-					";
-					$where .= "
-						AND (
-							t{$field_id}_{$this->_key}.handle = '{$value}'
-							OR t{$field_id}_{$this->_key}.value = '{$value}'
-						)
-					";
-				}
-			}
-
-			else {
-				if (!is_array($data)) $data = array($data);
-
-				foreach ($data as &$value) {
-					$value = $this->cleanValue($value);
-				}
-
-				$this->_key++;
-				$data = implode("', '", $data);
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-				";
-				$where .= "
-					AND (
-						t{$field_id}_{$this->_key}.handle IN ('{$data}')
-						OR t{$field_id}_{$this->_key}.value IN ('{$data}')
-					)
-				";
-			}
-
-			return true;
+			
+			return parent::buildFilterQuery($filter, $joins, $where, $parameter_output);
 		}
 
 	/*-------------------------------------------------------------------------

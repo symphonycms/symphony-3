@@ -209,11 +209,13 @@
 					}
 					else{
 						$field = $section->fetchFieldByHandle($element_name);
-						$field->buildDSRetrivalSQL($filter, $joins, $where, $ParameterOutput);
+						$field->buildFilterQuery($filter, $joins, $where, $ParameterOutput);
 					}
-
 				}
 			}
+			
+			// Escape percent symbold:
+			$where = str_replace('%', '%%', $where);
 
 			$query = sprintf(
 				'SELECT SQL_CALC_FOUND_ROWS e.*
