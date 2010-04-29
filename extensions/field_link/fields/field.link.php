@@ -475,6 +475,48 @@
 		Input:
 	-------------------------------------------------------------------------*/
 
+		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false){
+			return parent::loadDataFromDatabase($entry, $this->{'allow-multiple-selection'} == 'yes');
+			/*
+			$result = (object)array(
+				'relation_id' => null
+			);
+			
+			try{
+				$rows = Symphony::Database()->query(
+					"SELECT `relation_id` FROM `tbl_data_%s_%s` WHERE `entry_id` = %s ORDER BY `id` ASC",
+					array(
+						$entry->section,
+						$this->{'element-name'},
+						$entry->id
+					)
+				);
+				
+				if($rows->length() > 0){
+					$result->relation_id = $rows->resultColumn('relation_id');
+				}
+			}
+			catch(DatabaseException $e){
+			}
+			var_dump($result); die();
+			
+			return $result;*/
+		}
+
+		public function validateData(MessageStack $errors, Entry $entry=NULL, $data=NULL){
+			
+			if ($this->required == 'yes' && empty($data)){
+				$errors->append(
+					null, (object)array(
+					 	'message' => __("'%s' is a required field.", array($this->label)),
+						'code' => self::ERROR_MISSING
+					)
+				);
+				return self::STATUS_ERROR;
+			}
+			return self::STATUS_OK;
+		}
+
 		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
 			$status = self::STATUS_OK;
 			if(!is_array($data)) return array('relation_id' => $data);
@@ -490,6 +532,28 @@
 			return $result;
 		}
 
+		public function processFormData($data, Entry $entry=NULL){
+
+			//if(isset($entry->data()->{$this->{'element-name'}})){
+			//	$result = $entry->data()->{$this->{'element-name'}};
+			//}
+			
+			//else {
+				$result = NULL;
+			//}
+
+			if(!is_null($data)){
+				if(!is_array($data)) $data = array($data);
+				$result = array();
+				foreach($data as $id){
+					$result[] = (object)array(
+						'relation_id' => $id
+					);
+				}
+			}
+
+			return $result;
+		}
 
 		public function setPropertiesFromPostData($data){
 			if(isset($data['related-fields'])){
@@ -540,14 +604,63 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
+			
+			$table = sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'});
+			Symphony::Database()->delete($table, array($entry->id), '`entry_id` = %s');
+			
+			if(is_null($data)) return;
+			
+			foreach($data as $d){
+				
+				try{
+					
+					Symphony::Database()->insert(
+						$table,
+						array('relation_id' => $d->relation_id, 'id' => NULL, 'entry_id' => $entry->id)
+					);
+					
+				}
+				catch(DatabaseException $e){
+					return self::STATUS_ERROR;
+				}
+				catch(Exception $e){
+					return self::STATUS_ERROR;
+				}
+			}
+			return self::STATUS_OK;
+		}
+
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
-			if(!is_array($data) || empty($data) || is_null($data['relation_id'])) return;
 
-			$list = new XMLElement($this->{'element-name'});
+			if(!is_array($data) || empty($data)) return;
 
-			if(!is_array($data['relation_id'])) $data['relation_id'] = array($data['relation_id']);
+			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
 
-			foreach($data['relation_id'] as $relation_id){
+			foreach($data as $d){
+				
+				$entry = Entry::loadFromID($d->relation_id);
+
+				foreach($this->{'related-fields'} as $key => $value){
+					$item = $wrapper->ownerDocument->createElement('item');
+					list($section_handle, $field_handle) = $value;
+					
+					if($section_handle != $entry->section) continue;
+					
+					$section = Section::loadFromHandle($entry->section);
+					$related_field = $section->fetchFieldByHandle($field_handle);
+					//var_dump($entry->data()->$field_handle); die();
+					$related_field->appendFormattedElement($item, $entry->data()->$field_handle);
+					
+					$item->setAttribute('id', $d->relation_id);
+					$item->setAttribute('section-handle', $section_handle);
+					$item->setAttribute('section-name', $section->name);
+					
+//					var_dump($related_field); die();
+					$list->appendChild($item);
+				}
+				/*
+				die("hmm");
 				$primary_field = $this->__findPrimaryFieldValueFromRelationID($relation_id);
 
 				$value = $primary_field['value'];
@@ -560,13 +673,13 @@
 				$item->setAttribute('section-name', General::sanitize($primary_field['section_name']));
 				$item->setValue(General::sanitize($value));
 
-				$list->appendChild($item);
+				$list->appendChild($item);*/
 			}
 
 			$wrapper->appendChild($list);
 		}
 
-		public function prepareTableValue(StdClass $data, DOMElement $link=NULL){
+		public function prepareTableValue($data, DOMElement $link=NULL){
 			$result = array();
 
 			if(!is_array($data) || (is_array($data) && !isset($data['relation_id']))) return parent::prepareTableValue(NULL);
@@ -637,6 +750,40 @@
 	-------------------------------------------------------------------------*/
 		
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+
+			self::$key++;
+
+			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput, $filterOperationType);
+
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
+
+			if ($filterOperationType == DataSource::FILTER_AND) {
+				foreach ($value as $v) {
+					$where .= sprintf(
+						" AND (t%1\$s.relation_id %2\$s '%3\$s') ",
+						self::$key,
+						$filter['type'] == 'is-not' ? '<>' : '=',
+						$v
+					);
+				}
+
+			}
+
+			else {
+				$where .= sprintf(
+					" AND (t%1\$s.relation_id %2\$s IN ('%3\$s')) ",
+					self::$key,
+					$filter['type'] == 'is-not' ? 'NOT' : NULL,
+					implode("', '", $value)
+				);
+			}
+
+			return true;
+		
+			// OLD CODE ------
+
 			$field_id = $this->{'id'};
 
 			if(preg_match('/^sql:\s*/', $data[0], $matches)) {
