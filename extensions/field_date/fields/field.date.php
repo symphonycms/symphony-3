@@ -264,8 +264,6 @@
 			$item->appendChild($label);
 			$options_list->appendChild($item);
 
-			$this->appendShowColumnCheckbox($options_list);
-
 			$wrapper->appendChild($options_list);
 
 		}
@@ -376,25 +374,34 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function provideFilterTypes() {
+		public function provideFilterTypes($data) {
 			return array(
 				array('is', false, 'Is'),
 				array('is-not', $data['type'] == 'is-not', 'Is not'),
-				array('earlier than', $data['type'] == 'earlier-than', 'Earlier than'),
-				array('earlier than or equalto', $data['type'] == 'earlier-than-or-equalto', 'Earlier than or equal to'),
-				array('later than', $data['type'] == 'later-than', 'Later than'),
-				array('later than or equalto', $data['type'] == 'later-than-or-equalto', 'Later than or equal to')
+				array('earlier-than', $data['type'] == 'earlier-than', 'Earlier than'),
+				array('earlier-than-or-equalto', $data['type'] == 'earlier-than-or-equalto', 'Earlier than or equal to'),
+				array('later-than', $data['type'] == 'later-than', 'Later than'),
+				array('later-than-or-equalto', $data['type'] == 'later-than-or-equalto', 'Later than or equal to')
 			);
 		}
 
 		//	TODO: Revisit this.
+		//	Reason being that now that you don't actually enter 'date to date' and instead that would come
+		//	across as two different filters, [later than] date & [earlier than] date. Therefore this code doesn't
+		//	have to be as 'split here and do magic' as it is now.
+		//	The problem then is that what is a simple BETWEEN statement now is a bunch of joins and >=/<= operads
+		//	which is slow
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL) {
+
+/*
+
+			var_dump($filter, $joins, $where);
 
 			self::$key++;
 
 			$joins .= sprintf('
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});
+			', self::$key, $this->section, $this->{'element-name'});			
 
 			$type = self::__parseFilter($filter['value']);
 			if($type == self::ERROR) return false;
@@ -408,7 +415,7 @@
 					$this->__buildSimpleFilterSQL($filter, $joins, $where, $operation_type);
 					break;
 			}
-/*
+
 			if(self::isFilterRegex($data[0])) return parent::buildDSRetrivalSQL($data, $joins, $where, $andOperation);
 
 			$parsed = array();

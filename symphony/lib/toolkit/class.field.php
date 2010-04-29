@@ -353,6 +353,9 @@
 			$this->setPropertiesFromPostData($data);
 		}
 
+		// TODO: Rethink this function
+		public function findDefaultSettings(array &$fields){}
+
 		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
 			$parent_section = $this->{'parent-section'};
 
@@ -443,9 +446,6 @@
 			}
 		}
 
-		// TODO: Rethink this function
-		public function findDefaultSettings(array &$fields){
-		}
 
 		public function appendRequiredCheckbox(SymphonyDOMElement $wrapper) {
 			$document = $wrapper->ownerDocument;
@@ -652,30 +652,29 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function provideFilterTypes() {
+		public function provideFilterTypes($data) {
 			return array(
 				array('is', false, 'Is'),
 				array('is-not', $data['type'] == 'is-not', 'Is not'),
 				array('contains', $data['type'] == 'contains', 'Contains'),
-				array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
+				array('does-not-contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
 				array('regex', $data['type'] == 'regex', 'Regex'),
 			);
 		}
-
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 			$document = $wrapper->ownerDocument;
 
 			$name = $document->createElement('span', $this->label);
 			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('i', $this->name()));
+			$name->appendChild($document->createElement('em', $this->name()));
 			$wrapper->appendChild($name);
 
 			$type_label = Widget::Label(__('Type'));
 			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				$this->provideFilterTypes()
+				$this->provideFilterTypes($data)
 			));
 			$wrapper->appendChild($type_label);
 

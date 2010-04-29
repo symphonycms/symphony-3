@@ -79,8 +79,6 @@
 		protected $_about;
 		protected $_parameters;
 
-		//protected $_env; // DELETE?
-		//protected $_Parent; // DELETE?
 		protected $_param_output_only; // DELETE?
 		protected $_dependencies;
 		protected $_force_empty_result; // DELETE?
@@ -330,10 +328,6 @@
 			}
 		}
 
-		protected function __determineFilterType($value){
-			return (false === strpos($value, '+') ? DataSource::FILTER_OR : DataSource::FILTER_AND);
-		}
-
 		public static function determineFilterType($string){
 		 	return (strpos($string, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
 		}
@@ -423,7 +417,4 @@
 			return null;
 		}
 
-
-
 	}
-

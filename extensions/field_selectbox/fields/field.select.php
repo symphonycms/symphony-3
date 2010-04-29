@@ -334,7 +334,7 @@
 			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				$this->provideFilterTypes()
+				$this->provideFilterTypes($data)
 			));
 
 			$label = Widget::Label(__('Value'));
