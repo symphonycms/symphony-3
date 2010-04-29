@@ -324,7 +324,7 @@
 				$meta['width']	= $data[0];
 				$meta['height']   = $data[1];
 				$meta['type']	 = $data[2];
-				$meta['channels'] = $data['channels'];
+				$meta['channels'] = (isset($data['channels']) ? $data['channels'] : null);
 			}
 
 			return $meta;
@@ -409,6 +409,11 @@
 			// Make sure meta data is serialized:
 			if (isset($result->meta) and is_array($result->meta)) {
 				$result->meta = serialize($result->meta);
+			}
+			
+			// At least have a null existing file:
+			if (!isset($result->existing)) {
+				$result->existing = null;
 			}
 			
 			return $result;
