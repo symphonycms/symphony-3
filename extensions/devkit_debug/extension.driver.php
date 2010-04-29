@@ -45,9 +45,11 @@
 		}
 		
 		public function frontendPreInitialise($context) {
-			if (isset($_GET['debug'])) {
-				self::$class = require_once(EXTENSIONS . '/devkit_debug/lib/class.debug.php');
+			if (isset($_GET['debug-get-output'])) {
+				echo base64_decode($_GET['debug-get-output']); exit;
 			}
+			
+			self::$class = require_once(EXTENSIONS . '/devkit_debug/lib/class.debug.php');
 		}
 		
 		public function frontendPreRender($context) {

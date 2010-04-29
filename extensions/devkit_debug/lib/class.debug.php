@@ -33,7 +33,7 @@
 			parent::__construct($view);
 			
 			$this->title = __('Debug');
-			$this->show = ($_GET['debug'] ? $_GET['debug'] : 'xml');
+			$this->show = ($_GET['debug'] ? $_GET['debug'] : 'output');
 			$this->utilities = $this->findUtilities($this->view->template);
 			
 			unset($this->url->parameters()->debug);
@@ -90,7 +90,7 @@
 		public function render(Register &$parameters, XMLDocument &$document = null) {
 			$this->template = $this->view->template;
 			
-			if ($this->show == 'xml' or $this->show == 'result' or $this->show == 'params') {
+			if ($this->show == 'output' or $this->show == 'xml' or $this->show == 'html' or $this->show == 'params') {
 				try {
 					$this->output = $this->view->render($parameters, $document);
 				}
@@ -135,16 +135,22 @@
 			$list = $this->document->createElement('ul');
 			$url = clone $this->url;
 			
-			$url->parameters()->debug = null;
+			unset($url->parameters()->debug);
+			$this->appendLink(
+				$list, __('View Output'),
+				(string)$url, ($this->show == 'output')
+			);
+			
+			$url->parameters()->debug = 'xml';
 			$this->appendLink(
 				$list, __('View XML'),
 				(string)$url, ($this->show == 'xml')
 			);
 			
-			$url->parameters()->debug = 'result';
+			$url->parameters()->debug = 'html';
 			$this->appendLink(
 				$list, __('View HTML'),
-				(string)$url, ($this->show == 'result')
+				(string)$url, ($this->show == 'html')
 			);
 			
 			$url->parameters()->debug = 'params';
@@ -199,11 +205,24 @@
 			$content = parent::appendContent($wrapper);
 			$source = null; $type = null;
 			
-			if ($this->show == 'xml') {
+			if ($this->show == 'output') {
+				$url = clone $this->url;
+				$url->parameters()->{'debug-get-output'} = str_replace('+', '%20', urlencode(base64_encode($this->output)));
+				
+				$iframe = $this->document->createElement('iframe');
+				$iframe->setAttribute('height', '400');
+				$iframe->setAttribute('width', '400');
+				$iframe->setAttribute('src', (string)$url);
+				$content->appendChild($iframe);
+				
+				unset($url->parameters()->{'debug-get-output'});
+			}
+				
+			else if ($this->show == 'xml') {
 				$this->appendSource($content, $this->input, 'xml');
 			}
 			
-			else if ($this->show == 'result') {
+			else if ($this->show == 'html') {
 				$this->appendSource($content, $this->output, 'xml');
 			}
 			

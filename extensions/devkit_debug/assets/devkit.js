@@ -576,6 +576,7 @@
 		var content = jQuery('#content');
 		var sidebar = jQuery('#sidebar');
 		var tab = jQuery('#tab');
+		var iframe = jQuery('iframe');
 		
 		// TODO: DO NOT RELEASE THIS AS IS
 		// It needs a lot of tidying up.
@@ -585,10 +586,12 @@
 				sidebar.removeClass('visible');
 				
 				content.unbind('mousedown', hide);
+				iframe.contents().unbind('mousedown', hide);
 			};
 			
 			sidebar.addClass('visible');
 			content.bind('mousedown', hide);
+			iframe.contents().bind('mousedown', hide);
 			
 			return false;
 		});

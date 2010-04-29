@@ -25,6 +25,9 @@
 		outline: none;
 		text-decoration: underline;
 	}
+	a.active {
+		font-weight: bold;
+	}
 	a:hover {
 		color: #000;
 	}
@@ -156,6 +159,13 @@
 		background: hsl(210, 0%, 10%);
 		min-height: 100%;
 		padding: 50px 20px 20px 20px;
+	}
+	#content iframe {
+		height: 100%;
+		left: 0;
+		position: absolute;
+		top: 0;
+		width: 100%;
 	}
 	
 	/* TODO: Rename to #search */
