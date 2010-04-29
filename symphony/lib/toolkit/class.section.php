@@ -608,15 +608,22 @@
 				Verdict?
 			*/
 
-			// Remove fields:
+			// 	Remove fields:
 			foreach ($section->fields as $field) {
 				$field->remove();
 			}
 
-			// Remove sync data:
+			// 	Remove sync data:
 			Symphony::Database()->delete(
 				'tbl_sections_sync',
 				array($section->guid),
+				'`section` = "%s"'
+			);
+
+			//	Remove entry metadata
+			Symphony::Database()->delete(
+				'tbl_entries',
+				array($section->handle),
 				'`section` = "%s"'
 			);
 
