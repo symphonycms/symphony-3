@@ -10,7 +10,7 @@
 		public function __viewIndex() {
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Utilities'))));
 
-			$this->appendSubheading(__('Utilities') . $heading, Widget::Anchor(
+			$this->appendSubheading(__('Utilities'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
 					'title' => __('Create a new utility'),
 					'class' => 'create button'
@@ -90,7 +90,7 @@
 			$right = $layout->createColumn(Layout::SMALL);
 
 			$this->_existing_file = (isset($this->_context[1]) ? $this->_context[1] . '.xsl' : NULL);
-
+			
 			## Handle unknown context
 			if(!in_array($this->_context[0], array('new', 'edit'))) throw new AdministrationPageNotFoundException;
 
@@ -109,10 +109,12 @@
 			}
 
 			else{
+				$fields['name']	= '';
 				$fields['template'] = file_get_contents(TEMPLATES . '/template.utility.txt');
+				$filename = '';
 			}
 
-			$formHasErrors = (is_array($this->_errors) && !empty($this->_errors));
+			$formHasErrors = $this->errors->valid();
 			if($formHasErrors) {
 				$this->alerts()->append(
 					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
@@ -163,7 +165,7 @@
 
 			$label = Widget::Label(__('Name'));
 			$label->appendChild(Widget::Input('fields[name]', $fields['name']));
-			$fieldset->appendChild((isset($this->_errors['name']) ? Widget::wrapFormElementWithError($label, $this->_errors['name']) : $label));
+			$fieldset->appendChild((isset($this->errors->name) ? Widget::wrapFormElementWithError($label, $this->errors->name) : $label));
 
 			$label = Widget::Label(__('XSLT'));
 			$label->appendChild(
@@ -174,7 +176,7 @@
 				)
 			));
 
-			$fieldset->appendChild((isset($this->_errors['template']) ? Widget::wrapFormElementWithError($label, $this->_errors['template']) : $label));
+			$fieldset->appendChild((isset($this->errors->template) ? Widget::wrapFormElementWithError($label, $this->errors->template) : $label));
 
 			$left->appendChild($fieldset);
 
@@ -245,11 +247,11 @@
 
 				$fields = $_POST['fields'];
 
-				$this->_errors = array();
+				//$this->errors = array();
 
-				if(!isset($fields['name']) || trim($fields['name']) == '') $this->_errors['name'] = __('Name is a required field.');
+				if(!isset($fields['name']) || trim($fields['name']) == '') $this->errors->name = __('Name is a required field.');
 
-				if(!isset($fields['template']) || trim($fields['template']) == '') $this->_errors['template'] = __('XSLT is a required field.');
+				if(!isset($fields['template']) || trim($fields['template']) == '') $this->errors->template = __('XSLT is a required field.');
 				elseif(!General::validateXML($fields['template'], $errors)) {
 					$fragment = $this->createDocumentFragment();
 
@@ -258,22 +260,25 @@
 					));
 					$fragment->appendChild($this->createElement('code', $errors->current()->message));
 
-					$this->_errors['template'] = $fragment;
+					$this->errors->template = $fragment;
 				}
 
-				if(empty($this->_errors)){
+				if(!$this->errors->valid()){
 
 					$fields['name'] = Lang::createFilename($fields['name']);
 		            if(General::right($fields['name'], 4) != '.xsl') $fields['name'] .= '.xsl';
 
 					$file = UTILITIES . '/' . $fields['name'];
+					
+					// TODO: Does it really need stripslashed? Funky.
+					$fields['template'] = stripslashes($fields['template']);
 
 					##Duplicate
 					if($this->_context[0] == 'edit' && ($this->_existing_file != $fields['name'] && is_file($file)))
-						$this->_errors['name'] = __('A Utility with that name already exists. Please choose another.');
+						$this->errors->name = __('A Utility with that name already exists. Please choose another.');
 
-					elseif($this->_context[0] == 'new' && is_file($file)) $this->_errors['name'] = __('A Utility with that name already exists. Please choose another.');
-
+					elseif($this->_context[0] == 'new' && is_file($file)) $this->errors->name = __('A Utility with that name already exists. Please choose another.');
+					
 					##Write the file
 					elseif(!$write = General::writeFile($file, $fields['template'],Symphony::Configuration()->core()->symphony->{'file-write-mode'})) {
 						$this->alerts()->append(

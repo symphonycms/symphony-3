@@ -50,7 +50,7 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	.duplicator-widget > .content > .tabs > * i {
+	.duplicator-widget > .content > .tabs > * em {
 		margin: 0 0 0 1ex;
 		opacity: 0.5;
 	}
@@ -219,7 +219,7 @@
 		padding: 0 10px;
 		color: #eeeeee;
 	}
-	.duplicator-widget > .templates > li > .name i {
+	.duplicator-widget > .templates > li > .name em {
 		margin: 0 0 0 1ex;
 		opacity: 0.5;
 	}

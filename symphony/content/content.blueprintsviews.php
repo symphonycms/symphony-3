@@ -50,7 +50,7 @@
 			$title->appendChild($this->createTextNode(' ' . __('Views')));
 			$this->insertNodeIntoHead($title);
 
-			$this->appendSubheading(__('Views') . $heading, Widget::Anchor(
+			$this->appendSubheading(__('Views'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
 					'title' => __('Create a new view'),
 					'class' => 'create button'
@@ -695,7 +695,7 @@
 					$view->types = $fields['types'];
 					$view->title = $fields['title'];
 					$view->{'data-sources'} = $fields['data-sources'];
-					$view->events = $fields['events'];
+					$view->events = (isset($fields['events']) ? $fields['events'] : array());
 					$view->{'url-parameters'} = $fields['url-parameters'];
 
 					// Path has changed - Need to move the existing one, then save it

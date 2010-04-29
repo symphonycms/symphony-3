@@ -21,7 +21,7 @@
 				$cache = Cache::instance()->read('_session_config');
 				
 				if(is_null($cache) || $cache === false){
-					self::createTable();
+					self::create();
 					Cache::instance()->write('_session_config', true);
 				}
 				
@@ -56,7 +56,7 @@
 			return session_id();
 		}
 
-		public static function createTable() {
+		public static function create() {
 			Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_sessions` (
 				  `session` varchar(255) NOT NULL,

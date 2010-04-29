@@ -8,10 +8,10 @@
     <lang>en</lang>
     <cookie-prefix>sym-</cookie-prefix>
     <version>3.0.0alpha</version>
-    <sitename>Symphony 3.0</sitename>
+    <sitename>Symphony Ultimate Professional Standard Edition v3.0</sitename>
     <file-write-mode>0775</file-write-mode>
     <directory-write-mode>0775</directory-write-mode>
-	<condense-scripts-and-stylesheets>yes</condense-scripts-and-stylesheets>
+    <condense-scripts-and-stylesheets>no</condense-scripts-and-stylesheets>
   </symphony>
   <default-datasource-type>ds_sections</default-datasource-type>
   <log>

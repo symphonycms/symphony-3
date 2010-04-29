@@ -140,8 +140,10 @@
 
 	Class Frontend extends Symphony {
 		protected static $view;
+		protected static $Document;
 		protected static $Parameters;
-
+		protected static $Headers;
+		
 		public static function instance() {
 			if (!(self::$_instance instanceof Frontend)) {
 				self::$_instance = new self;
@@ -154,8 +156,29 @@
 			return self::$view;
 		}
 
+		public static function Headers() {
+			return self::$Headers;
+		}
+		
+		public static function Document() {
+			return self::$Document;
+		}
+		
 		public static function Parameters() {
 			return self::$Parameters;
+		}
+		
+		public function __construct() {
+			parent::__construct();
+			
+			self::$Headers = new DocumentHeaders;
+			
+			self::$Document = new XMLDocument;
+			self::$Document->appendChild(
+				self::$Document->createElement('data')
+			);
+			
+			Widget::init(self::$Document);
 		}
 		
 		public function resolve($url=NULL){
@@ -168,7 +191,7 @@
 					self::$view = View::loadFromURL($url);
 				}
 
-				if(!(self::$view instanceof View)) throw Exception('Page not found');
+				if(!(self::$view instanceof View)) throw new Exception('Page not found');
 
 				if(!Frontend::instance()->isLoggedIn() && in_array('admin', self::$view->types)){
 
@@ -196,7 +219,11 @@
 		}
 		
 		public function display($url=NULL){
-
+			
+			// Default headers. Can be overwritten later
+			self::$Headers->append('Content-Type', 'text/html;charset=utf-8');
+			self::$Headers->append('HTTP/1.0 200 OK');
+			
 			####
 			# Delegate: FrontendPreInitialise
 			# Description: TODO
@@ -242,7 +269,7 @@
 				'symphony-version' =>Symphony::Configuration()->core()->symphony->version,
 				'upload-limit' => min(
 					ini_size_to_bytes(ini_get('upload_max_filesize')),
-					Symphony::Configuration()->core()->symphyony->{'maximum-upload-size'}
+					Symphony::Configuration()->core()->symphony->{'maximum-upload-size'}
 				),
 				'root' => URL,
 				'workspace' => URL . '/workspace',
@@ -284,8 +311,6 @@
 			// Can ask the view to operate on an existing
 			// Document. Useful if we pass it around beyond
 			// the scope of View::render()
-			$Document = new XMLDocument;
-			$Document->appendChild($Document->createElement('data'));
 
 			####
 			# Delegate: FrontendPreRender
@@ -297,12 +322,13 @@
 				array(
 					'view' => &self::$view,
 					'parameters' => &self::$Parameters,
-					'document' => &$Document
+					'document' => &self::$Document,
+					'headers' => &self::$Headers
 				)
 			);
 
-			$output = self::$view->render(self::$Parameters, $Document);
-			
+			$output = self::$view->render(self::$Parameters, self::$Document, self::$Headers);
+
 			####
 			# Delegate: FrontendPostRender
 			# Description: TODO
@@ -311,9 +337,12 @@
 				'FrontendPostRender',
 				'/frontend/',
 				array(
-					'output' => &$output
+					'output' => &$output,
+					'headers' => &self::$Headers
 				)
 			);
+			
+			self::Headers()->render();
 			
 			return $output;
 			

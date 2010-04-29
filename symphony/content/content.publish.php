@@ -487,7 +487,7 @@
 			}
 
 			// Status message:
-			if(!is_null($callback['flag'])) {
+			if(isset($callback['flag']) and !is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
 						$this->alerts()->append(

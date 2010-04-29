@@ -6,11 +6,12 @@
 	Class contentBlueprintsEvents extends AdministrationPage{
 
 		private $event;
+		protected static $_loaded_views;
 
 		public function __viewIndex() {
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Events'))));
 
-			$this->appendSubheading(__('Events') . $heading, Widget::Anchor(
+			$this->appendSubheading(__('Events'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
 					'title' => __('Create a new event'),
 					'class' => 'create button'
@@ -20,7 +21,8 @@
 			$eTableHead = array(
 				array(__('Name'), 'col'),
 				array(__('Source'), 'col'),
-				array(__('Author'), 'col')
+				array(__('Attached On'), 'col'),
+				//array(__('Author'), 'col')
 			);
 
 			$eTableBody = array();
@@ -42,59 +44,94 @@
 				));
 			}
 
-			else foreach($iterator as $pathname){
+			else {
+				//	Load Views so we can determine what Datasources are attached
+				if(!self::$_loaded_views) {
+					foreach (new ViewIterator as $view) {
+						self::$_loaded_views[$view->guid] = array(
+							'title' => $view->title,
+							'handle' => $view->handle,
+							'events' => $view->{'events'}
+						);
+					}
+				}
 
-				$event = Event::load($pathname);
-				$handle = preg_replace('/.php$/i', NULL, basename($event->parameters()->pathname));
+				foreach($iterator as $pathname){
 
-				if($event->allowEditorToParse()) {
-					$col_name = Widget::TableData(
-						Widget::Anchor($event->about()->name, URL . "/symphony/blueprints/events/edit/{$handle}/", array(
-							'title' => $event->parameters()->pathname
-						))
+					$event = Event::load($pathname);
+					$handle = Event::getHandleFromFilename($pathname);
+
+
+					if($event->allowEditorToParse()) {
+						$col_name = Widget::TableData(
+							Widget::Anchor($event->about()->name, URL . "/symphony/blueprints/events/edit/{$handle}/", array(
+								'title' => $event->parameters()->pathname
+							))
+						);
+					}
+					else {
+						$col_name = Widget::TableData($event->about()->name);
+					}
+
+					$col_name->appendChild(Widget::Input("items[{$handle}]", null, 'checkbox'));
+
+					// Source
+					if(is_null($event->parameters()->source)){
+						$col_source = Widget::TableData(__('None'), 'inactive');
+					}
+					else{
+						$section = Section::loadFromHandle($event->parameters()->source);
+
+						$col_source = Widget::TableData(Widget::Anchor(
+							$section->name,
+							URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/',
+							array('title' => $section->handle)
+						));
+					}
+
+					// Attached On
+					$fragment_views = $this->createDocumentFragment();
+
+					foreach(self::$_loaded_views as $view) {
+						if(is_array($view['events']) && in_array($handle, $view['events'])) {
+							if($fragment_views->hasChildNodes()) $fragment_views->appendChild(new DOMText(', '));
+
+							$fragment_views->appendChild(
+								Widget::Anchor($view['title'], URL . "/symphony/blueprints/views/edit/{$view['handle']}/")
+							);
+						}
+					}
+
+					if(!$fragment_views->hasChildNodes()) {
+						$col_views = Widget::TableData(__('None'), array('class' => 'inactive'));
+					}
+					else{
+						$col_views = Widget::TableData($fragment_views);
+					}
+/*
+					//	Author
+					if (isset($event->about()->author->website)) {
+						$col_author = Widget::TableData(Widget::Anchor(
+							$event->about()->author->name,
+							General::validateURL($event->about()->author->website)
+						));
+					}
+
+					else if (isset($event->about()->author->email)) {
+						$col_author = Widget::TableData(Widget::Anchor(
+							$event->about()->author->name,
+							'mailto:' . $event->about()->author->email
+						));
+					}
+
+					else {
+						$col_author = Widget::TableData($event->about()->author->name);
+					}
+*/
+					$eTableBody[] = Widget::TableRow(
+						array($col_name, $col_source, $col_views)
 					);
 				}
-				else {
-					$col_name = Widget::TableData($event->about()->name);
-				}
-
-				$col_name->appendChild(Widget::Input("items[{$handle}]", null, 'checkbox'));
-
-				// Source
-				if(is_null($event->parameters()->source)){
-					$col_source = Widget::TableData(__('None'), 'inactive');
-				}
-				else{
-					$section = Section::loadFromHandle($event->parameters()->source);
-
-					$col_source = Widget::TableData(Widget::Anchor(
-						$section->name,
-						URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/',
-						array('title' => $section->handle)
-					));
-				}
-
-				if (isset($event->about()->author->website)) {
-					$col_author = Widget::TableData(Widget::Anchor(
-						$event->about()->author->name,
-						General::validateURL($event->about()->author->website)
-					));
-				}
-
-				else if (isset($event->about()->author->email)) {
-					$col_author = Widget::TableData(Widget::Anchor(
-						$event->about()->author->name,
-						'mailto:' . $event->about()->author->email
-					));
-				}
-
-				else {
-					$col_author = Widget::TableData($event->about()->author->name);
-				}
-
-				$eTableBody[] = Widget::TableRow(
-					array($col_name, $col_source, $col_author)
-				);
 
 			}
 
@@ -664,13 +701,12 @@
 			$fields = $post['fields'];
 
 			if($this->_context[0] == 'edit'){
-				$isEditing = true;
 				$handle = $this->_context[1];
-				//$this->event = Event::loadFromHandle($handle);
+				$this->event = Event::loadFromHandle($handle);
 			}
-			//else{
+			else{
 				$this->event = new Event;
-			//}
+			}
 
 			$this->event->about()->name = $fields['name'];
 
@@ -761,7 +797,7 @@
 		}
 
 		public function __actionIndex() {
-			$checked = array_keys($_POST['items']);
+			$checked = is_array($_POST['items']) ? array_keys($_POST['items']) : null;
 
 			if(is_array($checked) && !empty($checked)) {
 				switch ($_POST['with-selected']) {

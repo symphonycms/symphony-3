@@ -1,6 +1,8 @@
 jQuery(document).ready(function() {
 	var update = function() {
-		jQuery('.context').hide().filter('.context-' + this.value).show();
+		jQuery('.context').hide()
+			.filter('.context-' + this.value)
+			.show();
 	};
 	
 	jQuery('#context').bind('change', update).bind('keyup', update).change();

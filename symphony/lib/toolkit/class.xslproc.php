@@ -43,11 +43,10 @@
 						}
 
 						elseif(preg_match_all('/([^:]+): (.+) line (\d+)/i', $e->message, $matches, PREG_SET_ORDER)){
-							throw new Exception("Fix XSLPROC Frontend doesn't have access to Page");
+							//throw new Exception("Fix XSLPROC Frontend doesn't have access to Page");
 
 							$this->line = $matches[0][3];
-							$page = Symphony::Parent()->Page()->pageData();
-							$this->file = VIEWS . '/' . $page['filelocation'];
+							$this->file = VIEWS . '/' . Frontend::instance()->loadedView()->templatePathname();
 							$bFoundFile = true;
 						}
 					}
@@ -211,6 +210,7 @@
 
 			self::$lastXML = $xml;
 			self::$lastXSL = $xsl;
+			$result = null;
 
 			libxml_use_internal_errors(true);
 

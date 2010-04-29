@@ -1,7 +1,7 @@
 <?php
-	
+
 	require_once(TOOLKIT . '/class.entry.php');
-	
+
 	Class EventException extends Exception {}
 
 	Class EventFilterIterator extends FilterIterator{
@@ -26,11 +26,8 @@
 
 			$this->events = array();
 			$this->position = 0;
-			
-			foreach(glob("{" . EVENTS . "/*.php, " . EVENTS . "/*/events/*.php}", GLOB_BRACE) as $file) {
-				$this->events[] = $file;
-			}
 
+			$this->events = glob("{" . EVENTS . "/*.php, " . EVENTS . "/*/events/*.php}", GLOB_BRACE);
 /*
 			foreach(new EventFilterIterator(EVENTS) as $file){
 				$this->events[] = $file->getPathname();
@@ -312,16 +309,16 @@
 		}
 
 		public function trigger(Register &$ParameterOutput){
-			
+
 			$postdata = General::getPostData();
 
 			if(!isset($postdata['action'][$this->parameters()->{'root-element'}])) return NULL;
-			
+
 			$result = new XMLDocument;
 			$result->appendChild($result->createElement($this->parameters()->{'root-element'}));
-			
+
 			$root = $result->documentElement;
-			
+
 			if(isset($postdata['id'])){
 				$entry = Entry::loadFromID($postdata['id']);
 				$type = 'edit';
@@ -336,9 +333,9 @@
 			if(isset($postdata['fields']) && is_array($postdata['fields']) && !empty($postdata['fields'])){
 				$entry->setFieldDataFromFormArray($postdata['fields']);
 			}
-			
+
 			$root->setAttribute('type', $type);
-			
+
 			###
 			# Delegate: EntryPreCreate
 			# Description: Just prior to creation of an Entry. Entry object provided
@@ -346,10 +343,10 @@
 				'EntryPreCreate', '/frontend/',
 				array('entry' => &$entry)
 			);
-			
+
 			$errors = new MessageStack;
 			$status = Entry::save($entry, $errors);
-			
+
 			if($status == Entry::STATUS_OK){
 				###
 				# Delegate: EntryPostCreate
@@ -358,15 +355,15 @@
 					'EntryPostCreate', '/frontend/',
 					array('entry' => $entry)
 				);
-				
+
 				if($this->parameters()->{'output-id-on-save'} == true){
 					$ParameterOutput->{sprintf('event-%s-id', $this->parameters()->{'root-element'})} = $entry->id;
 				}
-				
+
 				$root->setAttribute('result', 'success');
 
 				$root->appendChild($result->createElement(
-					'message', 
+					'message',
 					__("Entry %s successfully.", array(($type == 'edit' ? __('edited') : __('created'))))
 				));
 
@@ -387,7 +384,7 @@
 					$root->appendChild($element);
 				}
 			}
-			
+
 			return $result;
 		}
 

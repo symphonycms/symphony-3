@@ -196,6 +196,11 @@
 			
 			$handle = $this->{'element-name'};
 			$document = $wrapper->ownerDocument;
+			$filepath = null;
+			
+			if (isset($data->path, $data->file)) {
+				$filepath = realpath($data->path . '/' . $data->file);
+			}
 
 		// Preview ------------------------------------------------------------
 
@@ -206,10 +211,10 @@
 				$label->appendChild($document->createElement('i', 'Optional'));
 			}
 			
-			if ($error == null and !empty($data->{'file'})) {
+			if (!$errors->valid() and $filepath) {
 				$file = $document->createElement('div');
 				$file->setAttribute('class', 'file');
-				$path = substr($data->path, strlen(DOCROOT));
+				$path = substr($filepath, strlen(DOCROOT));
 				
 				###
 				# Delegate: UploadField_PreviewFile
@@ -220,7 +225,7 @@
 						'data'		=> $data,
 						'field'		=> $this,
 						'entry'		=> $entry,
-						'wrapper'	=> $container
+						'wrapper'	=> $wrapper
 					)
 				);
 				
@@ -229,7 +234,7 @@
 				//}
 				
 				$name = $document->createElement('p');
-				$link = Widget::Anchor($data->{'name'}, URL . $path . '/' . $data->file);
+				$link = Widget::Anchor($data->{'name'}, URL . $path);
 				$name->appendChild($link);
 				$file->appendChild($name);
 				
@@ -266,9 +271,8 @@
 			$upload = $document->createElement('div');
 			$upload->setAttribute('class', 'upload');
 			$input = Widget::Input(
-				"fields[{$handle}]",
-				$data->path . '/' . $data->file,
-				($data->file ? 'hidden' : 'file')
+				"fields[{$handle}]", $filepath,
+				($filepath ? 'hidden' : 'file')
 			);
 			
 			$upload->appendChild($input);
@@ -319,7 +323,7 @@
 				$meta['width']	= $data[0];
 				$meta['height']   = $data[1];
 				$meta['type']	 = $data[2];
-				$meta['channels'] = $data['channels'];
+				$meta['channels'] = (isset($data['channels']) ? $data['channels'] : null);
 			}
 
 			return $meta;
@@ -404,6 +408,11 @@
 			// Make sure meta data is serialized:
 			if (isset($result->meta) and is_array($result->meta)) {
 				$result->meta = serialize($result->meta);
+			}
+			
+			// At least have a null existing file:
+			if (!isset($result->existing)) {
+				$result->existing = null;
 			}
 			
 			return $result;
@@ -556,8 +565,21 @@
 		
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			$permissions = Symphony::Configuration()->core()->{'file-write-mode'};
-			$file = $data->path . '/' . $data->file;
 			$data->entry_id = $entry->id;
+			
+			###
+			# Delegate: UploadField_PreUploadFile
+			# Description: Allow extensions to manipulate saved data before the file is saved to disk.
+			ExtensionManager::instance()->notifyMembers(
+				'UploadField_PreUploadFile',
+				'/publish/', array(
+					'data'	=> $data,
+					'field'	=> $this,
+					'entry'	=> $entry
+				)
+			);
+			
+			$file = $data->path . '/' . $data->file;
 			
 			// Upload the file:
 			if (isset($data->tmp_name)) {
@@ -577,7 +599,7 @@
 				
 				// Remove file being replaced:
 				if (isset($data->existing) and is_file($data->existing)) {
-					General::deleteFile($data->existing);
+					$this->cleanupData($entry, $data, $data->existing);
 				}
 			}
 			
@@ -586,10 +608,10 @@
 			unset($data->tmp_name);
 			
 			###
-			# Delegate: UploadField_ProccessFile
-			# Description: Allow other extensions to add media previews.
+			# Delegate: UploadField_PostUploadFile
+			# Description: Allow extensions to manipulate saved data after the file is saved to disk.
 			ExtensionManager::instance()->notifyMembers(
-				'UploadField_ProccessFile',
+				'UploadField_PostUploadFile',
 				'/publish/', array(
 					'data'	=> $data,
 					'field'	=> $this,
@@ -608,15 +630,51 @@
 			}
 			
 			catch (Exception $e) {
-				throw $e;
+				$errors->append(
+					null, array(
+					 	'message' => __(
+							'There was an error while trying to upload the file <code>%s</code> to the target directory <code>workspace/%s</code>.',
+							array($data->name, $path)
+					 	),
+						'code' => self::ERROR_INVALID
+					)
+				);
 			}
 			
 			// Remove uploaded file:
 			if (isset($file) and is_file($file)) {
-				General::deleteFile($file);
+				$this->cleanupData($entry, $data, $file);
 			}
 			
 			return self::STATUS_ERROR;
+		}
+		
+		protected function cleanupData($entry, $data, $file) {
+			###
+			# Delegate: UploadField_PreCleanupFile
+			# Description: Allow extensions to manipulate saved data after the file is saved to disk.
+			ExtensionManager::instance()->notifyMembers(
+				'UploadField_PreCleanupFile',
+				'/publish/', array(
+					'data'	=> $data,
+					'field'	=> $this,
+					'entry'	=> $entry
+				)
+			);
+			
+			General::deleteFile($file);
+			
+			###
+			# Delegate: UploadField_PostCleanupFile
+			# Description: Allow extensions to manipulate saved data after the file is saved to disk.
+			ExtensionManager::instance()->notifyMembers(
+				'UploadField_PostCleanupFile',
+				'/publish/', array(
+					'data'	=> $data,
+					'field'	=> $this,
+					'entry'	=> $entry
+				)
+			);
 		}
 		
 	/*-------------------------------------------------------------------------
@@ -658,7 +716,7 @@
 			$wrapper->appendChild($item);
 		}
 
-		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link = null) {
+		public function prepareTableValue($data, SymphonyDOMElement $link = null) {
 			if (!$this->sanitizeDataArray($data)) return null;
 			
 			if ($link) {

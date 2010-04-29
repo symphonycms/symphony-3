@@ -287,7 +287,7 @@
 			# Description: This is where Extensions can hook on to custom actions they may need to provide.
 			ExtensionManager::instance()->notifyMembers('CustomSaveActions', '/system/settings/extensions/');
 			
-			if (isset($_POST['action']['save'])) {
+			if (isset($_POST['action']['save']) && isset($_POST['settings'])) {
 				$settings = $_POST['settings'];
 				
 				if ($this->errors->length() <= 0) {

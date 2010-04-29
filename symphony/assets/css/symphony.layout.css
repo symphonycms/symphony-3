@@ -118,7 +118,7 @@
 	.layout-widget > .menu ol li:hover {
 		background: hsla(0, 0%, 100%, 0.1);
 	}
-	.layout-widget > .menu ol li i {
+	.layout-widget > .menu ol li em {
 		margin: 0 0 0 1ex;
 		opacity: 0.5;
 	}
@@ -194,7 +194,7 @@
 		min-height: 47px;
 		padding: 10px 0;
 	}
-	.layout-widget > .columns > li > fieldset > .fields > * > .name i {
+	.layout-widget > .columns > li > fieldset > .fields > * > .name em {
 		margin: 0 0 0 1ex;
 		opacity: 0.5;
 	}

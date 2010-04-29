@@ -6,10 +6,14 @@
 	}
 
 	if (PHP_VERSION_ID >= 50300){
-	    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+	    //error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+		// TODO: Revert this?
+		error_reporting(E_ALL);
 	} 
 	else{
-	    error_reporting(E_ALL & ~E_NOTICE);
+	    //error_reporting(E_ALL & ~E_NOTICE);
+	    // TODO: Revert this?
+	    error_reporting(E_ALL);
 	
 		// Bad Magic Quotes! You're not wanted here!
 		if(get_magic_quotes_gpc() === true) {

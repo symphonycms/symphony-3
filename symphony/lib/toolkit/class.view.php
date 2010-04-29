@@ -1,6 +1,7 @@
 <?php
 	
 	require_once(TOOLKIT . '/class.event.php');
+	require_once(TOOLKIT . '/class.documentheaders.php');
 	
 	Class ViewException extends Exception {}
 
@@ -44,9 +45,13 @@
 		private $_guid;
 
 		public function __construct(){
+			
 			$this->_about = new StdClass;
 			$this->_parameters = new StdClass;
+
 			$this->_path = $this->_parent = $this->_template = $this->_handle = $this->_guid = NULL;
+			$this->types = array();
+			$this->{'content-type'} = 'text/html;charset=utf-8';
 		}
 
 		public function about(){
@@ -68,6 +73,11 @@
 			if(in_array($name, array('path', 'template', 'handle', 'guid'))){
 				return $this->{"_{$name}"};
 			}
+			
+			if (!isset($this->_about->$name)) {
+				return false;
+			}
+			
 			return $this->_about->$name;
 		}
 
@@ -362,7 +372,8 @@
 			$root->setAttribute('guid', $this->guid);
 
 			$root->appendChild($doc->createElement('title', General::sanitize($this->title)));
-
+			$root->appendChild($doc->createElement('content-type', $this->{'content-type'}));
+			
 			if(is_array($this->{'url-parameters'}) && count($this->{'url-parameters'}) > 0){
 				$url_parameters = $doc->createElement('url-parameters');
 				foreach($this->{'url-parameters'} as $p){
@@ -432,9 +443,16 @@
 		    return(($a->priority() > $b->priority()) ? -1 : 1);
 		}
 
-		public function render(Register &$Parameters, XMLDocument &$Document=NULL){
+		public function render(Register &$Parameters, XMLDocument &$Document=NULL, DocumentHeaders &$Headers=NULL){
 
 			$ParameterOutput = new Register;
+
+			if(!is_null($Headers)){
+				$Headers->append('Content-Type', $this->{'content-type'});
+			}
+			else{
+				header('Content-Type: ' . $this->{'content-type'});
+			}
 
 			if(is_null($Document)){
 				$Document = new XMLDocument;
@@ -446,7 +464,7 @@
 			$Events = $Document->createElement('events');
 			$root->appendChild($Events);
 			
-			if(is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})){
+			if(isset($this->about()->{'events'}) && is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})){
 				$events = array();
 				foreach($this->about()->{'events'} as $handle){
 					$events[] = Event::loadFromHandle($handle);
@@ -523,12 +541,13 @@
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');
 			}
-
+			
+			/*
 			header('Content-Type: text/plain; charset=utf-8');
 			$Document->formatOutput = true;
 			print $Document->saveXML();
 			die();
-
+			*/
 
 			return $output;
 		}
@@ -539,6 +558,7 @@
 		private $_iterator;
 		private $_length;
 		private $_position;
+		private $_current;
 
 		public function __construct($path=NULL, $recurse=true){
 			$this->_iterator = new ViewFilterIterator($path, $recurse);

@@ -27,7 +27,8 @@
 	a:hover {
 		color: #000;
 	}
-	a:active {
+	a:active,
+	a:focus {
 		color: #d42;
 	}
 	img {
@@ -502,8 +503,14 @@
 
 	table thead tr th,
 	table tbody tr td {
-		border-bottom: 1px solid hsla(0, 0%, 0%, 0.1);
 		text-align: left;
+	}
+	table tbody tr td {
+		border-top: 1px solid hsl(0, 0%, 90%);
+		text-align: left;
+	}
+	table tbody tr:last-child td {
+		border-bottom: 1px solid hsl(0, 0%, 90%);
 	}
 	table tbody tr:nth-child(odd) td {
 		background: #f3f3f3;
@@ -523,6 +530,9 @@
 	table tbody tr td input[type=checkbox] {
 		display: none;
 	}
+	table tr {
+		margin-top: -1px;
+	}
 	table + .actions {
 		background: transparent;
 		border: none;
@@ -530,10 +540,47 @@
 		padding: 0;
 	}
 	table .selected {
-		background-color: #6a8ebf;
+		background-color: hsl(215, 30%, 50%);
+	}
+	table .selected td {
+		border-color: hsl(215, 30%, 40%);
+	}
+	table .selected + tr td {
+		border-top-color: hsl(215, 30%, 40%);
+	}
+	table .selected + .selected td {
+		border-color: hsl(215, 30%, 45%);
+	}
+	table .selected:last-child td {
+		border-bottom-color: hsl(215, 30%, 40%);
 	}
 	table .selected td,
 	table .selected td a {
+		color: #fff;
+	}
+	
+	table .changing {
+		background-color: hsl(0, 0%, 30%);
+	}
+	table .changing td,
+	table .changing.selected td {
+		border-top-color: hsl(0, 0%, 20%);
+	}
+	table .changing + .changing td,
+	table .changing + .changing.selected td,
+	table .changing.selected + .changing td {
+		border-top-color: hsl(0, 0%, 25%);
+	}
+	table .changing:last-child td {
+		border-bottom-color: hsl(0, 0%, 20%);
+	}
+	table .changing + tr td,
+	table .changing + tr.selected td,
+	table .selected + tr.changing td {
+		border-top-color: hsl(0, 0%, 20%);
+	}
+	table .changing td,
+	table .changing td a {
 		color: #fff;
 	}
 	
@@ -703,7 +750,7 @@
 	form .field:first-child label {
 		margin-top: 0;
 	}
-	form label i {
+	form label em {
 		float: right;
 		opacity: 0.5;
 	}
@@ -745,6 +792,8 @@
 	}
 	form select[multiple] {
 		min-height: 100px;
+	}
+	form label select {
 		padding: 0;
 	}
 	form .label span {
@@ -784,7 +833,7 @@
 	form .group > div > label {
 		display: block;
 		padding: 0;
-		margin: 15px 0 3px;
+		margin: 15px 0 8px;
 	}
 	form .group > div > label:first-child {
 		margin-top: 0;
@@ -792,10 +841,14 @@
 	form .group > *:first-child,
 	form .group > *:first-child label {
 		padding-left: 0;
-	}
+	}	
 	form .group > *:last-child,
 	form .group > *:last-child label {
 		padding-right: 0;
+	}
+	form .group > *:first-child.small {
+		width: 25%;
+		min-width: 150px;
 	}
 
 /*-----------------------------------------------------------------------------
@@ -807,8 +860,8 @@
 		border-top-color: hsla(0, 0%, 0%, 0.2);
 		-moz-column-count: 3;
 		-webkit-column-count: 3;
-		-moz-column-width: 250px;
-		-webkit-column-width: 250px;
+		-moz-column-width: 200px;
+		-webkit-column-width: 200px;
 		-moz-column-gap: 40px;
 		-webkit-column-gap: 40px;
 		-moz-column-rule: 1px dotted hsla(0, 0%, 0%, 0.2);

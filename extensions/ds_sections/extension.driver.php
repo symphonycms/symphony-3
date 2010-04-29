@@ -39,8 +39,7 @@
 					foreach($data['conditions']['parameter'] as $index => $parameter){
 						$datasource->parameters()->conditions[$index] = array(
 							'parameter' => $parameter,
-							'logic' => $data['conditions']['logic'][$index],
-							'action' => $data['conditions']['action'][$index]
+							'logic' => $data['conditions']['logic'][$index]
 						);
 					}
 				}
@@ -79,8 +78,7 @@
 
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
-			$middle = $layout->createColumn(Layout::LARGE);
-			$right = $layout->createColumn(Layout::SMALL);
+			$right = $layout->createColumn(Layout::LARGE);
 
 		//	Essentials --------------------------------------------------------
 
@@ -204,7 +202,7 @@
 			$container->appendChild($templates);
 			$container->appendChild($instances);
 			$fieldset->appendChild($container);
-			$middle->appendChild($fieldset);
+			$right->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
 
@@ -223,18 +221,16 @@
 			$p->setAttribute('class', 'help');
 			$fieldset->appendChild($p);
 		*/
-			$middle->appendChild($fieldset);
+			$right->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Output Options'));
-
-			$container_parameter_output = $page->createElement('div');
-			$fieldset->appendChild($container_parameter_output);
-
-			$container_xml_output = $page->createElement('div');
-			$fieldset->appendChild($container_xml_output);
-
+			
+			//$container_parameter_output = $page->createElement('div');
+			$context_content = $page->createElement('div');
+			$fieldset->appendChild($context_content);
+			
 			$fieldset->appendChild(Widget::Input('fields[append-pagination]', 'no', 'hidden'));
 
 			$label = Widget::Label(__('Append pagination data'));
@@ -455,41 +451,42 @@
 				$label->appendChild(Widget::Select('fields[sort-field]', $sort_by_options, array('class' => 'filtered')));
 				$container_sort_by->appendChild($label);
 
-				$label = Widget::Label(__('Parameter Output'));
-				$label->setAttribute('class', 'context context-' . $section_handle);
+				$param_label = Widget::Label(__('Parameter Output'));
 
 				$select = Widget::Select('fields[parameter-output][]', $options_parameter_output);
 				$select->setAttribute('class', 'filtered');
 				$select->setAttribute('multiple', 'multiple');
 
-				$label->appendChild($select);
+				$param_label->appendChild($select);
 
-				$container_parameter_output->parentNode->insertBefore(
-					$label, $container_parameter_output
-				);
-
-				$label = Widget::Label(__('Included XML Elements'));
-				$label->setAttribute('class', 'context context-' . $section_handle);
+				$include_label = Widget::Label(__('Included XML Elements'));
 
 				$select = Widget::Select('fields[included-elements][]', $included_elements_options);
 				$select->setAttribute('class', 'filtered');
 				$select->setAttribute('multiple', 'multiple');
 
-				$label->appendChild($select);
-
-				$container_xml_output->parentNode->insertBefore(
-					$label, $container_xml_output
-				);
+				$include_label->appendChild($select);
+				
+				$group = Widget::Group($param_label, $include_label);
+				$group->setAttribute('class', 'group context context-' . $section_handle);
+				
+				$context_content->parentNode->insertBefore($group, $context_content);
 			}
-
-			// Cleanup placeholders:
-			$container_parameter_output->remove();
-			$container_xml_output->remove();
+			
+			$context_content->remove();
 		}
 
 		protected function appendCondition(SymphonyDOMElement $wrapper, $condition = array()) {
 			$document = $wrapper->ownerDocument;
-
+			
+			if (!isset($condition['parameter'])) {
+				$condition['parameter'] = null;
+			}
+			
+			if (!isset($condition['logic'])) {
+				$condition['logic'] = 'empty';
+			}
+			
 			$li = $document->createElement('li');
 
 			$name = $document->createElement('span', __('Don\'t Execute When'));
@@ -511,21 +508,6 @@
 				array('set', ($condition['logic'] == 'set'), __('is set'))
 			), array('class' => 'filtered')));
 			$group->appendChild($label);
-
-			// Action
-			/*
-			$label = $document->createElement('label', __('Action'));
-			$label->appendChild(Widget::select('fields[conditions][action][]', array(
-				//array('label' => 'Execution', 'options' => array(
-					array('execute', ($condition['action'] == 'execute'), __('Execute')),
-					array('do-not-execute', ($condition['action'] == 'do-not-execute'), __('Do not Execute')),
-				//)),
-				//array('label' => 'Redirect', 'options' => array(
-				//	array('redirect:404', false, '404'),
-				//	array('redirect:/about/me/', false, '/about/me/'),
-				//)),
-			), array('class' => 'filtered')));
-			*/
 
 			$group->appendChild($label);
 			$li->appendChild($group);

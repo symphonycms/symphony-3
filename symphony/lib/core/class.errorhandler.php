@@ -78,7 +78,7 @@
 
 			$lines = $xml->createElement('nearby-lines');
 			
-			$markdown .= "\t" . $e->getMessage() . "\n";
+			$markdown = "\t" . $e->getMessage() . "\n";
 			$markdown .= "\t" . $e->getFile() . " line " . $e->getLine() . "\n\n";
 			
 			foreach($nearby_lines as $line_number => $string){
