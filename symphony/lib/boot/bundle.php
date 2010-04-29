@@ -6,7 +6,9 @@
 	}
 
 	if (PHP_VERSION_ID >= 50300){
-	    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+	    //error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+		// TODO: Revert this?
+		error_reporting(E_ALL);
 	} 
 	else{
 	    //error_reporting(E_ALL & ~E_NOTICE);
