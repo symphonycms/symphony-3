@@ -330,7 +330,7 @@
 		public function buildSortingSQL(&$joins, &$order){
 			$joins = '
 				LEFT OUTER JOIN `tbl_data_%1$s_%2$s` AS `ed` ON (e.id = ed.entry_id)
-				JOIN `tbl_users` AS `u` ON (d.user_id = u.id)
+				JOIN `tbl_users` AS `u` ON (ed.user_id = u.id)
 			';
 
 			$order = 'u.first_name %1$s , u.last_name %1$s';
