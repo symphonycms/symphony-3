@@ -229,13 +229,17 @@
 			throw new DataSourceException('Errors were encountered whilst attempting to save.');
 		}
 
-		public function delete($handle){
+		public function delete($datasource){
 			/*
 				TODO:
 				Upon deletion of the event, views need to be updated to remove
 				it's associated with the event
 			*/
-			$datasource = Datasource::loadFromHandle($handle);
+			if(!$datasource instanceof DataSource) {
+				$datasource = Datasource::loadFromHandle($datasource);
+			}
+
+			$handle = $datasource->handle;
 
 			if(!$datasource->allowEditorToParse()) {
 				throw new DataSourceException(__('Datasource cannot be deleted, the Editor does not have permission.'));
