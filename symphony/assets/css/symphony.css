@@ -27,7 +27,8 @@
 	a:hover {
 		color: #000;
 	}
-	a:active {
+	a:active,
+	a:focus {
 		color: #d42;
 	}
 	img {

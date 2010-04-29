@@ -382,7 +382,7 @@
 			.parseFromString(source.text(), 'text/xml');
 		var container = jQuery('<div />')
 			.attr('id', 'input')
-			.insertBefore('#content');
+			.prependTo('#content');
 		var input = jQuery('<input />')
 			.attr('autocomplete', 'off')
 			.val('//*')
@@ -573,35 +573,25 @@
 			session.refresh();
 		}
 		
+		var content = jQuery('#content');
 		var sidebar = jQuery('#sidebar');
+		var tab = jQuery('#tab');
 		
 		// TODO: DO NOT RELEASE THIS AS IS
 		// It needs a lot of tidying up.
 		
-		/*
-		sidebar.css({
-			'right':	'-250px',
-			'opacity':	'0.2'
+		tab.bind('click', function() {
+			var hide = function() {
+				sidebar.removeClass('visible');
+				
+				content.unbind('mousedown', hide);
+			};
+			
+			sidebar.addClass('visible');
+			content.bind('mousedown', hide);
+			
+			return false;
 		});
-		sidebar.live('mouseenter', function() {
-			sidebar.stop().animate(
-				{
-					'right':	'0',
-					'opacity':	'1'
-				},
-				'fast', 'linear'
-			);
-		});
-		sidebar.live('mouseleave', function() {
-			sidebar.stop().animate(
-				{
-					'right':	'-250px',
-					'opacity':	'0.2'
-				},
-				'fast', 'linear'
-			);
-		});
-		*/
 	});
 	
 /*---------------------------------------------------------------------------*/

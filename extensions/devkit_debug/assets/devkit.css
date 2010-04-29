@@ -6,14 +6,12 @@
 		border-spacing: 0;
 		color: hsl(0, 0%, 50%);
 		font: 105% monospace;
-		padding: 20px 0;
 		table-layout: fixed;
 	}
 	#params table th {
 		color: hsl(0, 0%, 80%);
 		clear: both;
 		line-height: 160%;
-		padding: 0 20px 0 20px;
 		text-align: left;
 		white-space: nowrap;
 		vertical-align: top;
@@ -21,32 +19,14 @@
 	#params table td {
 		color: hsl(210, 50%, 70%);
 		line-height: 160%;
-		padding: 0 20px 0 0;
+		padding: 0 0 0 20px;
+		white-space: pre-wrap;
 		vertical-align: top;
 	}
 	
 /*---------------------------------------------------------------------------------
 	Source
 ---------------------------------------------------------------------------------*/
-	
-	#input {
-		background: hsl(210, 0%, 15%);
-		border-bottom: 1px solid hsl(210, 0%, 20%);
-		color: hsl(0, 0%, 80%);
-		display: block;
-		font: 105% monospace;
-		left: 0;
-		height: 40px;
-		padding: 0 20px;
-		position: absolute;
-		right: 270px;
-	}
-	#input input {
-		background: transparent;
-		height: 40px;
-		line-height: 40px;
-		width: 100%;
-	}
 	
 	#output {
 		background: hsl(80, 100%, 50%);
@@ -69,7 +49,7 @@
 		counter-reset: markers;
 		display: table;
 		font: 105% monospace;
-		padding: 20px 0;
+		margin: 0 -20px;
 		white-space: normal;
 	}
 	#source pre > .line {

@@ -130,50 +130,25 @@
 			$container = $this->document->createElement('div');
 			$container->setAttribute('id', 'sidebar');
 			
-			$this->appendHeader($container);
-			$this->appendMenu($container);
+			// Tab:
+			$tab = $this->document->createElement('p');
+			$tab->setAttribute('id', 'tab');
+			$tab->appendChild(Widget::Anchor(
+				__('Show Navigation'), ''
+			));
+			$container->appendChild($tab);
 			
-			$jump = $this->document->createElement('ul');
-			$jump->setAttribute('id', 'jump');
-			$this->appendJump($jump);
-			$container->appendChild($jump);
-			
-			$wrapper->appendChild($container);
-			
-			return $container;
-		}
-		
-		protected function appendHeader(DOMElement $wrapper) {
+			// Header:
 			$header = $this->document->createElement('h1');
-			
-			$link = Widget::Anchor(
+			$header->appendChild(Widget::Anchor(
 				$this->view->title, (string)$this->url
-			);
-			$header->appendChild($link);
+			));
+			$container->appendChild($header);
 			
-			$link = Widget::Anchor(
-				__('Edit'), ADMIN_URL . '/blueprints/views/edit/' . $this->view->handle . '/'
-			);
-			$link->setAttribute('class', 'edit');
-			
-			$header->appendChild($link);
-			$wrapper->appendChild($header);
-			
-			return $header;
-		}
-		
-		protected function appendMenu(DOMElement $wrapper) {
-			$container = $this->document->createElement('ul');
-			$container->setAttribute('id', 'menu');
+			$list = $this->document->createElement('ul');
+			$list->setAttribute('class', 'menu');
 			
 			$root = $this->document->createElement('navigation');
-			
-			// Add edit link:
-			/*
-			$item = $this->document->createElement('item');
-			$item->appendChild();
-			$root->appendChild($item);
-			*/
 			
 			####
 			# Delegate: DevKiAppendtMenuItem
@@ -206,20 +181,27 @@
 						));
 					}
 					
-					$container->appendChild($item);
+					$list->appendChild($item);
 				}
 			}
 			
+			$item = $this->document->createElement('li');
+			$item->appendChild(Widget::Anchor(
+				__('Edit'), ADMIN_URL . '/blueprints/views/edit/' . $this->view->handle . '/'
+			));
+			$list->prependChild($item);
+			
+			$container->appendChild($list);
+			
+			// Main:
+			$fieldset = Widget::Fieldset(__('Pages'));
+			$container->appendChild($fieldset);
 			$wrapper->appendChild($container);
 			
 			return $container;
 		}
 		
-		protected function appendJump(DOMElement $wrapper) {
-			
-		}
-		
-		protected function appendJumpItem(DOMElement $wrapper, $name, $link, $active = false) {
+		protected function appendLink(DOMElement $wrapper, $name, $link, $active = false) {
 			$item = $this->document->createElement('li');
 			$anchor = $this->document->createElement('a');
 			$anchor->setAttribute('href', $link);
@@ -237,168 +219,6 @@
 			
 			return $item;
 		}
-		
-		
-		
-		
-		/*
-		protected $_query_string = '';
-		protected $_page = null;
-		protected $_pagedata = null;
-		protected $_xml = null;
-		protected $_param = array();
-		protected $_output = '';
-		
-		protected function buildIncludes() {
-			$this->addHeaderToPage('Content-Type', 'text/html; charset=UTF-8');
-			
-			$this->Html->setElementStyle('html');
-			$this->Html->setDTD('<!DOCTYPE html>');
-			$this->Html->setAttribute('lang', __LANG__);
-			$this->addElementToHead(new XMLElement(
-				'meta', null,
-				array(
-					'http-equiv'	=> 'Content-Type',
-					'content'		=> 'text/html; charset=UTF-8'
-				)
-			));
-			$this->addStylesheetToHead(ADMIN_URL . '/assets/css/devkit.css', 'screen');
-		}
-		
-		protected function buildHeader($wrapper) {
-			$this->setTitle(__(
-				'%1$s &ndash; %2$s &ndash; %3$s',
-				array(
-					__('Symphony'),
-					__($this->_title),
-					$this->_pagedata['title']
-				)
-			));
-			
-			$h1 = new XMLElement('h1');
-			$h1->appendChild(Widget::Anchor(
-				$this->_pagedata['title'], ($this->_query_string ? '?' . trim(html_entity_decode($this->_query_string), '&') : '.')
-			));
-			
-			$wrapper->appendChild($h1);
-		}
-		
-		protected function buildNavigation($wrapper) {
-			$xml = new DOMDocument();
-			$xml->preserveWhiteSpace = false;
-			$xml->formatOutput = true;
-			$root = $xml->createElement('navigation');
-			$xml->appendChild($root);
-			
-			$first = $root->firstChild;
-			$xpath = new DOMXPath($xml);
-			$list = new XMLElement('ul');
-			$list->setAttribute('id', 'navigation');
-			
-			// Add edit link:
-			$item = new XMLElement('li');
-			$item->appendChild(Widget::Anchor(
-				__('Edit'), ADMIN_URL . '/blueprints/pages/edit/' . $this->_pagedata['id'] . '/'
-			));
-			$list->appendChild($item);
-			
-			// Translate navigaton names:
-			if ($root->hasChildNodes()) {
-				foreach ($root->childNodes as $item) if ($item->tagName == 'item') {
-					$item->setAttribute('name', __($item->getAttribute('name')));
-				}
-			}
-			
-			####
-			# Delegate: ManipulateDevKitNavigation
-			# Description: Allow navigation XML to be manipulated before it is rendered.
-			# Global: Yes
-			#$this->_page->ExtensionManager->notifyMembers(
-			ExtensionManager::instance()->notifyMembers(
-				'ManipulateDevKitNavigation', '/frontend/',
-				array(
-					'xml'	=> $xml
-				)
-			);
-			
-			if ($root->hasChildNodes()) {
-				foreach ($root->childNodes as $node) {
-					if ($node->getAttribute('active') == 'yes') {
-						$item = new XMLElement('li', $node->getAttribute('name'));
-						
-					} else {
-						$item = new XMLElement('li');
-						$item->appendChild(Widget::Anchor(
-							$node->getAttribute('name'),
-							'?' . $node->getAttribute('handle') . $this->_query_string
-						));
-					}
-					
-					$list->appendChild($item);
-				}
-			}
-			
-			$wrapper->appendChild($list);
-		}
-		
-		protected function buildJump($wrapper) {
-			
-		}
-		
-		protected function buildContent($wrapper) {
-			
-		}
-		
-		protected function buildJumpItem($name, $link, $active = false) {
-			$item = new XMLElement('li');
-			$anchor = Widget::Anchor($name,  $link);
-			$anchor->setAttribute('class', 'inactive');
-			
-			if ($active == true) {
-				$anchor->setAttribute('class', 'active');
-			}
-			
-			$item->appendChild($anchor);
-			
-			return $item;
-		}
-		
-		public function prepare($page, $pagedata, $xml, $param, $output) {
-			$this->_page = $page;
-			$this->_pagedata = $pagedata;
-			$this->_xml = $xml;
-			$this->_param = $param;
-			$this->_output = $output;
-			
-			if (is_null($this->_title)) {
-				$this->_title = __('Utility');
-			}
-		}
-		
-		public function build() {
-			$this->buildIncludes();
-			
-			$header = new XMLElement('div');
-			$header->setAttribute('id', 'header');
-			$jump = new XMLElement('div');
-			$jump->setAttribute('id', 'jump');
-			$content = new XMLElement('div');
-			$content->setAttribute('id', 'content');
-			
-			$this->buildHeader($header);
-			$this->buildNavigation($header);
-			
-			$this->buildJump($jump);
-			$header->appendChild($jump);
-			
-			$this->Body->appendChild($header);
-			
-			$this->buildContent($content);
-			$this->Body->appendChild($content);
-			
-			return parent::generate();
-		}
-		*/
 	}
 	
 ?>

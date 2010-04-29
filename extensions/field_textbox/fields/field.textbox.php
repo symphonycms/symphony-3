@@ -506,7 +506,7 @@
 				$result->appendChild($value);
 			}
 
-			else{
+			else if ($value) {
 				$value = $this->repairEntities($value);
 				$fragment = $wrapper->ownerDocument->createDocumentFragment();
 				$fragment->appendXML($value);
@@ -632,7 +632,46 @@
 			));
 		}
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+			$filter = $this->processDatasourceFilter($filter);
+			$value = DataSource::prepareFilterValue($filter->value);
+			
+			// TODO: Copy behaviour of old function.
+			
+			self::$key++;
+			
+			$joins .= sprintf('
+				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
+			', self::$key, $this->section, $this->{'element-name'});
+			
+			// Exact matches:
+			if ($filter->type == 'is' or $filter->type == 'is-not') {
+				
+			}
+			
+			else if ($filter->type == 'contains' or $filter->type == 'does-not-contain') {
+				
+			}
+			
+			// Boolean searches:
+			else if ($filter->type == 'boolean-search') {
+				
+			}
+			
+			// Boolean searches:
+			else if ($filter->type == 'boolean-search') {
+				
+			}
+			
+			// Regex search:
+			else if ($filter->type == 'regex-search') {
+				
+			}
+			
+			return true;
+		}
+
+		public function xbuildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 			$field_id = $this->{'id'};
 
 			if (preg_match('/^(not-)?regexp:\s*/', $data[0], $matches)) {
