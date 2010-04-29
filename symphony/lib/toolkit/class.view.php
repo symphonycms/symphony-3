@@ -464,7 +464,7 @@
 			$Events = $Document->createElement('events');
 			$root->appendChild($Events);
 			
-			if(is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})){
+			if(isset($this->about()->{'events'}) && is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})){
 				$events = array();
 				foreach($this->about()->{'events'} as $handle){
 					$events[] = Event::loadFromHandle($handle);

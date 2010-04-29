@@ -199,7 +199,7 @@
 
 			self::$key++;
 
-			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput);
+			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput, $operation_type);
 
 			$joins .= sprintf('
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)

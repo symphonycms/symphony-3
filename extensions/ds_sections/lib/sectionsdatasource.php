@@ -256,12 +256,20 @@
 					if(is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 						$included_elements = (object)array('system' => array(), 'fields' => array());
 						foreach($this->parameters()->{'included-elements'} as $element){
-							if(preg_match('/^system:/i', $element)){
-								$included_elements->system[] = preg_replace('/^system:/i', NULL, $element);
+							$element_name = $mode = NULL;
+							
+							if(preg_match_all('/^([^:]+):\s*(.+)$/', $element, $matches, PREG_SET_ORDER)){
+								$element_name = $matches[0][1];
+								$mode = $matches[0][2];
 							}
 							else{
-								list($element_name, $mode) = preg_split('/:/', $element, 2, PREG_SPLIT_NO_EMPTY);
-
+								$element_name = $element;
+							}
+							
+							if($element_name == 'system'){
+								$included_elements->system[] = $mode;
+							}
+							else{
 								$included_elements->fields[] = array(
 									'element-name' => $element_name,
 									'mode' => (!is_null($mode) > 0 ? trim($mode) : NULL)
