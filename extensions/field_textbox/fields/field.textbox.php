@@ -453,26 +453,27 @@
 		}
 
 		// TODO: Fix the createHandle function
-		public function processFormData($data, Entry $entry=NULL){
-
-			if(isset($entry->data()->{$this->{'element-name'}})){
+		public function processData($data, Entry $entry = null) {
+			if (isset($entry->data()->{$this->{'element-name'}})) {
 				$result = $entry->data()->{$this->{'element-name'}};
 			}
 
 			else {
 				$result = (object)array(
-					'handle' => null,
-					'value' => null,
-					'value_formatted' => null,
+					'handle'			=> null,
+					'value'				=> null,
+					'value_formatted'	=> null,
 				);
 			}
 
-			if(!is_null($data)){
+			if (!is_null($data)) {
+				$data = stripslashes($data);
+				
 				$result->handle = Lang::createHandle($data);
 				$result->value = $data;
 				$result->value_formatted = $this->applyFormatting($data);
 			}
-
+			
 			return $result;
 		}
 
@@ -536,8 +537,8 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 		
-		public function fetchFilterTypes($data) {
-			$filters = parent::fetchFilterTypes($data);
+		public function getFilterTypes($data) {
+			$filters = parent::getFilterTypes($data);
 			$filters[] = array(
 				'boolean-search', $data->type == 'boolean-search', 'Boolean Search'
 			);

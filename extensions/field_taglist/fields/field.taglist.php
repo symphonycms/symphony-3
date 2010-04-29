@@ -312,7 +312,7 @@
 			Input:
 		-------------------------------------------------------------------------*/
 
-		public function processFormData($data, Entry $entry=NULL){
+		public function processData($data, Entry $entry=NULL){
 			$result = (object)array(
 				'value' => null,
 				'handle' => null
@@ -384,7 +384,7 @@
 			$data = General::array_remove_duplicates($data, true);
 
 			foreach($data as $tag) {
-				$tag = $this->processFormData($tag, $entry);
+				$tag = $this->processData($tag, $entry);
 				parent::saveData($errors, $entry, $tag);
 			}
 
@@ -463,34 +463,19 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
-
-			$document = $wrapper->ownerDocument;
-
-			$name = $document->createElement('span', $this->label);
-			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('em', $this->name()));
-			$wrapper->appendChild($name);
-
-			$type_label = Widget::Label(__('Type'));
-			$type_label->setAttribute('class', 'small');
-			$type_label->appendChild(Widget::Select(
-				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				$this->provideFilterTypes($data)
-			));
-
-			$label = Widget::Label(__('Value'));
-			$label->appendChild(Widget::Input(
-				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
-				$data['value']
-			));
-
-			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($div);
-
-			$wrapper->appendChild(Widget::Group(
-				$type_label, $div
-			));
-
+		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+			
+			if (!is_null($this->{'suggestion-list-source'})) {
+				$document = $wrapper->ownerDocument;
+				$existing_options = $this->getToggleStates();
+				
+				$div = $document->createElement('div');
+				$label = $document->xpath('.//label[last()]', $wrapper)->item(0);
+				$label->wrapWith($div);
+				
+				$this->prepopulateSource($div);
+			}
 		}
 
 	}

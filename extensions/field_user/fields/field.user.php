@@ -201,7 +201,7 @@
 			Input:
 		-------------------------------------------------------------------------*/
 
-		public function processFormData($data, Entry $entry=NULL){
+		public function processData($data, Entry $entry=NULL){
 
 			$result = (object)array(
 				'user_id' => NULL
@@ -243,7 +243,7 @@
 				$data->user_id = array($data->user_id);
 			}
 			foreach($data->user_id as $d){
-				$d = $this->processFormData($d, $entry);
+				$d = $this->processData($d, $entry);
 				parent::saveData($errors, $entry, $d);
 			}
 			return Field::STATUS_OK;
@@ -278,10 +278,10 @@
 		-------------------------------------------------------------------------*/
 
 		//	TODO: This field will need to override the DatasourceFilterPanel so that you can actually filter
-		//	users on their fields in the sym_users table. Once done, this buildDSRetrivalSQL will have to be updated
+		//	users on their fields in the sym_users table. Once done, this buildFilterQuery will have to be updated
 		//	to think use those columns. For now this just filters on USER_ID (which is Symphony 2.0.x behaviour)
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+		public function buildFilterQuery($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
 			self::$key++;
 
 			$value = DataSource::prepareFilterValue($filter['value']);
@@ -326,14 +326,25 @@
 
 			return true;
 		}
+		
+		public function buildSortingJoin(&$joins) {
+			$table = Symphony::Database()->prepareQuery(sprintf(
+				'tbl_data_%s_%s', $this->section, $this->{'element-name'}, ++self::$key
+			));
+			$handle = sprintf(
+				'%s_%s_%s', $this->section, $this->{'element-name'}, self::$key
+			);
+			$joins .= sprintf(
+				"\nLEFT OUTER JOIN `%s` AS data_%s ON (e.id = data_%2\$s.entry_id)\nJOIN `tbl_users` AS users_%2\$s ON (data_%2\$s.user_id = users_%2\$s.id)",
+				$table, $handle
+			);
+			
+			return 'users_' . $handle;
+		}
 
-		public function buildSortingSQL(&$joins, &$order){
-			$joins = '
-				LEFT OUTER JOIN `tbl_data_%1$s_%2$s` AS `ed` ON (e.id = ed.entry_id)
-				JOIN `tbl_users` AS `u` ON (d.user_id = u.id)
-			';
-
-			$order = 'u.first_name %1$s , u.last_name %1$s';
+		public function buildSortingQuery(&$joins, &$order){
+			$handle = $this->buildSortingJoin($joins);
+			$order = "{$handle}.first_name %1\$s, {$handle}.last_name %1\$s";
 		}
 	}
 

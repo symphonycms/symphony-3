@@ -594,7 +594,7 @@
 			}
 		}
 
-		public function processFormData($data, Entry $entry=NULL){
+		public function processData($data, Entry $entry=NULL){
 
 			if(isset($entry->data()->{$this->{'element-name'}})){
 				$result = $entry->data()->{$this->{'element-name'}};
@@ -629,7 +629,7 @@
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;
-
+			
 			try{
 				Symphony::Database()->insert(
 					sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
@@ -668,7 +668,7 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function fetchFilterTypes($data) {
+		public function getFilterTypes($data) {
 			return array(
 				array('is', false, 'Is'),
 				array('is-not', $data->type == 'is-not', 'Is not'),
@@ -714,7 +714,7 @@
 			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				$this->fetchFilterTypes($data)
+				$this->getFilterTypes($data)
 			));
 			$wrapper->appendChild($type_label);
 
@@ -729,7 +729,7 @@
 			));
 		}
 		
-		public function buildFilterJoin(&$joins) {
+		public function buildJoinQuery(&$joins) {
 			$db = Symphony::Database();
 			
 			$table = $db->prepareQuery(sprintf(
@@ -744,6 +744,10 @@
 			);
 			
 			return $handle;
+		}
+		
+		public function buildFilterJoin(&$joins) {
+			return $this->buildJoinQuery($joins);
 		}
 		
 		public function buildFilterQuery($filter, &$joins, &$where, Register $parameter_output) {
@@ -818,55 +822,12 @@
 			
 			return true;
 		}
-
-		public function xbuildFilterQuery($filter, &$joins, &$where, Register $ParameterOutput=NULL){
-
-			self::$key++;
-
-			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput, $operation_type);
-
-			$joins .= sprintf('
-				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});
-
-			if ($filter['type'] == 'regex') {
-				$where .= sprintf("
-						AND (
-							t%1\$s.value REGEXP '%2\$s'
-							OR t%1\$s.value REGEXP '%2\$s'
-						)
-					",	self::$key,	$value
-				);
-			}
-
-			else if ($operation_type == DataSource::FILTER_AND) {
-				foreach ($value as $v) {
-					$where .= sprintf(
-						" AND (
-							t%1\$s.value %2\$s '%3\$s'
-							OR t%1\$s.handle %2\$s '%3\$s'
-						) ",
-						self::$key,
-						$filter['type'] == 'is-not' ? '<>' : '=',
-						$v
-					);
-				}
-			}
-
-			else {
-				$where .= sprintf(
-					" AND (
-						t%1\$s.value %2\$s IN '%3\$s'
-						OR t%1\$s.handle %2\$s IN '%3\$s'
-					) ",
-					self::$key,
-					$filter['type'] == 'is-not' ? 'NOT' : '',
-					$v
-				);
-			}
-
-			return true;
+		
+		public function buildDSFilterSQL() {
+			// TODO: Cleanup before release.
+			throw new Exception('Field->buildDSFilterSQL() is obsolete, use buildFilterQuery instead.');
 		}
+
 		/*-------------------------------------------------------------------------
 			Grouping:
 		-------------------------------------------------------------------------*/
@@ -880,13 +841,21 @@
 		/*-------------------------------------------------------------------------
 			Sorting:
 		-------------------------------------------------------------------------*/
-
-		public function buildSortingSQL(&$joins, &$order){
-			$joins .= 'LEFT OUTER JOIN `tbl_data_%1$s_%2$s` AS `ed` ON (e.id = ed.entry_id)';
-			$order = 'ed.value %1$s';
+		
+		public function buildSortingJoin(&$joins) {
+			return $this->buildJoinQuery($joins);
 		}
 
-
+		public function buildSortingQuery(&$joins, &$order){
+			$handle = $this->buildSortingJoin($joins);
+			$order = "{$handle}.value %1\$s";
+		}
+		
+		public function buildSortingSQL() {
+			// TODO: Cleanup before release.
+			throw new Exception('Field->buildSortingSQL() is obsolete, use buildSortingQuery instead.');
+		}
+		
 		/*-------------------------------------------------------------------------
 			Deprecated:
 		-------------------------------------------------------------------------

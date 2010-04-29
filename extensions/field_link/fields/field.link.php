@@ -533,7 +533,7 @@
 			return $result;
 		}
 
-		public function processFormData($data, Entry $entry=NULL){
+		public function processData($data, Entry $entry=NULL){
 
 			//if(isset($entry->data()->{$this->{'element-name'}})){
 			//	$result = $entry->data()->{$this->{'element-name'}};
@@ -750,7 +750,7 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 		
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+		public function buildFilterQuery($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 
 			self::$key++;
 
@@ -888,9 +888,9 @@
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$order){
-			$joins .= "INNER JOIN `tbl_entries_data_".$this->{'id'}."` AS `ed` ON (`e`.`id` = `ed`.`entry_id`) ";
-			$sort = 'ORDER BY ' . (in_array(strtolower($order), array('random', 'rand')) ? 'RAND()' : "`ed`.`relation_id` $order");
+		public function buildSortingQuery(&$joins, &$order){
+			$handle = $this->buildSortingJoin($joins);
+			$order = "{$handle}.relation_id %1\$s";
 		}
 
 	/*-------------------------------------------------------------------------
