@@ -51,7 +51,7 @@
 			
 			// Start:
 			items.live('mousedown', function(event) {
-				if (event.button != 0) {
+				if (event.button != 0 || event.target instanceof HTMLAnchorElement) {
 					items.removeClass('changing');
 					state = null;
 					return;

@@ -196,6 +196,11 @@
 			
 			$handle = $this->{'element-name'};
 			$document = $wrapper->ownerDocument;
+			$filepath = null;
+			
+			if (isset($data->path, $data->file)) {
+				$filepath = realpath($data->path . '/' . $data->file);
+			}
 
 		// Preview ------------------------------------------------------------
 
@@ -206,10 +211,10 @@
 				$label->appendChild($document->createElement('i', 'Optional'));
 			}
 			
-			if (!$errors->valid() and !empty($data->{'file'})) {
+			if (!$errors->valid() and $filepath) {
 				$file = $document->createElement('div');
 				$file->setAttribute('class', 'file');
-				$path = substr($data->path, strlen(DOCROOT));
+				$path = substr($filepath, strlen(DOCROOT));
 				
 				###
 				# Delegate: UploadField_PreviewFile
@@ -220,7 +225,7 @@
 						'data'		=> $data,
 						'field'		=> $this,
 						'entry'		=> $entry,
-						'wrapper'	=> $container
+						'wrapper'	=> $wrapper
 					)
 				);
 				
@@ -229,7 +234,7 @@
 				//}
 				
 				$name = $document->createElement('p');
-				$link = Widget::Anchor($data->{'name'}, URL . $path . '/' . $data->file);
+				$link = Widget::Anchor($data->{'name'}, URL . $path);
 				$name->appendChild($link);
 				$file->appendChild($name);
 				
@@ -263,17 +268,11 @@
 			
 		// Upload -------------------------------------------------------------
 			
-			$file = null;
-			
-			if (isset($data->path, $data->file)) {
-				$file = $data->path . '/' . $data->file;
-			}
-			
 			$upload = $document->createElement('div');
 			$upload->setAttribute('class', 'upload');
 			$input = Widget::Input(
-				"fields[{$handle}]", $file,
-				($file ? 'hidden' : 'file')
+				"fields[{$handle}]", $filepath,
+				($filepath ? 'hidden' : 'file')
 			);
 			
 			$upload->appendChild($input);
