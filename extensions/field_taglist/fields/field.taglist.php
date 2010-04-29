@@ -203,6 +203,64 @@
 
 			$wrapper->appendChild($options_list);
 		}
+		
+		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
+
+			$suggestion_list_source = array();
+			if(isset($xml->{'suggestion-list-source'})){
+
+				if(isset($xml->{'suggestion-list-source'}->attributes()->{'include-existing'})){
+					$this->{'suggestion-list-include-existing'} =
+						(string)$xml->{'suggestion-list-source'}->attributes()->{'include-existing'} == 'yes'
+							? true
+							: false;
+				}
+
+				foreach($xml->{'suggestion-list-source'}->item as $item){
+					$key = sprintf('%s::%s', (string)$item->attributes()->section, (string)$item->attributes()->field);
+					$suggestion_list_source[$key] = array((string)$item->attributes()->section, (string)$item->attributes()->field);
+				}
+			}
+			unset($xml->{'suggestion-list-source'});
+
+
+			foreach($xml as $property_name => $property_value){
+				$data[(string)$property_name] = (string)$property_value;
+			}
+
+			$this->{'suggestion-list-source'} = $suggestion_list_source;
+
+			// Set field GUID:
+			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
+				$data['guid'] = (string)$xml->attributes()->guid;
+			}
+
+			$this->setPropertiesFromPostData($data);
+		}
+		
+		public function setPropertiesFromPostData($data){
+			if(isset($data['suggestion-list-source'])){
+
+				$suggestion_list_source = array();
+
+				if(!is_array($data['suggestion-list-source'])) $data['suggestion-list-source'] = (array)$data['suggestion-list-source'];
+
+				foreach($data['suggestion-list-source'] as $item){
+
+					if(preg_match('/::/', $item)){
+						$suggestion_list_source[$item] = preg_split('/::/', $item, 2, PREG_SPLIT_NO_EMPTY);;
+					}
+					elseif($item == 'existing'){
+						$this->{'suggestion-list-include-existing'} = true;
+					}
+				}
+
+				$this->{'suggestion-list-source'} = $suggestion_list_source;
+				unset($data['suggestion-list-source']);
+			}
+
+			return parent::setPropertiesFromPostData($data);
+		}
 
 		/*-------------------------------------------------------------------------
 			Publish:
@@ -253,30 +311,6 @@
 		/*-------------------------------------------------------------------------
 			Input:
 		-------------------------------------------------------------------------*/
-
-		public function setPropertiesFromPostData($data){
-			if(isset($data['suggestion-list-source'])){
-
-				$suggestion_list_source = array();
-
-				if(!is_array($data['suggestion-list-source'])) $data['suggestion-list-source'] = (array)$data['suggestion-list-source'];
-
-				foreach($data['suggestion-list-source'] as $item){
-
-					if(preg_match('/::/', $item)){
-						$suggestion_list_source[$item] = preg_split('/::/', $item, 2, PREG_SPLIT_NO_EMPTY);;
-					}
-					elseif($item == 'existing'){
-						$this->{'suggestion-list-include-existing'} = true;
-					}
-				}
-
-				$this->{'suggestion-list-source'} = $suggestion_list_source;
-				unset($data['suggestion-list-source']);
-			}
-
-			return parent::setPropertiesFromPostData($data);
-		}
 
 		public function processFormData($data, Entry $entry=NULL){
 			$result = (object)array(
@@ -357,39 +391,7 @@
 			return Field::STATUS_OK;
 		}
 
-		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
-
-			$suggestion_list_source = array();
-			if(isset($xml->{'suggestion-list-source'})){
-
-				if(isset($xml->{'suggestion-list-source'}->attributes()->{'include-existing'})){
-					$this->{'suggestion-list-include-existing'} =
-						(string)$xml->{'suggestion-list-source'}->attributes()->{'include-existing'} == 'yes'
-							? true
-							: false;
-				}
-
-				foreach($xml->{'suggestion-list-source'}->item as $item){
-					$key = sprintf('%s::%s', (string)$item->attributes()->section, (string)$item->attributes()->field);
-					$suggestion_list_source[$key] = array((string)$item->attributes()->section, (string)$item->attributes()->field);
-				}
-			}
-			unset($xml->{'suggestion-list-source'});
-
-
-			foreach($xml as $property_name => $property_value){
-				$data[(string)$property_name] = (string)$property_value;
-			}
-
-			$this->{'suggestion-list-source'} = $suggestion_list_source;
-
-			// Set field GUID:
-			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
-				$data['guid'] = (string)$xml->attributes()->guid;
-			}
-
-			$this->setPropertiesFromPostData($data);
-		}
+		
 
 		/*-------------------------------------------------------------------------
 			Output:
@@ -461,7 +463,8 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
+
 			$document = $wrapper->ownerDocument;
 
 			$name = $document->createElement('span', $this->label);
@@ -473,16 +476,8 @@
 			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				array(
-					array('is', false, 'Is'),
-					array('is-not', $data['type'] == 'is-not', 'Is not'),
-					array('contains', $data['type'] == 'contains', 'Contains'),
-					array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
-					array('regex', $data['type'] == 'regex', 'Regex'),
-				)
+				$this->provideFilterTypes($data)
 			));
-
-			$div = $document->createElement('div');
 
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
@@ -492,11 +487,10 @@
 
 			if(!is_null($this->{'suggestion-list-source'})) $this->prepopulateSource($div);
 
-			$div->appendChild($label);
-
 			$wrapper->appendChild(Widget::Group(
 				$type_label, $div
 			));
+
 		}
 
 	}

@@ -320,6 +320,8 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
+		//	TODO: Instead of 'redoing the whole function', this should call the parent, then add the existing
+		//	tags into the DOM.
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
 			$document = $wrapper->ownerDocument;
 
@@ -332,16 +334,8 @@
 			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				array(
-					array('is', false, 'Is'),
-					array('is-not', $data['type'] == 'is-not', 'Is not'),
-					array('contains', $data['type'] == 'contains', 'Contains'),
-					array('does not contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
-					array('regex', $data['type'] == 'regex', 'Regex'),
-				)
+				$this->provideFilterTypes($data)
 			));
-
-			$div = $document->createElement('div');
 
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
@@ -349,9 +343,10 @@
 				$data['value']
 			));
 
-			$existing_options = $this->getToggleStates();
-
+			$div = $document->createElement('div');
 			$div->appendChild($label);
+
+			$existing_options = $this->getToggleStates();
 
 			if(is_array($existing_options) && !empty($existing_options)){
 				$optionlist = $document->createElement('ul');

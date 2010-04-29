@@ -1,7 +1,7 @@
 <?php
-	
+
 	require_once(TOOLKIT . '/class.entry.php');
-	
+
 	Class SectionsDataSource extends DataSource {
 
 		public function __construct(){
@@ -109,7 +109,7 @@
 
 			$result = new XMLDocument;
 			$result->appendChild($result->createElement($this->parameters()->{'root-element'}));
-			
+
 			$root = $result->documentElement;
 
 			//	Conditions
@@ -122,65 +122,65 @@
 					if($condition['logic'] == 'empty' && (is_null($c) || strlen($c) == 0)){
 						$execute = false;
 					}
-					
+
 					// Is Set
 					elseif($condition['logic'] == 'set' && !is_null($c)){
 						$execute = false;
 					}
-					
+
 					if($execute !== true) {
 						return NULL;
 					}
-					
+
 				}
 			}
-			
+
 			// Grab the section
 			try{
 				$section = Section::loadFromHandle($this->parameters()->section);
 			}
 			catch(SectionException $e){
-				
+
 			}
 			catch(Exception $e){
-				
+
 			}
-			
+
 			$pagination = (object)array(
 				'total-entries' => NULL,
 				'entries-per-page' => max(1, (int)self::replaceParametersInString($this->parameters()->limit, $ParameterOutput)),
 				'total-pages' => NULL,
 				'current-page' => max(1, (int)self::replaceParametersInString($this->parameters()->page, $ParameterOutput)),
 			);
-		
+
 			$pagination->{'record-start'} = max(0, ($pagination->{'current-page'} - 1) * $pagination->{'entries-per-page'});
-			
+
 			$order = $sort = $joins = $where = NULL;
 
 			//	Apply the Sorting & Direction
 			if($this->parameters()->{'sort-order'} == 'random'){
 				$sort = 'RAND()';
 			}
-			
+
 			else{
-				
+
 				$sort = (strtolower($this->parameters()->{'sort-order'}) == 'asc' ? 'ASC' : 'DESC');
-				
+
 				// System Field
 				if(preg_match('/^system:/i', $this->parameters()->{'sort-field'})){
 					switch(preg_replace('/^system:/i', NULL, $this->parameters()->{'sort-field'})){
 						case 'id':
 							$order = 'e.id';
 							break;
-							
+
 						case 'creation-date':
 							$order = 'e.creation_date';
 							break;
-							
+
 						case 'modification-date':
 							$order = 'e.modification_date';
 							break;
-						
+
 					}
 				}
 				// Non System Field
@@ -188,22 +188,22 @@
 					$join = NULL;
 					$sort_field = $section->fetchFieldByHandle($this->parameters()->{'sort-field'});
 					$sort_field->buildSortingSQL($join, $order);
-					
+
 					$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
 					$order = sprintf($order, $sort);
 				}
 			}
-			
+
 			//	Process Datasource Filters for each of the Fields
 			if(is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
 				foreach($this->parameters()->filters as $element_name => $filter){
-					
+
 					if($element_name == 'system:id'){
 						$filter_value = $this->prepareFilterValue($filter['value'], $ParameterOutput);
 						$filter_value = array_map('intval', $filter_value);
 						$where .= sprintf(
-							" AND e.id %s IN (%s)", 
-							($filter['type'] == 'is-not' ? 'NOT' : NULL), 
+							" AND e.id %s IN (%s)",
+							($filter['type'] == 'is-not' ? 'NOT' : NULL),
 							implode(',', $filter_value)
 						);
 					}
@@ -214,16 +214,16 @@
 
 				}
 			}
-			
+
 			$query = sprintf(
-				'SELECT SQL_CALC_FOUND_ROWS e.* 
-				FROM `tbl_entries` AS `e` 
-				%1$s 
-				WHERE `section` = "%2$s" 
-				%3$s 
-				ORDER BY %4$s 
+				'SELECT SQL_CALC_FOUND_ROWS e.*
+				FROM `tbl_entries` AS `e`
+				%1$s
+				WHERE `section` = "%2$s"
+				%3$s
+				ORDER BY %4$s
 				LIMIT %5$d, %6$d',
-				
+
 				$joins,
 				$section->handle,
 				$where,
@@ -238,20 +238,20 @@
 						$section->{'publish-order-handle'}
 					), 'EntryResult'
 				);
-				
+
 				if(isset($this->parameters()->{'append-pagination'}) && $this->parameters()->{'append-pagination'} === true){
 					$pagination->{'total-entries'} = (int)Symphony::Database()->query("SELECT FOUND_ROWS() AS `total`")->current()->total;
 					$pagination->{'total-pages'} = (int)ceil($pagination->{'total-entries'} * (1 / $pagination->{'entries-per-page'}));
-				
+
 					// Pagination Element
 					$root->appendChild(General::buildPaginationElement(
 						$result, $pagination->{'total-entries'}, $pagination->{'total-pages'}, $pagination->{'entries-per-page'}, $pagination->{'current-page'}
 					));
 				}
-				
+
 				// Build Entry Records
 				if($entries->length() > 0){
-					
+
 					// Do some pre-processing on the include-elements.
 					if(is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 						$included_elements = (object)array('system' => array(), 'fields' => array());
@@ -269,7 +269,7 @@
 							}
 						}
 					}
-					
+
 					// Do some pre-processing on the param output array
 					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
 						$parameter_output = (object)array('system' => array(), 'fields' => array());
@@ -281,10 +281,10 @@
 								$parameter_output->fields[$element] = array();
 							}
 						}
-					}	
-					
+					}
+
 					foreach($entries as $e){
-						
+
 						// If there are included elements, need an entry element.
 						if(is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 							$entry = $result->createElement('entry');
@@ -296,12 +296,12 @@
 									case 'creation-date':
 										$entry->appendChild(General::createXMLDateObject($result, strtotime($e->creation_date), 'creation-date'));
 										break;
-										
+
 									case 'modification-date':
 										$entry->appendChild(General::createXMLDateObject($result, strtotime($e->modification_date), 'modification-date'));
 										break;
-										
-										
+
+
 									case 'user':
 										$obj = User::load($e->user_id);
 										$user = $result->createElement('user', $obj->getFullName());
@@ -312,7 +312,7 @@
 										break;
 								}
 							}
-							
+
 							foreach($included_elements->fields as $field){
 								$section->fetchFieldByHandle($field['element-name'])->appendFormattedElement($entry, $e->data()->{$field['element-name']}, false, $field['mode']);
 							}
@@ -324,35 +324,35 @@
 									case 'id':
 										$parameter_output->system[$field][] = $e->id;
 										break;
-									
+
 									case 'creation-date':
 										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', strtotime($e->creation_date));
 										break;
-										
+
 									case 'modification-date':
 										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', strtotime($e->modification_date));
 										break;
-										
+
 									case 'user':
 										$parameter_output->system[$field][] = $e->user_id;
 										break;
 								}
 							}
-							
+
 							foreach($parameter_output->fields as $field => $existing_values){
 								//	TODO?
 							}
 						}
-						
+
 					}
-					
+
 					// Add in the param output values to the ParameterOutput object
 					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
 						foreach($parameter_output->system as $field => $values){
 							$key = sprintf('ds-%s-%s', $this->parameters()->{'root-element'}, $field);
 							$ParameterOutput->$key = array_unique($values);
 						}
-						
+
 						foreach($parameter_output->fields as $field => $values){
 							$key = sprintf('ds-%s-%s', $this->parameters()->{'root-element'}, $field);
 							$ParameterOutput->$key = array_unique($values);
@@ -364,19 +364,19 @@
 				elseif($this->parameters()->{'redirect-404-on-empty'} === true){
 					throw new FrontendPageNotFoundException;
 				}
-				
+
 				// No Entries, Show empty XML
 				else{
 					$this->emptyXMLSet($root);
 				}
-				
+
 			}
 			catch(DatabaseException $e){
 				$root->appendChild($result->createElement(
 					'error', General::sanitize($e->getMessage())
 				));
 			}
-			
+
 			return $result;
 
 		}

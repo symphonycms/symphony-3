@@ -149,7 +149,7 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
 			$document = $wrapper->ownerDocument;
 
 			$name = $document->createElement('span', $this->label);
@@ -192,6 +192,7 @@
 			$group->appendChild($div);
 
 			$wrapper->appendChild($group);
+
 		}
 
 		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
