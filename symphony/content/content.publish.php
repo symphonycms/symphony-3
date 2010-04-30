@@ -364,7 +364,7 @@
 								foreach($checked as $entry_id){
 									$entry = Entry::loadFromID($entry_id);
 
-									$entry->data()->$field_handle = $field->processFormData($value, $entry);
+									$entry->data()->$field_handle = $field->processData($value, $entry);
 
 									$this->errors->flush();
 									Entry::save($entry, $this->errors);

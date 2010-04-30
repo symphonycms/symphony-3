@@ -134,7 +134,7 @@
 			Input:
 		-------------------------------------------------------------------------*/
 
-		public function processFormData($data, Entry $entry=NULL){
+		public function processData($data, Entry $entry=NULL){
 			$states = array('on', 'yes');
 
 			if($this->{'required'} == 'yes' && !in_array(strtolower($data), $states)) {
@@ -142,7 +142,7 @@
 			}
 			else $data = (in_array(strtolower($data), $states)) ? 'yes' : 'no';
 
-   			return parent::processFormData($data, $entry);
+   			return parent::processData($data, $entry);
 		}
 
 		/*-------------------------------------------------------------------------
@@ -195,7 +195,7 @@
 
 		}
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+		public function buildFilterQuery($filter, &$joins, &$where, Register $ParameterOutput=NULL){
 
 			self::$key++;
 

@@ -12,6 +12,7 @@
 		define('BITTER_CACHE_PATH', EXTENSIONS . '/devkit_debug/lib/bitter/caches');
 	}
 	
+	require_once(CORE . '/class.cache.php');
 	require_once(TOOLKIT . '/class.devkit.php');
 	require_once(EXTENSIONS . '/devkit_debug/lib/bitter/bitter.php');
 	
@@ -28,15 +29,26 @@
 		protected $params = null;
 		protected $template = null;
 		protected $utilities = null;
+		protected $state = null;
+		protected $url = null;
 		
 		public function __construct(View $view) {
 			parent::__construct($view);
 			
 			$this->title = __('Debug');
-			$this->show = ($_GET['debug'] ? $_GET['debug'] : 'xml');
+			$this->state = (isset($_GET['debug-state']) ? $_GET['debug-state'] : null);
 			$this->utilities = $this->findUtilities($this->view->template);
 			
+			if (isset($_GET['debug'])) {
+				$this->show = ($_GET['debug'] ? $_GET['debug'] : 'source');
+			}
+			
+			else {
+				$this->show = 'browse';
+			}
+			
 			unset($this->url->parameters()->debug);
+			unset($this->url->parameters()->{'debug-state'});
 		}
 		
 		protected function findUtilities($source) {
@@ -89,8 +101,9 @@
 		
 		public function render(Register &$parameters, XMLDocument &$document = null) {
 			$this->template = $this->view->template;
+			$cache = Cache::instance();
 			
-			if ($this->show == 'xml' or $this->show == 'result' or $this->show == 'params') {
+			if (is_null($this->state)) {
 				try {
 					$this->output = $this->view->render($parameters, $document);
 				}
@@ -98,15 +111,33 @@
 				catch (Exception $e) {
 					// We may throw it later.
 				}
-			}
-			
-			if ($this->show == 'xml') {
+				
 				$document->formatOutput = true;
 				$this->input = $document->saveXML();
+				$this->params = $parameters;
+				
+				// Save current state:
+				$this->state = substr(uniqid(), 8);
+				$data = (object)array(
+					'input'		=> $this->input,
+					'output'	=> $this->output,
+					'params'	=> $this->params
+				);
+				
+				$cache->write($this->state, serialize($data), 604800);
 			}
 			
-			if ($this->show == 'params') {
-				$this->params = $parameters;
+			else {
+				$data = $cache->read($this->state);
+				$data = unserialize($data->data);
+				
+				$this->input = $data->input;
+				$this->output = $data->output;
+				$this->params = $data->params;
+				
+				if ($this->show == 'iframe') {
+					echo $this->output; exit;
+				}
 			}
 			
 			return parent::render($parameters, $document);
@@ -135,16 +166,23 @@
 			$list = $this->document->createElement('ul');
 			$url = clone $this->url;
 			
-			$url->parameters()->debug = null;
+			$url->parameters()->debug = 'browse';
+			$url->parameters()->{'debug-state'} = $this->state;
 			$this->appendLink(
-				$list, __('View XML'),
-				(string)$url, ($this->show == 'xml')
+				$list, __('Browse Site'),
+				(string)$url, ($this->show == 'browse')
 			);
 			
-			$url->parameters()->debug = 'result';
+			$url->parameters()->debug = 'source';
 			$this->appendLink(
-				$list, __('View HTML'),
-				(string)$url, ($this->show == 'result')
+				$list, __('View Source'),
+				(string)$url, ($this->show == 'source')
+			);
+			
+			$url->parameters()->debug = 'output';
+			$this->appendLink(
+				$list, __('View Output'),
+				(string)$url, ($this->show == 'output')
 			);
 			
 			$url->parameters()->debug = 'params';
@@ -158,10 +196,10 @@
 			$fieldset = Widget::Fieldset(__('Templates'));
 			$list = $this->document->createElement('ul');
 			
-			$url->parameters()->debug = 'view';
+			$url->parameters()->debug = 'template';
 			$item = $this->appendLink(
 				$list, basename($this->view->templatePathname()),
-				(string)$url, ($this->show == 'view')
+				(string)$url, ($this->show == 'template')
 			);
 			
 			$this->appendUtilityLinks($item, $this->utilities);
@@ -174,6 +212,7 @@
 		
 		protected function appendUtilityLinks(DOMElement $wrapper, $utilities) {
 			$url = clone $this->url;
+			$url->parameters()->{'debug-state'} = $this->state;
 			$list = $this->document->createElement('ul');
 			
 			foreach ($utilities as $utility) {
@@ -199,11 +238,25 @@
 			$content = parent::appendContent($wrapper);
 			$source = null; $type = null;
 			
-			if ($this->show == 'xml') {
+			if ($this->show == 'browse') {
+				$url = clone $this->url;
+				$url->parameters()->debug = 'iframe';
+				$url->parameters()->{'debug-state'} = $this->state;
+				
+				$iframe = $this->document->createElement('iframe');
+				$iframe->setAttribute('height', '400');
+				$iframe->setAttribute('width', '400');
+				$iframe->setAttribute('src', (string)$url);
+				$content->appendChild($iframe);
+				
+				unset($url->parameters()->{'debug-get-output'});
+			}
+			
+			else if ($this->show == 'source') {
 				$this->appendSource($content, $this->input, 'xml');
 			}
 			
-			else if ($this->show == 'result') {
+			else if ($this->show == 'output') {
 				$this->appendSource($content, $this->output, 'xml');
 			}
 			
@@ -248,7 +301,7 @@
 		protected function appendFile(DOMElement $wrapper) {
 			$valid = false;
 			
-			if ($this->show == 'view') {
+			if ($this->show == 'template') {
 				$file = VIEWS . '/' . $this->view->templatePathname();
 			}
 			

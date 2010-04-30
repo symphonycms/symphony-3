@@ -333,13 +333,13 @@
 		}
 
 		public static function determineFilterType($string){
-		 	return (strpos($string, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
+		 	return (strpos($string, '+') !== false ? DataSource::FILTER_AND : DataSource::FILTER_OR);
 		}
 
 		public static function prepareFilterValue($value, Register $ParameterOutput=NULL, &$filterOperationType=DataSource::FILTER_OR){
 
 			if(strlen(trim($value)) == 0) return NULL;
-
+			
 			if(is_array($value)) {
 				foreach($value as $k => $v) {
 					$value[$k] = self::prepareFilterValue($v, $ParameterOutput, $filterOperationType);

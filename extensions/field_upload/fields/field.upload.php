@@ -329,7 +329,7 @@
 			return $meta;
 		}
 		
-		public function processFormData($data, Entry $entry = null) {
+		public function processData($data, Entry $entry = null) {
 			$result = (object)array();
 			$existing = null;
 			

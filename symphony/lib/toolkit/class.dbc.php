@@ -259,7 +259,7 @@
 	        return @mysql_affected_rows($this->_connection);
 	    }
 
-		private function __prepareQuery($query, array $values = array()){
+		public function prepareQuery($query, array $values = array()){
 			if ($this->prefix != 'tbl_') {
 				$query = preg_replace('/tbl_([^\b`]+)/i', $this->prefix . '\\1', $query);
 			}
@@ -391,7 +391,7 @@
 	    public function query($query, array $values = array(), $returnType='DBCMySQLResult'){
 	        if (!$this->connected()) throw new DatabaseException('No Database Connection Found.');
 
-			$query = $this->__prepareQuery($query, $values);
+			$query = $this->prepareQuery($query, $values);
 
 			$this->_last_query = $query;
 
