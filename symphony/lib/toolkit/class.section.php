@@ -375,6 +375,7 @@
 			$result = (object)array(
 				'synced'	=> true,
 				'section'	=> (object)array(
+					'create'	=> false,
 					'rename'	=> false,
 					'old'		=> (object)array(
 						'handle'	=> $new_handle,
@@ -428,21 +429,8 @@
 					$field->loadSettingsFromSimpleXMLObject(
 						simplexml_import_dom($node)
 					);
-
-					// Create a temp node without section and element-name information:
-					$temp_node = $node->cloneNode(true);
-					$temp_node->removeChild(
-						$old_xpath->query('section', $temp_node)->item(0)
-					);
-					$temp_node->removeChild(
-						$old_xpath->query('element-name', $temp_node)->item(0)
-					);
-					$temp_node->removeChild(
-						$old_xpath->query('label', $temp_node)->item(0)
-					);
-
+					
 					$old[$field->guid] = (object)array(
-						'checksum'	=> md5($old_doc->saveXML($temp_node)),
 						'label'		=> $field->label,
 						'field'		=> $field
 					);
@@ -451,6 +439,7 @@
 
 			else {
 				$result->synced = false;
+				$result->section->create = true;
 			}
 
 			foreach ($new_xpath->query('/section/fields/field') as $node) {
@@ -460,24 +449,13 @@
 					simplexml_import_dom($node)
 				);
 
-				// Create a temp node without section and element-name information:
-				$temp_node = $node->cloneNode(true);
-				$temp_node->removeChild(
-					$new_xpath->query('section', $temp_node)->item(0)
-				);
-				$temp_node->removeChild(
-					$new_xpath->query('element-name', $temp_node)->item(0)
-				);
-				$temp_node->removeChild(
-					$new_xpath->query('label', $temp_node)->item(0)
-				);
-
 				$new[$field->guid] = (object)array(
-					'checksum'	=> md5($new_doc->saveXML($temp_node)),
 					'label'		=> $field->label,
 					'field'		=> $field
 				);
 			}
+			
+			//exit;
 
 			foreach ($new as $guid => $data) {
 				// Field is being created:
@@ -490,7 +468,6 @@
 				if ($result->section->rename or $old[$guid]->field->{'element-name'} != $data->field->{'element-name'}) {
 					if ($old[$guid]->field->type == $data->field->type) {
 						$result->rename[$guid] = (object)array(
-							'checksum'	=> $data->checksum,
 							'label'		=> $data->label,
 							'old'		=> $old[$guid]->field,
 							'new'		=> $data->field
@@ -506,10 +483,9 @@
 				}
 
 				// Field definition has changed:
-				if ($old[$guid]->checksum != $data->checksum) {
+				if ($old[$guid]->field != $data->field) {
 					if ($old[$guid]->field->type == $data->field->type) {
 						$result->update[$guid] = (object)array(
-							'checksum'	=> $data->checksum,
 							'label'		=> $data->label,
 							'old'		=> $old[$guid]->field,
 							'new'		=> $data->field

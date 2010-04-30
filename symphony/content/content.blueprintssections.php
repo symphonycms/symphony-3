@@ -490,7 +490,12 @@
 					$cell = $this->createElement('td', __('No'));
 					$cell->setAttribute('class', 'no');
 					
-					if ($action == 'update') {
+					if ($action == 'create' and $sync->section->create) {
+						$cell->setValue(__('Yes'));
+						$cell->setAttribute('class', 'yes');
+					}
+
+					if ($action == 'update' and !$sync->section->create) {
 						$cell->setValue(__('Yes'));
 						$cell->setAttribute('class', 'yes');
 					}
@@ -542,18 +547,6 @@
 				$table->appendChild($row);
 			}
 
-			// Footer:
-			/*
-			$row = $this->createElement('tr');
-			$row->appendChild($this->createElement('th', __('Totals')));
-			
-			foreach ($table_actions as $action => $count) {
-				$row->appendChild($this->createElement('th', (string)$count));
-			}
-
-			$table->appendChild($row);
-			*/
-			
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
 			$div->appendChild(Widget::Submit('action[sync]', __('Apply Changes')));
@@ -738,7 +731,7 @@
 				}
 			}
 
-			if (!$this->alerts()->valid()) {
+			if (!$this->alerts()->valid() and $existing instanceof Section) {
 				$this->appendSyncAlert();
 			}
 
