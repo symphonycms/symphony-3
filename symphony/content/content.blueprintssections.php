@@ -821,7 +821,6 @@
 			$instances->setAttribute('class', 'instances');
 
 			$ol = $this->createElement('ol');
-			$ol->setAttribute('id', 'section-' . $section_id);
 			$ol->setAttribute('class', 'section-duplicator');
 
 			$fields = $this->section->fields;

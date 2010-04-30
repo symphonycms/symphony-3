@@ -35,7 +35,7 @@
 			$title->appendChild($this->createTextNode(' ' . __('Data Sources')));
 			$this->insertNodeIntoHead($title);
 
-			$this->appendSubheading(__('Data Sources') . $heading, Widget::Anchor(
+			$this->appendSubheading(__('Data Sources'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
 					'title' => __('Create a new data source'),
 					'class' => 'create button'

@@ -169,12 +169,12 @@
 			return self::$_lang;
 		}
 		public function initialiseCookie(){
-
+			
 			$cookie_path = @parse_url(URL, PHP_URL_PATH);
 			$cookie_path = '/' . trim($cookie_path, '/');
 
 			define_safe('__SYM_COOKIE_PATH__', $cookie_path);
-			define_safe('__SYM_COOKIE_PREFIX__', self::Configuration()->core()->sympyony->cookie_prefix);
+			define_safe('__SYM_COOKIE_PREFIX__', self::Configuration()->core()->symphony->{'cookie-prefix'});
 
 			$this->Cookie = new Cookie(__SYM_COOKIE_PREFIX__, TWO_WEEKS, __SYM_COOKIE_PATH__);
 		}

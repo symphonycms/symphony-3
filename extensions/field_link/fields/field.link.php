@@ -249,7 +249,8 @@
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			parent::displaySettingsPanel($wrapper, $errors);
-
+			
+			$document = $wrapper->ownerDocument;
 			$label = Widget::Label(__('Options'));
 			$options = array();
 

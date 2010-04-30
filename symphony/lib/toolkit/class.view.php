@@ -73,6 +73,11 @@
 			if(in_array($name, array('path', 'template', 'handle', 'guid'))){
 				return $this->{"_{$name}"};
 			}
+			
+			if (!isset($this->_about->$name)) {
+				return false;
+			}
+			
 			return $this->_about->$name;
 		}
 
@@ -459,7 +464,7 @@
 			$Events = $Document->createElement('events');
 			$root->appendChild($Events);
 			
-			if(is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})){
+			if(isset($this->about()->{'events'}) && is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})){
 				$events = array();
 				foreach($this->about()->{'events'} as $handle){
 					$events[] = Event::loadFromHandle($handle);
@@ -553,6 +558,7 @@
 		private $_iterator;
 		private $_length;
 		private $_position;
+		private $_current;
 
 		public function __construct($path=NULL, $recurse=true){
 			$this->_iterator = new ViewFilterIterator($path, $recurse);

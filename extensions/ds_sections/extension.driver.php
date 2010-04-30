@@ -39,8 +39,7 @@
 					foreach($data['conditions']['parameter'] as $index => $parameter){
 						$datasource->parameters()->conditions[$index] = array(
 							'parameter' => $parameter,
-							'logic' => $data['conditions']['logic'][$index],
-							'action' => $data['conditions']['action'][$index]
+							'logic' => $data['conditions']['logic'][$index]
 						);
 					}
 				}
@@ -479,7 +478,15 @@
 
 		protected function appendCondition(SymphonyDOMElement $wrapper, $condition = array()) {
 			$document = $wrapper->ownerDocument;
-
+			
+			if (!isset($condition['parameter'])) {
+				$condition['parameter'] = null;
+			}
+			
+			if (!isset($condition['logic'])) {
+				$condition['logic'] = 'empty';
+			}
+			
 			$li = $document->createElement('li');
 
 			$name = $document->createElement('span', __('Don\'t Execute When'));
@@ -501,21 +508,6 @@
 				array('set', ($condition['logic'] == 'set'), __('is set'))
 			), array('class' => 'filtered')));
 			$group->appendChild($label);
-
-			// Action
-			/*
-			$label = $document->createElement('label', __('Action'));
-			$label->appendChild(Widget::select('fields[conditions][action][]', array(
-				//array('label' => 'Execution', 'options' => array(
-					array('execute', ($condition['action'] == 'execute'), __('Execute')),
-					array('do-not-execute', ($condition['action'] == 'do-not-execute'), __('Do not Execute')),
-				//)),
-				//array('label' => 'Redirect', 'options' => array(
-				//	array('redirect:404', false, '404'),
-				//	array('redirect:/about/me/', false, '/about/me/'),
-				//)),
-			), array('class' => 'filtered')));
-			*/
 
 			$group->appendChild($label);
 			$li->appendChild($group);

@@ -129,37 +129,50 @@
 			);
 		}
 		
-		protected function appendJump(DOMElement $wrapper) {
+		protected function appendSidebar(DOMElement $wrapper) {
+			$sidebar = parent::appendSidebar($wrapper);
+			$fieldset = $sidebar->lastChild;
+			$list = $this->document->createElement('ul');
 			$url = clone $this->url;
 			
 			$url->parameters()->debug = null;
-			$this->appendJumpItem(
-				$wrapper, __('XML'),
+			$this->appendLink(
+				$list, __('View XML'),
 				(string)$url, ($this->show == 'xml')
 			);
 			
 			$url->parameters()->debug = 'result';
-			$this->appendJumpItem(
-				$wrapper, __('Result'),
+			$this->appendLink(
+				$list, __('View HTML'),
 				(string)$url, ($this->show == 'result')
 			);
 			
 			$url->parameters()->debug = 'params';
-			$this->appendJumpItem(
-				$wrapper, __('Params'),
+			$this->appendLink(
+				$list, __('View Parameters'),
 				(string)$url, ($this->show == 'params')
 			);
 			
+			$fieldset->appendChild($list);
+			
+			$fieldset = Widget::Fieldset(__('Templates'));
+			$list = $this->document->createElement('ul');
+			
 			$url->parameters()->debug = 'view';
-			$item = $this->appendJumpItem(
-				$wrapper, basename($this->view->templatePathname()),
+			$item = $this->appendLink(
+				$list, basename($this->view->templatePathname()),
 				(string)$url, ($this->show == 'view')
 			);
 			
-			$this->appendJumpUtility($item, $this->utilities);
+			$this->appendUtilityLinks($item, $this->utilities);
+			
+			$fieldset->appendChild($list);
+			$sidebar->appendChild($fieldset);
+			
+			return $sidebar;
 		}
 		
-		protected function appendJumpUtility(DOMElement $wrapper, $utilities) {
+		protected function appendUtilityLinks(DOMElement $wrapper, $utilities) {
 			$url = clone $this->url;
 			$list = $this->document->createElement('ul');
 			
@@ -167,13 +180,13 @@
 				$path = ltrim(substr($utility->file, strlen(WORKSPACE)), '/.');
 				
 				$url->parameters()->debug = $path;
-				$item = $this->appendJumpItem(
+				$item = $this->appendLink(
 					$list, basename($utility->file),
 					(string)$url, ($this->show == $path)
 				);
 				
 				if (!empty($utility->tree)) {
-					$this->appendJumpUtility($item, $utility->tree);
+					$this->appendUtilityLinks($item, $utility->tree);
 				}
 			}
 			

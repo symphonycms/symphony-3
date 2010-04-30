@@ -40,6 +40,8 @@
 		}
 
 		function view(){
+			Widget::init($this);
+			
 			$emergency = false;
 			if(isset($this->_context[0]) && in_array(strlen($this->_context[0]), array(6, 8))){
 				$emergency = $this->__loginFromToken($this->_context[0]);
@@ -109,7 +111,6 @@
 				$this->Form->appendChild($div);
 
 			else:
-
 				$label = Widget::Label(__('Username'));
 				$label->appendChild(Widget::Input('username'));
 				$fieldset->appendChild($label);

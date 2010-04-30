@@ -35,7 +35,11 @@
 			if (!$this->_session) {
 				$this->__init();
 			}
-
+			
+			if (!isset($_SESSION[$this->_index][$name])) {
+				return null;
+			}
+			
 			return $_SESSION[$this->_index][$name];
 		}
 		
