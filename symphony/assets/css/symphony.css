@@ -750,7 +750,8 @@
 	form .field:first-child label {
 		margin-top: 0;
 	}
-	form label em {
+	form label em,
+	form .label em {
 		float: right;
 		opacity: 0.5;
 	}

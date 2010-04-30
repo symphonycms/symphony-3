@@ -35,11 +35,11 @@
 					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
 						`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
 						`entry_id` int(11) unsigned NOT NULL,
-						`name` text,
-						`path` text,
-						`file` text,
-						`size` int(11) unsigned NOT NULL,
-						`type` varchar(255) NOT NULL,
+						`name` text DEFAULT NULL,
+						`path` text DEFAULT NULL,
+						`file` text DEFAULT NULL,
+						`size` int(11) unsigned DEFAULT NULL,
+						`type` varchar(255) DEFAULT NULL,
 						`meta` text DEFAULT NULL,
 						PRIMARY KEY (`id`),
 						UNIQUE KEY `entry_id` (`entry_id`),
@@ -203,7 +203,7 @@
 			$label->setAttribute('class', 'label');
 
 			if ($this->required != 'yes') {
-				$label->appendChild($document->createElement('i', 'Optional'));
+				$label->appendChild($document->createElement('em', 'Optional'));
 			}
 			
 			if (!$errors->valid() and $data->file) {
@@ -349,6 +349,7 @@
 			
 			if (isset($entry->data()->{$this->{'element-name'}})) {
 				$existing = $entry->data()->{$this->{'element-name'}};
+				$existing->meta = unserialize($existing->meta);
 			}
 			
 			// Recieving file:
@@ -386,7 +387,7 @@
 				$existing_file = null;
 				
 				if (isset($existing->file, $existing->path)) {
-					$existing_file = $existing->path . '/' . $existing->file;
+					$existing_file = DOCROOT . '/' . trim($existing->path, '/') . '/' . $existing->file;
 				}
 				
 				// Existing data:
@@ -417,12 +418,7 @@
 			
 			// Track existing file:
 			if (isset($existing->file, $existing->path)) {
-				$result->existing = $existing->path . '/' . $existing->file;
-			}
-			
-			// Make sure meta data is serialized:
-			if (isset($result->meta) and is_array($result->meta)) {
-				$result->meta = serialize($result->meta);
+				$result->existing = DOCROOT . '/' . $existing->path . '/' . $existing->file;
 			}
 			
 			// At least have a null existing file:
@@ -434,7 +430,7 @@
 		}
 		
 		public function validateData(MessageStack $errors, Entry $entry = null, $data = null) {
-			if (empty($data) or $data->error == UPLOAD_ERR_NO_FILE) {
+			if ($data->error == UPLOAD_ERR_NO_FILE) {
 				if ($this->required == 'yes') {
 					$errors->append(
 						null, array(
@@ -561,7 +557,8 @@
 			
 			$file = DOCROOT . '/' . $data->path . '/' . $data->file;
 			
-			if ($data->existing != $file and file_exists($file)) {
+			// Make sure we don't upload over the top of a pervious file:
+			if (isset($data->tmp_name) and $data->existing != $file and file_exists($file)) {
 				$errors->append(
 					null, array(
 					 	'message' => __(
@@ -597,7 +594,7 @@
 			$file = DOCROOT . '/' . $data->path . '/' . $data->file;
 			
 			// Upload the file:
-			if (isset($data->tmp_name)) {
+			if ($data->tmp_name and $data->error == 0) {
 				if (!General::uploadFile(DOCROOT . '/' . $data->path, $data->file, $data->tmp_name, $permissions)) {
 					$errors->append(
 						null, array(
@@ -634,7 +631,9 @@
 				)
 			);
 			
-			try{
+			try {
+				$data->meta = serialize($data->meta);
+				
 				Symphony::Database()->insert(
 					sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
 					(array)$data,
@@ -765,21 +764,16 @@
 			$wrapper->appendChild($field);
 		}
 
-		public function prepareTableValue($data, SymphonyDOMElement $link = null) {
-			if (!$this->sanitizeDataArray($data)) return null;
+		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link = null) {
+			$dummy = (object)array(
+				'value'		=> $data->name
+			);
 			
 			if ($link) {
-				$link->setValue($data->name);
-				
-				return $link;
+				return parent::prepareTableValue($dummy, $link);
 			}
 			
-			else {
-				$path = substr($data->path, strlen(DOCROOT));
-				$link = Widget::Anchor($data->name, URL . $path . '/' . $data->file);
-
-				return $link;
-			}
+			return parent::prepareTableValue($dummy);
 		}
 	}
 

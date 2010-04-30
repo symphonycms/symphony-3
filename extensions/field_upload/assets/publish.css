@@ -4,6 +4,7 @@ form .field-upload .label {
 }
 form .field-upload .label > a {
 	float: right;
+	margin: 0 0 0 1ex;
 }
 
 form .field-upload .file {
