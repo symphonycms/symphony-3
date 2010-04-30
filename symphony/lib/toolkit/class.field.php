@@ -795,6 +795,10 @@
 
 			else if ($filter->type == 'contains' or $filter->type == 'does-not-contain') {
 				$statements = array();
+				
+				if ($filter_join == DataSource::FILTER_OR) {
+					$handle = $this->buildFilterJoin($joins);
+				}
 
 				foreach ($values as $index => $value) {
 					$value = '%' . $value . '%';
