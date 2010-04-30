@@ -247,7 +247,7 @@
 
 				$td3 = Widget::TableData($link);
 
-				$td3->appendChild(Widget::Input('items['.$name.']', 'on', 'checkbox'));
+				$td3->appendChild(Widget::Input('items['.$about['handle'].']', 'on', 'checkbox'));
 
 				switch ($about['status']) {
 					case Extension::ENABLED:
