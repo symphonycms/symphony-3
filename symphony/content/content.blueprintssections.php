@@ -448,7 +448,7 @@
 			foreach ($table_actions as $action => $count) {
 				$row->appendChild($this->createElement('th', __(ucwords($action))));
 			}
-
+			
 			$table->appendChild($row);
 			
 			$row = $this->createElement('tr');
@@ -564,8 +564,6 @@
 		}
 
 		private function __layout(Section $existing = null) {
-			$this->appendSyncAlert();
-
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 			if(isset($callback['flag']) && !is_null($callback['flag'])){
@@ -586,7 +584,7 @@
 				}
 			}
 
-			if (!$this->alerts()->valid()) {
+			if (!$this->alerts()->valid() and $existing instanceof Section) {
 				$this->appendSyncAlert();
 			}
 

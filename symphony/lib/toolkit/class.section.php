@@ -448,14 +448,12 @@
 				$field->loadSettingsFromSimpleXMLObject(
 					simplexml_import_dom($node)
 				);
-
+				
 				$new[$field->guid] = (object)array(
 					'label'		=> $field->label,
 					'field'		=> $field
 				);
 			}
-			
-			//exit;
 
 			foreach ($new as $guid => $data) {
 				// Field is being created:
