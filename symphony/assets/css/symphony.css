@@ -1314,11 +1314,19 @@
 		width: 15%;
 	}
 	
+	.filters h4 {
+		font-size: 1.1em;
+		color: #555;
+		font-weight: bold;
+		line-height: 2em;
+	}
+	
 	.filters ul {
 		font-size: 1.1em;
 		line-height: 1.75em;
 		list-style: none;
 		color: #999;
+		margin-bottom: 2em;
 	}
 	
 	.filters ul li {

@@ -105,27 +105,49 @@
 				}
 			}
 			
-		## Build filter menus
+		## Build status filter menu
 		
-			$h3 = $this->createElement('h3', __('Filter'));
-			$left->appendChild($h3);
+			$h4 = $this->createElement('h4', __('Filter by Status'));
+			$left->appendChild($h4);
 			
 			$ul = $this->createElement('ul');
 			
-			foreach($lists as $name => $group) {
-				foreach($group as $list => $extensions){
-					if(!empty($extensions)){
-						$li = $this->createElement('li', Widget::Anchor(ucwords($list), $path . $name . '/' . $list));
-						if($value == $list){
-							$li->setAttribute('class','active');
-						}
-						
-						$count = $this->createElement('span', (string) count($extensions));
-
-						$li->appendChild($count);
-					
-						$ul->appendChild($li);
+			foreach($lists['status'] as $list => $extensions) {
+				if(!empty($extensions)){
+					$li = $this->createElement('li', Widget::Anchor(ucwords($list), $path . 'status/' . $list));
+					if($value == $list){
+						$li->setAttribute('class','active');
 					}
+					
+					$count = $this->createElement('span', (string) count($extensions));
+
+					$li->appendChild($count);
+				
+					$ul->appendChild($li);
+				}
+			}
+	
+			$left->appendChild($ul);
+			
+		## Build type filter menu
+		
+			$h4 = $this->createElement('h4', __('Filter by Type'));
+			$left->appendChild($h4);
+			
+			$ul = $this->createElement('ul');
+			
+			foreach($lists['type'] as $list => $extensions) {
+				if(!empty($extensions)){
+					$li = $this->createElement('li', Widget::Anchor(ucwords($list), $path . 'type/' . $list));
+					if($value == $list){
+						$li->setAttribute('class','active');
+					}
+					
+					$count = $this->createElement('span', (string) count($extensions));
+
+					$li->appendChild($count);
+				
+					$ul->appendChild($li);
 				}
 			}
 	
@@ -167,7 +189,7 @@
 				array(__('Name'), 'col'),
 				array(__('Version'), 'col'),
 				array(__('Author'), 'col'),
-				array(__('Status'), 'col')
+				array(__('Actions'), 'col')
 			);
 
 			$aTableBody = array();
@@ -229,19 +251,19 @@
 
 				switch ($about['status']) {
 					case Extension::ENABLED:
-						$td4 = Widget::TableData(__('Enabled'), array('class' => 'enabled'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Disable'), '#'));
 						break;
 
 					case Extension::DISABLED:
-						$td4 = Widget::TableData(__('Disabled'), array('class' => 'disabled'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Enable'), '#'));
 						break;
 
 					case Extension::NOT_INSTALLED:
-						$td4 = Widget::TableData(__('Not Installed'), array('class' => 'not-installed'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Install'), '#'));
 						break;
 
 					case Extension::REQUIRES_UPDATE:
-						$td4 = Widget::TableData(__('Needs Update'), array('class' => 'updatable'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Update'), '#'));
 				}
 
 				## Add a row to the body array, assigning each cell to the row
