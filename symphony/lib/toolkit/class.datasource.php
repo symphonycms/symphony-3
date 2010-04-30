@@ -314,7 +314,7 @@
 			}
 			else {
 				$root->appendChild(
-					$root->ownerDocument->createElement('error', __('No Record found.'))
+					$root->ownerDocument->createElement('error', __('No records found.'))
 				);
 			}
 		}

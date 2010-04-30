@@ -754,60 +754,82 @@
 			$filter = $this->processFilter($filter);
 			$filter_join = DataSource::FILTER_OR;
 			$db = Symphony::Database();
-			
+
+			$values = DataSource::prepareFilterValue($filter->value, $parameter_output, $filter_join);
+			if (!is_array($values)) $values = array();
+
 			// Exact matches:
 			if ($filter->type == 'is' or $filter->type == 'is-not') {
-				$values = DataSource::prepareFilterValue($filter->value, $parameter_output, $filter_join);
 				$statements = array();
-				
-				if (!is_array($values)) $values = array();
-				
+
 				if ($filter_join == DataSource::FILTER_OR) {
 					$handle = $this->buildFilterJoin($joins);
 				}
-				
+
 				foreach ($values as $index => $value) {
 					if ($filter_join != DataSource::FILTER_OR) {
 						$handle = $this->buildFilterJoin($joins);
 					}
-					
+
 					$statements[] = $db->prepareQuery(
 						"'%s' IN ({$handle}.value, {$handle}.handle)", array($value)
 					);
 				}
-				
+
+				if(empty($statements)) return true;
+
 				if ($filter_join == DataSource::FILTER_OR) {
 					$statement = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
 				}
-				
+
 				else {
 					$statement = "(\n\t" . implode("\n\tAND ", $statements) . "\n)";
 				}
-				
+
 				if ($filter->type == 'is-not') {
 					$statement = 'NOT ' . $statement;
 				}
-				
-				$where .= 'AND ' . $statement;
+
+				$where .= ' AND ' . $statement;
 			}
-			
+
 			else if ($filter->type == 'contains' or $filter->type == 'does-not-contain') {
-				$handle = $this->buildFilterJoin($joins);
-				$value = '%' . $filter->value . '%';
-				$statements = array(
-					$db->prepareQuery("{$handle}.value LIKE '%s'", array($value)),
-					$db->prepareQuery("{$handle}.handle LIKE '%s'", array($value))
-				);
+				$statements = array();
 				
-				$statement = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
-				
+				if ($filter_join == DataSource::FILTER_OR) {
+					$handle = $this->buildFilterJoin($joins);
+				}
+
+				foreach ($values as $index => $value) {
+					$value = '%' . $value . '%';
+
+					if ($filter_join != DataSource::FILTER_OR) {
+						$handle = $this->buildFilterJoin($joins);
+					}
+
+					$statements = array(
+						$db->prepareQuery("{$handle}.value LIKE '%s'", array($value)),
+						$db->prepareQuery("{$handle}.handle LIKE '%s'", array($value))
+					);
+				}
+
+				if(empty($statements)) return true;
+
+				if ($filter_join == DataSource::FILTER_OR) {
+					$statement = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
+				}
+
+				else {
+					$statement = "(\n\t" . implode("\n\tAND ", $statements) . "\n)";
+				}
+
 				if ($filter->type == 'does-not-contain') {
 					$statement = 'NOT ' . $statement;
 				}
-				
-				$where .= 'AND ' . $statement;
+
+				$where .= ' AND ' . $statement;
 			}
-			
+
 			// Regex search:
 			else if ($filter->type == 'regex-search') {
 				$handle = $this->buildFilterJoin($joins);
@@ -816,10 +838,10 @@
 					$db->prepareQuery("{$handle}.value REGEXP '%s'", array($value)),
 					$db->prepareQuery("{$handle}.handle REGEXP '%s'", array($value))
 				);
-				
-				$where .= "AND (\n\t" . implode("\n\tOR ", $statements) . "\n)";
+
+				$where .= " AND (\n\t" . implode("\n\tOR ", $statements) . "\n)";
 			}
-			
+
 			return true;
 		}
 		
