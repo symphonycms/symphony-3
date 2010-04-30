@@ -229,13 +229,17 @@
 			throw new DataSourceException('Errors were encountered whilst attempting to save.');
 		}
 
-		public function delete($handle){
+		public function delete($datasource){
 			/*
 				TODO:
 				Upon deletion of the event, views need to be updated to remove
 				it's associated with the event
 			*/
-			$datasource = Datasource::loadFromHandle($handle);
+			if(!$datasource instanceof DataSource) {
+				$datasource = Datasource::loadFromHandle($datasource);
+			}
+
+			$handle = $datasource->handle;
 
 			if(!$datasource->allowEditorToParse()) {
 				throw new DataSourceException(__('Datasource cannot be deleted, the Editor does not have permission.'));
@@ -310,7 +314,7 @@
 			}
 			else {
 				$root->appendChild(
-					$root->ownerDocument->createElement('error', __('No Record found.'))
+					$root->ownerDocument->createElement('error', __('No records found.'))
 				);
 			}
 		}
@@ -329,13 +333,13 @@
 		}
 
 		public static function determineFilterType($string){
-		 	return (strpos($string, '+') === true ? DataSource::FILTER_AND : DataSource::FILTER_OR);
+		 	return (strpos($string, '+') !== false ? DataSource::FILTER_AND : DataSource::FILTER_OR);
 		}
 
 		public static function prepareFilterValue($value, Register $ParameterOutput=NULL, &$filterOperationType=DataSource::FILTER_OR){
 
 			if(strlen(trim($value)) == 0) return NULL;
-
+			
 			if(is_array($value)) {
 				foreach($value as $k => $v) {
 					$value[$k] = self::prepareFilterValue($v, $ParameterOutput, $filterOperationType);

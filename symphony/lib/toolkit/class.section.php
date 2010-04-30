@@ -83,7 +83,7 @@
 
 		protected $parameters;
 		protected $fields;
-		
+
 		public static function createGUID() {
 			return uniqid();
 		}
@@ -161,12 +161,12 @@
 			if($name == 'guid') return; //guid cannot be set manually
 			$this->_about->$name = $value;
 		}*/
-		
+
 		public function appendField(Field $field){
 			$field->section = $this->handle;
 			$this->fields[] = $field;
 		}
-		
+
 		public function appendFieldByType($type, array $data=NULL){
 
 			$field = Field::loadFromType($type);
@@ -174,7 +174,7 @@
 			if(!is_null($data)){
 				$field->setPropertiesFromPostData($data);
 			}
-			
+
 			$this->appendField($field);
 			return $field;
 		}
@@ -234,13 +234,13 @@
 			foreach($doc as $name => $value){
 				if($name == 'fields' && isset($value->field)){
 					foreach($value->field as $field){
-						
+
 						try{
 							$section->appendField(
 								Field::loadFromXMLDefinition($field)
 							);
 						}
-						
+
 						catch(Exception $e){
 							// Couldnt find the field. Ignore it for now
 							// TODO: Might need to more than just ignore it
@@ -305,7 +305,7 @@
 					$section->$name = (string)$value;
 				}
 			}
-			
+
 			$section->sanitizeLayout(true);
 
 			if (isset($doc->attributes()->guid)) {
@@ -321,7 +321,7 @@
 
 		public static function save(Section $section, MessageStack $messages, $essentials = null, $simulate = false) {
 			$pathname = sprintf('%s/%s.xml', $section->path, $section->handle);
-			
+
 			// Check to ensure all the required section fields are filled
 			if (!isset($section->name) || strlen(trim($section->name)) == 0) {
 				$messages->append('name', __('This is a required field.'));
@@ -330,11 +330,11 @@
 			// Check for duplicate section handle
 			elseif(file_exists($pathname)){
 				$existing = self::load($pathname);
-				
+
 				if (isset($existing->guid) and $existing->guid != $section->guid) {
 					$messages->append('name', __('A Section with the name <code>%s</code> already exists', array($section->name)));
 				}
-				
+
 				unset($existing);
 			}
 
@@ -356,25 +356,26 @@
 			if ($messages->length() > 0) {
 				throw new SectionException(__('Section could not be saved. Validation failed.'), self::ERROR_MISSING_OR_INVALID_FIELDS);
 			}
-			
+
 			if ($simulate) return true;
-			
+
 			$section->sanitizeLayout();
-			
+
 			return file_put_contents($pathname, (string)$section);
 		}
-		
+
 		public static function syncroniseStatistics(Section $section) {
 			$new_doc = new DOMDocument('1.0', 'UTF-8');
 			$new_doc->formatOutput = true;
 			$new_doc->loadXML((string)$section);
 			$new_xpath = new DOMXPath($new_doc);
 			$new_handle = $section->handle;
-			
+
 			$old = $new = array();
 			$result = (object)array(
 				'synced'	=> true,
 				'section'	=> (object)array(
+					'create'	=> false,
 					'rename'	=> false,
 					'old'		=> (object)array(
 						'handle'	=> $new_handle,
@@ -390,7 +391,7 @@
 				'create'	=> array(),
 				'update'	=> array()
 			);
-			
+
 			$res = Symphony::Database()->query(
 				'
 					SELECT
@@ -406,21 +407,21 @@
 					$new_doc->saveXML()
 				)
 			);
-			
+
 			if ($res->valid()) {
 				$old_doc = new DOMDocument('1.0', 'UTF-8');
 				$old_doc->formatOutput = true;
 				$old_doc->loadXML($res->current()->xml);
 				$old_xpath = new DOMXPath($old_doc);
 				$old_handle = $old_xpath->evaluate('string(/section/name/@handle)');
-				
+
 				if ($old_handle != $new_handle) {
 					$result->synced = false;
 					$result->section->rename = true;
 					$result->section->old->handle = $old_handle;
 					$result->section->old->name = $old_xpath->evaluate('string(/section/name)');
 				}
-				
+
 				// Build array of old and new nodes for comparison:
 				foreach ($old_xpath->query('/section/fields/field') as $node) {
 					$type = $old_xpath->evaluate('string(type)', $node);
@@ -429,30 +430,18 @@
 						simplexml_import_dom($node)
 					);
 					
-					// Create a temp node without section and element-name information:
-					$temp_node = $node->cloneNode(true);
-					$temp_node->removeChild(
-						$old_xpath->query('section', $temp_node)->item(0)
-					);
-					$temp_node->removeChild(
-						$old_xpath->query('element-name', $temp_node)->item(0)
-					);
-					$temp_node->removeChild(
-						$old_xpath->query('label', $temp_node)->item(0)
-					);
-					
 					$old[$field->guid] = (object)array(
-						'checksum'	=> md5($old_doc->saveXML($temp_node)),
 						'label'		=> $field->label,
 						'field'		=> $field
 					);
 				}
 			}
-			
+
 			else {
 				$result->synced = false;
+				$result->section->create = true;
 			}
-			
+
 			foreach ($new_xpath->query('/section/fields/field') as $node) {
 				$type = $new_xpath->evaluate('string(type)', $node);
 				$field = Field::loadFromType($type);
@@ -460,43 +449,29 @@
 					simplexml_import_dom($node)
 				);
 				
-				// Create a temp node without section and element-name information:
-				$temp_node = $node->cloneNode(true);
-				$temp_node->removeChild(
-					$new_xpath->query('section', $temp_node)->item(0)
-				);
-				$temp_node->removeChild(
-					$new_xpath->query('element-name', $temp_node)->item(0)
-				);
-				$temp_node->removeChild(
-					$new_xpath->query('label', $temp_node)->item(0)
-				);
-				
 				$new[$field->guid] = (object)array(
-					'checksum'	=> md5($new_doc->saveXML($temp_node)),
 					'label'		=> $field->label,
 					'field'		=> $field
 				);
 			}
-			
+
 			foreach ($new as $guid => $data) {
 				// Field is being created:
 				if (!array_key_exists($guid, $old)) {
 					$result->create[$guid] = $data;
 					continue;
 				}
-				
+
 				// Field is being renamed:
 				if ($result->section->rename or $old[$guid]->field->{'element-name'} != $data->field->{'element-name'}) {
 					if ($old[$guid]->field->type == $data->field->type) {
 						$result->rename[$guid] = (object)array(
-							'checksum'	=> $data->checksum,
 							'label'		=> $data->label,
 							'old'		=> $old[$guid]->field,
 							'new'		=> $data->field
 						);
 					}
-					
+
 					// Type has changed:
 					else {
 						$result->remove[$guid] = $old[$guid];
@@ -504,18 +479,17 @@
 						continue;
 					}
 				}
-				
+
 				// Field definition has changed:
-				if ($old[$guid]->checksum != $data->checksum) {
+				if ($old[$guid]->field != $data->field) {
 					if ($old[$guid]->field->type == $data->field->type) {
 						$result->update[$guid] = (object)array(
-							'checksum'	=> $data->checksum,
 							'label'		=> $data->label,
 							'old'		=> $old[$guid]->field,
 							'new'		=> $data->field
 						);
 					}
-					
+
 					// Type has changed:
 					else {
 						$result->remove[$guid] = $old[$guid];
@@ -524,13 +498,13 @@
 					}
 				}
 			}
-			
+
 			foreach ($old as $guid => $data) {
 				if (array_key_exists($guid, $new)) continue;
-				
+
 				$result->remove[$guid] = $data;
 			}
-			
+
 			$result->synced = (
 				$result->synced
 				and empty($result->remove)
@@ -538,7 +512,7 @@
 				and empty($result->create)
 				and empty($result->update)
 			);
-			
+
 			return $result;
 		}
 
@@ -546,41 +520,41 @@
 			$stats = self::syncroniseStatistics($section);
 			$new_handle = $stats->section->new->handle;
 			$old_handle = $stats->section->old->handle;
-			
+
 			// Remove fields:
 			foreach ($stats->remove as $guid => $data) {
 				$data->field->remove();
 			}
-			
+
 			// Rename fields:
 			foreach ($stats->rename as $guid => $data) {
 				$data->new->rename($data->old);
 			}
-			
+
 			// Create fields:
 			foreach ($stats->create as $guid => $data) {
 				$data->field->create();
 			}
-			
+
 			// Update fields:
 			foreach ($stats->update as $guid => $data) {
 				$data->new->update($data->old);
 			}
-			
+
 			// Remove old sync data:
 			Symphony::Database()->delete(
 				'tbl_sections_sync',
 				array($section->guid),
 				'`section` = "%s"'
 			);
-			
+
 			// Create new sync data:
 			Symphony::Database()->insert('tbl_sections_sync', array(
 				'section'	=> $section->guid,
 				'xml'		=> (string)$section
 			));
 		}
-		
+
 		public static function rename(Section $section, $old_handle) {
 			/*
 			 	TODO:
@@ -588,10 +562,10 @@
 				Views will also need to update to ensure they still have references to the same
 				data-sources/sections
 			*/
-			
+
 			return General::deleteFile(SECTIONS . '/' . $old_handle . '.xml');
 		}
-		
+
 		public static function delete(Section $section) {
 			/*
 				TODO:
@@ -607,33 +581,58 @@
 
 				Verdict?
 			*/
-			
-			// Remove fields:
+
+			// 	Remove fields:
 			foreach ($section->fields as $field) {
 				$field->remove();
 			}
-			
-			// Remove sync data:
+
+			// 	Remove sync data:
 			Symphony::Database()->delete(
 				'tbl_sections_sync',
 				array($section->guid),
 				'`section` = "%s"'
 			);
-			
-			return General::deleteFile(SECTIONS . '/' . $section->handle . '.xml');
+
+			//	Remove entry metadata
+			Symphony::Database()->delete(
+				'tbl_entries',
+				array($section->handle),
+				'`section` = "%s"'
+			);
+
+			if(General::deleteFile(SECTIONS . '/' . $section->handle . '.xml')) {
+				//	Cleanup Datasources
+				foreach(new DataSourceIterator as $datasource) {
+					$ds = DataSource::load($datasource);
+
+					if($ds->parameters()->section == $section->handle) {
+						DataSource::delete($ds);
+					}
+				}
+
+				//	Cleanup Events
+				foreach(new EventIterator as $event) {
+					$ev = Event::load($event);
+
+					if($ev->parameters()->source == $section->handle) {
+						Event::delete($ev);
+					}
+				}
+			}
 		}
-		
+
 		public function sanitizeLayout($loading = false) {
 			$debug = ($this->handle == 'tests' and !$loading);
 			$layout = $this->layout;
 			$fields_used = array();
 			$fields_available = array();
-			
+
 			// Find available fields:
 			foreach ($this->fields as $field) {
 				$fields_available[] = $field->{'element-name'};
 			}
-			
+
 			// Make sure we have at least one column:
 			if (!is_array($layout) or empty($layout)) {
 				$layout = array(
@@ -647,13 +646,13 @@
 					)
 				);
 			}
-			
+
 			// Make sure each column has a fieldset:
 			foreach ($layout as &$column) {
 				if (!isset($column->fieldsets) or !is_array($column->fieldsets)) {
 					$column->fieldsets = array();
 				}
-				
+
 				if (empty($column->fieldsets)) {
 					$column->fieldsets = array(
 						(object)array(
@@ -662,43 +661,43 @@
 						)
 					);
 				}
-				
+
 				foreach ($column->fieldsets as &$fieldset) {
 					if (!isset($fieldset->fields) or !is_array($fieldset->fields)) {
 						$fieldset->fields = array();
 					}
-					
+
 					if (empty($fieldset->fields)) {
 						$fieldset->fields = array();
 					}
-					
+
 					foreach ($fieldset->fields as $index => $field) {
 						if (in_array($field, $fields_available)) {
 							$fields_used[] = $field;
 						}
-						
+
 						else {
 							unset($fieldset->fields[$index]);
 						}
-						
+
 						$fields_used[] = $field;
 					}
 				}
 			}
-			
+
 			$fields_unused = array_diff($fields_available, $fields_used);
-			
+
 			if (is_array($fields_unused)) foreach ($fields_unused as $field) {
 				$layout[0]->fieldsets[0]->fields[] = $field;
 			}
-			
+
 			if ($debug) {
 				//$this->layout = $layout;
-				
+
 				//var_dump($layout);
 				//exit;
 			}
-			
+
 			$this->layout = $layout;
 		}
 
@@ -732,13 +731,13 @@
 
 			if(is_array($this->fields) && !empty($this->fields)){
 				$fields = $doc->createElement('fields');
-				
+
 				foreach ($this->fields as $index => $field) {
 					$fields->appendChild($doc->importNode(
 						$field->toDoc()->documentElement, true
 					));
 				}
-				
+
 				$root->appendChild($fields);
 			}
 

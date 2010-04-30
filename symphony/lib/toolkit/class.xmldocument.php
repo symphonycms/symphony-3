@@ -17,8 +17,13 @@
 			$this->errors = new MessageStack;
 		}
 
-		public function xpath($query){
+		public function xpath($query, DOMNode $node = null){
 			$xpath = new DOMXPath($this);
+			
+			if ($node) {
+				return $xpath->query($query, $node);
+			}
+			
 			return $xpath->query($query);
 		}
 
@@ -118,6 +123,11 @@
 
 		public function remove() {
 			$this->parentNode->removeChild($this);
+		}
+		
+		public function wrapWith(DOMElement $wrapper) {
+			$this->parentNode->replaceChild($wrapper, $this);
+			$wrapper->appendChild($this);
 		}
 
 		public function __toString(){

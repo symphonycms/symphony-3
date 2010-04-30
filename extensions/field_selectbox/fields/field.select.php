@@ -240,7 +240,7 @@
 			return parent::loadDataFromDatabase($entry, true);
 		}
 
-		public function processFormData($data, Entry $entry=NULL){
+		public function processData($data, Entry $entry=NULL){
 
 			//if(isset($entry->data()->{$this->{'element-name'}})){
 			//	$result = $entry->data()->{$this->{'element-name'}};
@@ -272,8 +272,7 @@
 				$value .= $d->value;
 			}
 
-			// TODO: Isn't calling processFormData a prerequisit to callid validateData?
-			return parent::validateData($errors, $entry, $this->processFormData($value, $entry));
+			return parent::validateData($errors, $entry, $this->processData($value, $entry));
 		}
 
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
@@ -291,7 +290,7 @@
 			}
 
 			foreach($data->value as $d){
-				$d = $this->processFormData($d, $entry);
+				$d = $this->processData($d, $entry);
 				parent::saveData($errors, $entry, $d);
 			}
 			return Field::STATUS_OK;
@@ -320,57 +319,35 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		//	TODO: Instead of 'redoing the whole function', this should call the parent, then add the existing
-		//	tags into the DOM.
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+			
 			$document = $wrapper->ownerDocument;
-
-			$name = $document->createElement('span', $this->label);
-			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('em', $this->name()));
-			$wrapper->appendChild($name);
-
-			$type_label = Widget::Label(__('Type'));
-			$type_label->setAttribute('class', 'small');
-			$type_label->appendChild(Widget::Select(
-				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				$this->provideFilterTypes($data)
-			));
-
-			$label = Widget::Label(__('Value'));
-			$label->appendChild(Widget::Input(
-				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
-				$data['value']
-			));
-
-			$div = $document->createElement('div');
-			$div->appendChild($label);
-
 			$existing_options = $this->getToggleStates();
-
-			if(is_array($existing_options) && !empty($existing_options)){
+			
+			$div = $document->createElement('div');
+			$label = $document->xpath('.//label[last()]', $wrapper)->item(0);
+			$label->wrapWith($div);
+			
+			if (is_array($existing_options) && !empty($existing_options)) {
 				$optionlist = $document->createElement('ul');
 				$optionlist->setAttribute('class', 'tags');
-
-				foreach($existing_options as $option)
+				
+				foreach ($existing_options as $option) {
 					$optionlist->appendChild(
 						$document->createElement('li', $option)
 					);
-
+				}
+				
 				$div->appendChild($optionlist);
 			}
-
-			$wrapper->appendChild(Widget::Group(
-				$type_label, $div
-			));
 		}
-
 
 		/*-------------------------------------------------------------------------
 			Grouping:
 		-------------------------------------------------------------------------*/
 
-		function groupRecords($records){
+		public function groupRecords($records){
 
 			if(!is_array($records) || empty($records)) return;
 

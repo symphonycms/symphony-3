@@ -415,7 +415,7 @@
 
 			if ($this->label) {
 				$name = $document->createElement('span', $this->label);
-				$name->appendChild($document->createElement('i', $this->name()));
+				$name->appendChild($document->createElement('em', $this->name()));
 			}
 
 			else {
@@ -518,7 +518,7 @@
 			$document = $wrapper->ownerDocument;
 			$rules = ($type == 'upload' ? $upload : $validators);
 
-			$label->setValue($document->createElement('i', __('Optional')));
+			$label->setValue($document->createElement('em', __('Optional')));
 			$label->appendChild(Widget::Input($name, $selected));
 			$wrapper->appendChild($label);
 
@@ -536,17 +536,28 @@
 			Publish:
 		-------------------------------------------------------------------------*/
 
-		public function prepareTableValue($data, DOMElement $link=NULL) {
-			$max_length =Symphony::Configuration()->core()->symphony->cell-truncation-length;
+		public function prepareTableValue(StdClass $data, DOMElement $link=NULL) {
+			$max_length = Symphony::Configuration()->core()->symphony->cell-truncation-length;
 			$max_length = ($max_length ? $max_length : 75);
 
 			$value = strip_tags($data->value);
-			$value = (strlen($value) <= $max_length ? $value : substr($value, 0, $max_length) . '...');
-
+			
+			if ($max_length < strlen($value)) {
+				$lines = explode("\n", wordwrap($value, $max_length - 1, "\n"));
+				$value = array_shift($lines);
+				$value = rtrim($value, "\n\t !?.,:;");
+				$value .= '…';
+			}
+			
+			if ($max_length > 75) {
+				$value = wordwrap($value, 75, '<br />');
+			}
+			
 			if (strlen($value) == 0) $value = __('None');
-
+			
 			if (!is_null($link)) {
 				$link->setValue($value);
+				
 				return $link;
 			}
 
@@ -583,7 +594,7 @@
 			}
 		}
 
-		public function processFormData($data, Entry $entry=NULL){
+		public function processData($data, Entry $entry=NULL){
 
 			if(isset($entry->data()->{$this->{'element-name'}})){
 				$result = $entry->data()->{$this->{'element-name'}};
@@ -618,7 +629,7 @@
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;
-
+			
 			try{
 				Symphony::Database()->insert(
 					sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
@@ -640,7 +651,7 @@
 			Output:
 		-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, $entry_id=NULL) {
+		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, Entry $entry=NULL) {
 			$wrapper->appendChild(
 				$wrapper->ownerDocument->createElement(
 					$this->{'element-name'},
@@ -652,21 +663,46 @@
 		public function getParameterPoolValue($data){
 			return $this->prepareTableValue($data);
 		}
+		
 		/*-------------------------------------------------------------------------
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function provideFilterTypes($data) {
+		public function getFilterTypes($data) {
 			return array(
 				array('is', false, 'Is'),
-				array('is-not', $data['type'] == 'is-not', 'Is not'),
-				array('contains', $data['type'] == 'contains', 'Contains'),
-				array('does-not-contain', $data['type'] == 'does-not-contain', 'Does not Contain'),
-				array('regex', $data['type'] == 'regex', 'Regex'),
+				array('is-not', $data->type == 'is-not', 'Is not'),
+				array('contains', $data->type == 'contains', 'Contains'),
+				array('does-not-contain', $data->type == 'does-not-contain', 'Does not Contain'),
+				array('regex-search', $data->type == 'regex-search', 'Regex Search')
 			);
+		}
+		
+		public function processFilter($data) {
+			$defaults = (object)array(
+				'value'		=> '',
+				'type'		=> 'is'
+			);
+
+			if (empty($data)) {
+				$data = $defaults;
+			}
+
+			$data = (object)$data;
+
+			if (!isset($data->type)) {
+				$data->type = $defaults->type;
+			}
+
+			if (!isset($data->value)) {
+				$data->value = '';
+			}
+
+			return $data;
 		}
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+			$data = $this->processFilter($data);
 			$document = $wrapper->ownerDocument;
 
 			$name = $document->createElement('span', $this->label);
@@ -678,73 +714,146 @@
 			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
 				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				$this->provideFilterTypes($data)
+				$this->getFilterTypes($data)
 			));
 			$wrapper->appendChild($type_label);
 
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
 				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
-				$data['value']
+				$data->value
 			));
 
 			$wrapper->appendChild(Widget::Group(
 				$type_label, $label
 			));
-
 		}
+		
+		public function buildJoinQuery(&$joins) {
+			$db = Symphony::Database();
+			
+			$table = $db->prepareQuery(sprintf(
+				'tbl_data_%s_%s', $this->section, $this->{'element-name'}, ++self::$key
+			));
+			$handle = sprintf(
+				'data_%s_%s_%d', $this->section, $this->{'element-name'}, self::$key
+			);
+			$joins .= sprintf(
+				"\nLEFT OUTER JOIN `%s` AS %s ON (e.id = %2\$s.entry_id)",
+				$table, $handle
+			);
+			
+			return $handle;
+		}
+		
+		public function buildFilterJoin(&$joins) {
+			return $this->buildJoinQuery($joins);
+		}
+		
+		public function buildFilterQuery($filter, &$joins, &$where, Register $parameter_output) {
+			$filter = $this->processFilter($filter);
+			$filter_join = DataSource::FILTER_OR;
+			$db = Symphony::Database();
 
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+			$values = DataSource::prepareFilterValue($filter->value, $parameter_output, $filter_join);
+			if (!is_array($values)) $values = array();
 
-			self::$key++;
+			// Exact matches:
+			if ($filter->type == 'is' or $filter->type == 'is-not') {
+				$statements = array();
 
-			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput, $operation_type);
+				if ($filter_join == DataSource::FILTER_OR) {
+					$handle = $this->buildFilterJoin($joins);
+				}
 
-			$joins .= sprintf('
-				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});
+				foreach ($values as $index => $value) {
+					if ($filter_join != DataSource::FILTER_OR) {
+						$handle = $this->buildFilterJoin($joins);
+					}
 
-			if ($filter['type'] == 'regex') {
-				$where .= sprintf("
-						AND (
-							t%1\$s.value REGEXP '%2\$s'
-							OR t%1\$s.value REGEXP '%2\$s'
-						)
-					",	self::$key,	$value
-				);
-			}
-
-			else if ($operation_type == DataSource::FILTER_AND) {
-				foreach ($value as $v) {
-					$where .= sprintf(
-						" AND (
-							t%1\$s.value %2\$s '%3\$s'
-							OR t%1\$s.handle %2\$s '%3\$s'
-						) ",
-						self::$key,
-						$filter['type'] == 'is-not' ? '<>' : '=',
-						$v
+					$statements[] = $db->prepareQuery(
+						"'%s' IN ({$handle}.value, {$handle}.handle)", array($value)
 					);
 				}
+
+				if(empty($statements)) return true;
+
+				if ($filter_join == DataSource::FILTER_OR) {
+					$statement = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
+				}
+
+				else {
+					$statement = "(\n\t" . implode("\n\tAND ", $statements) . "\n)";
+				}
+
+				if ($filter->type == 'is-not') {
+					$statement = 'NOT ' . $statement;
+				}
+
+				$where .= ' AND ' . $statement;
 			}
 
-			else {
-				$where .= sprintf(
-					" AND (
-						t%1\$s.value %2\$s IN '%3\$s'
-						OR t%1\$s.handle %2\$s IN '%3\$s'
-					) ",
-					self::$key,
-					$filter['type'] == 'is-not' ? 'NOT' : '',
-					$v
+			else if ($filter->type == 'contains' or $filter->type == 'does-not-contain') {
+				$statements = array();
+				
+				if ($filter_join == DataSource::FILTER_OR) {
+					$handle = $this->buildFilterJoin($joins);
+				}
+
+				foreach ($values as $index => $value) {
+					$value = '%' . $value . '%';
+
+					if ($filter_join != DataSource::FILTER_OR) {
+						$handle = $this->buildFilterJoin($joins);
+					}
+
+					$statements = array(
+						$db->prepareQuery("{$handle}.value LIKE '%s'", array($value)),
+						$db->prepareQuery("{$handle}.handle LIKE '%s'", array($value))
+					);
+				}
+
+				if(empty($statements)) return true;
+
+				if ($filter_join == DataSource::FILTER_OR) {
+					$statement = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
+				}
+
+				else {
+					$statement = "(\n\t" . implode("\n\tAND ", $statements) . "\n)";
+				}
+
+				if ($filter->type == 'does-not-contain') {
+					$statement = 'NOT ' . $statement;
+				}
+
+				$where .= ' AND ' . $statement;
+			}
+
+			// Regex search:
+			else if ($filter->type == 'regex-search') {
+				$handle = $this->buildFilterJoin($joins);
+				$value = trim($filter->value);
+				$statements = array(
+					$db->prepareQuery("{$handle}.value REGEXP '%s'", array($value)),
+					$db->prepareQuery("{$handle}.handle REGEXP '%s'", array($value))
 				);
+
+				$where .= " AND (\n\t" . implode("\n\tOR ", $statements) . "\n)";
 			}
 
 			return true;
 		}
+		
+		public function buildDSFilterSQL() {
+			// TODO: Cleanup before release.
+			throw new Exception('Field->buildDSFilterSQL() is obsolete, use buildFilterQuery instead.');
+		}
+
 		/*-------------------------------------------------------------------------
 			Grouping:
 		-------------------------------------------------------------------------*/
+		
 		public function groupRecords($records){
 			throw new FieldException(
 				__('Data source output grouping is not supported by the <code>%s</code> field', array($this->handle))
@@ -754,13 +863,21 @@
 		/*-------------------------------------------------------------------------
 			Sorting:
 		-------------------------------------------------------------------------*/
-
-		public function buildSortingSQL(&$joins, &$order){
-			$joins .= 'LEFT OUTER JOIN `tbl_data_%1$s_%2$s` AS `ed` ON (e.id = ed.entry_id)';
-			$order = 'ed.value %1$s';
+		
+		public function buildSortingJoin(&$joins) {
+			return $this->buildJoinQuery($joins);
 		}
 
-
+		public function buildSortingQuery(&$joins, &$order){
+			$handle = $this->buildSortingJoin($joins);
+			$order = "{$handle}.value %1\$s";
+		}
+		
+		public function buildSortingSQL() {
+			// TODO: Cleanup before release.
+			throw new Exception('Field->buildSortingSQL() is obsolete, use buildSortingQuery instead.');
+		}
+		
 		/*-------------------------------------------------------------------------
 			Deprecated:
 		-------------------------------------------------------------------------

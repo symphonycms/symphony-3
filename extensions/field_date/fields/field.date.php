@@ -220,10 +220,10 @@
 			$string = array('start' => $start, 'end' => $end);
 
 			return self::RANGE;
+*/
 		}
 
 		protected static function __isValidDateString($string){
-
 			$string = trim($string);
 
 			if(empty($string)) return false;
@@ -233,7 +233,6 @@
 			elseif(!checkdate($info['mon'], $info['mday'], $info['year'])) return false;
 
 			return true;
-*/
 		}
 
 		/*-------------------------------------------------------------------------
@@ -311,7 +310,7 @@
 			Input:
 		-------------------------------------------------------------------------*/
 
-		public function processFormData($data, Entry $entry=NULL){
+		public function processData($data, Entry $entry=NULL){
 
 			if(isset($entry->data()->{$this->{'element-name'}})){
 				$result = $entry->data()->{$this->{'element-name'}};
@@ -349,7 +348,7 @@
 
 			$message = NULL;
 
-			if(!self::__isValidDateString($data)){
+			if(!self::__isValidDateString($data->value)){
 				$message = __("The date specified in '%s' is invalid.", array($this->label));
 				return self::ERROR_INVALID;
 			}
@@ -391,7 +390,7 @@
 		//	have to be as 'split here and do magic' as it is now.
 		//	The problem then is that what is a simple BETWEEN statement now is a bunch of joins and >=/<= operads
 		//	which is slow
-		public function buildDSRetrivalSQL($filter, &$joins, &$where, Register $ParameterOutput=NULL) {
+		public function buildFilterQuery($filter, &$joins, &$where, Register $ParameterOutput=NULL) {
 
 /*
 
@@ -416,7 +415,7 @@
 					break;
 			}
 
-			if(self::isFilterRegex($data[0])) return parent::buildDSRetrivalSQL($data, $joins, $where, $andOperation);
+			if(self::isFilterRegex($data[0])) return parent::buildFilterQuery($data, $joins, $where, $andOperation);
 
 			$parsed = array();
 

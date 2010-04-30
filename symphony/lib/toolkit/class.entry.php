@@ -95,7 +95,7 @@
 			foreach($section->fields as $field){
 				$field_handle = $field->{'element-name'};
 
-				$result = $field->processFormData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
+				$result = $field->processData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
 				
 				$this->data()->$field_handle = $result;
 			}
@@ -355,7 +355,7 @@
 
 				if(isset($this->data()->$element)) continue;
 
-				$this->data()->$element = $field->processFormData(NULL, $this);
+				$this->data()->$element = $field->processData(NULL, $this);
 			}
 
 		}

@@ -187,7 +187,7 @@
 				else{
 					$join = NULL;
 					$sort_field = $section->fetchFieldByHandle($this->parameters()->{'sort-field'});
-					$sort_field->buildSortingSQL($join, $order);
+					$sort_field->buildSortingQuery($join, $order);
 
 					$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
 					$order = sprintf($order, $sort);
@@ -209,11 +209,13 @@
 					}
 					else{
 						$field = $section->fetchFieldByHandle($element_name);
-						$field->buildDSRetrivalSQL($filter, $joins, $where, $ParameterOutput);
+						$field->buildFilterQuery($filter, $joins, $where, $ParameterOutput);
 					}
-
 				}
 			}
+			
+			// Escape percent symbold:
+			$where = str_replace('%', '%%', $where);
 
 			$query = sprintf(
 				'SELECT SQL_CALC_FOUND_ROWS e.*

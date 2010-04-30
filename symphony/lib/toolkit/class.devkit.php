@@ -74,7 +74,7 @@
 		}
 		
 		protected function appendHead(DOMElement $wrapper) {
-			$head = $this->document->createElement('head');
+			$head = $this->document->xpath('/html/head[1]')->item(0);
 			
 			$title = $this->document->createElement('title');
 			$title->appendChild($this->document->createTextNode(
@@ -84,7 +84,7 @@
 				$this->document->createEntityReference('ndash')
 			);
 			$title->appendChild($this->document->createTextNode(
-				' ' . $this->view->title
+				' ' . $this->view->title . ' '
 			));
 			$title->appendChild(
 				$this->document->createEntityReference('ndash')
@@ -107,7 +107,7 @@
 		}
 		
 		protected function appendBody(DOMElement $wrapper) {
-			$body = $this->document->createElement('body');
+			$body = $this->document->xpath('/html/body[1]')->item(0);
 			
 			$this->appendContent($body);
 			$this->appendSidebar($body);
@@ -134,7 +134,7 @@
 			$tab = $this->document->createElement('p');
 			$tab->setAttribute('id', 'tab');
 			$tab->appendChild(Widget::Anchor(
-				__('Show Navigation'), ''
+				$this->title, ''
 			));
 			$container->appendChild($tab);
 			

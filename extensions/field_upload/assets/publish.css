@@ -1,9 +1,10 @@
-form .field-upload {
+form .field-upload .label {
 	border-bottom: 1px dotted #dddddd;
 	border-bottom-color: hsla(0, 0%, 0%, 0.2);
 }
-form .field-upload > .label > a {
+form .field-upload .label > a {
 	float: right;
+	margin: 0 0 0 1ex;
 }
 
 form .field-upload .file {
