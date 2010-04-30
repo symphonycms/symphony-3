@@ -258,17 +258,20 @@
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode=false){
-	        if(!is_array($data['user_id'])) $data['user_id'] = array($data['user_id']);
+	        if(!is_array($data)) $data = array($data);
 
 	        $list = $wrapper->ownerDocument->createElement($this->{'element-name'});
-	        foreach($data['user_id'] as $user_id){
-	            $user = User::load($user_id);
-	            $list->appendChild(
-					$wrapper->ownerDocument->createElement('item', $user->getFullName(), array(
-						'id' => $user->id,
-						'username' => $user->username
-					))
-				);
+	        foreach($data as $user){
+	            $user = User::load($user->user_id);
+
+				if($user instanceof User) {
+					$list->appendChild(
+						$wrapper->ownerDocument->createElement('item', $user->getFullName(), array(
+							'id' => $user->id,
+							'username' => $user->username
+						))
+					);
+				}
 	        }
 	        $wrapper->appendChild($list);
 	    }

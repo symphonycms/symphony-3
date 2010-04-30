@@ -626,20 +626,28 @@
 		public function appendFormattedElement(&$wrapper, $data, $encode = false, $mode = null, $entry_id = null) {
 			if (!$this->sanitizeDataArray($data)) return null;
 
-			$item = Symphony::Parent()->Page->createElement($this->{'element-name'});
+			$document = $wrapper->ownerDocument;
+
+			$item = $document->createElement($this->{'element-name'});
 			$item->setAttributeArray(array(
-				'size'	=> General::formatFilesize($data['size']),
-				'type'	=> General::sanitize($data['mimetype']),
-				'name'	=> General::sanitize($data['name'])
+				'size'	=> General::formatFilesize($data->size),
+				'type'	=> General::sanitize($data->mimetype),
+				'name'	=> General::sanitize($data->name)
 			));
 
-			$item->appendChild(Symphony::Parent()->Page->createElement('path', str_replace(WORKSPACE, NULL, dirname(WORKSPACE . $data['file']))));
-			$item->appendChild(Symphony::Parent()->Page->createElement('file', General::sanitize(basename($data['file']))));
+			$item->appendChild(
+				$document->createElement('path', str_replace(WORKSPACE, NULL, dirname(WORKSPACE . $data->file)))
+			);
+			$item->appendChild(
+				$document->createElement('file', General::sanitize(basename($data->file)))
+			);
 
-			$meta = unserialize($data['meta']);
+			$meta = unserialize($data->meta);
 
 			if (is_array($meta) and !empty($meta)) {
-				$item->appendChild(Symphony::Parent()->Page->createElement('meta', null, $meta));
+				$item->appendChild(
+					$document->createElement('meta', null, $meta)
+				);
 			}
 
 			###
