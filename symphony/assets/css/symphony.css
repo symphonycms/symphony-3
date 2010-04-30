@@ -1315,26 +1315,45 @@
 	}
 	
 	.filters ul {
-		font-size: 1.15em;
-		line-height: 2.5em;
+		font-size: 1.1em;
+		line-height: 1.75em;
 		list-style: none;
 		color: #999;
 	}
 	
 	.filters ul li {
 		position: relative;
-		border-bottom: 1px solid #dddddd;
 	}
 	
 	.filters ul li a {
 		display: block;
+		padding: 5px 10px;
+		margin: 4px 0 0 -10px;
+		color: #555;
+		text-decoration: none;
+		-webkit-border-radius: 5px;
+		-moz-border-radius: 5px;
+		border-radius: 5px;
 	}
+	
+		.filters ul li.active a, .filters ul li.active a:hover {
+			background-color: #999;
+			color: #fff;
+		}
+	
+		.filters ul li a:hover {
+			background-color: #eee;
+		}
 
 	.filters ul li span {
 		position: absolute;
-		top: 0;
-		right: 0;
+		top: 5px;
+		right: 10px;
 	}
+	
+		.filters ul li.active span {
+			color: #ddd;
+		}
 
 
 /*-------------------------------------------------------------------------------*/

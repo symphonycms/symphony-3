@@ -116,6 +116,10 @@
 				foreach($group as $list => $extensions){
 					if(!empty($extensions)){
 						$li = $this->createElement('li', Widget::Anchor(ucwords($list), $path . $name . '/' . $list));
+						if($value == $list){
+							$li->setAttribute('class','active');
+						}
+						
 						$count = $this->createElement('span', (string) count($extensions));
 
 						$li->appendChild($count);
