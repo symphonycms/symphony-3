@@ -769,11 +769,12 @@
 				'value'		=> $data->name
 			);
 			
-			if ($link) {
-				return parent::prepareTableValue($dummy, $link);
+			if (!$link) {
+				$path = substr($data->path, strlen(DOCROOT));
+				$link = Widget::Anchor('', URL . $data->path . '/' . $data->file);
 			}
 			
-			return parent::prepareTableValue($dummy);
+			return parent::prepareTableValue($dummy, $link);
 		}
 	}
 
