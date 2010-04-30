@@ -319,7 +319,7 @@
 				var tab = jQuery(this);
 				var instance = tab.data('instance');
 				var name = tab.data('name');
-				var type = name.find('i');
+				var type = name.find('em');
 				var input = instance.find('input:first');
 				var rename = function() {
 					name.text(input.val());
@@ -328,7 +328,7 @@
 				};
 
 				if (type.length == 0) {
-					type = jQuery('<i />')
+					type = jQuery('<em />')
 						.text(name.text())
 						.appendTo(name);
 				}

@@ -164,6 +164,7 @@
 		padding: 50px 20px 20px 20px;
 	}
 	#content iframe {
+		background: #ffffff;
 		height: 100%;
 		left: 0;
 		position: absolute;

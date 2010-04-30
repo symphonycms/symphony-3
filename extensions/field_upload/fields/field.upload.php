@@ -12,7 +12,7 @@
 
 		public function __construct() {
 			parent::__construct();
-
+			
 			$this->_name = 'Upload';
 			$this->_mimes = array(
 				'image'	=> array(
@@ -21,9 +21,6 @@
 					'image/jpg',
 					'image/jpeg',
 					'image/png'
-				),
-				'video'	=> array(
-					'video/quicktime'
 				),
 				'text'	=> array(
 					'text/plain',
@@ -43,7 +40,7 @@
 						`file` text,
 						`size` int(11) unsigned NOT NULL,
 						`type` varchar(255) NOT NULL,
-						`meta` varchar(255) DEFAULT NULL,
+						`meta` text DEFAULT NULL,
 						PRIMARY KEY (`id`),
 						UNIQUE KEY `entry_id` (`entry_id`),
 						FULLTEXT KEY `name` (`name`),
@@ -76,17 +73,7 @@
 
 			return $label;
 		}
-
-		public function entryDataCleanup($entry_id, $data) {
-			$file_location = WORKSPACE . '/' . ltrim($data['file'], '/');
-
-			if (is_file($file_location)) General::deleteFile($file_location);
-
-			parent::entryDataCleanup($entry_id);
-
-			return true;
-		}
-
+		
 		public function sanitizeDataArray(&$data) {
 			if (!isset($data->file) or $data->file == '') return false;
 
@@ -187,9 +174,17 @@
 	-------------------------------------------------------------------------*/
 		
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
-			//if (!$error and !is_writable(DOCROOT . $this->destination . '/')) {
-			//	$error = 'Destination folder, <code>'.$this->destination.'</code>, is not writable. Please check permissions.';
-			//}
+			if (!$errors->valid() and !is_writable(DOCROOT . $this->destination . '/')) {
+				$errors->append(
+					null, array(
+					 	'message' => __(
+					 		'Destination folder, <code>%s</code>, is not writable. Please check permissions.',
+					 		array(trim($this->destination, '/'))
+					 	),
+						'code' => self::ERROR_INVALID
+					)
+				);
+			}
 			
 			$driver = ExtensionManager::instance()->create('field_upload');
 			$driver->addHeaders();
@@ -199,9 +194,9 @@
 			$filepath = null;
 			
 			if (isset($data->path, $data->file)) {
-				$filepath = realpath($data->path . '/' . $data->file);
+				$filepath = DOCROOT . '/' . trim($data->path, '/') . '/' . $data->file;
 			}
-
+			
 		// Preview ------------------------------------------------------------
 
 			$label = $document->createElement('div', $this->label);
@@ -211,7 +206,7 @@
 				$label->appendChild($document->createElement('i', 'Optional'));
 			}
 			
-			if (!$errors->valid() and $filepath) {
+			if (!$errors->valid() and $data->file) {
 				$file = $document->createElement('div');
 				$file->setAttribute('class', 'file');
 				$path = substr($filepath, strlen(DOCROOT));
@@ -229,9 +224,14 @@
 					)
 				);
 				
-				//if (!is_file(WORKSPACE . $data->{'file'})) {
-				//	$error = __('Destination file could not be found.');
-				//}
+				if (!is_file($filepath)) {
+					$errors->append(
+						null, array(
+						 	'message' => __('Destination file could not be found.'),
+							'code' => self::ERROR_MISSING
+						)
+					);
+				}
 				
 				$name = $document->createElement('p');
 				$link = Widget::Anchor($data->{'name'}, URL . $path);
@@ -302,30 +302,44 @@
 			return $filename;
 		}
 		
-		protected function getMimeType($file) {
-			if (in_array('image/' . General::getExtension($file), $this->_mimes['image'])) {
-				return 'image/' . General::getExtension($file);
-			}
-			
-			return 'application/octet-stream';
-		}
-		
-		protected function getMetaInfo($file, $type) {
-			// TODO: Remove @
-			
+		protected function getMetaInformation(Entry $entry, STDClass $data, $file) {
 			$meta = array(
-				'creation'	=> DateTimeObj::get('c', @filemtime($file))
+				'creation'	=> DateTimeObj::get('c', @filemtime($file)),
+				'type'		=> 'application/octet-stream'
 			);
-
-			if (in_array($type, $this->_mimes['image'])) {
-				if (!$data = @getimagesize($file)) return $meta;
-
-				$meta['width']	= $data[0];
-				$meta['height']   = $data[1];
-				$meta['type']	 = $data[2];
-				$meta['channels'] = (isset($data['channels']) ? $data['channels'] : null);
+			
+			// Find best type:
+			if (isset($data->type) and $data->type) {
+				$meta['type'] = $data->type;
 			}
-
+			
+			// Get image meta information:
+			if ($basic = @getimagesize($file)) {
+				$meta['type'] = $basic;
+				$meta['dimension'] = array(
+					'width'		=> $basic[0],
+					'height'	=> $basic[1]
+				);
+				$meta['bits-per-channel'] = (
+					isset($basic['bits'])
+					? $basic['bits'] : null
+				);
+			}
+			
+			###
+			# Delegate: UploadField_AppendMetaInformation
+			# Description: Allow other extensions to add media previews.
+			ExtensionManager::instance()->notifyMembers(
+				'UploadField_AppendMetaInformation',
+				'/publish/', array(
+					'data'		=> $data,
+					'entry'		=> $entry,
+					'field'		=> $this,
+					'file'		=> $file,
+					'meta'		=> &$meta
+				)
+			);
+			
 			return $meta;
 		}
 		
@@ -356,13 +370,14 @@
 				// Accept a new file:
 				if (isset($result->name) and trim($result->name) != '') {
 					$result = (object)$data;
-					$result->path = DOCROOT . '/' . trim($this->destination, '/');
-					$result->meta = $this->getMetaInfo($result->tmp_name, $result->type);
+					$result->path = '/' . trim($this->destination, '/');
 					$result->file = $result->name;
 					
 					if ($this->serialise == 'yes') {
 						$result->file = $this->getHashedFilename($result->file);
 					}
+					
+					$result->meta = $this->getMetaInformation($entry, $result, $result->tmp_name);
 				}
 			}
 			
@@ -385,8 +400,8 @@
 					$result->path = dirname($data);
 					$result->file = basename($data);
 					$result->size = filesize($data);
-					$result->type = $this->getMimeType($data);
-					$result->meta = $this->getMetaInfo($data, $result->type);
+					$result->meta = $this->getMetaInformation($entry, $result, $data);
+					$result->type = $result->meta->type;
 				}
 			}
 			
@@ -529,7 +544,7 @@
 			if ($this->validator != null) {
 				$rule = $this->validator;
 				
-				if (!General::validateString($data->name, $rule)) {
+				if (!General::validateString($data->file, $rule)) {
 					$errors->append(
 						null, array(
 						 	'message' => __(
@@ -544,14 +559,14 @@
 				}
 			}
 			
-			$file = $data->path . '/' . $data->file;
+			$file = DOCROOT . '/' . $data->path . '/' . $data->file;
 			
 			if ($data->existing != $file and file_exists($file)) {
 				$errors->append(
 					null, array(
 					 	'message' => __(
 							'A file with the name %s already exists in %s. Please rename the file first, or choose another.',
-							array($data->name, $this->destination)
+							array($data->name, trim($this->destination, '/'))
 					 	),
 						'code' => self::ERROR_INVALID
 					)
@@ -579,16 +594,16 @@
 				)
 			);
 			
-			$file = $data->path . '/' . $data->file;
+			$file = DOCROOT . '/' . $data->path . '/' . $data->file;
 			
 			// Upload the file:
 			if (isset($data->tmp_name)) {
-				if (!General::uploadFile($data->path, $data->file, $data->tmp_name, $permissions)) {
+				if (!General::uploadFile(DOCROOT . '/' . $data->path, $data->file, $data->tmp_name, $permissions)) {
 					$errors->append(
 						null, array(
 						 	'message' => __(
-								'There was an error while trying to upload the file <code>%s</code> to the target directory <code>workspace/%s</code>.',
-								array($data->name, $path)
+								'There was an error while trying to upload the file <code>%s</code> to the target directory <code>%s</code>.',
+								array($data->name, trim($data->path, '/'))
 						 	),
 							'code' => self::ERROR_INVALID
 						)
@@ -681,39 +696,73 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode = false, $mode = null, $entry_id = null) {
+		public function appendFormattedElement(SymphonyDOMElement $wrapper, $data, $encode = false, $mode = null, Entry $entry = null) {
 			if (!$this->sanitizeDataArray($data)) return null;
+			
+			$document = $wrapper->ownerDocument;
+			$meta = unserialize($data->meta);
+			
+			if (!is_array($meta)) $meta = array();
+			
+			$meta['size'] = General::formatFilesize($data->size);
+			$meta['type'] = $data->type;
+			
+			ksort($meta);
+			
+			$field = $document->createElement($this->{'element-name'});
+			$field->appendChild($document->createElement('file', $data->name, array(
+				'path'		=> trim($data->path, '/'),
+				'name'		=> $data->file
+			)));
+			
+			$element = $document->createElement('meta');
 
-			$item = Symphony::Parent()->Page->createElement($this->{'element-name'});
-			$item->setAttributeArray(array(
-				'size'	=> General::formatFilesize($data['size']),
-				'type'	=> General::sanitize($data['mimetype']),
-				'name'	=> General::sanitize($data['name'])
-			));
-
-			$item->appendChild(Symphony::Parent()->Page->createElement('path', str_replace(WORKSPACE, NULL, dirname(WORKSPACE . $data['file']))));
-			$item->appendChild(Symphony::Parent()->Page->createElement('file', General::sanitize(basename($data['file']))));
-
-			$meta = unserialize($data['meta']);
-
-			if (is_array($meta) and !empty($meta)) {
-				$item->appendChild(Symphony::Parent()->Page->createElement('meta', null, $meta));
+			foreach ($meta as $key => $value) {
+				if ($key == 'creation' or $key == 'type') {
+					$element->setAttribute($key, $value);
+				}
+				
+				else if ($key == 'size') {
+					$bits = explode(' ', $value);
+					
+					if (count($bits) != 2) continue;
+					
+					$element->appendChild($document->createElement(
+						'size', $bits[0], array(
+							'unit'	=> $bits[1]
+						)
+					));
+				}
+				
+				else if (is_array($value)) {
+					$element->appendChild($document->createElement(
+						$key, null, $value
+					));
+				}
+				
+				else {
+					$element->appendChild($document->createElement(
+						$key, (string)$value
+					));
+				}
 			}
+			
+			$field->appendChild($element);
 
 			###
 			# Delegate: UploadField_AppendFormattedElement
 			# Description: Allow other extensions to add media previews.
 			ExtensionManager::instance()->notifyMembers(
 				'UploadField_AppendFormattedElement',
-				'/frontend/', array(
+				'/publish/', array(
 					'data'		=> $data,
-					'entry_id'	=> $entry_id,
-					'field_id'	=> $this->id,
-					'wrapper'	=> $item
+					'entry'		=> $entry,
+					'field'		=> $this,
+					'wrapper'	=> $field
 				)
 			);
 
-			$wrapper->appendChild($item);
+			$wrapper->appendChild($field);
 		}
 
 		public function prepareTableValue($data, SymphonyDOMElement $link = null) {

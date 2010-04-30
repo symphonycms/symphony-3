@@ -109,7 +109,7 @@
 				}
 				
 				catch (Exception $e) {
-					// We may throw it later.
+					throw $e;
 				}
 				
 				$document->formatOutput = true;
@@ -339,6 +339,14 @@
 			$inner->setAttribute('id', 'source');
 			
 			$source = $bitter->process($source);
+			
+			// Encode special characters:
+			// TODO: Find a better way. Not urgent.
+			$source = str_replace(
+				array("\1", "\2", "\3", "\4", "\5"), '', $source
+			);
+			
+			libxml_use_internal_errors(false);
 			
 			$fragment = $this->document->createDocumentFragment();
 			$fragment->appendXML($source);
