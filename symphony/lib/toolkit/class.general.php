@@ -350,7 +350,7 @@
 		Return: true or false
 
 		***/
-		public static function realiseDirectory($path, $mode=0755){
+		public static function realiseDirectory($path, $mode = '0755'){
 			return @mkdir($path, intval($mode, 8), true);
 		}
 
@@ -868,8 +868,7 @@
 		}
 
 
-		public static function uploadFile($dest_path, $dest_name, $tmp_name, $perm=0777){
-
+		public static function uploadFile($dest_path, $dest_name, $tmp_name, $perm='0777'){
 			##Upload the file
 			if(@is_uploaded_file($tmp_name)) {
 

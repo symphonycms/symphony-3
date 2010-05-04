@@ -315,7 +315,7 @@
 			
 			// Get image meta information:
 			if ($basic = @getimagesize($file)) {
-				$meta['type'] = $basic;
+				$meta['type'] = $basic['mime'];
 				$meta['dimension'] = array(
 					'width'		=> $basic[0],
 					'height'	=> $basic[1]
