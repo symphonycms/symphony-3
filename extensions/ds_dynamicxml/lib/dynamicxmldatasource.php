@@ -29,7 +29,7 @@
 			return EXTENSIONS . '/ds_dynamicxml/templates/datasource.php';
 		}
 
-		public function save(MessageStack &$errors){
+		public function save(MessageStack $errors){
 			if(strlen(trim($this->parameters()->url)) == 0){
 				$errors->append('url', __('This is a required field'));
 			}
@@ -67,7 +67,7 @@
 			return parent::save($errors);
 		}
 
-		public function render(Register &$ParameterOutput){
+		public function render(Register $ParameterOutput){
 			$result = null;
 			$doc = new XMLDocument;
 
