@@ -19,7 +19,7 @@
 			return EXTENSIONS . '/ds_staticxml/templates/datasource.php';
 		}
 
-		public function save(MessageStack &$errors){
+		public function save(MessageStack $errors){
 			$xsl_errors = new MessageStack;
 
 			if(strlen(trim($this->parameters()->xml)) == 0){
@@ -39,7 +39,7 @@
 			return parent::save($errors);
 		}
 
-		public function render(Register &$ParameterOutput){
+		public function render(Register $ParameterOutput){
 
 			$doc = new XMLDocument;
 			$root = $doc->createElement($this->parameters()->{'root-element'});

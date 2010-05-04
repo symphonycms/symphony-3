@@ -138,7 +138,7 @@
 			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array('existing');
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, MessageStack $errors = null) {
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors = null) {
 			parent::displaySettingsPanel($wrapper, $errors);
 
 			$document = $wrapper->ownerDocument;
@@ -463,7 +463,7 @@
 			Filtering:
 		-------------------------------------------------------------------------*/
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
 			
 			if (!is_null($this->{'suggestion-list-source'})) {

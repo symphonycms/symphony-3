@@ -134,7 +134,7 @@
 			return $includes;
 		}
 		
-		public function validate(MessageStack &$messages=NULL, $validateAsNew=true){
+		public function validate(MessageStack $messages=NULL, $validateAsNew=true){
 			
 			$valid = true;
 			

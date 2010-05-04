@@ -312,7 +312,7 @@
 			return self::PRIORITY_NORMAL;
 		}
 
-		public function trigger(Register &$ParameterOutput){
+		public function trigger(Register $ParameterOutput){
 
 			$postdata = General::getPostData();
 

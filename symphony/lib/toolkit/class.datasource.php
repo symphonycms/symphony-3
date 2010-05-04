@@ -86,7 +86,7 @@
 		protected static $_loaded;
 
 		// Abstract function
-		abstract public function render(Register &$ParameterOutput);
+		abstract public function render(Register $ParameterOutput);
 
 		public static function getHandleFromFilename($filename){
 			return preg_replace('/(.php$|\/.*\/)/i', NULL, $filename);
@@ -164,7 +164,7 @@
 			}
 		}
 
-		public function save(MessageStack &$errors){
+		public function save(MessageStack $errors){
 			$editing = (isset($this->parameters()->{'root-element'}))
 						? $this->parameters()->{'root-element'}
 						: false;

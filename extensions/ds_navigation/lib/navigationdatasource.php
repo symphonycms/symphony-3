@@ -20,11 +20,11 @@
 			return EXTENSIONS . '/ds_navigation/templates/datasource.php';
 		}
 
-		public function save(MessageStack &$errors){
+		public function save(MessageStack $errors){
 			return parent::save($errors);
 		}
 
-		public function render(Register &$ParameterOutput){
+		public function render(Register $ParameterOutput){
 			$result = new XMLDocument;
 			$root = $result->createElement($this->parameters()->{'root-element'});
 

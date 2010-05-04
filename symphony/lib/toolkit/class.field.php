@@ -410,7 +410,7 @@
 			return Field::STATUS_OK;
 		}
 
-		public function displaySettingsPanel(SymphonyDOMElement &$wrapper, MessageStack $messages){
+		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages){
 			$document = $wrapper->ownerDocument;
 
 			if ($this->label) {
@@ -701,7 +701,7 @@
 			return $data;
 		}
 
-		public function displayDatasourceFilterPanel(SymphonyDOMElement &$wrapper, $data=NULL, MessageStack $errors=NULL){
+		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
 			$data = $this->processFilter($data);
 			$document = $wrapper->ownerDocument;
 

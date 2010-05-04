@@ -31,7 +31,7 @@
 			return EXTENSIONS . '/ds_sections/templates/datasource.php';
 		}
 
-		public function save(MessageStack &$errors){
+		public function save(MessageStack $errors){
 
 			if (strlen(trim($this->parameters()->limit)) == 0 || (is_numeric($this->parameters()->limit) && $this->parameters()->limit < 1)) {
 				$errors->append('limit', __('A result limit must be set'));
@@ -104,7 +104,7 @@
 			return 'desc';
 		}*/
 
-		public function render(Register &$ParameterOutput){
+		public function render(Register $ParameterOutput){
 			$execute = true;
 
 			$result = new XMLDocument;

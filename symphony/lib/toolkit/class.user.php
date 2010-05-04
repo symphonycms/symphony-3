@@ -149,7 +149,7 @@
 			return isset($this->_fields[$name]);
 		}
 
-		public function validate(MessageStack &$errors){
+		public function validate(MessageStack $errors){
 
 			if(is_null($this->first_name)) $errors->append('first_name', __('First name is required'));
 

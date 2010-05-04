@@ -391,7 +391,7 @@
 		Input:
 	-------------------------------------------------------------------------*/
 
-		public function validateData(MessageStack &$errors, Entry $entry, $data = null) {
+		public function validateData(MessageStack $errors, Entry $entry, $data = null) {
 			$length = (integer)$this->{'text-length'};
 
 			if(self::STATUS_OK != parent::validateData($errors, $entry, $data)) {

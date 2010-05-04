@@ -64,7 +64,7 @@
 			return $element;
 		}
 		
-		public function render(Register &$parameters, XMLDocument &$document) {
+		public function render(Register $parameters, XMLDocument &$document) {
 			Widget::init($this->document);
 			
 			$this->appendHead($this->document->documentElement);

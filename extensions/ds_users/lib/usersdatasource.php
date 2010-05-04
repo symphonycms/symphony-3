@@ -20,12 +20,12 @@
 			return EXTENSIONS . '/ds_users/templates/datasource.php';
 		}
 
-		public function save(MessageStack &$errors){
+		public function save(MessageStack $errors){
 			return parent::save($errors);
 		}
 
 		//	TODO: Allow Filtering by Parameter Output
-		public function render(Register &$ParameterOutput){
+		public function render(Register $ParameterOutput){
 			$result = new XMLDocument;
 			$root = $result->createElement($this->parameters()->{'root-element'});
 

@@ -188,7 +188,7 @@
 
 	 Class DBCMySQLResult extends DatabaseResultIterator{
 
-		public function __construct(Database &$db, $result){
+		public function __construct(Database $db, $result){
 			parent::__construct($db, $result);
 
 			if(!is_resource($this->_result)) throw new DatabaseException("Not a valid MySQL Resource.");

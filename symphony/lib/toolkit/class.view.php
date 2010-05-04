@@ -244,7 +244,7 @@
 			return $count;
 		}
 
-		public static function move(self &$view, $dest){
+		public static function move(self $view, $dest){
 			$bits = preg_split('~\/~', $dest, -1, PREG_SPLIT_NO_EMPTY);
 			$handle = $bits[count($bits) - 1];
 
@@ -443,7 +443,7 @@
 		    return(($a->priority() > $b->priority()) ? -1 : 1);
 		}
 
-		public function render(Register &$Parameters, XMLDocument &$Document=NULL, DocumentHeaders &$Headers=NULL){
+		public function render(Register $Parameters, XMLDocument &$Document=NULL, DocumentHeaders &$Headers=NULL){
 
 			$ParameterOutput = new Register;
 
