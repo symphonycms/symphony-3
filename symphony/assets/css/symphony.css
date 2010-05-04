@@ -217,8 +217,7 @@
 		-webkit-box-shadow: 1px 2px 2px hsla(0, 0%, 0%, 0.2);
 		left: 0;
 		list-style: none;
-		width: 120px;
-		min-width: 100%;
+		min-width: 120px;
 		position: absolute;
 		top: 32px;
 	}

@@ -216,7 +216,7 @@
 
 		public function appendSubheading($string, $link=NULL){
 			$h2 = $this->createElement('h2', $string);
-			if(!is_null($link)) $h2->setValue($link);
+			if(!is_null($link)) $h2->appendChild($link);
 
 			$this->Form->appendChild($h2);
 		}

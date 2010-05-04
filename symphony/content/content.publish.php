@@ -64,7 +64,7 @@
 
 				redirect(Administration::instance()->getCurrentPageURL());
 			}
-
+			
 			$this->appendSubheading(
 				$section->name,
 				Widget::Anchor(
