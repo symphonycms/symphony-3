@@ -86,8 +86,7 @@
 		}
 
 		public function setValue($value) {
-			
-
+			$this->removeChildNodes();
 			
 			//	TODO: Possibly might need to Remove existing Children before adding..
 			if($value instanceof DOMElement || $value instanceof DOMDocumentFragment) {
@@ -101,13 +100,6 @@
 			}
 
 			elseif(!is_null($value) && is_string($value)) {
-				
-				if($this->hasChildNodes() === true){
-					foreach($this->childNodes as $node) {
-						$node->parentNode->removeChild($node);
-					}
-				}
-				
 				//$this->nodeValue = $value;
 				$this->appendChild(new DOMText($value));
 			}
@@ -118,6 +110,12 @@
 				foreach($attributes as $key => $val){
 					$this->setAttribute($key, $val);
 				}
+			}
+		}
+		
+		public function removeChildNodes() {
+			while ($this->hasChildNodes() === true) {
+				$this->removeChild($this->firstChild);
 			}
 		}
 

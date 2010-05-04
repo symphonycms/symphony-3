@@ -143,6 +143,27 @@
 			return parent::render($parameters, $document);
 		}
 		
+		protected function appendTitle(DOMElement $wrapper) {
+			$title = parent::appendTitle($wrapper);
+			
+			if ($this->output) {
+				try {
+					$document = new DOMDocument('1.0', 'UTF-8');
+					$document->loadHTML($this->output);
+					$xpath = new DOMXPath($document);
+					$value = $xpath->evaluate('string(//title[1])');
+				}
+				
+				catch (Exception $e) {
+					// We really don't care either way.
+				}
+				
+				if (isset($value)) $title->setValue($value);
+			}
+			
+			return $title;
+		}
+		
 		protected function appendIncludes(DOMElement $wrapper) {
 			parent::appendIncludes($wrapper);
 			

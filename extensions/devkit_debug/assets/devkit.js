@@ -573,13 +573,27 @@
 			session.refresh();
 		}
 		
+		// TODO: DO NOT RELEASE THIS AS IS
+		// It needs a lot of tidying up.
+		
 		var content = jQuery('#content');
 		var sidebar = jQuery('#sidebar');
 		var tab = jQuery('#tab');
 		var iframe = jQuery('iframe');
 		
-		// TODO: DO NOT RELEASE THIS AS IS
-		// It needs a lot of tidying up.
+		// Make links take action in the iframe parent:
+		iframe.bind('load', function() {
+			var content = iframe.contents();
+			var target = function(event) {
+				if (event.target instanceof HTMLAnchorElement || event.target instanceof HTMLFormElement) {
+					jQuery(event.target).attr('target', '_parent');
+				}
+			};
+			
+			// TODO: This is a nasty hack:
+			content.bind('click', target);
+			content.bind('submit', target);
+		});
 		
 		tab.bind('click', function() {
 			var hide = function() {

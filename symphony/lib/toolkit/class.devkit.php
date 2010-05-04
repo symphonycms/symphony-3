@@ -76,6 +76,14 @@
 		protected function appendHead(DOMElement $wrapper) {
 			$head = $this->document->xpath('/html/head[1]')->item(0);
 			
+			$this->appendTitle($head);
+			$this->appendIncludes($head);
+			$wrapper->appendChild($head);
+			
+			return $head;
+		}
+		
+		protected function appendTitle(DOMElement $wrapper) {
 			$title = $this->document->createElement('title');
 			$title->appendChild($this->document->createTextNode(
 				__('Symphony') . ' '
@@ -92,12 +100,10 @@
 			$title->appendChild($this->document->createTextNode(
 				' ' . $this->title
 			));
-			$head->appendChild($title);
 			
-			$this->appendIncludes($head);
-			$wrapper->appendChild($head);
+			$wrapper->appendChild($title);
 			
-			return $head;
+			return $title;
 		}
 		
 		protected function appendIncludes(DOMElement $wrapper) {
