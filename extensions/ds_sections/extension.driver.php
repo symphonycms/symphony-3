@@ -50,6 +50,7 @@
 
 				$datasource->parameters()->{'redirect-404-on-empty'} = (isset($data['redirect-404-on-empty']) && $data['redirect-404-on-empty'] == 'yes');
 				$datasource->parameters()->{'append-pagination'} = (isset($data['append-pagination']) && $data['append-pagination'] == 'yes');
+				$datasource->parameters()->{'append-sorting'} = (isset($data['append-sorting']) && $data['append-sorting'] == 'yes');
 				$datasource->parameters()->{'append-associated-entry-count'} = (isset($data['append-associated-entry-count']) && $data['append-associated-entry-count'] == 'yes');
 				$datasource->parameters()->{'html-encode'} = (isset($data['html-encode']) && $data['html-encode'] == 'yes');
 
@@ -237,6 +238,18 @@
 			$input = Widget::Input('fields[append-pagination]', 'yes', 'checkbox');
 
 			if ($datasource->parameters()->{'append-pagination'} == true) {
+				$input->setAttribute('checked', 'checked');
+			}
+
+			$label->prependChild($input);
+			$fieldset->appendChild($label);
+			
+			$fieldset->appendChild(Widget::Input('fields[append-sorting]', 'no', 'hidden'));
+
+			$label = Widget::Label(__('Append sorting data'));
+			$input = Widget::Input('fields[append-sorting]', 'yes', 'checkbox');
+
+			if ($datasource->parameters()->{'append-sorting'} == true) {
 				$input->setAttribute('checked', 'checked');
 			}
 

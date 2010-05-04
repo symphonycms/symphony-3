@@ -251,6 +251,13 @@
 					));
 				}
 
+				if(isset($this->parameters()->{'append-sorting'}) && $this->parameters()->{'append-sorting'} === true){
+					$sorting = $result->createElement('sorting');
+					$sorting->setAttribute('field', $this->parameters()->{'sort-field'});
+					$sorting->setAttribute('order', $this->parameters()->{'sort-order'});
+					$root->appendChild($sorting);
+				}
+
 				// Build Entry Records
 				if($entries->length() > 0){
 
