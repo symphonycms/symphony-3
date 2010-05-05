@@ -7,11 +7,6 @@ jQuery(document).ready(function() {
 	
 	jQuery('#context').bind('change', update).bind('keyup', update).change();
 	
-	// Cleanup old contexts:
-	jQuery('form').bind('submit', function() {
-		jQuery('.context:not(:visible)').remove();
-	});
-	
 	// Conditions duplicator:
 	jQuery('.conditions-duplicator').symphonyDuplicator({
 		multiselect:	true,
@@ -19,8 +14,40 @@ jQuery(document).ready(function() {
 	});
 	
 	// Filters duplicator:
-	jQuery('.filters-duplicator').symphonyDuplicator({
+	var filters = jQuery('.filters-duplicator').symphonyDuplicator({
 		multiselect:	true,
 		orderable:		true
+	});
+	
+	jQuery(document).bind('submit', function() {
+		var expression = /^fields\[filters\]\[[0-9]+\]\[(.*)]$/;
+		
+		// Cleanup old contexts:
+		jQuery('.context:not(:visible)').remove();
+		
+		// Set filter names:
+		jQuery('.filters-duplicator > .content > .instances > li').each(function(index) {
+			var instance = jQuery(this);
+			
+			instance.find('[name]').each(function() {
+				var input = jQuery(this);
+				var name = input.attr('name');
+				var match = null;
+				
+				// Extract name:
+				if (match = name.match(expression)) name = match[1];
+				
+				input.attr(
+					'name',
+					'fields[filters]['
+					+ index
+					+ ']['
+					+ name
+					+ ']'
+				);
+				
+				//console.log(input.attr('name'));
+			});
+		});
 	});
 });

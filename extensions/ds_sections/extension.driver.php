@@ -51,8 +51,12 @@
 				$datasource->parameters()->{'redirect-404-on-empty'} = (isset($data['redirect-404-on-empty']) && $data['redirect-404-on-empty'] == 'yes');
 				$datasource->parameters()->{'append-pagination'} = (isset($data['append-pagination']) && $data['append-pagination'] == 'yes');
 				$datasource->parameters()->{'append-sorting'} = (isset($data['append-sorting']) && $data['append-sorting'] == 'yes');
+				
+				/*
+				TODO: Are these going to be used?
 				$datasource->parameters()->{'append-associated-entry-count'} = (isset($data['append-associated-entry-count']) && $data['append-associated-entry-count'] == 'yes');
 				$datasource->parameters()->{'html-encode'} = (isset($data['html-encode']) && $data['html-encode'] == 'yes');
+				*/
 
 				if(isset($data['sort-field'])) $datasource->parameters()->{'sort-field'} = $data['sort-field'];
 				if(isset($data['sort-order'])) $datasource->parameters()->{'sort-order'} = $data['sort-order'];
@@ -66,7 +70,6 @@
 				if(isset($data['parameter-output'])){
 					$datasource->parameters()->{'parameter-output'} = (array)$data['parameter-output'];
 				}
-
 			}
 
 			return $datasource;
@@ -75,7 +78,7 @@
 
 		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
 			$page = Administration::instance()->Page;
-			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'), 55533140);
+			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'));
 
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
@@ -290,6 +293,7 @@
 				$section = $section_data['section'];
 				$section_active = ($datasource->parameters()->section == $section_handle);
 				$filter_data = $datasource->parameters()->filters;
+				$fields = array();
 
 				// Filters:
 				$context = $page->createElement('div');
@@ -300,73 +304,94 @@
 
 				$instances = $page->createElement('ol');
 				$instances->setAttribute('class', 'instances');
-
-				if (isset($filter_data['system:id'])) {
-					$li = $page->createElement('li');
-
-					$name = $page->createElement('span', __('System ID'));
-					$name->setAttribute('class', 'name');
-					$li->appendChild($name);
-					
-					$label = Widget::Label(__('Type'));
-					$label->appendChild(Widget::Select(
-						'fields[filters][system:id][type]',
-						array(
-							array('is', false, 'Is'),
-							array('is-not', $filter_data['system:id']['type'] == 'is-not', 'Is not')
-						)
-					));
-					$li->appendChild($label);
-
-					$label = Widget::Label(__('Value'));
-					$label->appendChild(Widget::Input(
-						"fields[filters][system:id][value]", $filter_data['system:id']['value']
-					));
-					$li->appendChild($label);
-					
-					$instances->appendChild($li);
-				}
-
-				$li = $page->createElement('li');
+				
+				// System ID template:
+				$item = $page->createElement('li');
 
 				$name = $page->createElement('span', __('System ID'));
 				$name->setAttribute('class', 'name');
-				$li->appendChild($name);
+				$item->appendChild($name);
 				
 				$label = Widget::Label(__('Type'));
 				$label->appendChild(Widget::Select(
-					'fields[filters][system:id][type]',
+					'type',
 					array(
 						array('is', false, 'Is'),
 						array('is-not', false, 'Is not')
 					)
 				));
-				$li->appendChild($label);
+				$item->appendChild($label);
 				
 				$label = Widget::Label(__('Value'));
-				$label->appendChild(Widget::Input('fields[filters][system:id][value]'));
-				$li->appendChild($label);
+				$label->appendChild(Widget::Input('value'));
+				$label->appendChild(Widget::Input(
+					'element-name', 'system:id', 'hidden'
+				));
 				
-				$templates->appendChild($li);
-
+				$item->appendChild($label);
+				$templates->appendChild($item);
+				
+				// Field templates:
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
-					foreach ($section_data['fields'] as $input) {
-						if (!$input->canFilter()) continue;
-
-						$element_name = $input->{'element-name'};
-
-						if (isset($filter_data[$element_name])) {
-							$filter = $page->createElement('li');
-							$input->displayDatasourceFilterPanel(
-								$filter, $filter_data[$element_name],
-								$errors->$element_name//, $section->get('id')
+					foreach ($section_data['fields'] as $field) {
+						if (!$field->canFilter()) continue;
+						
+						$element_name = $field->{'element-name'};
+						$fields[$element_name] = $field;
+						
+						$item = $page->createElement('li');
+						$field->displayDatasourceFilterPanel(
+							$item, null, null
+						);
+						$templates->appendChild($item);
+					}
+				}
+				
+				// Field isntances:
+				if (is_array($filter_data) && !empty($filter_data)) {
+					foreach ($filter_data as $filter) {
+						if (isset($fields[$filter['element-name']])) {
+							$element_name = $filter['element-name'];
+							$field = $fields[$element_name];
+							$item = $page->createElement('li');
+							
+							$field->displayDatasourceFilterPanel(
+								$item, $filter, $errors->$element_name
 							);
-							$instances->appendChild($filter);
+							$instances->appendChild($item);
 						}
-
-						$filter = $page->createElement('li');
-						$input->displayDatasourceFilterPanel($filter, null, null); //, $section->get('id'));
-						$templates->appendChild($filter);
+						
+						else if ($filter['element-name'] == 'system:id') {
+							$item = $page->createElement('li');
+		
+							$name = $page->createElement('span', __('System ID'));
+							$name->setAttribute('class', 'name');
+							$item->appendChild($name);
+							
+							$label = Widget::Label(__('Type'));
+							$label->appendChild(Widget::Select(
+								'type',
+								array(
+									array('is', false, 'Is'),
+									array('is-not', $filter['type'] == 'is-not', 'Is not')
+								)
+							));
+							$item->appendChild($label);
+		
+							$label = Widget::Label(__('Value'));
+							$label->appendChild(Widget::Input(
+								"value", $filter['value']
+							));
+							
+							$label->appendChild(Widget::Input(
+								'element-name', 'system:id', 'hidden'
+							));
+							$item->appendChild($label);
+							
+							$instances->appendChild($item);
+						}
+						
+						// TODO: What about creation, modified date and author?
 					}
 				}
 

@@ -16,6 +16,7 @@
 			   'filters' => array(),
 			   'redirect-404-on-empty' => false,
 			   'append-pagination' => false,
+			   'append-sorting' => false,
 			   'sort-field' => 'system:id',
 			   'sort-order' => 'desc',
 			   'included-elements' => array(),
@@ -196,9 +197,8 @@
 
 			//	Process Datasource Filters for each of the Fields
 			if(is_array($this->parameters()->filters) && !empty($this->parameters()->filters)) {
-				foreach($this->parameters()->filters as $element_name => $filter){
-
-					if($element_name == 'system:id'){
+				foreach($this->parameters()->filters as $k => $filter){
+					if($filter['element-name'] == 'system:id'){
 						$filter_value = $this->prepareFilterValue($filter['value'], $ParameterOutput);
 						$filter_value = array_map('intval', $filter_value);
 						$where[] = sprintf(
@@ -208,7 +208,7 @@
 						);
 					}
 					else{
-						$field = $section->fetchFieldByHandle($element_name);
+						$field = $section->fetchFieldByHandle($filter['element-name']);
 						$field->buildFilterQuery($filter, $joins, $where, $ParameterOutput);
 					}
 				}

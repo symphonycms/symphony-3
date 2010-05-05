@@ -713,17 +713,21 @@
 			$type_label = Widget::Label(__('Type'));
 			$type_label->setAttribute('class', 'small');
 			$type_label->appendChild(Widget::Select(
-				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
+				sprintf('type', $this->{'element-name'}),
 				$this->getFilterTypes($data)
 			));
 			$wrapper->appendChild($type_label);
 
 			$label = Widget::Label(__('Value'));
 			$label->appendChild(Widget::Input(
-				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
+				sprintf('value', $this->{'element-name'}),
 				$data->value
 			));
-
+			
+			$label->appendChild(Widget::Input(
+				'element-name', $this->{'element-name'}, 'hidden'
+			));
+			
 			$wrapper->appendChild(Widget::Group(
 				$type_label, $label
 			));
