@@ -733,13 +733,13 @@
 			$db = Symphony::Database();
 			
 			$table = $db->prepareQuery(sprintf(
-				'tbl_data_%s_%s', $this->section, $this->{'element-name'}, ++self::$key
+				'`tbl_data_%s_%s`', $this->section, $this->{'element-name'}, ++self::$key
 			));
 			$handle = sprintf(
-				'data_%s_%s_%d', $this->section, $this->{'element-name'}, self::$key
+				'`data_%s_%s_%d`', $this->section, $this->{'element-name'}, self::$key
 			);
 			$joins .= sprintf(
-				"\nLEFT OUTER JOIN `%s` AS %s ON (e.id = %2\$s.entry_id)",
+				"\nLEFT OUTER JOIN %s AS %s ON (e.id = %2\$s.entry_id)",
 				$table, $handle
 			);
 			
