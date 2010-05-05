@@ -71,7 +71,7 @@
 					$datasource->parameters()->{'parameter-output'} = (array)$data['parameter-output'];
 				}
 			}
-
+			
 			return $datasource;
 
 		}

@@ -19,7 +19,7 @@
 			
 			$this->_parameters = (object)array(
 				'root-element' => %8$s,
-				'source' => %9$s,
+				'section' => %9$s,
 				'filters' => %10$s,
 				'overrides' => %11$s,
 				'defaults' => %12$s,

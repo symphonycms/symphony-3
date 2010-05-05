@@ -31,7 +31,7 @@
 				$event->about()->author->name = Administration::instance()->User->getFullName();
 				$event->about()->author->email = Administration::instance()->User->email;
 	
-				$event->parameters()->source = $data['source'];
+				$event->parameters()->section = $data['section'];
 	
 				if(isset($data['output-id-on-save']) && $data['output-id-on-save'] == 'yes'){
 					$event->parameters()->{'output-id-on-save'} = true;
@@ -79,15 +79,15 @@
 			}
 			else $fieldset->appendChild($label);
 
-			$label = Widget::Label(__('Source'));
+			$label = Widget::Label(__('Section'));
 
 		    $options = array();
 
 			foreach (new SectionIterator as $section) {
-				$options[] = array($section->handle, ($event->parameters()->source == $section->handle), $section->name);
+				$options[] = array($section->handle, ($event->parameters()->section == $section->handle), $section->name);
 			}
 
-			$label->appendChild(Widget::Select('fields[source]', $options, array('id' => 'event-context-selector')));
+			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'event-context-selector')));
 			$fieldset->appendChild($label);
 			$column_1->appendChild($fieldset);
 
@@ -135,7 +135,7 @@
 			foreach(new SectionIterator as $section){
 				$this->appendDuplicator(
 					$fieldset, $section,
-					($event->parameters()->source == $section->handle
+					($event->parameters()->section == $section->handle
 						? array(
 							'overrides' => $event->parameters()->overrides,
 							'defaults' => $event->parameters()->defaults

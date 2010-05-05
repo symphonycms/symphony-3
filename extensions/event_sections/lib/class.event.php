@@ -42,7 +42,7 @@
 			}
 			else{
 				$entry = new Entry;
-				$entry->section = $this->parameters()->{'source'};
+				$entry->section = $this->parameters()->{'section'};
 				$entry->user_id = Frontend::instance()->User->id;
 				$type = 'create';
 			}

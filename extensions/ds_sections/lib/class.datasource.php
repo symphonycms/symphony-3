@@ -20,7 +20,7 @@
 				'sort-field' => 'system:id',
 				'sort-order' => 'desc',
 				'included-elements' => array(),
-				'parameter-output' => array(),
+				'parameter-output' => array()
 			);
 		}
 

@@ -93,11 +93,11 @@
 					$col_name->appendChild(Widget::Input("items[{$handle}]", null, 'checkbox'));
 
 					// Source
-					if(is_null($event->parameters()->source)){
+					if(is_null($event->parameters()->section)){
 						$col_source = Widget::TableData(__('None'), 'inactive');
 					}
 					else{
-						$section = Section::loadFromHandle($event->parameters()->source);
+						$section = Section::loadFromHandle($event->parameters()->section);
 
 						$col_source = Widget::TableData(Widget::Anchor(
 							$section->name,
