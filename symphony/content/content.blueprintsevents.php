@@ -5,8 +5,25 @@
 
 	Class contentBlueprintsEvents extends AdministrationPage{
 
-		private $event;
+		protected $event;
+		protected $errors;
+		protected $fields;
+		protected $editing;
+		protected $failed;
+		protected $handle;
+		protected $status;
+		protected $type;
+		
 		protected static $_loaded_views;
+		
+		public function __construct(){
+			parent::__construct();
+
+			$this->errors = new MessageStack;
+			$this->fields = array();
+			$this->editing = $this->failed = false;
+			$this->event = $this->handle = $this->status = $this->type = NULL;
+		}
 
 		public function __viewIndex() {
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Events'))));
@@ -156,7 +173,225 @@
 			$this->Form->appendChild($tableActions);
 		}
 
-		public function __viewNew(){
+		public function build($context) {
+			if (isset($context[0]) and ($context[0] == 'edit' or $context[0] == 'new')) {
+				$context[0] = 'form';
+			}
+
+			parent::build($context);
+		}
+		
+		protected function __prepareForm() {
+
+			$this->editing = isset($this->_context[1]);
+
+			if (!$this->editing) {
+				$this->type = $_REQUEST['type'];
+
+				if (is_null($this->type)){
+					$this->type = Symphony::Configuration()->core()->{'default-event-type'};
+				}
+
+				$this->event = ExtensionManager::instance()->create($this->type)->prepare(
+					(isset($_POST['fields']) ? $_POST['fields'] : NULL)
+				);
+			}
+
+			else {
+				$this->handle = $this->_context[1];
+
+				// Status message:
+				$callback = Administration::instance()->getPageCallback();
+				if(isset($callback['flag']) && !is_null($callback['flag'])){
+					$this->status = $callback['flag'];
+				}
+
+				$this->event = Event::loadFromHandle($this->handle);
+				$this->type = $this->event->type();
+
+				$this->event = ExtensionManager::instance()->create($this->type)->prepare(
+					(isset($_POST['fields']) ? $_POST['fields'] : NULL), $this->event
+				);
+
+				if (!$this->event->allowEditorToParse()) {
+					redirect(URL . '/symphony/blueprints/events/info/' . $this->handle . '/');
+				}
+
+				$this->type = $this->event->type();
+			}
+		}
+
+		protected function __actionForm() {
+			// Delete event:
+			if ($this->editing && array_key_exists('delete', $_POST['action'])) {
+				$this->__actionDelete(array($this->handle), ADMIN_URL . '/blueprints/events/');
+			}
+			
+			// Saving
+			try{
+				$pathname = $this->event->save($this->errors);
+				$handle = preg_replace('/.php$/i', NULL, basename($pathname));
+				redirect(
+					URL . "/symphony/blueprints/events/edit/{$handle}/:"
+					. ($this->editing == true ? 'saved' : 'created') . "/"
+				);
+			}
+
+			catch (EventException $e) {
+				$this->alerts()->append(
+					$e->getMessage(),
+					AlertStack::ERROR, $e
+				);
+			}
+
+			catch (Exception $e) {
+				$this->alerts()->append(
+					__('An unknown error has occurred. <a class="more">Show trace information.</a>'),
+					AlertStack::ERROR, $e
+				);
+			}
+		}
+
+		protected function __viewForm() {
+			// Show page alert:
+			if ($this->failed) {
+				$this->alerts()->append(
+					__('An error occurred while processing this form. <a href="#error">See below for details.</a>'),
+					AlertStack::ERROR
+				);
+			}
+
+			else if (!is_null($this->status)) {
+				switch ($this->status) {
+					case 'saved':
+						$this->alerts()->append(
+							__(
+								'Event updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
+									URL . '/symphony/blueprints/events/new/',
+									URL . '/symphony/blueprints/events/'
+								)
+							),
+							AlertStack::SUCCESS
+						);
+						break;
+
+					case 'created':
+						$this->alerts()->append(
+							__(
+								'Event created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
+								array(
+									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
+									URL . '/symphony/blueprints/events/new/',
+									URL . '/symphony/blueprints/events/'
+								)
+							),
+							AlertStack::SUCCESS
+						);
+						break;
+				}
+			}
+
+			// Track type with a hidden field:
+			if($this->editing || ($this->editing && isset($_POST['type']))){
+				$input = Widget::Input('type', $this->type, 'hidden');
+				$this->Form->appendChild($input);
+			}
+
+			 // Let user choose type:
+			else{
+				$div = $this->createElement('div');
+				$div->setAttribute('id', 'master-switch');
+
+				$label = Widget::Label(__('Select Type'));
+
+				$options = array();
+				foreach(ExtensionManager::instance()->listByType('Event') as $e){
+					// TODO: Uncomment the next line:
+					//if($e['status'] != Extension::ENABLED) continue;
+					$options[] = array($e['handle'], ($this->type == $e['handle']), $e['name']);
+				}
+
+				$select = Widget::Select('type', $options);
+
+				$div->appendChild($label);
+				$div->appendChild($select);
+				$this->Form->appendChild($div);
+			}
+
+			if(is_null($this->event->about()->name) || strlen(trim($this->event->about()->name)) == 0){
+				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
+					__('Symphony'), __('Events'), __('Untitled')
+				)));
+				$this->appendSubheading(General::sanitize(__('New Event')));
+			}
+
+			else{
+				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
+					__('Symphony'), __('Events'), $this->event->about()->name
+				)));
+				$this->appendSubheading(General::sanitize($this->event->about()->name));
+			}
+
+			ExtensionManager::instance()->create($this->type)->view($this->event, $this->Form, $this->errors);
+
+			$actions = $this->createElement('div');
+			$actions->setAttribute('class', 'actions');
+
+			$save = Widget::Submit(
+				'action[save]', ($this->editing) ? __('Save Changes') : __('Create Event'),
+				array(
+					'accesskey' => 's'
+				)
+			);
+			$actions->appendChild($save);
+
+			if ($this->editing == true) {
+				$actions->appendChild(
+					Widget::Submit(
+						'action[delete]', __('Delete'),
+						array(
+							'class' => 'confirm delete',
+							'title' => __('Delete this event')
+						)
+					)
+				);
+			}
+
+			$this->Form->appendChild($actions);
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+		public function x__viewNew(){
 			if(!($this->event instanceof Event)){
 				$this->event = new Event;
 			}
@@ -164,7 +399,7 @@
 			$this->__form();
 		}
 
-		public function __viewEdit(){
+		public function x__viewEdit(){
 
 			$existing = Event::loadFromHandle($this->_context[1]);
 
@@ -175,7 +410,7 @@
 			$this->__form($existing);
 		}
 
-		function __form(Event $existing=NULL){
+		function x__form(Event $existing=NULL){
 
 			if($this->errors instanceof MessageStack && $this->errors->length() > 0){
 				$this->alerts()->append(
@@ -216,6 +451,32 @@
 						break;
 
 				}
+			}
+
+			// Track type with a hidden field:
+			if($this->editing || ($this->editing && isset($_POST['type']))){
+				$input = Widget::Input('type', $this->type, 'hidden');
+				$this->Form->appendChild($input);
+			}
+
+			 // Let user choose type:
+			else{
+				$div = $this->createElement('div');
+				$div->setAttribute('id', 'master-switch');
+
+				$label = Widget::Label(__('Select Type'));
+
+				$options = array();
+				foreach(ExtensionManager::instance()->listByType('Event') as $e){
+					//if($e['status'] != Extension::ENABLED) continue;
+					$options[] = array($e['handle'], ($this->type == $e['handle']), $e['name']);
+				}
+
+				$select = Widget::Select('type', $options);
+
+				$div->appendChild($label);
+				$div->appendChild($select);
+				$this->Form->appendChild($div);
 			}
 
 			//$isEditing = ($readonly ? true : false);

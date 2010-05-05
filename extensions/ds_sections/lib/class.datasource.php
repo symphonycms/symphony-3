@@ -1,26 +1,26 @@
 <?php
 
-	require_once(LIB . '/class.entry.php');
+	require_once LIB . '/class.datasource.php';
+	require_once LIB . '/class.entry.php';
 
 	Class SectionsDataSource extends DataSource {
-
 		public function __construct(){
 			// Set Default Values
 			$this->_about = new StdClass;
 			$this->_parameters = (object)array(
-			   'root-element' => NULL,
-			   'limit' => 20,
-			   'page' => 1,
-			   'section' => NULL,
-			   'conditions' => array(),
-			   'filters' => array(),
-			   'redirect-404-on-empty' => false,
-			   'append-pagination' => false,
-			   'append-sorting' => false,
-			   'sort-field' => 'system:id',
-			   'sort-order' => 'desc',
-			   'included-elements' => array(),
-			   'parameter-output' => array(),
+				'root-element' => NULL,
+				'limit' => 20,
+				'page' => 1,
+				'section' => NULL,
+				'conditions' => array(),
+				'filters' => array(),
+				'redirect-404-on-empty' => false,
+				'append-pagination' => false,
+				'append-sorting' => false,
+				'sort-field' => 'system:id',
+				'sort-order' => 'desc',
+				'included-elements' => array(),
+				'parameter-output' => array(),
 			);
 		}
 
@@ -29,7 +29,7 @@
 		}
 
 		public function template(){
-			return EXTENSIONS . '/ds_sections/templates/datasource.php';
+			return EXTENSIONS . '/ds_sections/templates/template.datasource.php';
 		}
 
 		public function save(MessageStack $errors){

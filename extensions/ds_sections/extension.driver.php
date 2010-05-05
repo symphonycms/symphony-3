@@ -1,6 +1,6 @@
 <?php
 
-	require_once 'lib/sectionsdatasource.php';
+	require_once 'lib/class.datasource.php';
 
 	Class Extension_DS_Sections extends Extension {
 		public function about() {
@@ -76,7 +76,7 @@
 
 		}
 
-		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
+		public function view(Datasource $datasource, SymphonyDOMElement $wrapper, MessageStack $errors) {
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'));
 
