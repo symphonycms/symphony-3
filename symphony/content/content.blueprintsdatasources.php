@@ -48,8 +48,7 @@
 				array(__('Name'), 'col'),
 				array(__('Source'), 'col'),
 				array(__('Type'), 'col'),
-				array(__('Attached On'), 'col'),
-				//array(__('Author'), 'col')
+				array(__('Attached On'), 'col')
 			);
 
 			$dsTableBody = array();
@@ -132,30 +131,9 @@
 						$extension = ExtensionManager::instance()->about($ds->type());
 						$col_type = Widget::TableData($extension['name']);
 					}
-
-/*
-					// Author
-					if (isset($ds->about()->author->website)) {
-						$col_author = Widget::TableData(Widget::Anchor(
-							$ds->about()->author->name,
-							General::validateURL($ds->about()->author->website)
-						));
-					}
-					else if (isset($ds->about()->author->email)) {
-						$col_author = Widget::TableData(Widget::Anchor(
-							$ds->about()->author->name,
-							'mailto:' . $ds->about()->author->email
-						));
-					}
-
-					else {
-						$col_author = Widget::TableData($ds->about()->author->name);
-					}
-*/
-
-
+					
 					$dsTableBody[] = Widget::TableRow(array(
-						$col_name, $col_source, $col_type, $col_views//, $col_author
+						$col_name, $col_source, $col_type, $col_views
 					));
 				}
 			}

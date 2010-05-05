@@ -38,8 +38,8 @@
 			$eTableHead = array(
 				array(__('Name'), 'col'),
 				array(__('Source'), 'col'),
-				array(__('Attached On'), 'col'),
-				//array(__('Author'), 'col')
+				array(__('Type'), 'col'),
+				array(__('Attached On'), 'col')
 			);
 
 			$eTableBody = array();
@@ -125,28 +125,18 @@
 					else{
 						$col_views = Widget::TableData($fragment_views);
 					}
-/*
-					//	Author
-					if (isset($event->about()->author->website)) {
-						$col_author = Widget::TableData(Widget::Anchor(
-							$event->about()->author->name,
-							General::validateURL($event->about()->author->website)
-						));
-					}
 
-					else if (isset($event->about()->author->email)) {
-						$col_author = Widget::TableData(Widget::Anchor(
-							$event->about()->author->name,
-							'mailto:' . $event->about()->author->email
-						));
+					// Type
+					if(is_null($event->type())){
+						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
-
-					else {
-						$col_author = Widget::TableData($event->about()->author->name);
+					else{
+						$extension = ExtensionManager::instance()->about($event->type());
+						$col_type = Widget::TableData($extension['name']);
 					}
-*/
+					
 					$eTableBody[] = Widget::TableRow(
-						array($col_name, $col_source, $col_views)
+						array($col_name, $col_source, $col_type, $col_views)
 					);
 				}
 
