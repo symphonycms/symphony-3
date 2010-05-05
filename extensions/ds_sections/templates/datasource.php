@@ -27,10 +27,11 @@
 			   'filters' => %13$s,
 			   'redirect-404-on-empty' => %14$s,
 			   'append-pagination' => %15$s,
-			   'sort-field' => %16$s,
-			   'sort-order' => %17$s,
-			   'included-elements' => %18$s,
-			   'parameter-output' => %19$s,
+			   'append-sorting' => %16$s,
+			   'sort-field' => %17$s,
+			   'sort-order' => %18$s,
+			   'included-elements' => %19$s,
+			   'parameter-output' => %20$s,
 			);
 		}
 
