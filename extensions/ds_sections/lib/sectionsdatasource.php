@@ -223,13 +223,13 @@
 				FROM `tbl_entries` AS `e`
 				%1$s
 				WHERE `section` = "%2$s"
-				AND (%3$s)
+				%3$s
 				ORDER BY %4$s
 				LIMIT %5$d, %6$d',
 
 				$joins,
 				$section->handle,
-				implode(($this->filter_operation_type == self::FILTER_AND ? ' AND ' : ' OR '), $where),
+				is_array($where) && !empty($where) ? 'AND (' . implode(($this->filter_operation_type == self::FILTER_AND ? ' AND ' : ' OR '), $where) . ')' : NULL,
 				$order,
 				$pagination->{'record-start'},
 				$pagination->{'entries-per-page'}
