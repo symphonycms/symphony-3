@@ -78,10 +78,8 @@
 
 		protected $_about;
 		protected $_parameters;
-
-		protected $_param_output_only; // DELETE?
 		protected $_dependencies;
-		protected $_force_empty_result; // DELETE?
+		protected $filter_operation_type = self::FILTER_AND;
 
 		protected static $_loaded;
 
@@ -252,62 +250,7 @@
 		public function getDependencies(){
 			return $this->_dependencies;
 		}
-/*
-		public function __construct($env=NULL, $process_params=true){
-			$this->_Parent = Symphony::Parent();
-			$this->_force_empty_result = false;
-			$this->_dependencies = array();
 
-			if(isset($this->dsParamPARAMOUTPUT) && !is_array($this->dsParamPARAMOUTPUT)){
-				$this->dsParamPARAMOUTPUT = array($this->dsParamPARAMOUTPUT);
-			}
-
-			if($process_params){
-				$this->processParameters($env);
-			}
-		}
-
-		public function processParameters($env=NULL){
-
-			if($env) $this->_env = $env;
-
-			if((isset($this->_env) && is_array($this->_env)) && is_array($this->dsParamFILTERS) && !empty($this->dsParamFILTERS)){
-				foreach($this->dsParamFILTERS as $key => $value){
-					$value = stripslashes($value);
-					$new_value = $this->__processParametersInString($value, $this->_env);
-
-					if(strlen(trim($new_value)) == 0) unset($this->dsParamFILTERS[$key]);
-					else $this->dsParamFILTERS[$key] = $new_value;
-
-				}
-			}
-
-			if(isset($this->dsParamORDER)) $this->dsParamORDER = $this->__processParametersInString($this->dsParamORDER, $this->_env);
-
-			if(isset($this->dsParamSORT)) $this->dsParamSORT = $this->__processParametersInString($this->dsParamSORT, $this->_env);
-
-			if(isset($this->dsParamSTARTPAGE)) {
-				$this->dsParamSTARTPAGE = $this->__processParametersInString($this->dsParamSTARTPAGE, $this->_env);
-				if ($this->dsParamSTARTPAGE == '') $this->dsParamSTARTPAGE = '1';
-			}
-
-			if(isset($this->dsParamLIMIT)) $this->dsParamLIMIT = $this->__processParametersInString($this->dsParamLIMIT, $this->_env);
-
-			if(isset($this->dsParamREQUIREDPARAM) && $this->__processParametersInString($this->dsParamREQUIREDPARAM, $this->_env, false) == '') {
-				$this->_force_empty_result = true; // don't output any XML
-				$this->dsParamPARAMOUTPUT = NULL; // don't output any parameters
-				$this->dsParamINCLUDEDELEMENTS = NULL; // don't query any fields in this section
-			}
-
-			$this->_param_output_only = ((!is_array($this->dsParamINCLUDEDELEMENTS) || empty($this->dsParamINCLUDEDELEMENTS)) && !isset($this->dsParamGROUP));
-
-			if($this->dsParamREDIRECTONEMPTY == 'yes' && $this->_force_empty_result){
-				throw new FrontendPageNotFoundException;
-			}
-
-		}
-
-*/
 		public function emptyXMLSet(DOMElement $root){
 			if(is_null($root)) {
 				throw new DataSourceException('No valid DOMDocument present');
@@ -316,19 +259,6 @@
 				$root->appendChild(
 					$root->ownerDocument->createElement('error', __('No records found.'))
 				);
-			}
-		}
-
-		protected function __appendIncludedElements(&$wrapper, $fields){
-			if(!isset($this->parameters()->{'included-elements'}) || !is_array($this->parameters()->{'included-elements'}) || empty($this->parameters()->{'included-elements'})) return;
-
-			foreach($this->parameters()->{'included-elements'} as $index) {
-
-				if(!is_object($fields[$index])){
-					trigger_error(__('%s is not a valid object. Failed to append to XML.', array($index)), E_USER_WARNING);
-					continue;
-				}
-				$wrapper->appendChild($fields[$index]);
 			}
 		}
 

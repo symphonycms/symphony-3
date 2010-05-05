@@ -546,7 +546,7 @@
 			return $filters;
 		}
 		
-		public function buildFilterQuery($filter, &$joins, &$where, Register $parameter_output) {
+		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output) {
 			$filter = $this->processFilter($filter);
 			$filter_join = DataSource::FILTER_OR;
 			$db = Symphony::Database();
@@ -566,7 +566,7 @@
 				
 				$statement = $db->prepareQuery("MATCH ({$handle}.value) AGAINST ('%s' IN BOOLEAN MODE)", array($value));
 				
-				$where .= "AND (\n\t" . $statement . "\n)";
+				$where[] = "(\n\t{$statement}\n)";
 				
 				return true;
 			}

@@ -143,8 +143,6 @@
 				));
 			}
 
-			if ($this->_force_empty_result) $this->emptyXMLSet($root);
-
 			$result->appendChild($root);
 
 			return $result;

@@ -750,7 +750,7 @@
 			return $this->buildJoinQuery($joins);
 		}
 		
-		public function buildFilterQuery($filter, &$joins, &$where, Register $parameter_output) {
+		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output) {
 			$filter = $this->processFilter($filter);
 			$filter_join = DataSource::FILTER_OR;
 			$db = Symphony::Database();
@@ -790,7 +790,7 @@
 					$statement = 'NOT ' . $statement;
 				}
 
-				$where .= ' AND ' . $statement;
+				$where[] = $statement;
 			}
 
 			else if ($filter->type == 'contains' or $filter->type == 'does-not-contain') {
@@ -827,7 +827,7 @@
 					$statement = 'NOT ' . $statement;
 				}
 
-				$where .= ' AND ' . $statement;
+				$where[] = $statement;
 			}
 
 			// Regex search:
@@ -839,7 +839,7 @@
 					$db->prepareQuery("{$handle}.handle REGEXP '%s'", array($value))
 				);
 
-				$where .= " AND (\n\t" . implode("\n\tOR ", $statements) . "\n)";
+				$where[] = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
 			}
 
 			return true;
