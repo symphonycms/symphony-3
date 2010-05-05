@@ -298,8 +298,7 @@
 
 				$options = array();
 				foreach(ExtensionManager::instance()->listByType('Event') as $e){
-					// TODO: Uncomment the next line:
-					//if($e['status'] != Extension::ENABLED) continue;
+					if($e['status'] != Extension::ENABLED) continue;
 					$options[] = array($e['handle'], ($this->type == $e['handle']), $e['name']);
 				}
 

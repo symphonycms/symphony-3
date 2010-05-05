@@ -109,7 +109,7 @@
 			# rule select box. A reference to the $options array is provided, and selected filters
 			ExtensionManager::instance()->notifyMembers(
 				'AppendEventFilter',
-				'/blueprints/events/' . $event->about()->name . '/', // TODO: This line is wrong, should be event handle.
+				'/blueprints/events/',
 				array(
 					'selected'	=> $fields['filters'],
 					'options'	=> &$options
