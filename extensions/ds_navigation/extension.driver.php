@@ -1,7 +1,7 @@
 <?php
 
 	require_once('lib/navigationdatasource.php');
-	require_once(TOOLKIT . '/class.view.php');
+	require_once(LIB . '/class.view.php');
 
 	class Extension_DS_Navigation extends Extension {
 		public function about() {

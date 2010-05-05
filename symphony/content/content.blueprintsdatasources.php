@@ -1,9 +1,9 @@
 <?php
 
-	require_once(TOOLKIT . '/class.administrationpage.php');
-	//require_once(TOOLKIT . '/class.datasourcemanager.php');
-	//require_once(TOOLKIT . '/class.sectionmanager.php');
-	require_once(TOOLKIT . '/class.messagestack.php');
+	require_once(LIB . '/class.administrationpage.php');
+	//require_once(LIB . '/class.datasourcemanager.php');
+	//require_once(LIB . '/class.sectionmanager.php');
+	require_once(LIB . '/class.messagestack.php');
 
 	Class ContentBlueprintsDatasources extends AdministrationPage{
 

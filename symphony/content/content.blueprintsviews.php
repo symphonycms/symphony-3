@@ -1,10 +1,10 @@
 <?php
 
-	require_once(TOOLKIT . '/class.administrationpage.php');
-	require_once(TOOLKIT . '/class.messagestack.php');
-	require_once(TOOLKIT . '/class.xslproc.php');
-	require_once(TOOLKIT . '/class.utility.php');
-	require_once(TOOLKIT . '/class.event.php');
+	require_once(LIB . '/class.administrationpage.php');
+	require_once(LIB . '/class.messagestack.php');
+	require_once(LIB . '/class.xslproc.php');
+	require_once(LIB . '/class.utility.php');
+	require_once(LIB . '/class.event.php');
 
 	class contentBlueprintsViews extends AdministrationPage {
 

@@ -1,6 +1,6 @@
 <?php
 	
-	require_once TOOLKIT . '/class.event.php';
+	require_once LIB . '/class.event.php';
 	
 	Final Class Event%1$s extends Event {
 

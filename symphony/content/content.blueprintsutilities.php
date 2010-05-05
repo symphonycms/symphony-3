@@ -1,7 +1,7 @@
 <?php
 
-	require_once(TOOLKIT . '/class.administrationpage.php');
-	require_once(TOOLKIT . '/class.xslproc.php');
+	require_once(LIB . '/class.administrationpage.php');
+	require_once(LIB . '/class.xslproc.php');
 
 	Class contentBlueprintsUtilities extends AdministrationPage{
 

@@ -1,7 +1,7 @@
 <?php
 
-	require_once(TOOLKIT . '/class.administrationpage.php');
-	require_once(TOOLKIT . '/class.event.php');
+	require_once(LIB . '/class.administrationpage.php');
+	require_once(LIB . '/class.event.php');
 
 	Class contentBlueprintsEvents extends AdministrationPage{
 

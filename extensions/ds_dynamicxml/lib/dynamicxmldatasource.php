@@ -1,9 +1,9 @@
 <?php
 
-	require_once CORE . '/class.cache.php';
-	require_once TOOLKIT . '/class.xslproc.php';
-	require_once TOOLKIT . '/class.datasource.php';
-	require_once TOOLKIT . '/class.gateway.php';
+	require_once LIB . '/class.cache.php';
+	require_once LIB . '/class.xslproc.php';
+	require_once LIB . '/class.datasource.php';
+	require_once LIB . '/class.gateway.php';
 
 	Class DynamicXMLDataSource extends DataSource {
 
