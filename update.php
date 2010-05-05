@@ -49,8 +49,8 @@
 	define('DOCROOT', rtrim(dirname(__FILE__), '/'));
 	define('DOMAIN', rtrim(rtrim($_SERVER['HTTP_HOST'], '/') . dirname($_SERVER['PHP_SELF']), '/'));
 
-	require_once(DOCROOT . '/symphony/lib/boot/bundle.php');
-	require_once(TOOLKIT . '/class.general.php');
+	require_once(DOCROOT . '/symphony/bundle.php');
+	require_once(LIB . '/class.general.php');
 
 	if(isset($_GET['action']) && $_GET['action'] == 'remove'){
 		unlink(DOCROOT . '/update.php');
@@ -117,7 +117,7 @@
 		if(writeConfig(DOCROOT . '/manifest', $settings, $settings['symphony']['file-write-mode']) === true){
 
 			// build a Frontend page instance to initialise database
-			require_once(CORE . '/class.frontend.php');
+			require_once(LIB . '/class.frontend.php');
 			$frontend = Frontend::instance();
 
 			if (version_compare($existing_version, '2.0.3', '<=')) {

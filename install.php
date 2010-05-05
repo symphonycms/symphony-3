@@ -34,17 +34,17 @@
 	}
 	
 	function setLanguage() {
-		require_once('symphony/lib/toolkit/class.lang.php');
+		require_once('symphony/lib/class.lang.php');
 		$lang = NULL;
 
 		if(!empty($_REQUEST['lang'])){
 			$l = preg_replace('/[^a-zA-Z\-]/', NULL, $_REQUEST['lang']);
-			if(file_exists("./symphony/lib/lang/lang.{$l}.php")) $lang = $l;
+			if(file_exists("./symphony/lang/lang.{$l}.php")) $lang = $l;
 		}
 
 		if($lang === NULL){
 			foreach(Lang::getBrowserLanguages() as $l){
-				if(file_exists("./symphony/lib/lang/lang.{$l}.php")) $lang = $l;
+				if(file_exists("./symphony/lang/lang.{$l}.php")) $lang = $l;
 				break;
 			}
 		}
@@ -55,7 +55,7 @@
 			## default to English
 			$lang = 'en';
 			
-			if(!file_exists('./symphony/lib/lang/lang.en.php')){
+			if(!file_exists('./symphony/lang/lang.en.php')){
 				$l = Lang::getAvailableLanguages();
 				if(is_array($l) && count($l) > 0) $lang = $l[0];
 			}
@@ -66,7 +66,7 @@
 		}
 
 		try{
-			Lang::load('./symphony/lib/lang/lang.%s.php', $lang);
+			Lang::load('./symphony/lang/lang.%s.php', $lang);
 		}
 		catch(Exception $s){
 			return NULL;
@@ -223,5 +223,5 @@
 	}
 		
 	define('INSTALL_REQUIREMENTS_PASSED', true);
-	include_once('./symphony/lib/toolkit/include.install.php');
+	include_once('./symphony/lib/include.install.php');
 

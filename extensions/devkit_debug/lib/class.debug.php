@@ -12,8 +12,8 @@
 		define('BITTER_CACHE_PATH', EXTENSIONS . '/devkit_debug/lib/bitter/caches');
 	}
 	
-	require_once(CORE . '/class.cache.php');
-	require_once(TOOLKIT . '/class.devkit.php');
+	require_once(LIB . '/class.cache.php');
+	require_once(LIB . '/class.devkit.php');
 	require_once(EXTENSIONS . '/devkit_debug/lib/bitter/bitter.php');
 	
 	// Create cache folter:

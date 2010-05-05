@@ -37,7 +37,7 @@
 		/*
 		public function action($context = array()) {
 			
-			require_once TOOLKIT . '/class.xslproc.php';
+			require_once LIB . '/class.xslproc.php';
 			
 			// Validate:
 			$fields = $context['fields'];

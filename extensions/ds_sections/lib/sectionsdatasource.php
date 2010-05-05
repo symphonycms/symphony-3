@@ -1,6 +1,6 @@
 <?php
 
-	require_once(TOOLKIT . '/class.entry.php');
+	require_once(LIB . '/class.entry.php');
 
 	Class SectionsDataSource extends DataSource {
 

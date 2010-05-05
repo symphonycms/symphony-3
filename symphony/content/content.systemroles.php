@@ -1,6 +1,6 @@
 <?php
 
-	require_once(TOOLKIT . '/class.administrationpage.php');
+	require_once(LIB . '/class.administrationpage.php');
 
 	Class contentSystemRoles extends AdministrationPage{
 

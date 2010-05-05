@@ -1,8 +1,8 @@
 <?php
 
-	require_once(TOOLKIT . '/class.administrationpage.php');
-	require_once(TOOLKIT . '/class.messagestack.php');
- 	require_once(TOOLKIT . '/class.section.php');
+	require_once(LIB . '/class.administrationpage.php');
+	require_once(LIB . '/class.messagestack.php');
+ 	require_once(LIB . '/class.section.php');
 
 	Class contentBlueprintsSections extends AdministrationPage{
 

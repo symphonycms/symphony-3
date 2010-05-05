@@ -1,6 +1,6 @@
 <?php
 
-	require_once(TOOLKIT . '/class.administrationpage.php');
+	require_once(LIB . '/class.administrationpage.php');
 
 	class contentSystemSettings extends AdministrationPage {
 		public function __construct(){

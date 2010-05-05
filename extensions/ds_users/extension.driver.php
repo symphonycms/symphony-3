@@ -1,7 +1,7 @@
 <?php
 
 	require_once('lib/usersdatasource.php');
-	require_once(TOOLKIT . '/class.section.php');
+	require_once(LIB . '/class.section.php');
 
 	Class Extension_DS_Users extends Extension {
 		public function about() {

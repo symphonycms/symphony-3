@@ -1,6 +1,6 @@
 <?php
 
-	require_once(TOOLKIT . '/class.htmldocument.php');
+	require_once(LIB . '/class.htmldocument.php');
 
 	Class contentLogout extends HTMLDocument{
 

@@ -1,7 +1,7 @@
 <?php
 
-	require_once(TOOLKIT . '/class.administrationpage.php');
- 	//require_once(TOOLKIT . '/class.sectionmanager.php');
+	require_once(LIB . '/class.administrationpage.php');
+ 	//require_once(LIB . '/class.sectionmanager.php');
 
 	Class contentSystemUsers extends AdministrationPage{
 
@@ -152,7 +152,7 @@
 			$center = $layout->createColumn(Layout::LARGE);
 			$right = $layout->createColumn(Layout::SMALL);
 
-			require_once(TOOLKIT . '/class.field.php');
+			require_once(LIB . '/class.field.php');
 
 			## Handle unknow context
 			if(!in_array($this->_context[0], array('new', 'edit'))) throw new AdministrationPageNotFoundException;
