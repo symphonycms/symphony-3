@@ -195,7 +195,7 @@
 
 		}
 
-		public function buildFilterQuery($filter, &$joins, &$where, Register $ParameterOutput=NULL){
+		public function buildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL){
 
 			self::$key++;
 
@@ -206,20 +206,21 @@
 			', self::$key, $this->section, $this->{'element-name'});
 
 			if ($operation_type == DataSource::FILTER_AND) {
+				$clause = NULL;
 				foreach ($value as $v) {
-					$where .= sprintf(
-						" AND (t%1\$s.value %2\$s '%3\$s') ",
+					$clause .= sprintf(
+						"(t%1\$s.value %2\$s '%3\$s') AND",
 						self::$key,
 						$filter['type'] == 'is-not' ? '<>' : '=',
 						$v
 					);
 				}
-
+				$where[] = sprintf("(%s)", preg_replace('/AND$/i', NULL, $clause));
 			}
 
 			else {
-				$where .= sprintf(
-					" AND (t%1\$s.value %2\$s IN ('%3\$s')) ",
+				$where[] = sprintf(
+					"(t%1\$s.value %2\$s IN ('%3\$s'))",
 					self::$key,
 					$filter['type'] == 'is-not' ? 'NOT' : NULL,
 					implode("', '", $value)

@@ -155,7 +155,8 @@
 
 			$pagination->{'record-start'} = max(0, ($pagination->{'current-page'} - 1) * $pagination->{'entries-per-page'});
 
-			$order = $sort = $joins = $where = NULL;
+			$order = $sort = $joins = NULL;
+			$where = array();
 
 			//	Apply the Sorting & Direction
 			if($this->parameters()->{'sort-order'} == 'random'){
@@ -201,8 +202,8 @@
 					if($element_name == 'system:id'){
 						$filter_value = $this->prepareFilterValue($filter['value'], $ParameterOutput);
 						$filter_value = array_map('intval', $filter_value);
-						$where .= sprintf(
-							" AND e.id %s IN (%s)",
+						$where[] = sprintf(
+							"(e.id %s IN (%s))",
 							($filter['type'] == 'is-not' ? 'NOT' : NULL),
 							implode(',', $filter_value)
 						);
@@ -215,20 +216,20 @@
 			}
 			
 			// Escape percent symbold:
-			$where = str_replace('%', '%%', $where);
-
+			$where = array_map(create_function('$string', 'return str_replace(\'%\', \'%%\', $string);'), $where);
+			
 			$query = sprintf(
 				'SELECT SQL_CALC_FOUND_ROWS e.*
 				FROM `tbl_entries` AS `e`
 				%1$s
 				WHERE `section` = "%2$s"
-				%3$s
+				AND (%3$s)
 				ORDER BY %4$s
 				LIMIT %5$d, %6$d',
 
 				$joins,
 				$section->handle,
-				$where,
+				implode(($this->filter_operation_type == self::FILTER_AND ? ' AND ' : ' OR '), $where),
 				$order,
 				$pagination->{'record-start'},
 				$pagination->{'entries-per-page'}

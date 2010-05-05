@@ -284,10 +284,10 @@
 		//	users on their fields in the sym_users table. Once done, this buildFilterQuery will have to be updated
 		//	to think use those columns. For now this just filters on USER_ID (which is Symphony 2.0.x behaviour)
 
-		public function buildFilterQuery($filter, &$joins, &$where, $operation_type=DataSource::FILTER_OR) {
+		public function buildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL){
 			self::$key++;
 
-			$value = DataSource::prepareFilterValue($filter['value']);
+			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput, $operation_type);
 
 			$joins .= sprintf('
 				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
@@ -303,24 +303,21 @@
 			}
 
 			else if ($operation_type == DataSource::FILTER_AND) {
+				$clause = NULL;
 				foreach ($value as $v) {
-					$where .= sprintf(
-						" AND (
-							t%1\$s.user_id %2\$s '%3\$s'
-						) ",
+					$clause .= sprintf(
+						"(t%1\$s.user_id %2\$s '%3\$s') AND",
 						self::$key,
 						$filter['type'] == 'is-not' ? '<>' : '=',
 						$v
 					);
 				}
-
+				$where[] = sprintf("(%s)", preg_replace('/AND$/i', NULL, $clause));
 			}
 
 			else {
-				$where .= sprintf(
-					" AND (
-						t%1\$s.user_id %2\$s IN ('%3\$s')
-					) ",
+				$where[] = sprintf(
+					"(t%1\$s.user_id %2\$s IN ('%3\$s'))",
 					self::$key,
 					$filter['type'] == 'is-not' ? 'NOT' : NULL,
 					implode("', '", $value)

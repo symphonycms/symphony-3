@@ -390,7 +390,7 @@
 		//	have to be as 'split here and do magic' as it is now.
 		//	The problem then is that what is a simple BETWEEN statement now is a bunch of joins and >=/<= operads
 		//	which is slow
-		public function buildFilterQuery($filter, &$joins, &$where, Register $ParameterOutput=NULL) {
+		public function buildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL) {
 
 /*
 
