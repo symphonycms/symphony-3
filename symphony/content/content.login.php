@@ -93,17 +93,14 @@
 
 				$label = Widget::Label(__('Confirm New Password'));
 				$label->appendChild(Widget::Input('password-confirmation', NULL, 'password'));
-
+				$fieldset->appendChild($label);
+				$this->Form->appendChild($fieldset);
+				
 				if($this->_mismatchedPassword){
 					$div = $this->createElement('div', NULL, array('class' => 'invalid'));
-					$div->appendChild($label);
 					$div->appendChild($this->createElement('p', __('The supplied password was rejected. Make sure it is not empty and that password matches password confirmation.')));
-					$fieldset->appendChild($div);
+					$this->Form->appendChild($div);
 				}
-
-				else $fieldset->appendChild($label);
-
-				$this->Form->appendChild($fieldset);
 
 				$div = $this->createElement('div', NULL, array('class' => 'actions'));
 				$div->appendChild(Widget::Input('action[change]', __('Save Changes'), 'submit'));
@@ -119,22 +116,19 @@
 
 				$label = Widget::Label(__('Password'));
 				$label->appendChild(Widget::Input('password', NULL, 'password'));
-
+				$fieldset->appendChild($label);
+				$this->Form->appendChild($fieldset);
+				
 				if($this->_invalidPassword){
 					$div = $this->createElement('div', NULL, array('class' => 'invalid'));
-					$div->appendChild($label);
 
 					$p = $this->createElement('p', __('The supplied password was rejected.'));
 					$p->appendChild(
 						Widget::Anchor(__('Retrieve password?'), ADMIN_URL . '/login/retrieve-password/')
 					);
 					$div->appendChild($p);
-					$fieldset->appendChild($div);
+					$this->Form->appendChild($div);
 				}
-
-				else $fieldset->appendChild($label);
-
-				$this->Form->appendChild($fieldset);
 
 				$div = $this->createElement('div', NULL, array('class' => 'actions'));
 				$div->appendChild(Widget::Input('action[login]', __('Login'), 'submit'));
