@@ -104,7 +104,7 @@
 			return 'desc';
 		}*/
 
-		public function render(Register $ParameterOutput){
+		public function render(Register $ParameterOutput, $joins = NULL, array $where = array()){
 			$execute = true;
 
 			$result = new XMLDocument;
@@ -155,8 +155,7 @@
 
 			$pagination->{'record-start'} = max(0, ($pagination->{'current-page'} - 1) * $pagination->{'entries-per-page'});
 
-			$order = $sort = $joins = NULL;
-			$where = array();
+			$order = $sort = NULL;
 
 			//	Apply the Sorting & Direction
 			if($this->parameters()->{'sort-order'} == 'random'){
