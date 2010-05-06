@@ -43,7 +43,12 @@
 			else{
 				$entry = new Entry;
 				$entry->section = $this->parameters()->{'section'};
-				$entry->user_id = Frontend::instance()->User->id;
+				if(isset(Frontend::instance()->User) && Frontend::instance()->User instanceof User){
+					$entry->user_id = Frontend::instance()->User->id;
+				}
+				else{
+					$entry->user_id = (int)Symphony::Database()->query("SELECT `id` FROM `tbl_users` ORDER BY `id` ASC LIMIT 1")->current()->id;
+				}
 				$type = 'create';
 			}
 
