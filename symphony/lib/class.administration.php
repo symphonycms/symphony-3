@@ -48,12 +48,15 @@
 				else {
 					$section_handle = $this->User->default_section;
 					
-					if (strlen(trim($section_handle)) == 0) {
-						redirect(ADMIN_URL . '/blueprints/sections/');
+					// Make sure section exists:
+					try {
+						$section = Section::loadFromHandle($section_handle);
+						
+						redirect(ADMIN_URL . "/publish/{$section_handle}/");
 					}
 					
-					else{
-						redirect(ADMIN_URL . "/publish/{$section_handle}/");
+					catch (Exception $e) {
+						redirect(ADMIN_URL . '/blueprints/sections/');
 					}
 				}
 			}
