@@ -150,49 +150,21 @@
 		-------------------------------------------------------------------------*/
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
-			$document = $wrapper->ownerDocument;
-
-			$name = $document->createElement('span', $this->label);
-			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('em', $this->name()));
-			$wrapper->appendChild($name);
-
-			$group = $document->createElement('div');
-			$group->setAttribute('class', 'group');
-
-			$label = Widget::Label(__('Type'));
-			$label->setAttribute('class', 'small');
-			$label->appendChild(Widget::Select(
-				sprintf('fields[filters][%s][type]', $this->{'element-name'}),
-				array(
-					array('is', false, 'Is'),
-					array('is-not', $data['type'] == 'is-not', 'Is not')
-				)
-			));
-			$group->appendChild($label);
-
-			$div = $document->createElement('div');
-
-			$label = Widget::Label(__('Value'));
-			$label->appendChild(Widget::Input(
-				sprintf('fields[filters][%s][value]', $this->{'element-name'}),
-				$data['value']
-			));
-
+			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
+			
+			$div = $wrapper->ownerDocument->createElement('div');
+			
+			$label = $wrapper->ownerDocument->xpath('.//label[last()]', $wrapper)->item(0);
+			$label->wrapWith($div);
+				
 			$existing_options = array('yes', 'no');
 
-			$optionlist = $document->createElement('ul');
+			$optionlist = $wrapper->ownerDocument->createElement('ul');
 			$optionlist->setAttribute('class', 'tags');
 
-			foreach($existing_options as $option) $optionlist->appendChild($document->createElement('li', $option));
+			foreach($existing_options as $option) $optionlist->appendChild($wrapper->ownerDocument->createElement('li', $option));
 
-			$div->appendChild($label);
 			$div->appendChild($optionlist);
-
-			$group->appendChild($div);
-
-			$wrapper->appendChild($group);
-
 		}
 
 		public function buildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL){
