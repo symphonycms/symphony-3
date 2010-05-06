@@ -166,6 +166,14 @@ form.panel {
 	overflow: hidden;
 	padding: 10px 0;
 }
+form h1 {
+	color: #666;
+	font-size: 1.8em;
+	background: none;
+	padding: 10px 30px;
+	margin-bottom: 0;
+	text-shadow: 1px 1px 2px #fff;
+}
 form fieldset {
 	border: none;
 	color: #666;
@@ -179,18 +187,21 @@ form label {
 form input {
 	display: block;
 	width: 100%;
-	font-size: 10pt;
+	font-size: 12pt;
 	margin-top: 2px;
 	padding: 2px;
 }
-form h1 {
-	color: #666;
-	font-size: 1.8em;
-	background: none;
+form .invalid {
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #fff;
+	background-color: rgba(255,255,255,0.4);
 	padding: 10px 30px;
-	margin-bottom: 0;
-	text-shadow: 1px 1px 2px #fff;
 }
+form p {
+	margin: 0;
+	padding: 0;
+}
+
 
 /*-----------------------------------------------------------------------------
 	Actions
