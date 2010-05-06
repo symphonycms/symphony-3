@@ -63,7 +63,7 @@
 
 			$errors = new MessageStack;
 			$status = Entry::save($entry, $errors);
-
+			
 			if($status == Entry::STATUS_OK){
 				###
 				# Delegate: EntryPostCreate
@@ -90,19 +90,74 @@
 				$root->appendChild($result->createElement(
 					'message', __('Entry encountered errors when saving.')
 				));
-				foreach($errors as $element_name => $e){
-					$element = $result->createElement($element_name);
-					foreach($e as $field => $obj){
-						$error = $result->createElement('error', $obj->message);
-						$error->setAttribute('type', $obj->code);
-						$error->setAttribute('field', $field);
-						$element->appendChild($error);
-					}
-					$root->appendChild($element);
+				
+				if(!isset($postdata['fields']) || !is_array($postdata['fields'])) {
+					$postdata['fields'] = array();
 				}
+				
+				$element = $result->createElement('values');
+				$this->appendValues($element, $postdata['fields']);
+				$root->appendChild($element);
+				
+				$element = $result->createElement('errors');
+				$this->appendMessages($element, $errors);
+				$root->appendChild($element);
 			}
 
 			return $result;
+		}
+		
+		protected function appendValues(DOMElement $wrapper, array $values) {
+			$document = $wrapper->ownerDocument;
+			
+			foreach ($values as $key => $value) {
+				if (is_numeric($key)) {
+					$element = $document->createElement('item');
+				}
+				
+				else {
+					$element = $document->createElement($key);
+				}
+				
+				if (is_array($value) and !empty($value)) {
+					$this->appendValues($element, $value);
+				}
+				
+				else {
+					$element->setValue((string)$value);
+				}
+				
+				$wrapper->appendChild($element);
+			}
+		}
+		
+		protected function appendMessages(DOMElement $wrapper, MessageStack $messages) {
+			$document = $wrapper->ownerDocument;
+			
+			foreach ($messages as $key => $value) {
+				if (is_numeric($key)) {
+					$element = $document->createElement('item');
+				}
+				
+				else {
+					$element = $document->createElement($key);
+				}
+				
+				if ($value instanceof $messages and $value->valid()) {
+					$this->appendMessages($element, $value);
+				}
+				
+				else if ($value instanceof STDClass) {
+					$element->setValue($value->message);
+					$element->setAttribute('type', $value->code);
+				}
+				
+				else {
+					continue;
+				}
+				
+				$wrapper->appendChild($element);
+			}
 		}
 	}
 	
