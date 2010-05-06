@@ -1,6 +1,6 @@
 <?php
 
-	require_once(LIB . '/class.messagestack.php');
+	require_once('class.messagestack.php');
 
 	Class XMLDocument extends DOMDocument{
 
