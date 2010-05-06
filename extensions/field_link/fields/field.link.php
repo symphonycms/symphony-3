@@ -255,7 +255,7 @@
 			$options = array();
 
 			foreach (new SectionIterator as $section) {
-				if(!is_array($section->fields) || $section->handle == $document->_context[1]) continue;
+				if(!is_array($section->fields) || $section->handle == $this->section) continue;
 
 				$fields = array();
 
