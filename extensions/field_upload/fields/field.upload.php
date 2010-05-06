@@ -576,7 +576,7 @@
 		}
 		
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
-			$permissions = Symphony::Configuration()->core()->{'file-write-mode'};
+			$permissions = Symphony::Configuration()->core()->symphony->{'file-write-mode'};
 			$data->entry_id = $entry->id;
 			
 			###
