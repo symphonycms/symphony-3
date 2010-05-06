@@ -439,18 +439,11 @@
 			$document = $wrapper->ownerDocument;
 
 			$list = $document->createElement($this->{'element-name'});
-
-			if (!is_array($data['handle']) and !is_array($data['value'])) {
-				$data = array(
-					'handle'	=> array($data['handle']),
-					'value'		=> array($data['value'])
-				);
-			}
-
-			foreach ($data['value'] as $index => $value) {
+			
+			foreach($data as $tag){
 				$list->appendChild($document->createElement(
-					'item', General::sanitize($value), array(
-						'handle'	=> $data['handle'][$index]
+					'item', General::sanitize($tag->value), array(
+						'handle' => $tag->handle
 					)
 				));
 			}
