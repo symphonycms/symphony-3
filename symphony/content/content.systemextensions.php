@@ -3,56 +3,15 @@
 	require_once(LIB . '/class.administrationpage.php');
 
 	Class contentSystemExtensions extends AdministrationPage{
+	
+		protected $lists = array();
 
-		/*public function __call($name, $args){
-
-			$type = NULL;
-
-			switch($name){
-
-				case '__viewIndex':
-				case '__viewOverview':
-					$this->buildPage(
-						ExtensionManager::instance()->listAll()
-					);
-					return;
-					break;
-
-				case '__viewDatasources':
-					$type = 'Data Source';
-					break;
-
-				case '__viewFields':
-					$type = 'Field';
-					break;
-
-				case '__viewOther':
-					$type = 'Other';
-					break;
-
-				default:
-					return NULL;
-					break;
-			}
-
-			if($type == 'Other'){
-				$this->buildTable(
-					ExtensionManager::instance()->listOthers(array('Data Source', 'Field'))
-				);
-			}
-			else {
-				$this->buildTable(
-					ExtensionManager::instance()->listByType($type)
-				);
-			}
-		}*/
-		
 		function view(){
 		
 		## Setup page
 		
 			$filter = ($this->_context[0] == 'type' || $this->_context[0] == 'status' ? $this->_context[0] : NULL);
-			$value = $this->_context[1];
+			$value = (isset($this->_context[1]) ? $this->_context[1] : NULL);
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Extensions'))));
 			$this->appendSubheading(__('Extensions'));
@@ -68,43 +27,43 @@
 		## Process extensions and build lists
 		
 			$extensions = ExtensionManager::instance()->listAll();
-			$lists = array();
 			
 			foreach($extensions as $e){
-			/* Someone should look all this over. My thinking was that it'd be nice to only have
-			to loop through the extensions once. Maybe that's stupid? */
+			/* Someone should look all this over. My thinking was that it'd
+			be nice to only have to loop through the extensions once. Maybe
+			that's stupid? */
 			
 			## Build lists by status
 				switch($e['status']){
 					case Extension::ENABLED:
-						$lists['status']['enabled'][] = $e;
+						$this->lists['status']['enabled'][] = $e;
 						break;
 							
 					case Extension::DISABLED:
-						$lists['status']['disabled'][] = $e;
+						$this->lists['status']['disabled'][] = $e;
 						break;
 						
 					case Extension::NOT_INSTALLED:
-						$lists['status']['installable'][] = $e;
+						$this->lists['status']['installable'][] = $e;
 						break;
 						
 					case Extension::REQUIRES_UPDATE:
-						$lists['status']['updateable'][] = $e;
+						$this->lists['status']['updateable'][] = $e;
 				}
 			
 			## Build lists by type
 				if(!empty($e['type'])){
 					foreach($e['type'] as $t){
-						if(!isset($lists['type'][$t])) {
-							$lists['type'][$t][] = $e;
+						if(!isset($this->lists['type'][$t])) {
+							$this->lists['type'][$t][] = $e;
 						}
 						else {
-							array_push($lists['type'][$t], $e);
+							array_push($this->lists['type'][$t], $e);
 						}
 					}
 				}
 			}
-			
+		
 		## Build status filter menu
 		
 			$h4 = $this->createElement('h4', __('Filter by Status'));
@@ -112,7 +71,13 @@
 			
 			$ul = $this->createElement('ul');
 			
-			foreach($lists['status'] as $list => $extensions) {
+			$li = $this->createElement('li', Widget::Anchor(__('Overview'), $path));
+			if(is_null($filter)){
+				$li->setAttribute('class', 'active');
+			}
+			$ul->appendChild($li);
+			
+			foreach($this->lists['status'] as $list => $extensions) {
 				if(!empty($extensions)){
 					$li = $this->createElement('li', Widget::Anchor(ucwords($list), $path . 'status/' . $list));
 					if($value == $list){
@@ -136,7 +101,7 @@
 			
 			$ul = $this->createElement('ul');
 			
-			foreach($lists['type'] as $list => $extensions) {
+			foreach($this->lists['type'] as $list => $extensions) {
 				if(!empty($extensions)){
 					$li = $this->createElement('li', Widget::Anchor(ucwords($list), $path . 'type/' . $list));
 					if($value == $list){
@@ -153,31 +118,67 @@
 	
 			$left->appendChild($ul);
 			
-		## Build table
-			
+		
 			if(!is_null($filter) && !is_null($value)){
-				$right->appendChild($this->buildTable($lists[$filter][$value]));
+			
+			## Build table
+			
+				$right->appendChild($this->buildTable($this->lists[$filter][$value]));
+				
+			## Append table actions
+			
+				$tableActions = $this->createElement('div');
+				$tableActions->setAttribute('class', 'actions');
+
+				$options = array(
+					array(NULL, false, __('With Selected...')),
+					array('enable', false, __('Enable')),
+					array('disable', false, __('Disable')),
+					array('uninstall', false, __('Uninstall'), 'confirm'),
+				);
+
+				$tableActions->appendChild(Widget::Select('with-selected', $options));
+				$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
+
+				$right->appendChild($tableActions);
+			} else {
+				
+				$div = $this->createElement('div');
+				$div->setAttribute('class', 'tools');
+				$h4 = $this->createElement('h4', __('Upgrade'));
+				$p = $this->createElement('p', __('Upgrades are available for 2 of your extensions.'));
+				$view = $this->createElement('button', __('View All'));
+				
+				$div->appendChild($view);
+				$div->appendChild($h4);
+				$div->appendChild($p);
+				
+				$right->appendChild($div);
+				
+				
+				$div = $this->createElement('div');
+				$div->setAttribute('class', 'tools');
+				$h4 = $this->createElement('h4', __('Install'));
+				$p = $this->createElement('p', __('4 of your extensions are waiting to be installed.'));
+				$install = $this->createElement('button', __('Install All'));
+				$install->setAttribute('class', 'create');
+				$view = $this->createElement('button', __('View All'));
+				
+				$div->appendChild($install);
+				$div->appendChild($view);
+				$div->appendChild($h4);
+				$div->appendChild($p);
+				
+				$right->appendChild($div);
 			}
-			
-		## Append table actions
-			
-			$tableActions = $this->createElement('div');
-			$tableActions->setAttribute('class', 'actions');
-
-			$options = array(
-				array(NULL, false, __('With Selected...')),
-				array('enable', false, __('Enable')),
-				array('disable', false, __('Disable')),
-				array('uninstall', false, __('Uninstall'), 'confirm'),
-			);
-
-			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
-
-			$right->appendChild($tableActions);
 		
 			$layout->appendTo($this->Form);
 
+		}
+		
+		function buildOverviewActions($title, $message){
+			
+			
 		}
 
 		function buildTable($extensions, $prefixes=false){
