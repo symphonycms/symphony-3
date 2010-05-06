@@ -6,8 +6,6 @@
 .htaccess
 install-log.txt
 workspace/
-manifest/
 *.esproj
 *~
 /symphony/templates/view.xsl
-/extensions/uploadfield
