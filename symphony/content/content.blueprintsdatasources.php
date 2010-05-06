@@ -449,7 +449,7 @@
 			$this->Form->appendChild($actions);
 		}
 
-		function __viewInfo(){
+		public function __viewInfo(){
 			$datasource = DataSource::loadFromHandle($this->_context[1]);
 			$about = $datasource->about();
 
