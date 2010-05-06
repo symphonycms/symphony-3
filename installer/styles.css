@@ -1,0 +1,139 @@
+* {
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	color: inherit;
+	font: inherit;
+	line-height: 140%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font: 68.75% 'Lucida Grande', 'Verdana', sans-serif;
+	min-width: 850px;
+}
+
+.panel {
+	background: -webkit-gradient(linear, left top, left bottom, from(#f4f4f4), to(#d8d8d8), color-stop(0.04, #ededed));
+	background: -moz-linear-gradient(top center, #f4f4f4 0%, #ededed 1%, #d8d8d8 100%);
+	border: none;
+	background-color: #d8d8d8;
+	-webkit-box-shadow: 0 1px 3px #888;
+	-moz-box-shadow: 0 1px 3px #888;
+	-moz-border-radius: 0.5em;
+	-webkit-border-radius: 0.5em;
+}
+
+form {
+	margin: 0;
+	position: relative;
+	top: 0;
+	left: 50%;
+	margin-left: -420px;
+	overflow: hidden;
+	width: 660px;
+}
+
+#layout > * {
+	clear: both;
+	display: table;
+	table-layout: fixed;
+	width: 658px;
+	margin-bottom: 40px;
+}
+#layout > *:first-child {
+	margin: 0;
+}
+#layout > * > * {
+	display: table-cell;
+	padding: 20px;
+}
+#layout > * > .about {
+	display: table-cell;
+	padding-left: 180px;
+}
+#layout .about p {
+	color: #888;
+}
+#layout > * > .help {
+	color: #666;
+	text-align: right;
+	width: 180px;
+}
+#layout > * > .content {
+	padding-left: 260px;
+}
+
+#layout > * > .content.submission {
+	padding: 0 0  0 180px;
+}
+
+h1 {
+	font-size: 140%;
+}
+
+h2 {
+	color: #333;
+	font-size: 100%;
+	font-weight: bold;
+	margin: 0 0 5px 0;
+}
+
+p {
+	margin: 0 0 10px 0;
+}
+p.description {
+	font-style: oblique;
+	color: #888;
+	margin-top: -5px;
+}
+
+button {
+	padding: 5px;
+}
+
+label {
+	display: block;
+	margin: 0 0 10px 0;
+}
+label.input input {
+	display: block;
+	margin: 2px 0 0 0;
+	padding: 2px;
+	width: 100%;
+}
+label.select select {
+	display: block;
+	margin: 2px 0 0 0;
+	width: 100%;
+}
+label.checkbox {
+	margin-top: 20px;
+}
+
+.group {
+	display: table;
+	border-spacing: 20px 0;
+	table-layout: fixed;
+	margin: 0 0 10px -20px;
+	width: 480px;
+}
+.group > * {
+	display: table-cell;
+}
+
+.extended {
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #fff;
+	background: rgba(255, 255, 255, 0.4);
+	margin: 20px -20px 0;
+}
+.extended > div {
+	border-top: 1px solid #fff;
+	border-bottom: 1px solid #ccc;
+	padding: 20px 20px 10px 20px;
+}
+.extended .group {
+	width: 480px;
+}
