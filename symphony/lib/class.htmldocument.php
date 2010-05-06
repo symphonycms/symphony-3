@@ -1,7 +1,7 @@
 <?php
 
-	require_once(LIB . '/class.xmldocument.php');
-	require_once(LIB . '/class.documentheaders.php');
+	require_once('class.xmldocument.php');
+	require_once('class.documentheaders.php');
 
 	Class HTMLDocument extends XMLDocument{
 
