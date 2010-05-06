@@ -31,13 +31,13 @@
 			$this->errors->flush();
 		}
 
-		public function loadXML($xml){
+		public function loadXML($source, $options = 0){
 
 			$this->flushLog();
 
 			libxml_use_internal_errors(true);
 
-			$result = parent::loadXML($xml);
+			$result = parent::loadXML($source, $options);
 
 			self::processLibXMLerrors();
 
