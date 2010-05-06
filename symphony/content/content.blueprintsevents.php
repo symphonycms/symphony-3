@@ -94,7 +94,7 @@
 
 					// Source
 					if(is_null($event->parameters()->section)){
-						$col_source = Widget::TableData(__('None'), 'inactive');
+						$col_source = Widget::TableData(__('None'), array('class' => 'inactive'));
 					}
 					else{
 						$section = Section::loadFromHandle($event->parameters()->section);
