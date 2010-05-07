@@ -251,11 +251,6 @@
 
 		}
 		
-		function buildOverviewActions($title, $message){
-			
-			
-		}
-
 		function buildTable($extensions, $prefixes=false){
 			
 			## Sort by extensions name:
@@ -265,7 +260,7 @@
 				array(__('Name'), 'col'),
 				array(__('Version'), 'col'),
 				array(__('Author'), 'col'),
-				array(__('Actions'), 'col')
+				array(__('Actions'), 'col', array('class' => 'row-actions'))
 			);
 
 			$aTableBody = array();
@@ -327,19 +322,20 @@
 
 				switch ($about['status']) {
 					case Extension::ENABLED:
-						$td4 = Widget::TableData(Widget::Anchor(__('Disable'), '#'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Uninstall'), '#', array('class' => 'button delete')));
+						$td4->appendChild(Widget::Anchor(__('Disable'), '#', array('class' => 'button')));
 						break;
 
 					case Extension::DISABLED:
-						$td4 = Widget::TableData(Widget::Anchor(__('Enable'), '#'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Enable'), '#', array('class' => 'button create')));
 						break;
 
 					case Extension::NOT_INSTALLED:
-						$td4 = Widget::TableData(Widget::Anchor(__('Install'), '#'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Install'), '#', array('class' => 'button create')));
 						break;
 
 					case Extension::REQUIRES_UPDATE:
-						$td4 = Widget::TableData(Widget::Anchor(__('Update'), '#'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Update'), '#', array('class' => 'button create')));
 				}
 
 				## Add a row to the body array, assigning each cell to the row
