@@ -77,7 +77,7 @@
 				trigger_error(__('Could not %1$s %2$s, there was a problem loading the object. Check the driver class exists.', array(__FUNCTION__, $name)), E_USER_WARNING);
 				return false;
 			}
-
+			
 			## If not installed, install it
 			if($this->__requiresInstallation($name) && $obj->install() === false){
 				return false;
@@ -402,7 +402,7 @@
 		}
 
 		private function __requiresInstallation($name){
-			return isset(self::$_extension_status[$name]);
+			return !isset(self::$_extension_status[$name]);
 		}
 
 
