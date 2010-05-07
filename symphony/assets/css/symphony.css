@@ -1380,6 +1380,8 @@
     line-height: 2em;
     color: #555;
     -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
 }
 
 .tools h4 {
