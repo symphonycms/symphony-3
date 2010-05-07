@@ -87,7 +87,7 @@
 					
 					$sort_field = $section->fetchFieldByHandle($section->{'publish-order-handle'});
 					if($sort_field instanceof Field){
-						$sort_field->buildSortingSQL($join, $order);
+						$sort_field->buildSortingQuery($join, $order);
 
 						$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
 						$order = sprintf($order, $section->{'publish-order-direction'});
@@ -125,45 +125,6 @@
 				}
 			}
 			
-			return $values;
-			
-			// find the sections of the related fields
-			$sections = Symphony::Database()->fetch("SELECT DISTINCT (s.id), s.name, f.id as `field_id`
-				 								FROM `tbl_sections` AS `s`
-												LEFT JOIN `tbl_fields` AS `f` ON `s`.id = `f`.parent_section
-												WHERE `f`.id IN ('" . implode("','", $this->{'related-field-id'}) . "')
-												ORDER BY s.sortorder ASC");
-
-			if(is_array($sections) && !empty($sections)){
-				foreach($sections as $section){
-
-					$group = array('name' => $section['name'], 'section' => $section['id'], 'values' => array());
-
-					// build a list of entry IDs with the correct sort order
-					$entries = EntryManager::instance()->fetch(NULL, $section['id'], $limit, 0);
-
-					$results = array();
-					foreach($entries as $entry) $results[] = $entry->{'id'};
-
-					// if a value is already selected, ensure it is added to the list (if it isn't in the available options)
-					if(!is_null($existing_selection) && !empty($existing_selection)){
-						foreach($existing_selection as $key => $entry_id){
-							$x = $this->findFieldIDFromRelationID($entry_id);
-							if($x == $section['field_id']) $results[] = $entry_id;
-						}
-					}
-
-					if(is_array($results) && !empty($results)){
-						foreach($results as $entry_id){
-							$value = $this->__findPrimaryFieldValueFromRelationID($entry_id);
-							$group['values'][$entry_id] = $value['value'];
-						}
-					}
-
-					$values[] = $group;
-				}
-			}
-
 			return $values;
 		}
 
