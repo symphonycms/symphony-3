@@ -90,20 +90,6 @@
 
 					// Destination
 					$col_destination = $event->prepareDestinationColumnValue();
-					/*
-					if(is_null($event->parameters()->section)){
-						$col_source = Widget::TableData(__('None'), array('class' => 'inactive'));
-					}
-					else{
-						$section = Section::loadFromHandle($event->parameters()->section);
-
-						$col_source = Widget::TableData(Widget::Anchor(
-							$section->name,
-							URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/',
-							array('title' => $section->handle)
-						));
-					}
-					*/
 
 					// Attached On
 					$fragment_views = $this->createDocumentFragment();
