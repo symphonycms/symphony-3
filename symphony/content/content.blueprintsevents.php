@@ -123,11 +123,11 @@
 					}
 
 					// Type
-					if(is_null($event->type())){
+					if(is_null($event->getExtension())){
 						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
 					else{
-						$extension = ExtensionManager::instance()->about($event->type());
+						$extension = ExtensionManager::instance()->about($event->getExtension());
 						$col_type = Widget::TableData($extension['name']);
 					}
 					
@@ -178,8 +178,8 @@
 					$this->type = Symphony::Configuration()->core()->{'default-event-type'};
 				}
 
-				$this->event = ExtensionManager::instance()->create($this->type)->prepare(
-					(isset($_POST['fields']) ? $_POST['fields'] : NULL)
+				$this->event = ExtensionManager::instance()->create($this->type)->prepareEvent(
+					null, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 			}
 
@@ -193,17 +193,17 @@
 				}
 
 				$this->event = Event::loadFromHandle($this->handle);
-				$this->type = $this->event->type();
+				$this->type = $this->event->getExtension();
 
-				$this->event = ExtensionManager::instance()->create($this->type)->prepare(
-					(isset($_POST['fields']) ? $_POST['fields'] : NULL), $this->event
+				$this->event = ExtensionManager::instance()->create($this->type)->prepareEvent(
+					$this->event, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 
 				if (!$this->event->allowEditorToParse()) {
 					redirect(URL . '/symphony/blueprints/events/info/' . $this->handle . '/');
 				}
 
-				$this->type = $this->event->type();
+				$this->type = $this->event->getExtension();
 			}
 		}
 
@@ -319,7 +319,7 @@
 				$this->appendSubheading(General::sanitize($this->event->about()->name));
 			}
 
-			ExtensionManager::instance()->create($this->type)->view($this->event, $this->Form, $this->errors);
+			ExtensionManager::instance()->create($this->type)->viewEvent($this->event, $this->Form, $this->errors);
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');

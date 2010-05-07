@@ -96,12 +96,7 @@
 					$col_name->appendChild(Widget::Input("items[{$handle}]", NULL, 'checkbox'));
 
 					// Source
-					if(!method_exists($ds, 'prepareSourceColumnValue')) {
-						$col_source = Widget::TableData(__('None'), array('class' => 'inactive'));
-					}
-					else {
-						$col_source = $ds->prepareSourceColumnValue();
-					}
+					$col_source = $ds->prepareSourceColumnValue();
 
 					// Attached On
 					$fragment_views = $this->createDocumentFragment();
@@ -124,11 +119,11 @@
 					}
 
 					// Type
-					if(is_null($ds->type())){
+					if(is_null($ds->getExtension())){
 						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
 					else{
-						$extension = ExtensionManager::instance()->about($ds->type());
+						$extension = ExtensionManager::instance()->about($ds->getExtension());
 						$col_type = Widget::TableData($extension['name']);
 					}
 					
@@ -179,8 +174,8 @@
 					$this->type = Symphony::Configuration()->core()->{'default-datasource-type'};
 				}
 
-				$this->datasource = ExtensionManager::instance()->create($this->type)->prepare(
-					(isset($_POST['fields']) ? $_POST['fields'] : NULL)
+				$this->datasource = ExtensionManager::instance()->create($this->type)->prepareDatasource(
+					NULL, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 			}
 
@@ -194,36 +189,18 @@
 				}
 
 				$this->datasource = Datasource::loadFromHandle($this->handle);
-				$this->type = $this->datasource->type();
+				$this->type = $this->datasource->getExtension();
 
-				$this->datasource = ExtensionManager::instance()->create($this->type)->prepare(
-					(isset($_POST['fields']) ? $_POST['fields'] : NULL), $this->datasource
+				$this->datasource = ExtensionManager::instance()->create($this->type)->prepareDatasource(
+					$this->datasource, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
-
-				//$this->datasource = Datasource::loadFromHandle($this->handle, NULL, false); //DatasourceManager::instance()->create($this->handle, NULL, false);
 
 				if (!$this->datasource->allowEditorToParse()) {
 					redirect(URL . '/symphony/blueprints/datasources/info/' . $this->handle . '/');
 				}
 
-				$this->type = $this->datasource->type();
+				$this->type = $this->datasource->getExtension();
 			}
-
-			###
-			# Delegate: DataSourceFormPrepare
-			# Description: Prepare any data before the form view and action are fired.
-			/*ExtensionManager::instance()->notifyMembers(
-				'DataSourceFormPrepare', '/backend/',
-				array(
-					'type'		=> &$this->type,
-					'handle'		=> &$this->handle,
-					'datasource'	=> $this->datasource,
-					'editing'		=> $this->editing,
-					'failed'		=> &$this->failed,
-					'fields'		=> &$this->fields,
-					'errors'		=> &$this->errors
-				)
-			);*/
 		}
 
 		protected function __actionForm() {
@@ -253,70 +230,6 @@
 					AlertStack::ERROR, $e
 				);
 			}
-
-			/*$type_file = NULL;
-			$type_data = array();
-
-
-
-			$this->fields = $_POST['fields'];
-
-			// About info:
-			if (!isset($this->fields['about']['name']) || empty($this->fields['about']['name'])) {
-				$this->errors->append('about::name', __('This is a required field'));
-				$this->failed = true;
-			}
-
-			###
-			# Delegate: DataSourceFormAction
-			# Description: Prepare any data before the form view and action are fired.
-			ExtensionManager::instance()->notifyMembers(
-				'DataSourceFormAction', '/backend/',
-				array(
-					'type'		=> &$this->type,
-					'handle'		=> &$this->handle,
-					'datasource'	=> $this->datasource,
-					'editing'		=> $this->editing,
-					'failed'		=> &$this->failed,
-					'fields'		=> &$this->fields,
-					'errors'		=> &$this->errors,
-					'type_file'	=> &$type_file,
-					'type_data'	=> &$type_data
-				)
-			);
-
-			// Save type:
-			if ($this->errors->length() <= 0) {
-				$user = Administration::instance()->User;
-
-				if (!file_exists($type_file)) {
-					throw new Exception(sprintf("Unable to find Data Source type '%s'.", $type_file));
-				}
-
-				$default_data = array(
-					// Class name:
-					str_replace(' ', '_', ucwords(
-						str_replace('-', ' ', Lang::createHandle($this->fields['about']['name']))
-					)),
-
-					// About info:
-					var_export($this->fields['about']['name'], true),
-					var_export($user->getFullName(), true),
-					var_export(URL, true),
-					var_export($user->email, true),
-					var_export('1.0', true),
-					var_export(DateTimeObj::getGMT('c'), true),
-				);
-
-				foreach ($type_data as $value) {
-					$default_data[] = var_export($value, true);
-				}
-
-				header('content-type: text/plain');
-				echo vsprintf(file_get_contents($type_file), $default_data);
-
-				exit;
-			}*/
 		}
 
 		protected function __viewForm() {
@@ -401,7 +314,7 @@
 				$this->appendSubheading(General::sanitize($this->datasource->about()->name));
 			}
 
-			ExtensionManager::instance()->create($this->type)->view($this->datasource, $this->Form, $this->errors);
+			ExtensionManager::instance()->create($this->type)->viewDatasource($this->datasource, $this->Form, $this->errors);
 
 			/*
 			###

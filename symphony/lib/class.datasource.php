@@ -148,12 +148,16 @@
 			return true;
 		}
 
-		public function type(){
+		public function getExtension(){
 			return NULL;
 		}
 
-		public function template(){
+		public function getTemplate(){
 			return NULL;
+		}
+		
+		public function prepareSourceColumnValue() {
+			return Widget::TableData(__('None'), array('class' => 'inactive'));
 		}
 
 		public function __get($name){
@@ -187,9 +191,9 @@
 			if ($errors->length() <= 0) {
 				$user = Administration::instance()->User;
 
-				if (!file_exists($this->template())) {
-					$errors->append('write', __("Unable to find Data Source Type template '%s'.", array($this->template())));
-					throw new DataSourceException(__("Unable to find Data Source Type template '%s'.", array($this->template())));
+				if (!file_exists($this->getTemplate())) {
+					$errors->append('write', __("Unable to find Data Source Type template '%s'.", array($this->getTemplate())));
+					throw new DataSourceException(__("Unable to find Data Source Type template '%s'.", array($this->getTemplate())));
 				}
 
 				$this->parameters()->{'root-element'} = $this->handle;
@@ -213,7 +217,7 @@
 
 				if(General::writeFile(
 					$pathname,
-					vsprintf(file_get_contents($this->template()), $data),
+					vsprintf(file_get_contents($this->getTemplate()), $data),
 					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
 				)){
 					if($editing != $this->handle) General::deleteFile(DATASOURCES . '/' . $editing . '.php');
