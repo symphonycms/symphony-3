@@ -22,13 +22,6 @@
 				)
 			));
 
-			$viewoptions = array(
-				'Users'	=> URL . '/symphony/system/users/',
-				'Roles' => URL . '/symphony/system/roles/',
-			);
-
-			$this->appendViewOptions($viewoptions);
-
 		    $users = new UserIterator;
 
 			$aTableHead = array(

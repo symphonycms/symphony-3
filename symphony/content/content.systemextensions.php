@@ -3,62 +3,23 @@
 	require_once(LIB . '/class.administrationpage.php');
 
 	Class contentSystemExtensions extends AdministrationPage{
+	
+		protected $lists = array();
 
-		/*public function __call($name, $args){
-
-			$type = NULL;
-
-			switch($name){
-
-				case '__viewIndex':
-				case '__viewOverview':
-					$this->buildPage(
-						ExtensionManager::instance()->listAll()
-					);
-					return;
-					break;
-
-				case '__viewDatasources':
-					$type = 'Data Source';
-					break;
-
-				case '__viewFields':
-					$type = 'Field';
-					break;
-
-				case '__viewOther':
-					$type = 'Other';
-					break;
-
-				default:
-					return NULL;
-					break;
-			}
-
-			if($type == 'Other'){
-				$this->buildTable(
-					ExtensionManager::instance()->listOthers(array('Data Source', 'Field'))
-				);
-			}
-			else {
-				$this->buildTable(
-					ExtensionManager::instance()->listByType($type)
-				);
-			}
-		}*/
-		
 		function view(){
 		
 		## Setup page
 		
 			$filter = ($this->_context[0] == 'type' || $this->_context[0] == 'status' ? $this->_context[0] : NULL);
-			$value = $this->_context[1];
+			$value = (isset($this->_context[1]) ? $this->_context[1] : NULL);
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Extensions'))));
 			$this->appendSubheading(__('Extensions'));
 
 			$path = URL . '/symphony/system/extensions/';
 			$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL());
+			
+		## Define layout
 			
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
@@ -68,43 +29,43 @@
 		## Process extensions and build lists
 		
 			$extensions = ExtensionManager::instance()->listAll();
-			$lists = array();
 			
 			foreach($extensions as $e){
-			/* Someone should look all this over. My thinking was that it'd be nice to only have
-			to loop through the extensions once. Maybe that's stupid? */
+			/* Someone should look all this over. My thinking was that it'd
+			be nice to only have to loop through the extensions once. Maybe
+			that's stupid? */
 			
 			## Build lists by status
 				switch($e['status']){
 					case Extension::ENABLED:
-						$lists['status']['enabled'][] = $e;
+						$this->lists['status']['enabled'][] = $e;
 						break;
 							
 					case Extension::DISABLED:
-						$lists['status']['disabled'][] = $e;
+						$this->lists['status']['disabled'][] = $e;
 						break;
 						
 					case Extension::NOT_INSTALLED:
-						$lists['status']['installable'][] = $e;
+						$this->lists['status']['installable'][] = $e;
 						break;
 						
 					case Extension::REQUIRES_UPDATE:
-						$lists['status']['updateable'][] = $e;
+						$this->lists['status']['updateable'][] = $e;
 				}
 			
 			## Build lists by type
 				if(!empty($e['type'])){
 					foreach($e['type'] as $t){
-						if(!isset($lists['type'][$t])) {
-							$lists['type'][$t][] = $e;
+						if(!isset($this->lists['type'][$t])) {
+							$this->lists['type'][$t][] = $e;
 						}
 						else {
-							array_push($lists['type'][$t], $e);
+							array_push($this->lists['type'][$t], $e);
 						}
 					}
 				}
 			}
-			
+		
 		## Build status filter menu
 		
 			$h4 = $this->createElement('h4', __('Filter by Status'));
@@ -112,7 +73,14 @@
 			
 			$ul = $this->createElement('ul');
 			
-			foreach($lists['status'] as $list => $extensions) {
+			## Main status overview
+			$li = $this->createElement('li', Widget::Anchor(__('Overview'), $path));
+			if(is_null($filter)){
+				$li->setAttribute('class', 'active');
+			}
+			$ul->appendChild($li);
+			
+			foreach($this->lists['status'] as $list => $extensions) {
 				if(!empty($extensions)){
 					$li = $this->createElement('li', Widget::Anchor(ucwords($list), $path . 'status/' . $list));
 					if($value == $list){
@@ -136,7 +104,7 @@
 			
 			$ul = $this->createElement('ul');
 			
-			foreach($lists['type'] as $list => $extensions) {
+			foreach($this->lists['type'] as $list => $extensions) {
 				if(!empty($extensions)){
 					$li = $this->createElement('li', Widget::Anchor(ucwords($list), $path . 'type/' . $list));
 					if($value == $list){
@@ -150,36 +118,139 @@
 					$ul->appendChild($li);
 				}
 			}
-	
+			
 			$left->appendChild($ul);
 			
-		## Build table
-			
+		## If a filter and value are specified...
+		
 			if(!is_null($filter) && !is_null($value)){
-				$right->appendChild($this->buildTable($lists[$filter][$value]));
+			
+			## If there are extensions in the list, build the table
+				if(isset($this->lists[$filter][$value])){
+					$right->appendChild($this->buildTable($this->lists[$filter][$value]));
+				} else {
+					## Otherwise pass an empty array so we get the
+					## 'No Records Found' message
+					$right->appendChild($this->buildTable(array()));
+				}
+				
+			## and append table actions
+			
+				$tableActions = $this->createElement('div');
+				$tableActions->setAttribute('class', 'actions');
+
+				$options = array(
+					array(NULL, false, __('With Selected...')),
+					array('enable', false, __('Enable')),
+					array('disable', false, __('Disable')),
+					array('uninstall', false, __('Uninstall'), 'confirm'),
+				);
+
+				$tableActions->appendChild(Widget::Select('with-selected', $options));
+				$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
+
+				$right->appendChild($tableActions);
+				
+		## Otherwise, build the overview
+		
+			} else {
+				
+				## Updateable
+				if(!empty($this->lists['status']['updateable'])) {
+					$count = count($this->lists['status']['updateable']);
+				
+					$div = $this->createElement('div');
+					$div->setAttribute('class', 'tools');
+					$h4 = $this->createElement('h4', __('Updates'));
+					$message = __('%s %s %s updates available.', array(
+						$count,
+						($count > 1 ? 'extensions' : 'extension'),
+						($count > 1 ? 'have' : 'has')
+					));
+					$p = $this->createElement('p', $message);
+					$view = Widget::Anchor(__('View Details'), $path . 'status/updateable/');
+					$view->setAttribute('class', 'button');
+				
+					$div->appendChild($view);
+					$div->appendChild($h4);
+					$div->appendChild($p);
+				
+					$right->appendChild($div);
+				}
+				
+				## Installable
+				if(!empty($this->lists['status']['installable'])) {
+					$count = count($this->lists['status']['installable']);
+				
+					$div = $this->createElement('div');
+					$div->setAttribute('class', 'tools');
+					$h4 = $this->createElement('h4', __('Not Installed'));
+					$message = __('%s %s %s not installed.', array(
+						$count,
+						($count > 1 ? 'extensions' : 'extension'),
+						($count > 1 ? 'are' : 'is')
+					));
+					$p = $this->createElement('p', $message);
+					$install = $this->createElement('button', __('Install All'));
+					$install->setAttribute('class', 'create');
+					$view = Widget::Anchor(__('View Details'), $path . 'status/installable/');
+					$view->setAttribute('class', 'button');
+				
+					$div->appendChild($install);
+					$div->appendChild($view);
+					$div->appendChild($h4);
+					$div->appendChild($p);
+				
+					$right->appendChild($div);
+				}
+				
+				## Disabled
+				if(!empty($this->lists['status']['disabled'])) {
+					$count = count($this->lists['status']['disabled']);
+				
+					$div = $this->createElement('div');
+					$div->setAttribute('class', 'tools');
+					$h4 = $this->createElement('h4', __('Disabled'));
+					$message = __('%s %s %s disabled.', array(
+						$count,
+						($count > 1 ? 'extensions' : 'extension'),
+						($count > 1 ? 'are' : 'is')
+					));
+					$p = $this->createElement('p', $message);
+					$install = $this->createElement('button', __('Install All'));
+					$install->setAttribute('class', 'create');
+					$uninstall = $this->createElement('button', __('Uninstall All'));
+					$uninstall->setAttribute('class', 'delete');
+					$view = Widget::Anchor(__('View Details'), $path . 'status/disabled/');
+					$view->setAttribute('class', 'button');
+				
+					$div->appendChild($install);
+					$div->appendChild($uninstall);
+					$div->appendChild($view);
+					$div->appendChild($h4);
+					$div->appendChild($p);
+				
+					$right->appendChild($div);
+				}
+				
+				## Nothing to show
+				if(empty($this->lists['status']['updateable']) && empty($this->lists['status']['installable']) && empty($this->lists['status']['disabled'])) {
+					$div = $this->createElement('div');
+					$div->setAttribute('class', 'tools');
+					$p = $this->createElement('p', __('All of your extensions are installed and enabled.'));
+					$view = $this->createElement('button', __('View Details'));
+				
+					$div->appendChild($view);
+					$div->appendChild($p);
+				
+					$right->appendChild($div);
+				}
 			}
-			
-		## Append table actions
-			
-			$tableActions = $this->createElement('div');
-			$tableActions->setAttribute('class', 'actions');
-
-			$options = array(
-				array(NULL, false, __('With Selected...')),
-				array('enable', false, __('Enable')),
-				array('disable', false, __('Disable')),
-				array('uninstall', false, __('Uninstall'), 'confirm'),
-			);
-
-			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
-
-			$right->appendChild($tableActions);
 		
 			$layout->appendTo($this->Form);
 
 		}
-
+		
 		function buildTable($extensions, $prefixes=false){
 			
 			## Sort by extensions name:
@@ -189,7 +260,7 @@
 				array(__('Name'), 'col'),
 				array(__('Version'), 'col'),
 				array(__('Author'), 'col'),
-				array(__('Actions'), 'col')
+				array(__('Actions'), 'col', array('class' => 'row-actions'))
 			);
 
 			$aTableBody = array();
@@ -251,19 +322,20 @@
 
 				switch ($about['status']) {
 					case Extension::ENABLED:
-						$td4 = Widget::TableData(Widget::Anchor(__('Disable'), '#'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Uninstall'), '#', array('class' => 'button delete')));
+						$td4->appendChild(Widget::Anchor(__('Disable'), '#', array('class' => 'button')));
 						break;
 
 					case Extension::DISABLED:
-						$td4 = Widget::TableData(Widget::Anchor(__('Enable'), '#'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Enable'), '#', array('class' => 'button create')));
 						break;
 
 					case Extension::NOT_INSTALLED:
-						$td4 = Widget::TableData(Widget::Anchor(__('Install'), '#'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Install'), '#', array('class' => 'button create')));
 						break;
 
 					case Extension::REQUIRES_UPDATE:
-						$td4 = Widget::TableData(Widget::Anchor(__('Update'), '#'));
+						$td4 = Widget::TableData(Widget::Anchor(__('Update'), '#', array('class' => 'button create')));
 				}
 
 				## Add a row to the body array, assigning each cell to the row
