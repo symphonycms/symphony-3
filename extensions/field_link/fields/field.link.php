@@ -424,7 +424,7 @@
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
 			$label = Widget::Label($this->{'label'});
-			$label->appendChild(Widget::Select($fieldname, $options, ($this->{'allow-multiple-selection'} == 'yes' ? array('multiple' => 'multiple') : NULL)));
+			$label->appendChild(Widget::Select($fieldname, $options, ($this->{'allow-multiple-selection'} == 'yes' ? array('multiple' => 'multiple') : array())));
 			
 			if ($errors->valid()) {
 				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
