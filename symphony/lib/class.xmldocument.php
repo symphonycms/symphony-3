@@ -39,17 +39,15 @@
 
 			$result = parent::loadXML($source, $options);
 
-			self::processLibXMLerrors();
+			self::processLibXMLerrors($this->errors);
 
 			return $result;
 		}
 
-		static private function processLibXMLerrors(){
-			if(!is_array(self::$_errorLog)) self::$_errorLog = array();
-
+		static function processLibXMLerrors(MessageStack $errors){
 			foreach(libxml_get_errors() as $error){
 				$error->type = $type;
-				$this->errors->append(NULL, $error);
+				$errors->append(NULL, $error);
 			}
 
 			libxml_clear_errors();
