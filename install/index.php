@@ -185,9 +185,11 @@
 		// Start The Installation ------------------------------------------------------------------------------------
 		if($errors->length() == 0){
 
+			$rewrite_base = preg_replace('/\/install$/i', NULL, dirname($_SERVER['PHP_SELF']));
+
 			$htaccess = sprintf(
 				file_get_contents('assets/template.htaccess.txt'), 
-				preg_replace('/\/install$/i', NULL, dirname($_SERVER['PHP_SELF']))
+				empty($rewrite_base) ? '/' : $rewrite_base
 			);
 
 			// Cannot write .htaccess
