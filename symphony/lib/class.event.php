@@ -146,6 +146,10 @@
 		public function getTemplate(){
 			return NULL;
 		}
+		
+		public function prepareDestinationColumnValue() {
+			return Widget::TableData(__('None'), array('class' => 'inactive'));
+		}
 
 		public function save(MessageStack $errors){
 			$editing = (isset($this->parameters()->{'root-element'}))

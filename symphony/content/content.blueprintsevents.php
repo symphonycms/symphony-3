@@ -37,7 +37,7 @@
 
 			$eTableHead = array(
 				array(__('Name'), 'col'),
-				array(__('Source'), 'col'),
+				array(__('Destination'), 'col'),
 				array(__('Type'), 'col'),
 				array(__('Attached On'), 'col')
 			);
@@ -88,7 +88,9 @@
 
 					$col_name->appendChild(Widget::Input("items[{$handle}]", null, 'checkbox'));
 
-					// Source
+					// Destination
+					$col_destination = $event->prepareDestinationColumnValue();
+					/*
 					if(is_null($event->parameters()->section)){
 						$col_source = Widget::TableData(__('None'), array('class' => 'inactive'));
 					}
@@ -101,6 +103,7 @@
 							array('title' => $section->handle)
 						));
 					}
+					*/
 
 					// Attached On
 					$fragment_views = $this->createDocumentFragment();
@@ -132,7 +135,7 @@
 					}
 					
 					$eTableBody[] = Widget::TableRow(
-						array($col_name, $col_source, $col_type, $col_views)
+						array($col_name, $col_destination, $col_type, $col_views)
 					);
 				}
 

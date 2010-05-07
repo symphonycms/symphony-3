@@ -11,6 +11,7 @@
 	require_once(LIB . '/class.cache.php');
 
 	require_once(LIB . '/class.page.php'); // DELETE?
+	require_once(LIB . '/class.section.php');
 	require_once(LIB . '/class.view.php');
 	require_once(LIB . '/class.widget.php');
 	require_once(LIB . '/class.general.php');
