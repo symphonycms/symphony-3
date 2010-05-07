@@ -278,9 +278,8 @@
 			$upload->appendChild($input);
 			$label->appendChild($upload);
 			
-			if ($errors->valid()) {
-				$error = $errors->current();
-				$label = Widget::wrapFormElementWithError($label, $error['message']);
+			if($errors->valid()){
+				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
 			}
 			
 			$wrapper->appendChild($label);
