@@ -377,8 +377,6 @@
 					if ($this->serialise == 'yes') {
 						$result->file = $this->getHashedFilename($result->file);
 					}
-					
-					$result->meta = $this->getMetaInformation($entry, $result, $result->tmp_name);
 				}
 			}
 			
@@ -401,8 +399,6 @@
 					$result->path = dirname($data);
 					$result->file = basename($data);
 					$result->size = filesize($data);
-					$result->meta = $this->getMetaInformation($entry, $result, $data);
-					$result->type = $result->meta->type;
 				}
 			}
 			
@@ -424,6 +420,21 @@
 			// At least have a null existing file:
 			if (!isset($result->existing)) {
 				$result->existing = null;
+			}
+			
+			// Update meta data:
+			$result->meta = $this->getMetaInformation(
+				$entry, $result,
+				(isset($result->tmp_name) ? $result->tmp_name : $result->existing)
+			);
+			
+			if (isset($result->meta['type']) and !empty($result->meta['type'])) {
+				$result->type = $result->meta['type'];
+			}
+			
+			// Make sure we have a type:
+			if (!isset($result->type) or empty($result->type)) {
+				$result->type = 'application/octet-stream';
 			}
 			
 			return $result;
