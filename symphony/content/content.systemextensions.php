@@ -19,6 +19,8 @@
 			$path = URL . '/symphony/system/extensions/';
 			$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL());
 			
+		## Define layout
+			
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
 			$left->setAttribute('class', 'column small filters');
@@ -71,6 +73,7 @@
 			
 			$ul = $this->createElement('ul');
 			
+			## Main status overview
 			$li = $this->createElement('li', Widget::Anchor(__('Overview'), $path));
 			if(is_null($filter)){
 				$li->setAttribute('class', 'active');
@@ -115,17 +118,23 @@
 					$ul->appendChild($li);
 				}
 			}
-	
+			
 			$left->appendChild($ul);
 			
+		## If a filter and value are specified...
 		
 			if(!is_null($filter) && !is_null($value)){
 			
-			## Build table
-			
-				$right->appendChild($this->buildTable($this->lists[$filter][$value]));
+			## If there are extensions in the list, build the table
+				if(isset($this->lists[$filter][$value])){
+					$right->appendChild($this->buildTable($this->lists[$filter][$value]));
+				} else {
+					## Otherwise pass an empty array so we get the
+					## 'No Records Found' message
+					$right->appendChild($this->buildTable(array()));
+				}
 				
-			## Append table actions
+			## and append table actions
 			
 				$tableActions = $this->createElement('div');
 				$tableActions->setAttribute('class', 'actions');
@@ -141,35 +150,101 @@
 				$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
 
 				$right->appendChild($tableActions);
+				
+		## Otherwise, build the overview
+		
 			} else {
 				
-				$div = $this->createElement('div');
-				$div->setAttribute('class', 'tools');
-				$h4 = $this->createElement('h4', __('Upgrade'));
-				$p = $this->createElement('p', __('Upgrades are available for 2 of your extensions.'));
-				$view = $this->createElement('button', __('View All'));
+				## Updateable
+				if(!empty($this->lists['status']['updateable'])) {
+					$count = count($this->lists['status']['updateable']);
 				
-				$div->appendChild($view);
-				$div->appendChild($h4);
-				$div->appendChild($p);
+					$div = $this->createElement('div');
+					$div->setAttribute('class', 'tools');
+					$h4 = $this->createElement('h4', __('Update'));
+					$message = __('%s %s %s updates available.', array(
+						$count,
+						($count > 1 ? 'extensions' : 'extension'),
+						($count > 1 ? 'have' : 'has')
+					));
+					$p = $this->createElement('p', $message);
+					$view = Widget::Anchor(__('View Details'), $path . 'status/updateable/');
+					$view->setAttribute('class', 'button');
 				
-				$right->appendChild($div);
+					$div->appendChild($view);
+					$div->appendChild($h4);
+					$div->appendChild($p);
 				
+					$right->appendChild($div);
+				}
 				
-				$div = $this->createElement('div');
-				$div->setAttribute('class', 'tools');
-				$h4 = $this->createElement('h4', __('Install'));
-				$p = $this->createElement('p', __('4 of your extensions are waiting to be installed.'));
-				$install = $this->createElement('button', __('Install All'));
-				$install->setAttribute('class', 'create');
-				$view = $this->createElement('button', __('View All'));
+				## Installable
+				if(!empty($this->lists['status']['installable'])) {
+					$count = count($this->lists['status']['installable']);
 				
-				$div->appendChild($install);
-				$div->appendChild($view);
-				$div->appendChild($h4);
-				$div->appendChild($p);
+					$div = $this->createElement('div');
+					$div->setAttribute('class', 'tools');
+					$h4 = $this->createElement('h4', __('Install'));
+					$message = __('%s %s %s not installed.', array(
+						$count,
+						($count > 1 ? 'extensions' : 'extension'),
+						($count > 1 ? 'are' : 'is')
+					));
+					$p = $this->createElement('p', $message);
+					$install = $this->createElement('button', __('Install All'));
+					$install->setAttribute('class', 'create');
+					$view = Widget::Anchor(__('View Details'), $path . 'status/installable/');
+					$view->setAttribute('class', 'button');
 				
-				$right->appendChild($div);
+					$div->appendChild($install);
+					$div->appendChild($view);
+					$div->appendChild($h4);
+					$div->appendChild($p);
+				
+					$right->appendChild($div);
+				}
+				
+				## Disabled
+				if(!empty($this->lists['status']['disabled'])) {
+					$count = count($this->lists['status']['disabled']);
+				
+					$div = $this->createElement('div');
+					$div->setAttribute('class', 'tools');
+					$h4 = $this->createElement('h4', __('Disabled'));
+					$message = __('%s %s %s disabled.', array(
+						$count,
+						($count > 1 ? 'extensions' : 'extension'),
+						($count > 1 ? 'are' : 'is')
+					));
+					$p = $this->createElement('p', $message);
+					$install = $this->createElement('button', __('Install All'));
+					$install->setAttribute('class', 'create');
+					$uninstall = $this->createElement('button', __('Uninstall All'));
+					$uninstall->setAttribute('class', 'delete');
+					$view = Widget::Anchor(__('View Details'), $path . 'status/disabled/');
+					$view->setAttribute('class', 'button');
+				
+					$div->appendChild($install);
+					$div->appendChild($uninstall);
+					$div->appendChild($view);
+					$div->appendChild($h4);
+					$div->appendChild($p);
+				
+					$right->appendChild($div);
+				}
+				
+				## Nothing to show
+				if(empty($this->lists['status']['updateable']) && empty($this->lists['status']['installable']) && empty($this->lists['status']['disabled'])) {
+					$div = $this->createElement('div');
+					$div->setAttribute('class', 'tools');
+					$p = $this->createElement('p', __('All of your extensions are installed and enabled.'));
+					$view = $this->createElement('button', __('View Details'));
+				
+					$div->appendChild($view);
+					$div->appendChild($p);
+				
+					$right->appendChild($div);
+				}
 			}
 		
 			$layout->appendTo($this->Form);
