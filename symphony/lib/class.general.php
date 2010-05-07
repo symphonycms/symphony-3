@@ -584,21 +584,15 @@
 		***/
 		public static function writeFile($file, $data, $perm = 0644){
 
-			if(empty($perm)) $perm = 0644;
-
-			if(!$handle = @fopen($file, 'w')) {
-				return false;
-				exit;
+			if(empty($perm)){
+				$perm = 0644;
 			}
 
-			if(@fwrite($handle, $data, strlen($data)) === false) {
+			if(!file_put_contents($file, $data)){
 				return false;
-				exit;
 			}
 
-			@fclose($handle);
-
-			@chmod($file, intval($perm, 8));
+			chmod($file, intval($perm, 8));
 
 			return true;
 		}
