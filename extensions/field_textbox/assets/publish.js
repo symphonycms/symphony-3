@@ -9,7 +9,7 @@
 			
 			if (input.attr('length') < 1) return;
 			
-			var optional = self.find('i');
+			var optional = self.find('em');
 			var message = optional.text();
 			
 			var update = function() {
