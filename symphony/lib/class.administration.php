@@ -97,10 +97,11 @@
 			$bits = preg_split('/\//', trim($page, '/'), 3, PREG_SPLIT_NO_EMPTY);
 			
 			if($bits[0] == 'login'){
-			
+				array_shift($bits);
+				
 				$callback = array(
 						'driver' => 'login',
-						'context' => preg_split('/\//', $bits[1] . '/' . $bits[2], -1, PREG_SPLIT_NO_EMPTY),
+						'context' => preg_split('/\//', implode('/', $bits), -1, PREG_SPLIT_NO_EMPTY),
 						'classname' => 'contentLogin',
 						'pageroot' => '/login/'
 					);

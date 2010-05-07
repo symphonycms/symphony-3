@@ -829,6 +829,7 @@
 				$defaults = array();
 
 				$field->findDefaultSettings($defaults);
+				$field->section = $this->section->handle;
 
 				foreach ($defaults as $key => $value) {
 					$field->$key = $value;

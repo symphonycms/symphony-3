@@ -90,7 +90,13 @@
 
 		public function __construct(){
 			$this->parameters = new StdClass;
+			$this->name = null;
 			$this->fields = array();
+			$this->layout = array();
+			$this->{'navigation-group'} = null;
+			$this->{'publish-order-handle'} = null;
+			$this->{'publish-order-direction'} = null;
+			$this->{'hidden-from-publish-menu'} = null;
 		}
 
 		public function __isset($name){

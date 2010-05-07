@@ -176,7 +176,7 @@
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
 			if (!$errors->valid() and !is_writable(DOCROOT . $this->destination . '/')) {
 				$errors->append(
-					null, array(
+					null, (object)array(
 					 	'message' => __(
 					 		'Destination folder, <code>%s</code>, is not writable. Please check permissions.',
 					 		array(trim($this->destination, '/'))
@@ -226,7 +226,7 @@
 				
 				if (!is_file($filepath)) {
 					$errors->append(
-						null, array(
+						null, (object)array(
 						 	'message' => __('Destination file could not be found.'),
 							'code' => self::ERROR_MISSING
 						)
@@ -377,8 +377,6 @@
 					if ($this->serialise == 'yes') {
 						$result->file = $this->getHashedFilename($result->file);
 					}
-					
-					$result->meta = $this->getMetaInformation($entry, $result, $result->tmp_name);
 				}
 			}
 			
@@ -401,8 +399,6 @@
 					$result->path = dirname($data);
 					$result->file = basename($data);
 					$result->size = filesize($data);
-					$result->meta = $this->getMetaInformation($entry, $result, $data);
-					$result->type = $result->meta->type;
 				}
 			}
 			
@@ -426,6 +422,21 @@
 				$result->existing = null;
 			}
 			
+			// Update meta data:
+			$result->meta = $this->getMetaInformation(
+				$entry, $result,
+				(isset($result->tmp_name) ? $result->tmp_name : $result->existing)
+			);
+			
+			if (isset($result->meta['type']) and !empty($result->meta['type'])) {
+				$result->type = $result->meta['type'];
+			}
+			
+			// Make sure we have a type:
+			if (!isset($result->type) or empty($result->type)) {
+				$result->type = 'application/octet-stream';
+			}
+			
 			return $result;
 		}
 		
@@ -433,7 +444,7 @@
 			if ($data->error == UPLOAD_ERR_NO_FILE) {
 				if ($this->required == 'yes') {
 					$errors->append(
-						null, array(
+						null, (object)array(
 						 	'message' => __(
 						 		"'%s' is a required field.",
 						 		array($this->label)
@@ -452,7 +463,7 @@
 			
 			if (!is_writable(DOCROOT . $this->destination . '/')) {
 				$errors->append(
-					null, array(
+					null, (object)array(
 					 	'message' => __(
 					 		"Destination folder, <code>%s</code>, is not writable. Please check permissions.",
 					 		array($this->destination)
@@ -473,7 +484,7 @@
 							: ini_get('upload_max_filesize')
 						);
 						$errors->append(
-							null, array(
+							null, (object)array(
 							 	'message' => __(
 									'File chosen in \'%s\' exceeds the maximum allowed upload size of %s specified by your host.',
 									array($this->label, $size)
@@ -486,7 +497,7 @@
 					case UPLOAD_ERR_FORM_SIZE:
 						$size = General::formatFilesize(Symphony::Configuration()->core()->symphony->{'maximum-upload-size'});
 						$errors->append(
-							null, array(
+							null, (object)array(
 							 	'message' => __(
 									'File chosen in \'%s\' exceeds the maximum allowed upload size of %s, specified by Symphony.',
 									array($this->label, $size)
@@ -499,7 +510,7 @@
 					case UPLOAD_ERR_PARTIAL:
 					case UPLOAD_ERR_NO_TMP_DIR:
 						$errors->append(
-							null, array(
+							null, (object)array(
 							 	'message' => __(
 									'File chosen in \'%s\' was only partially uploaded due to an error.',
 									array($this->label)
@@ -511,7 +522,7 @@
 
 					case UPLOAD_ERR_CANT_WRITE:
 						$errors->append(
-							null, array(
+							null, (object)array(
 							 	'message' => __(
 									'Uploading \'%s\' failed. Could not write temporary file to disk.',
 									array($this->label)
@@ -523,7 +534,7 @@
 
 					case UPLOAD_ERR_EXTENSION:
 						$errors->append(
-							null, array(
+							null, (object)array(
 							 	'message' => __(
 									'Uploading \'%s\' failed. File upload stopped by extension.',
 									array($this->label)
@@ -542,7 +553,7 @@
 				
 				if (!General::validateString($data->file, $rule)) {
 					$errors->append(
-						null, array(
+						null, (object)array(
 						 	'message' => __(
 								'File chosen in \'%s\' does not match allowable file types for that field.',
 								array($this->label)
@@ -560,7 +571,7 @@
 			// Make sure we don't upload over the top of a pervious file:
 			if (isset($data->tmp_name) and $data->existing != $file and file_exists($file)) {
 				$errors->append(
-					null, array(
+					null, (object)array(
 					 	'message' => __(
 							'A file with the name %s already exists in %s. Please rename the file first, or choose another.',
 							array($data->name, trim($this->destination, '/'))
@@ -597,7 +608,7 @@
 			if ($data->tmp_name and $data->error == 0) {
 				if (!General::uploadFile(DOCROOT . '/' . $data->path, $data->file, $data->tmp_name, $permissions)) {
 					$errors->append(
-						null, array(
+						null, (object)array(
 						 	'message' => __(
 								'There was an error while trying to upload the file <code>%s</code> to the target directory <code>%s</code>.',
 								array($data->name, trim($data->path, '/'))
@@ -645,7 +656,7 @@
 			
 			catch (Exception $e) {
 				$errors->append(
-					null, array(
+					null, (object)array(
 					 	'message' => __(
 							'There was an error while trying to upload the file <code>%s</code> to the target directory <code>workspace/%s</code>.',
 							array($data->name, $path)

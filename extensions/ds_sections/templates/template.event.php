@@ -1,6 +1,6 @@
 <?php
 	
-	require_once EXTENSIONS . '/event_sections/lib/class.event.php';
+	require_once EXTENSIONS . '/ds_sections/lib/class.event.php';
 	
 	Final Class Event%1$s extends SectionsEvent {
 		public function __construct(){

@@ -4,7 +4,7 @@
 
 		protected static $Symphony = false;
 
-		public function init(XMLDocument $doc) {
+		public static function init(XMLDocument $doc) {
 			self::$Symphony = $doc;
 		}
 		

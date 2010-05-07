@@ -1,44 +1,65 @@
 <?php
 
-	require_once 'lib/class.event.php';
+	require_once LIB . '/class.entry.php';
+	require_once LIB . '/class.event.php';
 
-	Class Extension_Event_Sections extends Extension {
-		public function about() {
-			return array(
-				'name'			=> 'Sections',
-				'version'		=> '1.0.0',
-				'release-date'	=> '2010-05-05',
-				'type'			=> array(
-					'Event', 'Core'
-				),
-				'author'		=> array(
-					'name'			=> 'Symphony Team',
-					'website'		=> 'http://symphony-cms.com/',
-					'email'			=> 'team@symphony-cms.com'
-				),
-				'description'	=> 'Create events to save to Symphony sections.'
+	Class SectionsEvent extends Event {
+		public function __construct(){
+			// Set Default Values
+			$this->_about = new StdClass;
+			$this->_parameters = (object)array(
+				'root-element' => null,
+				'section' => null,
+				'filters' => array(),
+				'overrides' => array(),
+				'defaults' => array(),
+				'output-id-on-save' => false
 			);
 		}
-		
-		public function prepare(array $data = null, Event $event = null) {
-			if (is_null($event)) {
-				$event = new SectionsEvent;
+
+		final public function getExtension(){
+			return 'ds_sections';
+		}
+
+		public function getTemplate(){
+			return EXTENSIONS . '/ds_sections/templates/template.event.php';
+		}
+
+		public function prepareDestinationColumnValue(){
+			$section = Section::loadFromHandle($this->_parameters->section);
+
+			if ($section instanceof Section) {
+				return Widget::TableData(
+					Widget::Anchor($section->name, URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/', array(
+						'title' => $section->handle
+					))
+				);
 			}
-			
+
+			else {
+				return Widget::TableData(__('None'), array(
+					'class' => 'inactive'
+				));
+			}
+		}
+		
+	/*-----------------------------------------------------------------------*/
+		
+		public function prepare(array $data = null) {
 			if (!is_null($data)) {
-				$event->about()->name = $data['name'];
+				$this->about()->name = $data['name'];
 	
-				$event->about()->author->name = Administration::instance()->User->getFullName();
-				$event->about()->author->email = Administration::instance()->User->email;
+				$this->about()->author->name = Administration::instance()->User->getFullName();
+				$this->about()->author->email = Administration::instance()->User->email;
 	
-				$event->parameters()->section = $data['section'];
+				$this->parameters()->section = $data['section'];
 	
 				if(isset($data['output-id-on-save']) && $data['output-id-on-save'] == 'yes'){
-					$event->parameters()->{'output-id-on-save'} = true;
+					$this->parameters()->{'output-id-on-save'} = true;
 				}
 	
 				if(isset($data['filters']) && is_array($data['filters']) || !empty($data['filters'])){
-					$event->parameters()->filters = $data['filters'];
+					$this->parameters()->filters = $data['filters'];
 				}
 	
 				if(isset($data['defaults']) && is_array($data['defaults']) || !empty($data['defaults'])){
@@ -46,7 +67,7 @@
 					foreach($data['defaults']['field'] as $index => $field){
 						$defaults[$field] = $data['defaults']['replacement'][$index];
 					}
-					$event->parameters()->defaults = $defaults;
+					$this->parameters()->defaults = $defaults;
 				}
 	
 				if(isset($data['overrides']) && is_array($data['overrides']) || !empty($data['overrides'])){
@@ -54,14 +75,12 @@
 					foreach($data['overrides']['field'] as $index => $field){
 						$overrides[$field] = $data['overrides']['replacement'][$index];
 					}
-					$event->parameters()->overrides = $overrides;
+					$this->parameters()->overrides = $overrides;
 				}
 			}
-			
-			return $event;
 		}
 		
-		public function view(Event $event, SymphonyDOMElement $wrapper, MessageStack $errors) {
+		public function view(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			$page = Administration::instance()->Page;
 			$layout = new Layout;
 
@@ -72,7 +91,7 @@
 			$fieldset = Widget::Fieldset(__('Essentials'));
 
 			$label = Widget::Label(__('Name'));
-			$label->appendChild(Widget::Input('fields[name]', General::sanitize($event->about()->name)));
+			$label->appendChild(Widget::Input('fields[name]', General::sanitize($this->about()->name)));
 
 			if(isset($errors->{'about::name'})){
 				$fieldset->appendChild(Widget::wrapFormElementWithError($label, $errors->{'about::name'}));
@@ -84,7 +103,7 @@
 		    $options = array();
 
 			foreach (new SectionIterator as $section) {
-				$options[] = array($section->handle, ($event->parameters()->section == $section->handle), $section->name);
+				$options[] = array($section->handle, ($this->parameters()->section == $section->handle), $section->name);
 			}
 
 			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'event-context-selector')));
@@ -94,7 +113,7 @@
 			$fieldset = Widget::Fieldset(__('Processing Options'));
 			$label = Widget::Label(__('Filter Rules'));
 
-			$filters = $event->parameters()->filters;
+			$filters = $this->parameters()->filters;
 			if(!is_array($filters)) $filters = array();
 
 			$options = array(
@@ -121,12 +140,12 @@
 
 			$label = Widget::Label();
 			$input = Widget::Input('fields[output-id-on-save]', 'yes', 'checkbox');
-			if($event->parameters()->{'output-id-on-save'} == true){
+			if($this->parameters()->{'output-id-on-save'} == true){
 				$input->setAttribute('checked', 'checked');
 			}
 
 			$label->appendChild($input);
-			$label->appendChild(new DOMText(__('Add entry ID to the parameter pool in the format of $event-name-id when saving is successful.')));
+			$label->appendChild(new DOMText(__('Add entry ID to the parameter pool in the format of $this-name-id when saving is successful.')));
 			$fieldset->appendChild($label);
 			$column_2->appendChild($fieldset);
 
@@ -135,10 +154,10 @@
 			foreach(new SectionIterator as $section){
 				$this->appendDuplicator(
 					$fieldset, $section,
-					($event->parameters()->section == $section->handle
+					($this->parameters()->section == $section->handle
 						? array(
-							'overrides' => $event->parameters()->overrides,
-							'defaults' => $event->parameters()->defaults
+							'overrides' => $this->parameters()->overrides,
+							'defaults' => $this->parameters()->defaults
 						)
 						: NULL
 					)
@@ -277,4 +296,148 @@
 			$duplicator->appendChild($instances);
 			$wrapper->appendChild($duplicator);
 		}
+		
+	/*-----------------------------------------------------------------------*/
+		
+		public function trigger(Register $ParameterOutput){
+
+			$postdata = General::getPostData();
+
+			if(!isset($postdata['action'][$this->parameters()->{'root-element'}])) return NULL;
+
+			$result = new XMLDocument;
+			$result->appendChild($result->createElement($this->parameters()->{'root-element'}));
+
+			$root = $result->documentElement;
+
+			if(isset($postdata['id'])){
+				$entry = Entry::loadFromID($postdata['id']);
+				$type = 'edit';
+			}
+			else{
+				$entry = new Entry;
+				$entry->section = $this->parameters()->{'section'};
+				if(isset(Frontend::instance()->User) && Frontend::instance()->User instanceof User){
+					$entry->user_id = Frontend::instance()->User->id;
+				}
+				else{
+					$entry->user_id = (int)Symphony::Database()->query("SELECT `id` FROM `tbl_users` ORDER BY `id` ASC LIMIT 1")->current()->id;
+				}
+				$type = 'create';
+			}
+
+			if(isset($postdata['fields']) && is_array($postdata['fields']) && !empty($postdata['fields'])){
+				$entry->setFieldDataFromFormArray($postdata['fields']);
+			}
+
+			$root->setAttribute('type', $type);
+
+			###
+			# Delegate: EntryPreCreate
+			# Description: Just prior to creation of an Entry. Entry object provided
+			ExtensionManager::instance()->notifyMembers(
+				'EntryPreCreate', '/frontend/',
+				array('entry' => &$entry)
+			);
+
+			$errors = new MessageStack;
+			$status = Entry::save($entry, $errors);
+			
+			if($status == Entry::STATUS_OK){
+				###
+				# Delegate: EntryPostCreate
+				# Description: Creation of an Entry. New Entry object is provided.
+				ExtensionManager::instance()->notifyMembers(
+					'EntryPostCreate', '/frontend/',
+					array('entry' => $entry)
+				);
+
+				if($this->parameters()->{'output-id-on-save'} == true){
+					$ParameterOutput->{sprintf('event-%s-id', $this->parameters()->{'root-element'})} = $entry->id;
+				}
+
+				$root->setAttribute('result', 'success');
+
+				$root->appendChild($result->createElement(
+					'message',
+					__("Entry %s successfully.", array(($type == 'edit' ? __('edited') : __('created'))))
+				));
+
+			}
+			else{
+				$root->setAttribute('result', 'error');
+				$root->appendChild($result->createElement(
+					'message', __('Entry encountered errors when saving.')
+				));
+				
+				if(!isset($postdata['fields']) || !is_array($postdata['fields'])) {
+					$postdata['fields'] = array();
+				}
+				
+				$element = $result->createElement('values');
+				$this->appendValues($element, $postdata['fields']);
+				$root->appendChild($element);
+				
+				$element = $result->createElement('errors');
+				$this->appendMessages($element, $errors);
+				$root->appendChild($element);
+			}
+
+			return $result;
+		}
+		
+		protected function appendValues(DOMElement $wrapper, array $values) {
+			$document = $wrapper->ownerDocument;
+			
+			foreach ($values as $key => $value) {
+				if (is_numeric($key)) {
+					$element = $document->createElement('item');
+				}
+				
+				else {
+					$element = $document->createElement($key);
+				}
+				
+				if (is_array($value) and !empty($value)) {
+					$this->appendValues($element, $value);
+				}
+				
+				else {
+					$element->setValue((string)$value);
+				}
+				
+				$wrapper->appendChild($element);
+			}
+		}
+		
+		protected function appendMessages(DOMElement $wrapper, MessageStack $messages) {
+			$document = $wrapper->ownerDocument;
+			
+			foreach ($messages as $key => $value) {
+				if (is_numeric($key)) {
+					$element = $document->createElement('item');
+				}
+				
+				else {
+					$element = $document->createElement($key);
+				}
+				
+				if ($value instanceof $messages and $value->valid()) {
+					$this->appendMessages($element, $value);
+				}
+				
+				else if ($value instanceof STDClass) {
+					$element->setValue($value->message);
+					$element->setAttribute('type', $value->code);
+				}
+				
+				else {
+					continue;
+				}
+				
+				$wrapper->appendChild($element);
+			}
+		}
 	}
+	
+?>

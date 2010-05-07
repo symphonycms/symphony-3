@@ -1,6 +1,6 @@
 <?php
 
-	require_once('lib/staticxmldatasource.php');
+	require_once 'lib/class.datasource.php';
 		
 	class Extension_DS_StaticXML extends Extension {
 		public function about() {
@@ -23,99 +23,18 @@
 			);
 		}
 		
-		public function prepare(array $data = null, StaticXMLDataSource $datasource = null) {
-			if(is_null($datasource)) $datasource = new StaticXMLDataSource;
-
-			if(!is_null($data)){
-				if(isset($data['about']['name'])) $datasource->about()->name = stripslashes($data['about']['name']);
-				if(isset($data['xml'])) $datasource->parameters()->{'xml'} = stripslashes($data['xml']);
+		public function prepareDatasource(DataSource $datasource = null, array $data = null) {
+			if (is_null($datasource)) {
+				$datasource = new StaticXMLDataSource;
 			}
+			
+			$datasource->prepare($data);
 			
 			return $datasource;
 		}
-		
-		/*
-		public function action($context = array()) {
-			
-			require_once LIB . '/class.xslproc.php';
-			
-			// Validate:
-			$fields = $context['fields'];
-			$errors = $context['errors'];
-			$failed = $context['failed'];
-			
-			if (!isset($fields['static_xml']) or empty($fields['static_xml'])) {
-				$errors['static_xml'] = 'Body must not be empty.';
-				$failed = true;
-			}
-			
-			$xml_errors = null;
-			
-			General::validateXML($fields['static_xml'], $xml_errors);
 
-			if (!empty($xml_errors)) {
-				$errors['static_xml'] = __('XML is invalid');
-				
-				foreach ($xml_errors as $error) {
-					$errors['static_xml'] .= "<br />" . General::sanitize($error->message);
-				}
-				
-				$failed = true;
-			}
-			
-			$context['fields'] = $fields;
-			$context['errors'] = $errors;
-			$context['failed'] = $failed;
-			
-			// Send back template to save:
-			$context['template_file'] = EXTENSIONS . '/ds_staticxml/templates/datasource.php';
-			$context['template_data'] = array(
-				Lang::createHandle($fields['about']['name']),
-				$fields['static_xml']
-			);
-		}
-		*/
-		
-		public function view(Datasource $datasource, SymphonyDOMElement &$wrapper, MessageStack $errors) {
-		
-			$layout = new Layout();
-			$left = $layout->createColumn(Layout::SMALL);
-			$right = $layout->createColumn(Layout::LARGE);
-			
-			//	Essentials --------------------------------------------------------
-
-				$fieldset = Widget::Fieldset(__('Essentials'));
-
-				// Name:
-				$label = Widget::Label(__('Name'));
-				$input = Widget::Input('fields[about][name]', General::sanitize($datasource->about()->name));
-				$label->appendChild($input);
-
-				if (isset($errors->{'about::name'})) {
-					$label = Widget::wrapFormElementWithError($label, $errors->{'about::name'});
-				}
-
-				$fieldset->appendChild($label);
-				$left->appendChild($fieldset);
-				
-				$fieldset = Widget::Fieldset(__('Content'));
-			
-				$label = Widget::Label(__('Source XML'));
-				$input = Widget::Textarea('fields[xml]', $datasource->parameters()->{'xml'}, array(
-					'rows' => '24',
-					'cols' => '50',
-					'class' => 'code'
-				));
-				$label->appendChild($input);
-			
-				if (isset($errors->{'xml'})) {
-					$label = Widget::wrapFormElementWithError($label, $errors->{'xml'});
-				}
-			
-				$fieldset->appendChild($label);
-				$right->appendChild($fieldset);
-				
-				$layout->appendTo($wrapper);
+		public function viewDatasource(DataSource $datasource, SymphonyDOMElement $wrapper, MessageStack $errors) {
+			$datasource->view($wrapper, $errors);
 		}
 	}
 	

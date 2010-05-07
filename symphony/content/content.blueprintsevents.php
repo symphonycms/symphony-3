@@ -37,7 +37,7 @@
 
 			$eTableHead = array(
 				array(__('Name'), 'col'),
-				array(__('Source'), 'col'),
+				array(__('Destination'), 'col'),
 				array(__('Type'), 'col'),
 				array(__('Attached On'), 'col')
 			);
@@ -88,19 +88,8 @@
 
 					$col_name->appendChild(Widget::Input("items[{$handle}]", null, 'checkbox'));
 
-					// Source
-					if(is_null($event->parameters()->section)){
-						$col_source = Widget::TableData(__('None'), array('class' => 'inactive'));
-					}
-					else{
-						$section = Section::loadFromHandle($event->parameters()->section);
-
-						$col_source = Widget::TableData(Widget::Anchor(
-							$section->name,
-							URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/',
-							array('title' => $section->handle)
-						));
-					}
+					// Destination
+					$col_destination = $event->prepareDestinationColumnValue();
 
 					// Attached On
 					$fragment_views = $this->createDocumentFragment();
@@ -123,16 +112,16 @@
 					}
 
 					// Type
-					if(is_null($event->type())){
+					if(is_null($event->getExtension())){
 						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
 					else{
-						$extension = ExtensionManager::instance()->about($event->type());
+						$extension = ExtensionManager::instance()->about($event->getExtension());
 						$col_type = Widget::TableData($extension['name']);
 					}
 					
 					$eTableBody[] = Widget::TableRow(
-						array($col_name, $col_source, $col_type, $col_views)
+						array($col_name, $col_destination, $col_type, $col_views)
 					);
 				}
 
@@ -178,8 +167,8 @@
 					$this->type = Symphony::Configuration()->core()->{'default-event-type'};
 				}
 
-				$this->event = ExtensionManager::instance()->create($this->type)->prepare(
-					(isset($_POST['fields']) ? $_POST['fields'] : NULL)
+				$this->event = ExtensionManager::instance()->create($this->type)->prepareEvent(
+					null, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 			}
 
@@ -193,17 +182,17 @@
 				}
 
 				$this->event = Event::loadFromHandle($this->handle);
-				$this->type = $this->event->type();
+				$this->type = $this->event->getExtension();
 
-				$this->event = ExtensionManager::instance()->create($this->type)->prepare(
-					(isset($_POST['fields']) ? $_POST['fields'] : NULL), $this->event
+				$this->event = ExtensionManager::instance()->create($this->type)->prepareEvent(
+					$this->event, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 
 				if (!$this->event->allowEditorToParse()) {
 					redirect(URL . '/symphony/blueprints/events/info/' . $this->handle . '/');
 				}
 
-				$this->type = $this->event->type();
+				$this->type = $this->event->getExtension();
 			}
 		}
 
@@ -319,7 +308,7 @@
 				$this->appendSubheading(General::sanitize($this->event->about()->name));
 			}
 
-			ExtensionManager::instance()->create($this->type)->view($this->event, $this->Form, $this->errors);
+			ExtensionManager::instance()->create($this->type)->viewEvent($this->event, $this->Form, $this->errors);
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
