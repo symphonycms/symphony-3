@@ -1,24 +1,23 @@
 <?php
 
-	require_once(LIB . '/class.errorhandler.php');
-
-	require_once(LIB . '/class.dbc.php');
-	require_once(LIB . '/class.configuration.php');
-	require_once(LIB . '/class.datetimeobj.php');
-	require_once(LIB . '/class.log.php');
-	require_once(LIB . '/class.cookie.php');
-	require_once(LIB . '/interface.singleton.php');
-	require_once(LIB . '/class.cache.php');
-
-	require_once(LIB . '/class.page.php'); // DELETE?
-	require_once(LIB . '/class.section.php');
-	require_once(LIB . '/class.view.php');
-	require_once(LIB . '/class.widget.php');
-	require_once(LIB . '/class.general.php');
-	require_once(LIB . '/class.user.php');
-	require_once(LIB . '/class.xslproc.php');
-
-	require_once(LIB . '/class.extensionmanager.php');
+	require_once('class.errorhandler.php');
+                 
+	require_once('class.dbc.php');
+	require_once('class.configuration.php');
+	require_once('class.datetimeobj.php');
+	require_once('class.log.php');
+	require_once('class.cookie.php');
+	require_once('interface.singleton.php');
+	require_once('class.cache.php');
+                 
+	require_once('class.section.php');
+	require_once('class.view.php');
+	require_once('class.widget.php');
+	require_once('class.general.php');
+	require_once('class.user.php');
+	require_once('class.xslproc.php');
+                 
+	require_once('class.extensionmanager.php');
 
 	Class SymphonyErrorPageHandler extends GenericExceptionHandler{
 		public static function render($e){
