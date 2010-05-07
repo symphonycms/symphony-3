@@ -161,7 +161,7 @@
 				
 					$div = $this->createElement('div');
 					$div->setAttribute('class', 'tools');
-					$h4 = $this->createElement('h4', __('Update'));
+					$h4 = $this->createElement('h4', __('Updates'));
 					$message = __('%s %s %s updates available.', array(
 						$count,
 						($count > 1 ? 'extensions' : 'extension'),
@@ -184,7 +184,7 @@
 				
 					$div = $this->createElement('div');
 					$div->setAttribute('class', 'tools');
-					$h4 = $this->createElement('h4', __('Install'));
+					$h4 = $this->createElement('h4', __('Not Installed'));
 					$message = __('%s %s %s not installed.', array(
 						$count,
 						($count > 1 ? 'extensions' : 'extension'),
