@@ -1321,6 +1321,13 @@
 		line-height: 2em;
 	}
 	
+		.filters h4 a {
+			display: block;
+			margin-bottom: 1em;
+			color: #555;
+			text-decoration: none;
+		}
+	
 	.filters ul {
 		font-size: 1.1em;
 		line-height: 1.75em;
@@ -1336,7 +1343,7 @@
 	.filters ul li a {
 		display: block;
 		padding: 5px 10px;
-		margin: 4px 0 0 -10px;
+		margin-top: 4px;
 		color: #555;
 		text-decoration: none;
 		-webkit-border-radius: 5px;
@@ -1362,6 +1369,63 @@
 		.filters ul li.active span {
 			color: #ddd;
 		}
+		
+	.tools {
+		float: left;
+		width: 100%;
+		padding: 20px;
+		margin: 5px 0;
+		background-color: #eee;
+		font-size: 1.2em;
+		line-height: 2em;
+		color: #555;
+		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
+		border-radius: 5px;
+	}
 
+	.tools h4 {
+		float: left;
+		font-weight: bold;
+		color: #333;
+		width: 120px;
+	}
+
+	.tools button {
+		float:right;
+		margin-left: 10px;
+	}
+	
+	th.row-actions {
+		text-align:right;
+	}
+
+	tr .button.delete {
+		float:right;
+		margin-left:10px;
+	}
+
+	table tr .button {
+		padding:4px;
+		height:2em;
+		line-height:1.2em;
+		-moz-border-radius:3px;
+		-webkit-border-radius:3px;
+		border-radius: 3px;
+		background-color: #666;
+		background: -moz-linear-gradient(
+			top,
+			#9f9f9f,
+			#666
+		);
+		background: -webkit-gradient(
+			linear,
+			left top,
+			left bottom,
+			from(#9f9f9f),
+			to(#666)
+		);
+		border: 1px solid #8f908e;
+	}
 
 /*-------------------------------------------------------------------------------*/
