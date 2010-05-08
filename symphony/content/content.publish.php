@@ -157,7 +157,7 @@
 			else {
 				$join = NULL;
 				$sort_field = $section->fetchFieldByHandle($section->{'publish-order-handle'});
-				$sort_field->buildSortingSQL($join, $order);
+				$sort_field->buildSortingQuery($join, $order);
 
 				$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
 				$order = sprintf($order, $section->{'publish-order-direction'});

@@ -536,11 +536,11 @@
 			Publish:
 		-------------------------------------------------------------------------*/
 
-		public function prepareTableValue(StdClass $data, DOMElement $link=NULL) {
+		public function prepareTableValue(StdClass $data=NULL, DOMElement $link=NULL) {
 			$max_length = Symphony::Configuration()->core()->symphony->cell-truncation-length;
 			$max_length = ($max_length ? $max_length : 75);
 
-			$value = strip_tags($data->value);
+			$value = (!is_null($data) ? strip_tags($data->value) : NULL);
 			
 			if ($max_length < strlen($value)) {
 				$lines = explode("\n", wordwrap($value, $max_length - 1, "\n"));

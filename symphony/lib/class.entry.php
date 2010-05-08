@@ -1,7 +1,4 @@
 <?php
-	/*
-	**	NO DBC INTEGRATION HAS BEEN DONE ON THIS PAGE
-	*/
 
 	Class EntryResult extends DBCMySQLResult{
 		public function current(){
@@ -198,15 +195,6 @@
 			return self::STATUS_OK;
 		}
 
-		/*function set($field, $value){
-			$this->_fields[$field] = $value;
-		}
-
-		function get($field=NULL){
-			if($field == NULL) return $this->_fields;
-			return $this->_fields[$field];
-		}*/
-
 		public function fetchAllAssociatedEntryCounts($associated_sections=NULL) {
 			/*
 			if(is_null($this->get('section_id'))) return NULL;
@@ -292,60 +280,7 @@
 				'modification_date_gmt' => DateTimeObj::getGMT('c')
 			));
 		}
-/*
-		public function setDataFromPost($data, &$error, $simulate=false, $ignore_missing_fields=false){
 
-			$error = NULL;
-
-			$status = self::STATUS_ERROR;
-
-			// Entry has no ID, create it:
-			if (!$this->get('id') && $simulate == false) {
-				$entry_id = $this->assignEntryId();
-
-				if (is_null($entry_id)) return self::STATUS_ERROR;
-			}
-
-
-			$section = Section::loadFromHandle($entry->get('section'));
-			$schema = $section->fetchFieldsSchema();
-
-			foreach($schema as $info){
-				$result = NULL;
-
-				$field = FieldManager::instance()->fetch($info['id']);
-
-				if($ignore_missing_fields && !isset($data[$field->get('element_name')])) continue;
-
-				$result = $field->processRawFieldData(
-					(isset($data[$info['element_name']]) ? $data[$info['element_name']] : NULL), $s, $simulate, $this->get('id')
-				);
-
-				if($s != Field::STATUS_OK){
-					$status = self::STATUS_ERROR;
-					$error = array('field_id' => $info['id'], 'message' => $m);
-				}
-
-				$this->setData($info['id'], $result);
-			}
-
-			// Failed to create entry, cleanup
-			if($status != self::STATUS_ERROR and !is_null($entry_id)) {
-				Symphony::Database()->delete('tbl_entries', " `id` = '$entry_id' ");
-			}
-
-			return $status;
-		}
-
-		function setData($field_id, $data){
-			$this->_data[$field_id] = $data;
-		}
-
-		function getData($field_id=NULL, $asObject=false){
-			if(!$field_id) return $this->_data;
-			return ($asObject == true ? (object)$this->_data[$field_id] : $this->_data[$field_id]);
-		}
-*/
 		public function findDefaultFieldData(){
 
 			$section = Section::loadFromHandle($this->section);
@@ -359,11 +294,6 @@
 			}
 
 		}
-/*
-		function commit(){
-			$this->findDefaultData();
-			return ($this->get('id') ? EntryManager::instance()->edit($this) : EntryManager::instance()->add($this));
-		}
-*/
+
 	}
 

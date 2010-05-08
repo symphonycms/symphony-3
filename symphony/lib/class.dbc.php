@@ -1,5 +1,7 @@
 <?php
-
+	
+	require_once('class.errorhandler.php');
+	
 	Class DatabaseException extends Exception{
 		private $_error;
 		public function __construct($message, array $error=NULL){
@@ -21,7 +23,7 @@
 
 		public static function render($e){
 
-			require_once(LIB . '/class.xslproc.php');
+			require_once('class.xslproc.php');
 
 			$xml = new DOMDocument('1.0', 'utf-8');
 			$xml->formatOutput = true;
@@ -186,7 +188,7 @@
 
 	}
 
-	 Class DBCMySQLResult extends DatabaseResultIterator{
+	Class DBCMySQLResult extends DatabaseResultIterator{
 
 		public function __construct(Database $db, $result){
 			parent::__construct($db, $result);
