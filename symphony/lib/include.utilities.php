@@ -46,7 +46,7 @@
 			$page = $_GET['symphony-page'];
 		}
 		
-		return (strlen(trim($page, '/')) > 0 ? '/' . trim($page, '/') . '/' : NULL);
+		return (strlen(ltrim($page, '/')) > 0 ? '/' . ltrim($page, '/') : NULL);
 	}
 	
 	function precision_timer($action = 'start', $start_time = NULL){
