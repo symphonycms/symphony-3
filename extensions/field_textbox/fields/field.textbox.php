@@ -554,7 +554,9 @@
 			// Boolean searches:
 			if ($filter->type == 'boolean-search') {
 				$handle = $this->buildFilterJoin($joins);
-				$value = trim($filter->value);
+				$value = DataSource::replaceParametersInString(
+					trim($filter->value), $parameter_output
+				);
 				$mode = (preg_match('/^not(\W)/i', $value) ? '-' : '+');
 				
 				// Replace ' and ' with ' +':
