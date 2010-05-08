@@ -356,7 +356,7 @@
 			$left = $layout->createColumn(Layout::LARGE);
 			$center = $layout->createColumn(Layout::LARGE);
 			$right = $layout->createColumn(Layout::LARGE);
-
+			$existing = null;
 			$fields = array();
 
 			// Verify view exists:
@@ -426,7 +426,12 @@
 				$fields['handle'] = $existing->handle;
 			}
 
-			$title = $fields['title'];
+			$title = null;
+			
+			if (isset($fields['title'])) {
+				$title = $fields['title'];
+			}
+			
 			if(strlen(trim($title)) == 0){
 				$title = ($existing instanceof View ? $existing->title : 'New View');
 			}
@@ -465,7 +470,10 @@
 
 			$label = Widget::Label(__('Title'));
 			$label->appendChild(Widget::Input(
-				'fields[title]', General::sanitize($fields['title'])
+				'fields[title]',
+				isset($fields['title'])
+					? $fields['title']
+					: null
 			));
 
 			if(isset($this->errors->title)) {
@@ -479,7 +487,12 @@
 			$container = $this->createElement('div');
 
 			$label = Widget::Label(__('View Type'));
-			$label->appendChild(Widget::Input('fields[types]', $fields['types']));
+			$label->appendChild(Widget::Input(
+				'fields[types]',
+				isset($fields['types'])
+					? $fields['types']
+					: null
+			));
 
 			if(isset($this->errors->types)) {
 				$label = Widget::wrapFormElementWithError($label, $this->errors->types);
@@ -516,7 +529,7 @@
 				if(isset($existing) && $existing instanceof View && ($v->isChildOf($existing) || $v->guid == $existing->guid)) continue;
 
 				$options[] = array(
-					$v->path, $fields['parent'] == $v->path, "/{$v->path}"
+					$v->path, isset($fields['parent']) and $fields['parent'] == $v->path, "/{$v->path}"
 				);
 			}
 
@@ -530,7 +543,10 @@
 
 			$label = Widget::Label(__('Handle'));
 			$label->appendChild(Widget::Input(
-				'fields[handle]', $fields['handle']
+				'fields[handle]',
+				isset($fields['handle'])
+					? $fields['handle']
+					: null
 			));
 
 			if(isset($this->errors->handle)) {
@@ -543,7 +559,10 @@
 
 			$label = Widget::Label(__('Parameters'));
 			$label->appendChild(Widget::Input(
-				'fields[url-parameters]', $fields['url-parameters']
+				'fields[url-parameters]',
+				isset($fields['url-parameters'])
+					? $fields['url-parameters']
+					: null
 			));
 
 			$fieldset->appendChild($label);
