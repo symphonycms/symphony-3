@@ -374,11 +374,11 @@
 
 					foreach($info['navigation'] as $item){
 
-						$type = (isset($item['children']) ? Extension::NAV_GROUP : Extension::NAV_CHILD);
+						$type = (isset($item['children']) ? Extension::NAVIGATION_GROUP : Extension::NAVIGATION_CHILD);
 
 						switch($type){
 
-							case Extension::NAV_GROUP:
+							case Extension::NAVIGATION_GROUP:
 
 								$index = General::array_find_available_index($nav, $item['location']);
 
@@ -409,7 +409,7 @@
 
 								break;
 
-							case Extension::NAV_CHILD:
+							case Extension::NAVIGATION_CHILD:
 
 								if(!isset($item['relative']) || $item['relative'] == true){
 									$link = '/extension/' . $e . '/' . ltrim($item['link'], '/');
