@@ -25,8 +25,8 @@
 			$this->datasources = array();
 			$this->position = 0;
 
-			$this->datasources = glob("{" . DATASOURCES . "/*.php, " . EXTENSIONS . "/*/data-sources/*.php}", GLOB_BRACE);
-
+			$this->datasources = glob("{" . DATASOURCES . "/*.php," . EXTENSIONS . "/*/data-sources/*.php}", GLOB_BRACE);
+			
 			/*
 			foreach(new DataSourceFilterIterator(DATASOURCES) as $file){
 				$this->datasources[] = $file->getPathname();

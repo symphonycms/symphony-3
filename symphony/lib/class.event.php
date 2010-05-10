@@ -25,7 +25,7 @@
 			$this->events = array();
 			$this->position = 0;
 
-			$this->events = glob("{" . EVENTS . "/*.php, " . EVENTS . "/*/events/*.php}", GLOB_BRACE);
+			$this->events = glob("{" . EVENTS . "/*.php," . EVENTS . "/*/events/*.php}", GLOB_BRACE);
 /*
 			foreach(new EventFilterIterator(EVENTS) as $file){
 				$this->events[] = $file->getPathname();
