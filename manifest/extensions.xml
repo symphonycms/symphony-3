@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extensions>
+  <extension handle="test" version="1.0.0" status="enabled">
+    <delegates>
+      <item page="/system/settings/extensions/" delegate="AddSettingsFieldsets" callback="cbAppendPreferences"/>
+      <item page="/system/settings/extensions/" delegate="CustomSaveActions" callback="cbSavePreferences"/>
+      <item page="/system/settings/" delegate="CustomActions" callback="__toggleMaintenanceMode"/>
+      <item page="/frontend/" delegate="FrontendPrePageResolve" callback="__checkForMaintenanceMode"/>
+      <item page="/frontend/" delegate="FrontendParamsResolve" callback="__addParam"/>
+      <item page="/backend/" delegate="AppendPageAlert" callback="__appendAlert"/>
+    </delegates>
+  </extension>
+</extensions>
