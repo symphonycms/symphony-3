@@ -1400,32 +1400,33 @@
 		text-align:right;
 	}
 
-	tr .button.delete {
-		float:right;
-		margin-left:10px;
-	}
-
-	table tr .button {
-		padding:4px;
+	table tr .button, table tr .button:hover {
+		padding:4px 6px;
 		height:2em;
-		line-height:1.2em;
+		line-height:1.4em;
 		-moz-border-radius:3px;
 		-webkit-border-radius:3px;
 		border-radius: 3px;
-		background-color: #666;
-		background: -moz-linear-gradient(
-			top,
-			#9f9f9f,
-			#666
-		);
-		background: -webkit-gradient(
-			linear,
-			left top,
-			left bottom,
-			from(#9f9f9f),
-			to(#666)
-		);
-		border: 1px solid #8f908e;
+		background: #999;
+		border: none;
+		text-shadow: none;
 	}
+
+	tr .button.delete {
+		float:right;
+		margin-left:5px;
+		border: none;
+		background: #d75b60;
+	}
+	
+	tr .button.create {
+		border: none;
+		background: #8ac438;
+	}
+	
+	table tr .button:hover {
+		background: #222;
+	}
+
 
 /*-------------------------------------------------------------------------------*/
