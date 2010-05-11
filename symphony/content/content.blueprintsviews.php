@@ -420,9 +420,26 @@
 
 			elseif($this->_context[0] == 'edit') {
 				$fields = (array)$existing->about();
-				$fields['types'] = @implode(', ', $fields['types']); //Flatten the types array
-				$fields['url-parameters'] = @implode('/', $fields['url-parameters']); //Flatten the url-parameters array
-				$fields['parent'] = ($existing->parent() instanceof View ? $existing->parent()->path : NULL);
+				
+				// Flatten the types array:
+				$fields['types'] = (
+					(isset($fields['types']) and is_array($fields['types']))
+						? implode(', ', $fields['types'])
+						: null
+				);
+				
+				// Flatten the url-parameters array:
+				$fields['url-parameters'] = (
+					(isset($fields['url-parameters']) and is_array())
+						? implode('/', $fields['url-parameters'])
+						: null
+				);
+				
+				$fields['parent'] = (
+					$existing->parent() instanceof View
+						? $existing->parent()->path
+						: NULL
+				);
 				$fields['handle'] = $existing->handle;
 			}
 
