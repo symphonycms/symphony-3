@@ -28,31 +28,35 @@
 			
 		## Process extensions and build lists
 		
-			$extensions = ExtensionManager::instance()->listAll();
+//			$extensions = ExtensionManager::instance()->listAll();
 			
-			foreach($extensions as $e){
+//			foreach($extensions as $e){
+			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
+				
 			/* Someone should look all this over. My thinking was that it'd
 			be nice to only have to loop through the extensions once. Maybe
 			that's stupid? */
 			
+			$e = (array)$extension->about();
+			
 			## Build lists by status
-				switch($e['status']){
-					case Extension::ENABLED:
+				switch(Extension::status(Extension::getHandleFromPath(Extension::getPathFromClass(get_class($extension))))){
+					case Extension::STATUS_ENABLED:
 						$this->lists['status']['enabled'][] = $e;
 						break;
 							
-					case Extension::DISABLED:
+					case Extension::STATUS_DISABLED:
 						$this->lists['status']['disabled'][] = $e;
 						break;
 						
-					case Extension::NOT_INSTALLED:
+					case Extension::STATUS_NOT_INSTALLED:
 						$this->lists['status']['installable'][] = $e;
 						break;
 						
-					case Extension::REQUIRES_UPDATE:
+					case Extension::STATUS_REQUIRES_UPDATE:
 						$this->lists['status']['updateable'][] = $e;
 				}
-			
+
 			## Build lists by type
 				if(!empty($e['type'])){
 					foreach($e['type'] as $t){
@@ -122,7 +126,7 @@
 			$left->appendChild($ul);
 			
 		## If a filter and value are specified...
-		
+
 			if(!is_null($filter) && !is_null($value)){
 			
 			## If there are extensions in the list, build the table
@@ -254,7 +258,7 @@
 		function buildTable($extensions, $prefixes=false){
 			
 			## Sort by extensions name:
-			uasort($extensions, array('ExtensionManager', 'sortByName'));
+			//uasort($extensions, array('ExtensionManager', 'sortByName'));
 
 			$aTableHead = array(
 				array(__('Name'), 'col'),
@@ -282,9 +286,12 @@
 
 			else foreach($extensions as $name => $about){
 
+				// TODO: Remove need to convert to an array
+				$about['author'] = (array)$about['author'];
+
 				$fragment = $this->createDocumentFragment();
 
-				if(!empty($about['table-link']) && $about['status'] == Extension::ENABLED) {
+				if(!empty($about['table-link']) && $about['status'] == Extension::STATUS_ENABLED) {
 
 					$fragment->appendChild(
 						Widget::Anchor($about['name'], Administration::instance()->getCurrentPageURL() . 'extension/' . trim($about['table-link'], '/'))
@@ -320,28 +327,29 @@
 
 				$td3->appendChild(Widget::Input('items['.$about['handle'].']', 'on', 'checkbox'));
 
-				switch ($about['status']) {
-					case Extension::ENABLED:
+				// TODO: Fix me please
+				switch(Extension::STATUS_ENABLED){
+					case Extension::STATUS_ENABLED:
 						$td4 = Widget::TableData(Widget::Anchor(__('Uninstall'), '#', array('class' => 'button delete')));
 						$td4->appendChild(Widget::Anchor(__('Disable'), '#', array('class' => 'button')));
 						break;
 
-					case Extension::DISABLED:
+					case Extension::STATUS_DISABLED:
 						$td4 = Widget::TableData(Widget::Anchor(__('Enable'), '#', array('class' => 'button create')));
 						break;
 
-					case Extension::NOT_INSTALLED:
+					case Extension::STATUS_NOT_INSTALLED:
 						$td4 = Widget::TableData(Widget::Anchor(__('Install'), '#', array('class' => 'button create')));
 						break;
 
-					case Extension::REQUIRES_UPDATE:
+					case Extension::STATUS_REQUIRES_UPDATE:
 						$td4 = Widget::TableData(Widget::Anchor(__('Update'), '#', array('class' => 'button create')));
 				}
 
 				## Add a row to the body array, assigning each cell to the row
 				$aTableBody[] = Widget::TableRow(
 					array($td1, $td2, $td3, $td4),
-					($about['status'] == Extension::NOT_INSTALLED ? array('class' => 'inactive') : array())
+					($about['status'] == Extension::STATUS_NOT_INSTALLED ? array('class' => 'inactive') : array())
 				);
 			}
 
@@ -366,7 +374,7 @@
 						# Delegate: Enable
 						# Description: Notifies of enabling Extension. Array of selected services is provided.
 						#              This can not be modified.
-						//ExtensionManager::instance()->notifyMembers('Enable', getCurrentPage(), array('services' => $checked));
+						//Extension::notify('Enable', getCurrentPage(), array('services' => $checked));
 
 						foreach($checked as $name){
 							if(ExtensionManager::instance()->enable($name) === false) return;
@@ -381,7 +389,7 @@
 						# Delegate: Disable
 						# Description: Notifies of disabling Extension. Array of selected services is provided.
 						#              This can be modified.
-						//ExtensionManager::instance()->notifyMembers('Disable', getCurrentPage(), array('services' => &$checked));
+						//Extension::notify('Disable', getCurrentPage(), array('services' => &$checked));
 
 						foreach($checked as $name){
 							if(ExtensionManager::instance()->disable($name) === false) return;
@@ -395,7 +403,7 @@
 						# Delegate: Uninstall
 						# Description: Notifies of uninstalling Extension. Array of selected services is provided.
 						#              This can be modified.
-						//ExtensionManager::instance()->notifyMembers('Uninstall', getCurrentPage(), array('services' => &$checked));
+						//Extension::notify('Uninstall', getCurrentPage(), array('services' => &$checked));
 
 						foreach($checked as $name){
 							if(ExtensionManager::instance()->uninstall($name) === false) return;

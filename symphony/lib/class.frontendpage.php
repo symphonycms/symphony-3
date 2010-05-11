@@ -103,7 +103,7 @@
 				# Delegate: FrontendDevKitResolve
 				# Description: Allows a devkit object to be specified, and stop continued execution:
 				# Global: Yes
-				ExtensionManager::instance()->notifyMembers(
+				Extension::notify(
 					'FrontendDevKitResolve', '/frontend/',
 					array(
 						'full_generate'	=> &$full_generate,
@@ -120,7 +120,7 @@
 				# Delegate: FrontendOutputPreGenerate
 				# Description: Immediately before generating the page. Provided with the page object, XML and XSLT
 				# Global: Yes
-				ExtensionManager::instance()->notifyMembers(
+				Extension::notify(
 					'FrontendOutputPreGenerate', '/frontend/',
 					array(
 						'page'	=> &$this,
@@ -135,7 +135,7 @@
 				# Delegate: FrontendPreRenderHeaders
 				# Description: This is just prior to the page headers being rendered, and is suitable for changing them
 				# Global: Yes
-				ExtensionManager::instance()->notifyMembers('FrontendPreRenderHeaders', '/frontend/');
+				Extension::notify('FrontendPreRenderHeaders', '/frontend/');
 				
 				// When the XSLT executes, it uses the CWD as set here
 				$cwd = getcwd();
@@ -147,7 +147,7 @@
 				# Delegate: FrontendOutputPostGenerate
 				# Description: Immediately after generating the page. Provided with string containing page source
 				# Global: Yes
-				ExtensionManager::instance()->notifyMembers('FrontendOutputPostGenerate', '/frontend/', array('output' => &$output));
+				Extension::notify('FrontendOutputPostGenerate', '/frontend/', array('output' => &$output));
 
 				
 				if (is_null($devkit) && !$output) {
@@ -208,7 +208,7 @@
 			# Delegate: FrontendPageResolved
 			# Description: Just after having resolved the page, but prior to any commencement of output creation
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('FrontendPageResolved', '/frontend/', array('env' => &$this->_env, 'page' => &$this, 'page_data' => &$page));
+			Extension::notify('FrontendPageResolved', '/frontend/', array('env' => &$this->_env, 'page' => &$this, 'page_data' => &$page));
 
 			$this->_pageData = $page;
 			$root_page = @array_shift(explode('/', $page['path']));
@@ -263,7 +263,7 @@
 			# Delegate: FrontendParamsResolve
 			# Description: Just after having resolved the page params, but prior to any commencement of output creation
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('FrontendParamsResolve', '/frontend/', array('params' => &$this->_param));
+			Extension::notify('FrontendParamsResolve', '/frontend/', array('params' => &$this->_param));
 
 			$xml_build_start = precision_timer();
 
@@ -303,7 +303,7 @@
 			# Delegate: FrontendParamsPostResolve
 			# Description: Access to the resolved param pool, including additional parameters provided by Data Source outputs
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('FrontendParamsPostResolve', '/frontend/', array('params' => $this->_param));
+			Extension::notify('FrontendParamsPostResolve', '/frontend/', array('params' => $this->_param));
 
 			$xParam = new XMLElement('parameters');
 			foreach($this->_param as $key => $value){
@@ -334,7 +334,7 @@
 			# Delegate: FrontendPrePageResolve
 			# Description: Before page resolve. Allows manipulation of page without redirection
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('FrontendPrePageResolve', '/frontend/', array('view' => &$view, 'page' => &$this->_page));
+			Extension::notify('FrontendPrePageResolve', '/frontend/', array('view' => &$view, 'page' => &$this->_page));
 
 			if(is_null($view)){
 				if(is_null($this->_page)){
@@ -526,7 +526,7 @@
 			# Delegate: FrontendProcessEvents
 			# Description: Manipulate the events array and event element wrapper
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendProcessEvents', 
 				'/frontend/', 
 				array(
@@ -573,7 +573,7 @@
 			# Delegate: FrontendEventPostProcess
 			# Description: Just after the page events have triggered. Provided with the XML object
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('FrontendEventPostProcess', '/frontend/', array('xml' => &$wrapper));
+			Extension::notify('FrontendEventPostProcess', '/frontend/', array('xml' => &$wrapper));
 			
 		}		
 	}

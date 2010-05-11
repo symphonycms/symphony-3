@@ -214,7 +214,7 @@
 				###
 				# Delegate: UploadField_PreviewFile
 				# Description: Allow other extensions to add media previews.
-				ExtensionManager::instance()->notifyMembers(
+				Extension::notify(
 					'UploadField_PreviewFile',
 					'/publish/', array(
 						'data'		=> $data,
@@ -328,7 +328,7 @@
 			###
 			# Delegate: UploadField_AppendMetaInformation
 			# Description: Allow other extensions to add media previews.
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'UploadField_AppendMetaInformation',
 				'/publish/', array(
 					'data'		=> $data,
@@ -592,7 +592,7 @@
 			###
 			# Delegate: UploadField_PreUploadFile
 			# Description: Allow extensions to manipulate saved data before the file is saved to disk.
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'UploadField_PreUploadFile',
 				'/publish/', array(
 					'data'	=> $data,
@@ -632,7 +632,7 @@
 			###
 			# Delegate: UploadField_PostUploadFile
 			# Description: Allow extensions to manipulate saved data after the file is saved to disk.
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'UploadField_PostUploadFile',
 				'/publish/', array(
 					'data'	=> $data,
@@ -677,7 +677,7 @@
 			###
 			# Delegate: UploadField_PreCleanupFile
 			# Description: Allow extensions to manipulate saved data after the file is saved to disk.
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'UploadField_PreCleanupFile',
 				'/publish/', array(
 					'data'	=> $data,
@@ -691,7 +691,7 @@
 			###
 			# Delegate: UploadField_PostCleanupFile
 			# Description: Allow extensions to manipulate saved data after the file is saved to disk.
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'UploadField_PostCleanupFile',
 				'/publish/', array(
 					'data'	=> $data,
@@ -761,7 +761,7 @@
 			###
 			# Delegate: UploadField_AppendFormattedElement
 			# Description: Allow other extensions to add media previews.
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'UploadField_AppendFormattedElement',
 				'/publish/', array(
 					'data'		=> $data,

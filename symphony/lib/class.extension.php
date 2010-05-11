@@ -110,6 +110,10 @@
 			$root = $doc->documentElement;
 			
 			foreach(new ExtensionIterator as $extension){
+				
+				// TODO: Check if the extension is already present in the config, and retain the version if it is
+				// This ensures that the status of "requires-update" remains intact.
+				
 				$pathname = self::getPathFromClass(get_class($extension));
 				$handle = self::getHandleFromPath($pathname);
 				
@@ -235,6 +239,7 @@
 		}
 	}
 	
+	/*
 	Extension::init();
 
 	
@@ -246,7 +251,7 @@
 	Extension::notify('CustomSaveActions', '/system/settings/extensions/', array('banana' => 'chicken'));
 
 	die();
-	
+	*/
 	// Extension::rebuildConfiguration();
 	// Extension::saveConfiguration();
 	// die();

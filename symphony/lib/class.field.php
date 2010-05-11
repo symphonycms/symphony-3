@@ -293,13 +293,19 @@
 
 		protected static function __find($type){
 
-			$extensions = ExtensionManager::instance()->listInstalledHandles();
+	//		$extensions = ExtensionManager::instance()->listInstalledHandles();
 
-			if(is_array($extensions) && !empty($extensions)){
-				foreach($extensions as $e){
-					if(is_file(EXTENSIONS . "/{$e}/fields/field.{$type}.php")) return EXTENSIONS . "/{$e}/fields";
-				}
+	//		if(is_array($extensions) && !empty($extensions)){
+	//			foreach($extensions as $e){
+	//				if(is_file(EXTENSIONS . "/{$e}/fields/field.{$type}.php")) return EXTENSIONS . "/{$e}/fields";
+	//			}
+	//		}
+			
+			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
+				$path = Extension::getPathFromClass(get_class($extension));
+				if(is_file("{$path}/fields/field.{$type}.php")) return "{$path}/fields/field.{$type}.php";
 			}
+	
 		    return false;
 	    }
 

@@ -161,7 +161,7 @@
 			# Description: Allow navigation XML to be manipulated before it is rendered.
 			# Global: Yes
 			#$this->_page->ExtensionManager->notifyMembers(
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'DevKiAppendtMenuItem', '/frontend/',
 				array(
 					'wrapper'	=> $root

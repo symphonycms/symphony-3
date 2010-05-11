@@ -513,7 +513,7 @@
 			# Delegate: FrontendParamsPostResolve
 			# Description: Access to the resolved param pool, including additional parameters provided by Data Source outputs
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('FrontendParamsPostResolve', '/frontend/', array('params' => $Parameters));
+			Extension::notify('FrontendParamsPostResolve', '/frontend/', array('params' => $Parameters));
 
 			$element = $Document->createElement('parameters');
 			$root->appendChild($element);

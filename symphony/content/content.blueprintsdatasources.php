@@ -320,7 +320,7 @@
 			###
 			# Delegate: DataSourceFormView
 			# Description: Prepare any data before the form view and action are fired.
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'DataSourceFormView', '/backend/',
 				array(
 					'type'		=> &$this->type,

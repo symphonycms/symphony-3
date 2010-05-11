@@ -367,7 +367,7 @@
 			$input->setAttribute('class', implode(' ', $classes));
 			$input->setAttribute('length', (integer)$this->{'text-length'});
 
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				$delegate, '/backend/',
 				array(
 					'field'		=> &$this,

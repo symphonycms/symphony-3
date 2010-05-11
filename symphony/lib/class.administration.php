@@ -221,7 +221,7 @@
 			# Delegate: AdminPagePreGenerate
 			# Description: Immediately before generating the admin page. Provided with the page object
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('AdminPagePreGenerate', '/backend/', array('oPage' => &$this->Page));
+			Extension::notify('AdminPagePreGenerate', '/backend/', array('oPage' => &$this->Page));
 
 			$output = (string)$this->Page;
 
@@ -229,7 +229,7 @@
 			# Delegate: AdminPagePostGenerate
 			# Description: Immediately after generating the admin page. Provided with string containing page source
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('AdminPagePostGenerate', '/backend/', array('output' => &$output));
+			Extension::notify('AdminPagePostGenerate', '/backend/', array('output' => &$output));
 			
 			return $output;	
 		}

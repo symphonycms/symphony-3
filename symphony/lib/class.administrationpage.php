@@ -107,7 +107,7 @@
 			# Delegate: InitaliseAdminPageHead
 			# Description: Allows developers to insert items into the page HEAD. Use $context['parent']->Page
 			#			   for access to the page object
-			ExtensionManager::instance()->notifyMembers('InitaliseAdminPageHead', '/backend/');
+			Extension::notify('InitaliseAdminPageHead', '/backend/');
 
 			$this->Headers->append('Content-Type', 'text/html; charset=UTF-8');
 
@@ -137,7 +137,7 @@
 			# Delegate: AppendElementBelowView
 			# Description: Allows developers to add items just above the page footer. Use $context['parent']->Page
 			#			   for access to the page object
-			ExtensionManager::instance()->notifyMembers('AppendElementBelowView', '/backend/');
+			Extension::notify('AppendElementBelowView', '/backend/');
 
 			$this->appendAlert();
 		}
@@ -182,7 +182,7 @@
 			# Delegate: AppendPageAlert
 			# Description: Allows for appending of alerts. Administration::instance()->Page->Alert is way to tell what
 			# is currently in the system
-			ExtensionManager::instance()->notifyMembers('AppendPageAlert', '/backend/');
+			Extension::notify('AppendPageAlert', '/backend/');
 			
 			if ($this->alerts()->valid()) {
 				$this->alerts()->appendTo($this->Body);
@@ -209,7 +209,7 @@
 			###
 			# Delegate: AddElementToFooter
 			# Description: Add new list elements to the footer
-			ExtensionManager::instance()->notifyMembers('AddElementToFooter', '/backend/', array('wrapper' => &$ul));
+			Extension::notify('AddElementToFooter', '/backend/', array('wrapper' => &$ul));
 
 			$this->Form->appendChild($ul);
 		}
@@ -230,7 +230,7 @@
 			# Description: Immediately before displaying the admin navigation. Provided with the navigation array
 			#              Manipulating it will alter the navigation for all pages.
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers('NavigationPreRender', '/backend/', array('navigation' => &$nav));
+			Extension::notify('NavigationPreRender', '/backend/', array('navigation' => &$nav));
 
 			$xNav = $this->createElement('ul');
 			$xNav->setAttribute('id', 'nav');
@@ -365,10 +365,10 @@
 				);
 			}
 
-			$extensions = ExtensionManager::instance()->listInstalledHandles();
+//			$extensions = ExtensionManager::instance()->listInstalledHandles();
 
-			foreach($extensions as $e){
-				$info = ExtensionManager::instance()->about($e);
+			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
+				$info = (array)$e->about();
 
 				if(isset($info['navigation']) && is_array($info['navigation']) && !empty($info['navigation'])){
 
@@ -465,7 +465,7 @@
 			# 			already in the navigation. Note: THIS IS FOR ADDING ONLY! If you need
 			#			to edit existing navigation elements, use the 'NavigationPreRender' delegate.
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'ExtensionsAddToNavigation', '/backend/', array('navigation' => &$nav)
 			);
 

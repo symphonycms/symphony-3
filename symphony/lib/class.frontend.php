@@ -228,7 +228,7 @@
 			# Delegate: FrontendPreInitialise
 			# Description: TODO
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendPreInitialise',
 				'/frontend/',
 				array(
@@ -243,7 +243,7 @@
 
 			####
 			# Delegate: FrontendPostInitialise
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendPostInitialise',
 				'/frontend/',
 				array(
@@ -316,7 +316,7 @@
 			# Delegate: FrontendPreRender
 			# Description: TODO
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendPreRender',
 				'/frontend/',
 				array(
@@ -333,7 +333,7 @@
 			# Delegate: FrontendPostRender
 			# Description: TODO
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendPostRender',
 				'/frontend/',
 				array(

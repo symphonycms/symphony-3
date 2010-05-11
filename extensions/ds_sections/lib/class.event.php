@@ -126,7 +126,7 @@
 			# Delegate: AppendEventFilter
 			# Description: Allows adding of new filter rules to the Event filter
 			# rule select box. A reference to the $options array is provided, and selected filters
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'AppendEventFilter',
 				'/blueprints/events/',
 				array(
@@ -335,7 +335,7 @@
 			###
 			# Delegate: EntryPreCreate
 			# Description: Just prior to creation of an Entry. Entry object provided
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'EntryPreCreate', '/frontend/',
 				array('entry' => &$entry)
 			);
@@ -347,7 +347,7 @@
 				###
 				# Delegate: EntryPostCreate
 				# Description: Creation of an Entry. New Entry object is provided.
-				ExtensionManager::instance()->notifyMembers(
+				Extension::notify(
 					'EntryPostCreate', '/frontend/',
 					array('entry' => $entry)
 				);

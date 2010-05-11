@@ -110,7 +110,7 @@
 				###
 				# Delegate: Delete
 				# Description: Prior to deleting an User. ID is provided.
-				//ExtensionManager::instance()->notifyMembers('Delete', getCurrentPage(), array('user_id' => $user_id));
+				//Extension::notify('Delete', getCurrentPage(), array('user_id' => $user_id));
 
 				foreach($checked as $user_id){
 					if(Administration::instance()->User->id == $user_id) continue;
@@ -359,7 +359,7 @@
 				###
 				# Delegate: PreCreate
 				# Description: Just before creation of a new User. User object, fields and error array provided
-				ExtensionManager::instance()->notifyMembers(
+				Extension::notify(
 					'PreCreate', '/system/users/new/',
 					array(
 						'fields' => $fields,
@@ -380,7 +380,7 @@
 						###
 						# Delegate: PostCreate
 						# Description: Just after creation of a new User. The ID of the User is provided.
-						ExtensionManager::instance()->notifyMembers('PostCreate', '/system/users/new/', array('user' => $this->user));
+						Extension::notify('PostCreate', '/system/users/new/', array('user' => $this->user));
 
 			  		   redirect(ADMIN_URL . "/system/users/edit/{$this->user->id}/:created/");
 
@@ -431,7 +431,7 @@
 				###
 				# Delegate: PreSave
 				# Description: Just before creation of a new User. User object, fields and error array provided
-				ExtensionManager::instance()->notifyMembers(
+				Extension::notify(
 					'PreSave', '/system/users/edit/',
 					array(
 						'fields' => $fields,
@@ -461,7 +461,7 @@
 						###
 						# Delegate: PostSave
 						# Description: Just after creation of a new User. The ID of the User is provided.
-						ExtensionManager::instance()->notifyMembers('PostSave', '/system/users/edit/', array('user' => $this->user));
+						Extension::notify('PostSave', '/system/users/edit/', array('user' => $this->user));
 
 		  		    	redirect(ADMIN_URL . "/system/users/edit/{$this->user->id}/:saved/");
 
@@ -487,7 +487,7 @@
 				###
 				# Delegate: Delete
 				# Description: Prior to deleting an User. ID is provided.
-				//ExtensionManager::instance()->notifyMembers('Delete', getCurrentPage(), array('user_id' => $user_id));
+				//Extension::notify('Delete', getCurrentPage(), array('user_id' => $user_id));
 
 				User::delete($user_id);
 

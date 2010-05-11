@@ -249,7 +249,7 @@
 			###
 			# Delegate: AddSettingsFieldsets
 			# Description: Add Extension settings fieldsets. Append fieldsets to the array provided. They will be distributed evenly accross the 3 columns
-			ExtensionManager::instance()->notifyMembers('AddSettingsFieldsets', '/system/settings/extensions/', array('fieldsets' => &$extension_fieldsets));
+			Extension::notify('AddSettingsFieldsets', '/system/settings/extensions/', array('fieldsets' => &$extension_fieldsets));
 
 			if(empty($extension_fieldsets)) redirect($path);
 			
@@ -285,7 +285,7 @@
 			###
 			# Delegate: CustomSaveActions
 			# Description: This is where Extensions can hook on to custom actions they may need to provide.
-			ExtensionManager::instance()->notifyMembers('CustomSaveActions', '/system/settings/extensions/');
+			Extension::notify('CustomSaveActions', '/system/settings/extensions/');
 			
 			if (isset($_POST['action']['save']) && isset($_POST['settings'])) {
 				$settings = $_POST['settings'];
@@ -322,7 +322,7 @@
 				###
 				# Delegate: Save
 				# Description: Saving of system preferences.
-				ExtensionManager::instance()->notifyMembers('Save', '/system/settings/', array('settings' => &$settings, 'errors' => &$this->errors));
+				Extension::notify('Save', '/system/settings/', array('settings' => &$settings, 'errors' => &$this->errors));
 				
 				// Site name
 				if(strlen(trim($settings['symphony']['sitename'])) == 0){

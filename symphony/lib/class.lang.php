@@ -150,12 +150,19 @@
 			}
 
 			// Load localisation files for extensions
-			foreach(ExtensionManager::instance()->listAll() as $handle => $e){
+			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
+				$path = Extension::getPathFromClass(get_class($extension)) . '/lang/lang.%s.php';
+				if(file_exists(sprintf($path, Symphony::lang()))){
+					Lang::add($path, Symphony::lang());
+				}
+			}
+			
+			/*foreach(ExtensionManager::instance()->listAll() as $handle => $e){
 				$path = ExtensionManager::instance()->__getClassPath($handle) . '/lang/lang.%s.php';
 				if($e['status'] == Extension::ENABLED && file_exists(sprintf($path, Symphony::lang()))){
 					Lang::add($path, Symphony::lang());
 				}
-			}
+			}*/
 		}
 
 		/**
@@ -335,10 +342,15 @@
 			$languages = self::getLanguageCodes(LANG, $languages);
 			// Get extension translation files
 			if($includeExtensions) {
-				foreach (ExtensionManager::instance()->listAll() as $extension => $about) {
+				foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
+					$path = Extension::getPathFromClass(get_class($extension)) . '/lang';
+					if(file_exists($path)) $languages = self::getLanguageCodes($path, $languages);
+				}
+/*				foreach (ExtensionManager::instance()->listAll() as $extension => $about) {
 					$path = EXTENSIONS . '/' . $about['handle'] . '/lang';
 					if(file_exists($path)) $languages = self::getLanguageCodes($path, $languages);
 				}
+*/
 			}
 			// Return languages codes
 			return $languages;

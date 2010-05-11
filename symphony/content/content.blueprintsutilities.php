@@ -298,7 +298,7 @@
 						###
 						# Delegate: Edit
 						# Description: After saving the asset, the file path is provided.
-						//ExtensionManager::instance()->notifyMembers('Edit', getCurrentPage(), array('file' => $file));
+						//Extension::notify('Edit', getCurrentPage(), array('file' => $file));
 
 						redirect(URL . '/symphony/blueprints/utilities/edit/'.str_replace('.xsl', '', $fields['name']) . '/'.($this->_context[0] == 'new' ? 'created' : 'saved') . '/');
 
@@ -312,7 +312,7 @@
 				###
 				# Delegate: Delete
 				# Description: Prior to deleting the asset file. Target file path is provided.
-				//ExtensionManager::instance()->notifyMembers('Delete', getCurrentPage(), array('file' => WORKSPACE . '/' . $this->_existing_file_rel));
+				//Extension::notify('Delete', getCurrentPage(), array('file' => WORKSPACE . '/' . $this->_existing_file_rel));
 				$this->__actionDelete(UTILITIES . '/' . $this->_existing_file, URL . '/symphony/blueprints/components/');
 		  	}
 		}

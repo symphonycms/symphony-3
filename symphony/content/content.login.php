@@ -166,7 +166,7 @@
 						###
 						# Delegate: LoginFailure
 						# Description: Failed login attempt. Username is provided.
-						//ExtensionManager::instance()->notifyMembers('LoginFailure', getCurrentPage(), array('username' => $_POST['username']));
+						//Extension::notify('LoginFailure', getCurrentPage(), array('username' => $_POST['username']));
 
 						//$this->Body->appendChild(new XMLElement('p', 'Login invalid. <a href="'.ADMIN_URL . '/?forgot">Forgot your password?</a>'));
 						//$this->_alert = 'Login invalid. <a href="'.ADMIN_URL . '/?forgot">Forgot your password?</a>';
@@ -179,7 +179,7 @@
 						###
 						# Delegate: LoginSuccess
 						# Description: Successful login attempt. Username is provided.
-						//ExtensionManager::instance()->notifyMembers('LoginSuccess', getCurrentPage(), array('username' => $_POST['username']));
+						//Extension::notify('LoginSuccess', getCurrentPage(), array('username' => $_POST['username']));
 
 						if(isset($_POST['redirect'])) redirect(URL . str_replace(parse_url(URL, PHP_URL_PATH), '', $_POST['redirect']));
 
@@ -237,7 +237,7 @@
 						###
 						# Delegate: PasswordResetSuccess
 						# Description: A successful password reset has taken place. User ID is provided
-						//ExtensionManager::instance()->notifyMembers('PasswordResetSuccess', getCurrentPage(), array('user_id' => $user['id']));
+						//Extension::notify('PasswordResetSuccess', getCurrentPage(), array('user_id' => $user['id']));
 
 					}
 
@@ -247,7 +247,7 @@
 						###
 						# Delegate: PasswordResetFailure
 						# Description: A failed password reset has taken place. User ID is provided
-						//ExtensionManager::instance()->notifyMembers('PasswordResetFailure', getCurrentPage(), array('user_id' => $user['id']));
+						//Extension::notify('PasswordResetFailure', getCurrentPage(), array('user_id' => $user['id']));
 
 						$this->_email_sent = false;
 					}
@@ -274,7 +274,7 @@
 						###
 						# Delegate: PasswordChanged
 						# Description: After editing an User. ID of the User is provided.
-						//ExtensionManager::instance()->notifyMembers('PasswordChanged', getCurrentPage(), array('user_id' => $user_id));
+						//Extension::notify('PasswordChanged', getCurrentPage(), array('user_id' => $user_id));
 
 						redirect(ADMIN_URL . '/');
 					}
@@ -322,7 +322,7 @@
 					###
 					# Delegate: PasswordResetRequest
 					# Description: User has requested a password reset. User ID is provided.
-					//ExtensionManager::instance()->notifyMembers('PasswordResetRequest', getCurrentPage(), array('user_id' => $user['id']));
+					//Extension::notify('PasswordResetRequest', getCurrentPage(), array('user_id' => $user['id']));
 
 					$this->_alert = 'Password reset. Check your email';
 

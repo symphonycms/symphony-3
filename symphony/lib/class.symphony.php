@@ -17,7 +17,7 @@
 	require_once('class.user.php');
 	require_once('class.xslproc.php');
                  
-	require_once('class.extensionmanager.php');
+	require_once('class.extension.php');
 
 	Class SymphonyErrorPageHandler extends GenericExceptionHandler{
 		public static function render($e){
@@ -159,10 +159,13 @@
 			$this->initialiseCookie();
 
 			$this->initialiseDatabase();
-
+			
+			Extension::init();
+			
 			Cache::setDriver(self::Configuration()->core()->{'cache-driver'});
 
 			Lang::loadAll(true);
+
 		}
 
 		public function lang(){

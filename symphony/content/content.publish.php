@@ -334,7 +334,7 @@
 						# Delegate: Delete
 						# Description: Prior to deletion of entries. Array of Entries is provided.
 						#              The array can be manipulated
-						ExtensionManager::instance()->notifyMembers('Delete', '/publish/', array('entry_id' => &$checked));
+						Extension::notify('Delete', '/publish/', array('entry_id' => &$checked));
 
 						foreach($checked as $entry_id){
 							Entry::delete($entry_id);
@@ -656,7 +656,7 @@
 				###
 				# Delegate: EntryPreCreate
 				# Description: Just prior to creation of an Entry. Entry object provided
-				ExtensionManager::instance()->notifyMembers(
+				Extension::notify(
 					'EntryPreCreate', '/publish/new/',
 					array('entry' => &$entry)
 				);
@@ -680,7 +680,7 @@
 					###
 					# Delegate: EntryPostCreate
 					# Description: Creation of an Entry. New Entry object is provided.
-					ExtensionManager::instance()->notifyMembers(
+					Extension::notify(
 						'EntryPostCreate', '/publish/new/',
 						array('entry' => $entry)
 					);
@@ -729,7 +729,7 @@
 				###
 				# Delegate: EntryPreEdit
 				# Description: Just prior to editing of an Entry.
-				ExtensionManager::instance()->notifyMembers(
+				Extension::notify(
 					'EntryPreEdit', '/publish/edit/',
 					array('entry' => &$entry)
 				);
@@ -753,7 +753,7 @@
 					###
 					# Delegate: EntryPostEdit
 					# Description: Editing an entry. Entry object is provided.
-					ExtensionManager::instance()->notifyMembers(
+					Extension::notify(
 						'EntryPostEdit', '/publish/edit/',
 						array('entry' => $entry)
 					);
@@ -787,7 +787,7 @@
 				# Delegate: Delete
 				# Description: Prior to deleting an entry. Entry ID is provided, as an
 				# array to remain compatible with other Delete delegate call
-				ExtensionManager::instance()->notifyMembers('Delete', '/publish/', array('entry_id' => $entry_id));
+				Extension::notify('Delete', '/publish/', array('entry_id' => $entry_id));
 
 				Entry::delete($entry_id);
 
