@@ -128,7 +128,7 @@
 			$old_handle = false;
 
 			if (is_array($essentials)) {
-				if ($essentials['name'] !== $this->section->name) {
+				if ($essentials['name'] !== $this->section->name and $this->section->name != '') {
 					$old_handle = $this->section->handle;
 				}
 
