@@ -479,6 +479,22 @@
 			
 			if (!is_array($datasources) || empty($datasources)) return;
 			
+			####
+			# Delegate: FrontendProcessDataSources
+			# Description: Manipulate the data source array and data source element wrapper
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendProcessDataSources', 
+				'/frontend/', 
+				array(
+					'env' => $this->_env, 
+					'datasources' => &$datasources, 
+					'wrapper' => &$wrapper, 
+					'page_data' => $this->_pageData
+				)
+			);
+			#####
+
 			$this->_env['pool'] = $params;
 			$pool = $params;
 			$dependencies = array();

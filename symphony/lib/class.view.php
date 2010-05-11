@@ -532,6 +532,16 @@
 				}
 			}
 
+			####
+			# Delegate: FrontendTemplatePreRender
+			# Description: Access to the template source, before it is rendered.
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendTemplatePreRender', '/frontend/', array(
+					'template'	=> &$this->template
+				)
+			);
+			
 			// When the XSLT executes, it uses the CWD as set here
 			$cwd = getcwd();
 			chdir(WORKSPACE);
