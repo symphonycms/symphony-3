@@ -360,59 +360,83 @@
 
 		function action(){
 			$checked  = array_keys($_POST['items']);
-
-			if(isset($_POST['with-selected']) && is_array($checked) && !empty($checked)){
-
-				$action = $_POST['with-selected'];
-
-				switch($action){
-
+			
+			try {
+				if(isset($_POST['with-selected']) && is_array($checked) && !empty($checked)){
+					$action = $_POST['with-selected'];
+					
+					switch($action){
+						case 'enable':
+							## FIXME: Fix this delegate
+							###
+							# Delegate: Enable
+							# Description: Notifies of enabling Extension. Array of selected services is provided.
+							#              This can not be modified.
+							//ExtensionManager::instance()->notifyMembers('Enable', getCurrentPage(), array('services' => $checked));
+	
+							foreach($checked as $name){
+								if(ExtensionManager::instance()->enable($name) === false) return;
+							}
+							break;
+						case 'disable':
+							## FIXME: Fix this delegate
+							###
+							# Delegate: Disable
+							# Description: Notifies of disabling Extension. Array of selected services is provided.
+							#              This can be modified.
+							//ExtensionManager::instance()->notifyMembers('Disable', getCurrentPage(), array('services' => &$checked));
+	
+							foreach($checked as $name){
+								if(ExtensionManager::instance()->disable($name) === false) return;
+							}
+							break;
+						case 'uninstall':
+							## FIXME: Fix this delegate
+							###
+							# Delegate: Uninstall
+							# Description: Notifies of uninstalling Extension. Array of selected services is provided.
+							#              This can be modified.
+							//ExtensionManager::instance()->notifyMembers('Uninstall', getCurrentPage(), array('services' => &$checked));
+	
+							foreach($checked as $name){
+								if(ExtensionManager::instance()->uninstall($name) === false) return;
+							}
+							
+							break;
+					}
+	
+					redirect(Administration::instance()->getCurrentPageURL());
+				}
+			}
+			
+			catch (Exception $e) {
+				$extension = ExtensionManager::instance()->create($name);
+				$about = $extension->about();
+				
+				switch ($action) {
 					case 'enable':
-
-						## FIXME: Fix this delegate
-						###
-						# Delegate: Enable
-						# Description: Notifies of enabling Extension. Array of selected services is provided.
-						#              This can not be modified.
-						//Extension::notify('Enable', getCurrentPage(), array('services' => $checked));
-
-						foreach($checked as $name){
-							if(ExtensionManager::instance()->enable($name) === false) return;
-						}
+						$message = "%s could not be enabled. <a class='more'>Show more information.</a>";
 						break;
-
-
 					case 'disable':
-
-						## FIXME: Fix this delegate
-						###
-						# Delegate: Disable
-						# Description: Notifies of disabling Extension. Array of selected services is provided.
-						#              This can be modified.
-						//Extension::notify('Disable', getCurrentPage(), array('services' => &$checked));
-
-						foreach($checked as $name){
-							if(ExtensionManager::instance()->disable($name) === false) return;
-						}
+						$message = "%s could not be disabled. <a class='more'>Show more information.</a>";
 						break;
-
 					case 'uninstall':
-
-						## FIXME: Fix this delegate
-						###
-						# Delegate: Uninstall
-						# Description: Notifies of uninstalling Extension. Array of selected services is provided.
-						#              This can be modified.
-						//Extension::notify('Uninstall', getCurrentPage(), array('services' => &$checked));
-
-						foreach($checked as $name){
-							if(ExtensionManager::instance()->uninstall($name) === false) return;
-						}
-
+						$message = "%s could not be uninstalled. <a class='more'>Show more information.</a>";
 						break;
 				}
-
-				redirect(Administration::instance()->getCurrentPageURL());
+				
+				$this->alerts()->append(
+					__(
+						$message, array(
+							isset($about)
+								? $about['name']
+								: $name
+						)
+					),
+					AlertStack::ERROR, $e
+				);
+				
+				return false;
 			}
 		}
 

@@ -460,37 +460,68 @@
 			}
 
 			$root = $Document->documentElement;
+			$datasources = $events = array();
 
-			$Events = $Document->createElement('events');
-			$root->appendChild($Events);
+			$events_wrapper = $Document->createElement('events');
+			$root->appendChild($events_wrapper);
 			
-			if(isset($this->about()->{'events'}) && is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})){
-				$events = array();
+			if (is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})) {
+				$events = $this->about()->{'events'};
+			}
+			
+			if (is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})) {
+				$datasources = $this->about()->{'data-sources'};
+			}
+			
+			####
+			# Delegate: FrontendEventsAppend
+			# Description: Append additional Events.
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendEventsAppend', '/frontend/', array(
+					'events'	=> &$events
+				)
+			);
+			
+			if (!empty($datasources)) {
+				$events_ordered = array();
+				
 				foreach($this->about()->{'events'} as $handle){
-					$events[] = Event::loadFromHandle($handle);
+					$events_ordered[] = Event::loadFromHandle($handle);
 				}
 				
-				uasort($events, array($this, '__cbSortEventsByPriority'));
+				uasort($events_ordered, array($this, '__cbSortEventsByPriority'));
 				
-				foreach($events as $e){
+				foreach($events_ordered as $e){
 					$fragment = $e->trigger($ParameterOutput);
 					
 					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
 						$node = $Document->importNode($fragment->documentElement, true);
-						$Events->appendChild($node);
+						$events_wrapper->appendChild($node);
 					}
 				}
 			}
+			
+			####
+			# Delegate: FrontendDataSourceAppend
+			# Description: Append additional DataSources.
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendDataSourcesAppend', '/frontend/', array(
+					'datasources'	=> &$datasources
+				)
+			);
 
 			//	TODO: Find dependancies and order
-
-			if(is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})){
-				foreach($this->about()->{'data-sources'} as $handle){
+			
+			if (!empty($datasources)) {
+				foreach($datasources as $handle){
 					$ds = Datasource::loadFromHandle($handle);
 
-					try{
+					try {
 						$fragment = $ds->render($ParameterOutput);
 					}
+					
 					catch (FrontendPageNotFoundException $e) {
 						FrontendPageNotFoundExceptionHandler::render($e);
 					}
@@ -531,7 +562,21 @@
 					$element->appendChild($Document->createElement($key, (string)$parameter));
 				}
 			}
+			
+			$template = $this->template;
 
+			####
+			# Delegate: FrontendTemplatePreRender
+			# Description: Access to the template source, before it is rendered.
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendTemplatePreRender', '/frontend/', array(
+					'template'	=> &$template
+				)
+			);
+			
+			$this->template = $template;
+			
 			// When the XSLT executes, it uses the CWD as set here
 			$cwd = getcwd();
 			chdir(WORKSPACE);

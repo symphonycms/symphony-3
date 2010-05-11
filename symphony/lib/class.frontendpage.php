@@ -472,13 +472,29 @@
 		}
 		
 		public function processDatasources($datasources, &$wrapper, array $params = array()) {
-			if (trim($datasources) == '') return;
+			//if (trim($datasources) == '') return;
 			
 			$datasources = preg_split('/,\s*/i', $datasources, -1, PREG_SPLIT_NO_EMPTY);
 			$datasources = array_map('trim', $datasources);
 			
-			if (!is_array($datasources) || empty($datasources)) return;
+			####
+			# Delegate: FrontendProcessDataSources
+			# Description: Manipulate the data source array and data source element wrapper
+			# Global: Yes
+			ExtensionManager::instance()->notifyMembers(
+				'FrontendProcessDataSources', 
+				'/frontend/', 
+				array(
+					'env' => $this->_env, 
+					'datasources' => &$datasources, 
+					'wrapper' => &$wrapper, 
+					'page_data' => $this->_pageData
+				)
+			);
 			
+			if (!is_array($datasources) || empty($datasources)) return;
+			#####
+
 			$this->_env['pool'] = $params;
 			$pool = $params;
 			$dependencies = array();

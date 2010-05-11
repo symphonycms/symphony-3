@@ -154,7 +154,6 @@
 		
 		public static $enabled;
 		protected static $_Log;
-		protected static $_enabledErrorTypes;
 		
 		public static $errorTypeStrings = array (
 			
@@ -179,13 +178,12 @@
 
 		public static function initialise(Log $Log=NULL){
 			self::$enabled = true;
-			self::$_enabledErrorTypes = NULL;
 			
 			if(!is_null($Log)){
 				self::$_Log = $Log;
 			}
 			
-			set_error_handler(array(__CLASS__, 'handler'));
+			set_error_handler(array(__CLASS__, 'handler'), ini_get('error_reporting'));
 		}
 		
 		public static function isEnabled(){
@@ -193,7 +191,6 @@
 		}
 
 		public static function handler($code, $message, $file=NULL, $line=NULL){
-
 			if(!in_array($code, array(E_NOTICE, E_STRICT)) && self::$_Log instanceof Log){
 				self::$_Log->pushToLog(
 					sprintf(
@@ -202,27 +199,6 @@
 				);
 			}
 			
-			if(self::isEnabled() !== true || self::isErrorsEnabled($code) !== true) return;
 			GenericExceptionHandler::handler(new ErrorException($message, 0, $code, $file, $line));
-		}
-		
-		// Thanks to 'DarkGool' for inspiring this function
-		// http://www.php.net/manual/en/function.error-reporting.php#55985
-		public static function isErrorsEnabled($type){
-			
-			if(is_null(self::$_enabledErrorTypes)){
-				self::$_enabledErrorTypes = array();
-				$bit = ini_get('error_reporting');
-
-				while ($bit > 0) { 
-				    for($i = 0, $n = 0; $i <= $bit; $i = 1 * pow(2, $n), $n++) { 
-				        $end = $i; 
-				    } 
-				    self::$_enabledErrorTypes[] = $end; 
-				    $bit = $bit - $end; 
-				}
-			}
-			
-			return in_array($type, self::$_enabledErrorTypes);
 		}
 	}

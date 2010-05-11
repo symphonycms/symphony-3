@@ -24,6 +24,9 @@
 			
 			$this->formatters = array();
 
+			$this->formatters = glob("{" . TEXTFORMATTERS . "/*.php," . EXTENSIONS . "/*/text-formatters/*.php}", GLOB_BRACE);
+			
+			/*
 			foreach(new DirectoryIterator(EXTENSIONS) as $dir){
 				if(!$dir->isDir() || $dir->isDot() || !is_dir($dir->getPathname() . '/text-formatters')) continue;
 				
@@ -31,7 +34,7 @@
 					$this->formatters[] = $file->getPathname();
 				}
 			}
-			
+			*/
 		}
 		
 		public function length(){
