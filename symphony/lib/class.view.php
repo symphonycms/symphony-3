@@ -507,7 +507,7 @@
 			# Description: Append additional DataSources.
 			# Global: Yes
 			ExtensionManager::instance()->notifyMembers(
-				'FrontendDataSourceAppend', '/frontend/', array(
+				'FrontendDataSourcesAppend', '/frontend/', array(
 					'datasources'	=> &$datasources
 				)
 			);
@@ -562,6 +562,8 @@
 					$element->appendChild($Document->createElement($key, (string)$parameter));
 				}
 			}
+			
+			$template = $this->template;
 
 			####
 			# Delegate: FrontendTemplatePreRender
@@ -569,9 +571,11 @@
 			# Global: Yes
 			ExtensionManager::instance()->notifyMembers(
 				'FrontendTemplatePreRender', '/frontend/', array(
-					'template'	=> &$this->template
+					'template'	=> &$template
 				)
 			);
+			
+			$this->template = $template;
 			
 			// When the XSLT executes, it uses the CWD as set here
 			$cwd = getcwd();
