@@ -2,11 +2,11 @@
 
 	class Extension_Field_TextBox implements iExtension {
 		public function about() {
-			return array(
+			return (object)array(
 				'name'			=> 'Text Box',
 				'version'		=> '2.0.17',
 				'release-date'	=> '2010-04-21',
-				'author'		=> array(
+				'author'		=> (object)array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://rowanlewis.com/',
 					'email'			=> 'me@rowanlewis.com'

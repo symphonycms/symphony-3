@@ -4,14 +4,14 @@
 		
 	class Extension_DS_StaticXML implements iExtension {
 		public function about() {
-			return array(
+			return (object)array(
 				'name'			=> 'Static XML',
 				'version'		=> '1.0.0',
 				'release-date'	=> '2010-02-26',
 				'type'			=> array(
 					'Data Source', 'Core'
 				),
-				'author'		=> array(
+				'author'		=> (object)array(
 					'name'			=> 'Symphony Team',
 					'website'		=> 'http://symphony-cms.com/',
 					'email'			=> 'team@symphony-cms.com'

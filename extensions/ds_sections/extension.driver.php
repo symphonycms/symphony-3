@@ -5,14 +5,14 @@
 
 	Class Extension_DS_Sections implements iExtension {
 		public function about() {
-			return array(
+			return (object)array(
 				'name'			=> 'Sections',
 				'version'		=> '1.0.0',
 				'release-date'	=> '2010-03-02',
 				'type'			=> array(
 					'Data Source', 'Event', 'Core'
 				),
-				'author'		=> array(
+				'author'		=> (object)array(
 					'name'			=> 'Symphony Team',
 					'website'		=> 'http://symphony-cms.com/',
 					'email'			=> 'team@symphony-cms.com'

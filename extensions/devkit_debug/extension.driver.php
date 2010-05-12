@@ -9,11 +9,11 @@
 		public static $class = null;
 		
 		public function about() {
-			return array(
+			return (object)array(
 				'name'			=> 'Debug DevKit',
 				'version'		=> '2.0',
 				'release-date'	=> '2010-04-28',
-				'author'		=> array(
+				'author'		=> (object)array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://rowanlewis.com/',
 					'email'			=> 'me@rowanlewis.com'

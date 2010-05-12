@@ -4,14 +4,14 @@
 
 	Class Extension_DS_Users implements iExtension {
 		public function about() {
-			return array(
+			return (object)array(
 				'name'			=> 'Users',
 				'version'		=> '1.0.0',
 				'release-date'	=> '2010-02-26',
 				'type'			=> array(
 					'Data Source', 'Core'
 				),
-				'author'		=> array(
+				'author'		=> (object)array(
 					'name'			=> 'Symphony Team',
 					'website'		=> 'http://symphony-cms.com/',
 					'email'			=> 'team@symphony-cms.com'

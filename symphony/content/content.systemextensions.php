@@ -47,7 +47,7 @@
 			
 		## Process extensions and build lists
 		
-			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
+			foreach(new ExtensionIterator as $extension){
 				
 				$pathname = Extension::getPathFromClass(get_class($extension));
 				$handle = Extension::getHandleFromPath($pathname);
@@ -260,9 +260,6 @@
 		}
 		
 		function buildTable(array $extensions=NULL, $prefixes=false){
-			
-			## Sort by extensions name:
-			//uasort($extensions, array('ExtensionManager', 'sortByName'));
 
 			$aTableHead = array(
 				array(__('Name'), 'col'),
