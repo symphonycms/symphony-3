@@ -479,21 +479,6 @@
 			return self::STATUS_OK;
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-			$status = self::STATUS_OK;
-			if(!is_array($data)) return array('relation_id' => $data);
-
-			if(empty($data)) return NULL;
-
-			$result = array();
-
-			foreach($data as $a => $value) {
-			  $result['relation_id'][] = $data[$a];
-			}
-
-			return $result;
-		}
-
 		public function processData($data, Entry $entry=NULL){
 
 			//if(isset($entry->data()->{$this->{'element-name'}})){
@@ -503,8 +488,12 @@
 			//else {
 				$result = NULL;
 			//}
-
-			if(!is_null($data)){
+			
+			if ($data instanceof StdClass) {
+				$result = array($data);
+			}
+			
+			else if (!is_null($data)){
 				if(!is_array($data)) $data = array($data);
 				$result = array();
 				foreach($data as $id){
@@ -513,7 +502,7 @@
 					);
 				}
 			}
-
+			
 			return $result;
 		}
 
@@ -561,11 +550,6 @@
 			$this->setPropertiesFromPostData($data);
 		}
 
-
-	/*-------------------------------------------------------------------------
-		Output:
-	-------------------------------------------------------------------------*/
-
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			
 			$table = sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'});
@@ -593,17 +577,20 @@
 			return self::STATUS_OK;
 		}
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false){
+	/*-------------------------------------------------------------------------
+		Output:
+	-------------------------------------------------------------------------*/
 
-			if(!is_array($data) || empty($data)) return;
-
+		public function appendFormattedElement(&$wrapper, $data, $mode = null){
+			//if(!($data instanceof StdClass) || empty($data)) return;
+			
+			$items = $this->processData($data);
 			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
-
-			foreach($data as $d){
+			
+			foreach($items as $data){
+				$entry = Entry::loadFromID($data->relation_id);
 				
-				$entry = Entry::loadFromID($d->relation_id);
-
-				foreach($this->{'related-fields'} as $key => $value){
+				foreach ($this->{'related-fields'} as $key => $value) {
 					$item = $wrapper->ownerDocument->createElement('item');
 					list($section_handle, $field_handle) = $value;
 					
@@ -611,14 +598,12 @@
 					
 					$section = Section::loadFromHandle($entry->section);
 					$related_field = $section->fetchFieldByHandle($field_handle);
-					//var_dump($entry->data()->$field_handle); die();
 					$related_field->appendFormattedElement($item, $entry->data()->$field_handle);
 					
-					$item->setAttribute('id', $d->relation_id);
+					$item->setAttribute('id', $data->relation_id);
 					$item->setAttribute('section-handle', $section_handle);
 					$item->setAttribute('section-name', $section->name);
 					
-//					var_dump($related_field); die();
 					$list->appendChild($item);
 				}
 				/*
@@ -853,22 +838,6 @@
 		public function buildSortingQuery(&$joins, &$order){
 			$handle = $this->buildSortingJoin($joins);
 			$order = "{$handle}.relation_id %1\$s";
-		}
-
-	/*-------------------------------------------------------------------------
-		Junk:
-	-------------------------------------------------------------------------*/
-
-		public function set($field, $value){
-			if($field == 'related-field-id' && !is_array($value)){
-				$value = explode(',', $value);
-			}
-			$this->_fields[$field] = $value;
-		}
-
-		public function setArray($array){
-			if(empty($array) || !is_array($array)) return;
-			foreach($array as $field => $value) $this->{$field} = $value;
 		}
 	}
 	
