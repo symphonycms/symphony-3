@@ -183,11 +183,11 @@
 				self::$_Log = $Log;
 			}
 			
-			set_error_handler(array(__CLASS__, 'handler'), ini_get('error_reporting'));
+			set_error_handler(array(__CLASS__, 'handler'), error_reporting());
 		}
 		
 		public static function isEnabled(){
-			return (bool)ini_get('error_reporting') AND self::$enabled;
+			return (bool)error_reporting() AND self::$enabled;
 		}
 
 		public static function handler($code, $message, $file=NULL, $line=NULL){
@@ -199,6 +199,6 @@
 				);
 			}
 			
-			GenericExceptionHandler::handler(new ErrorException($message, 0, $code, $file, $line));
+			throw new ErrorException($message, 0, $code, $file, $line);
 		}
 	}

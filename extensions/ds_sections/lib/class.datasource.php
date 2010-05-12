@@ -874,7 +874,9 @@
 							}
 
 							foreach($included_elements->fields as $field){
-								$section->fetchFieldByHandle($field['element-name'])->appendFormattedElement($entry, $e->data()->{$field['element-name']}, false, $field['mode']);
+								$section->fetchFieldByHandle($field['element-name'])->appendFormattedElement(
+									$entry, $e->data()->{$field['element-name']}, $field['mode'], $e
+								);
 							}
 						}
 
@@ -933,7 +935,7 @@
 			}
 			catch(DatabaseException $e){
 				$root->appendChild($result->createElement(
-					'error', General::sanitize($e->getMessage())
+					'error', $e->getMessage()
 				));
 			}
 

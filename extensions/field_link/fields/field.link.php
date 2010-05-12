@@ -479,21 +479,6 @@
 			return self::STATUS_OK;
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL){
-			$status = self::STATUS_OK;
-			if(!is_array($data)) return array('relation_id' => $data);
-
-			if(empty($data)) return NULL;
-
-			$result = array();
-
-			foreach($data as $a => $value) {
-			  $result['relation_id'][] = $data[$a];
-			}
-
-			return $result;
-		}
-
 		public function processData($data, Entry $entry=NULL){
 
 			//if(isset($entry->data()->{$this->{'element-name'}})){
@@ -503,17 +488,25 @@
 			//else {
 				$result = NULL;
 			//}
-
-			if(!is_null($data)){
-				if(!is_array($data)) $data = array($data);
+			
+			if (!is_null($data)){
 				$result = array();
-				foreach($data as $id){
-					$result[] = (object)array(
-						'relation_id' => $id
-					);
+				
+				if(!is_array($data)) $data = array($data);
+				
+				foreach ($data as $id) {
+					if ($id instanceof StdClass) {
+						$result[] = $id;
+					}
+					
+					else {
+						$result[] = (object)array(
+							'relation_id' => $id
+						);
+					}
 				}
 			}
-
+			
 			return $result;
 		}
 
@@ -561,11 +554,6 @@
 			$this->setPropertiesFromPostData($data);
 		}
 
-
-	/*-------------------------------------------------------------------------
-		Output:
-	-------------------------------------------------------------------------*/
-
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			
 			$table = sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'});
@@ -593,17 +581,20 @@
 			return self::STATUS_OK;
 		}
 
-		public function appendFormattedElement(&$wrapper, $data, $encode=false){
+	/*-------------------------------------------------------------------------
+		Output:
+	-------------------------------------------------------------------------*/
 
-			if(!is_array($data) || empty($data)) return;
-
+		public function appendFormattedElement(&$wrapper, $data, $mode = null){
+			//if(!($data instanceof StdClass) || empty($data)) return;
+			
+			$items = $this->processData($data);
 			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
-
-			foreach($data as $d){
+			
+			foreach($items as $data){
+				$entry = Entry::loadFromID($data->relation_id);
 				
-				$entry = Entry::loadFromID($d->relation_id);
-
-				foreach($this->{'related-fields'} as $key => $value){
+				foreach ($this->{'related-fields'} as $key => $value) {
 					$item = $wrapper->ownerDocument->createElement('item');
 					list($section_handle, $field_handle) = $value;
 					
@@ -611,14 +602,12 @@
 					
 					$section = Section::loadFromHandle($entry->section);
 					$related_field = $section->fetchFieldByHandle($field_handle);
-					//var_dump($entry->data()->$field_handle); die();
 					$related_field->appendFormattedElement($item, $entry->data()->$field_handle);
 					
-					$item->setAttribute('id', $d->relation_id);
+					$item->setAttribute('id', $data->relation_id);
 					$item->setAttribute('section-handle', $section_handle);
 					$item->setAttribute('section-name', $section->name);
 					
-//					var_dump($related_field); die();
 					$list->appendChild($item);
 				}
 				/*
@@ -711,8 +700,67 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 		
-		public function buildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL){
-
+		public function getFilterTypes($data) {
+			$standard = parent::getFilterTypes($data);
+			$types = array();
+			
+			foreach ($standard as $current) if ($current[0] == 'is' or $current[0] == 'is-not') {
+				$types[] = $current;
+			}
+			
+			return $types;
+		}
+		
+		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output) {
+			$filter = $this->processFilter($filter);
+			$filter_join = DataSource::FILTER_OR;
+			$db = Symphony::Database();
+			
+			$values = DataSource::prepareFilterValue($filter->value, $parameter_output, $filter_join);
+			
+			if (!is_array($values)) $values = array();
+			
+			// Exact matches:
+			if ($filter->type == 'is' or $filter->type == 'is-not') {
+				$statements = array();
+				
+				if ($filter_join == DataSource::FILTER_OR) {
+					$handle = $this->buildFilterJoin($joins);
+				}
+				
+				foreach ($values as $index => $value) {
+					if ($filter_join != DataSource::FILTER_OR) {
+						$handle = $this->buildFilterJoin($joins);
+					}
+					
+					$statements[] = $db->prepareQuery(
+						"'%s' IN ({$handle}.relation_id)", array($value)
+					);
+				}
+				
+				if (empty($statements)) return true;
+				
+				if ($filter_join == DataSource::FILTER_OR) {
+					$statement = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
+				}
+				
+				else {
+					$statement = "(\n\t" . implode("\n\tAND ", $statements) . "\n)";
+				}
+				
+				if ($filter->type == 'is-not') {
+					$statement = 'NOT ' . $statement;
+				}
+				
+				$where[] = $statement;
+			}
+		}
+		
+		public function xbuildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL){
+			var_dump($this->getFilterTypes($filter));
+			var_dump($filter);
+			
+			exit;
 			self::$key++;
 
 			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput, $filterOperationType);
@@ -853,22 +901,6 @@
 		public function buildSortingQuery(&$joins, &$order){
 			$handle = $this->buildSortingJoin($joins);
 			$order = "{$handle}.relation_id %1\$s";
-		}
-
-	/*-------------------------------------------------------------------------
-		Junk:
-	-------------------------------------------------------------------------*/
-
-		public function set($field, $value){
-			if($field == 'related-field-id' && !is_array($value)){
-				$value = explode(',', $value);
-			}
-			$this->_fields[$field] = $value;
-		}
-
-		public function setArray($array){
-			if(empty($array) || !is_array($array)) return;
-			foreach($array as $field => $value) $this->{$field} = $value;
 		}
 	}
 	

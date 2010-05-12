@@ -483,10 +483,10 @@
 				)
 			);
 			
-			if (!empty($datasources)) {
+			if (!empty($events)) {
 				$events_ordered = array();
 				
-				foreach($this->about()->{'events'} as $handle){
+				foreach($events as $handle){
 					$events_ordered[] = Event::loadFromHandle($handle);
 				}
 				
