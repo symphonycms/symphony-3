@@ -935,7 +935,7 @@
 			}
 			catch(DatabaseException $e){
 				$root->appendChild($result->createElement(
-					'error', General::sanitize($e->getMessage())
+					'error', $e->getMessage()
 				));
 			}
 
