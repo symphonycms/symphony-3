@@ -489,17 +489,21 @@
 				$result = NULL;
 			//}
 			
-			if ($data instanceof StdClass) {
-				$result = array($data);
-			}
-			
-			else if (!is_null($data)){
-				if(!is_array($data)) $data = array($data);
+			if (!is_null($data)){
 				$result = array();
-				foreach($data as $id){
-					$result[] = (object)array(
-						'relation_id' => $id
-					);
+				
+				if(!is_array($data)) $data = array($data);
+				
+				foreach ($data as $id) {
+					if ($id instanceof StdClass) {
+						$result[] = $id;
+					}
+					
+					else {
+						$result[] = (object)array(
+							'relation_id' => $id
+						);
+					}
 				}
 			}
 			
