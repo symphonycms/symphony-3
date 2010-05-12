@@ -177,7 +177,7 @@
 				$status = $node->attributes()->status;
 			}
 
-			return $status;
+			return (string)$status;
 		}
 	}
 	
