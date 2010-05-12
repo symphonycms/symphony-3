@@ -1,7 +1,8 @@
 <?php
-/*
+
 	Interface iExtension{
-		
+	}
+/*		
 		public function about();
 
 		public function enable();
