@@ -1,6 +1,6 @@
 <?php
 	
-	class Extension_Field_Date extends Extension {
+	class Extension_Field_Date implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Date',
@@ -17,3 +17,5 @@
 			);
 		}
 	}
+	
+	return 'Extension_Field_Date';

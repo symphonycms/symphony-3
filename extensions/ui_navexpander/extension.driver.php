@@ -1,6 +1,6 @@
 <?php
 
-	class Extension_UI_NavExpander extends Extension {
+	class Extension_UI_NavExpander implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Nav Expander',
@@ -56,3 +56,5 @@
 		}
 		
 	}
+	
+	return 'Extension_UI_NavExpander';

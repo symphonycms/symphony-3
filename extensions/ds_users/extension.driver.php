@@ -2,7 +2,7 @@
 
 	require_once 'lib/class.datasource.php';
 
-	Class Extension_DS_Users extends Extension {
+	Class Extension_DS_Users implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Users',
@@ -37,3 +37,5 @@
 			$datasource->view($wrapper, $errors);
 		}
 	}
+	
+	return 'Extension_DS_Users';

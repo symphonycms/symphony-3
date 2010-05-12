@@ -2,7 +2,7 @@
 	
 	require_once 'lib/class.datasource.php';
 
-	class Extension_DS_DynamicXML extends Extension {
+	class Extension_DS_DynamicXML implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Dynamic XML',
@@ -37,3 +37,5 @@
 			$datasource->view($wrapper, $errors);
 		}
 	}
+	
+	return 'Extension_DS_DynamicXML';

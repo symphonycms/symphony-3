@@ -1,6 +1,6 @@
 <?php
 
-	class Extension_Field_Upload extends Extension {
+	class Extension_Field_Upload implements iExtension {
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
@@ -39,3 +39,5 @@
 			}
 		}
 	}
+	
+	return 'Extension_Field_Upload';

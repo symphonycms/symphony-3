@@ -1,6 +1,6 @@
 <?php
 	
-	class Extension_DevKit_Debug extends Extension {
+	class Extension_DevKit_Debug implements iExtension {
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
@@ -76,4 +76,4 @@
 		}
 	}
 	
-?>
+	return 'Extension_DevKit_Debug';

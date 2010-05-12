@@ -1,6 +1,6 @@
 <?php
 	
-	class Extension_Field_User extends Extension {
+	class Extension_Field_User implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'User',
@@ -17,3 +17,5 @@
 			);
 		}
 	}
+	
+	return 'Extension_Field_User';

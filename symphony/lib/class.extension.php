@@ -157,7 +157,7 @@
 				
 				self::$loaded_extensions[$pathname] = require_once(realpath($pathname) . '/extension.driver.php');
 			}
-			
+
 			return new self::$loaded_extensions[$pathname];
 		}
 		

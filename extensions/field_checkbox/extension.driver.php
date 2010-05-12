@@ -1,6 +1,6 @@
 <?php
 	
-	class Extension_Field_Checkbox extends Extension {
+	Class Extension_Field_Checkbox implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Checkbox',
@@ -17,3 +17,5 @@
 			);
 		}
 	}
+	
+	return 'Extension_Field_Checkbox';

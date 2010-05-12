@@ -1,6 +1,6 @@
 <?php
 
-	class Extension_Field_TextBox extends Extension {
+	class Extension_Field_TextBox implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Text Box',
@@ -54,4 +54,4 @@
 		}
 	}
 
-?>
+	return 'Extension_Field_TextBox';

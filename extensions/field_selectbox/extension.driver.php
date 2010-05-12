@@ -1,6 +1,6 @@
 <?php
 	
-	class Extension_Field_Selectbox extends Extension {
+	class Extension_Field_Selectbox implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Selectbox',
@@ -17,3 +17,5 @@
 			);
 		}
 	}
+	
+	return 'Extension_Field_Selectbox';

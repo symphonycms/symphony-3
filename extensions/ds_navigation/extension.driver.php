@@ -2,7 +2,7 @@
 
 	require_once 'lib/class.datasource.php';
 
-	class Extension_DS_Navigation extends Extension {
+	class Extension_DS_Navigation implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Navigation',
@@ -57,3 +57,5 @@
 			$datasource->view($wrapper, $errors);
 		}
 	}
+	
+	return 'Extension_DS_Navigation';

@@ -1,6 +1,6 @@
 <?php
 
-	class Extension_Field_Taglist extends Extension {
+	class Extension_Field_Taglist implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Taglist',
@@ -17,3 +17,5 @@
 			);
 		}
 	}
+	
+	return 'Extension_Field_Taglist';

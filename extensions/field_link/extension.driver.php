@@ -1,6 +1,6 @@
 <?php
 
-	Class Extension_Field_Link extends Extension{
+	Class Extension_Field_Link implements iExtension{
 
 		public function about(){
 			return array('name' => 'Link',
@@ -15,3 +15,5 @@
 			);
 		}
 	}
+	
+	return 'Extension_Field_Link';

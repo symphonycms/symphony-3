@@ -2,7 +2,7 @@
 
 	require_once 'lib/class.datasource.php';
 		
-	class Extension_DS_StaticXML extends Extension {
+	class Extension_DS_StaticXML implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Static XML',
@@ -38,3 +38,4 @@
 		}
 	}
 	
+	return 'Extension_DS_StaticXML';

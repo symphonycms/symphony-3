@@ -3,7 +3,7 @@
 	require_once 'lib/class.datasource.php';
 	require_once 'lib/class.event.php';
 
-	Class Extension_DS_Sections extends Extension {
+	Class Extension_DS_Sections implements iExtension {
 		public function about() {
 			return array(
 				'name'			=> 'Sections',
@@ -53,3 +53,4 @@
 		}
 	}
 
+	return 'Extension_DS_Sections';
