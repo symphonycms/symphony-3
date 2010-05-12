@@ -16,35 +16,39 @@
 	}
 
 	Class DataSourceIterator implements Iterator{
-
+		private static $datasources;
 		private $position;
-		private $datasources;
 
 		public function __construct(){
-
-			$this->datasources = array();
 			$this->position = 0;
-
-			$this->datasources = glob("{" . DATASOURCES . "/*.php," . EXTENSIONS . "/*/data-sources/*.php}", GLOB_BRACE);
 			
-			/*
-			foreach(new DataSourceFilterIterator(DATASOURCES) as $file){
-				$this->datasources[] = $file->getPathname();
+			if (!empty(self::$datasources)) return;
+			
+			self::clearCachedFiles();
+			
+			foreach (new DataSourceFilterIterator(DATASOURCES) as $file) {
+				self::$datasources[] = $file->getPathname();
 			}
-
-			foreach(new DirectoryIterator(EXTENSIONS) as $dir){
-				if(!$dir->isDir() || $dir->isDot() || !is_dir($dir->getPathname() . '/data-sources')) continue;
-
-				foreach(new DataSourceFilterIterator($dir->getPathname() . '/data-sources') as $file){
-					$this->datasources[] = $file->getPathname();
+			
+			foreach (new DirectoryIterator(EXTENSIONS) as $path) {
+				if(!$path->isDir() || $path->isDot() || !is_dir($path->getPathname() . '/data-sources')) continue;
+				
+				$status = ExtensionManager::instance()->fetchStatus($path->getBasename());
+				
+				if ($status != Extension::ENABLED) continue;
+				
+				foreach(new DataSourceFilterIterator($path->getPathname() . '/data-sources') as $file){
+					self::$datasources[] = $file->getPathname();
 				}
 			}
-			*/
-
+		}
+		
+		public static function clearCachedFiles() {
+			self::$datasources = array();
 		}
 
 		public function length(){
-			return count($this->datasources);
+			return count(self::$datasources);
 		}
 
 		public function rewind(){
@@ -52,7 +56,7 @@
 		}
 
 		public function current(){
-			return $this->datasources[$this->position]; //Datasource::loadFromPath($this->datasources[$this->position]);
+			return self::$datasources[$this->position]; //Datasource::loadFromPath($this->datasources[$this->position]);
 		}
 
 		public function key(){
@@ -64,7 +68,7 @@
 		}
 
 		public function valid(){
-			return isset($this->datasources[$this->position]);
+			return isset(self::$datasources[$this->position]);
 		}
 	}
 

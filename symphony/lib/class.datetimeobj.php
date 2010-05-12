@@ -26,7 +26,33 @@
 			if($current_timezone != $timezone) self::setDefaultTimezone($current_timezone);
 			
 			return $ret;
+		}
+		
+		/**
+		* Convert timestamps from GMT to the current timezone.
+		* 
+		* @param	$timestamp	string		A textual representation of a date.
+		*/
+		public function fromGMT($timestamp) {
+			$timestamp = date('Y-m-d H:i:s', strtotime($timestamp));
 			
+			return strtotime($timestamp . ' GMT');
+		}
+		
+		/**
+		* Convert timestamps from the current timezone to GMT.
+		* 
+		* @param	$timestamp	string		A textual representation of a date.
+		*/
+		public function toGMT($timestamp) {
+			$timezone = date_default_timezone_get();
+			$timestamp = strtotime($timestamp);
+			
+			self::setDefaultTimezone('GMT');
+			$timestamp = date('Y-m-d H:i:s', $timestamp);
+			self::setDefaultTimezone($timezone);
+			
+			return strtotime($timestamp . ' ' . $timezone);
 		}
 	
 	}

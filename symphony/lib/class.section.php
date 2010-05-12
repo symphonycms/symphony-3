@@ -5,8 +5,8 @@
 	Class SectionException extends Exception {}
 
 	Class SectionFilterIterator extends FilterIterator{
-		public function __construct(){
-			parent::__construct(new DirectoryIterator(SECTIONS));
+		public function __construct($path) {
+			parent::__construct(new DirectoryIterator($path));
 		}
 
 		public function accept(){
@@ -16,56 +16,62 @@
 			return false;
 		}
 	}
-
+	
 	Class SectionIterator implements Iterator{
-
-		private $_iterator;
-		private $_length;
-		private $_position;
+		private static $sections;
+		private $position;
 
 		public function __construct(){
-			$this->_iterator = new SectionFilterIterator;
-			$this->_length = $this->_position = 0;
-			foreach($this->_iterator as $f){
-				$this->_length++;
+			$this->position = 0;
+			
+			if (!empty(self::$sections)) return;
+			
+			self::clearCachedFiles();
+			
+			foreach (new SectionFilterIterator(SECTIONS) as $file) {
+				self::$sections[] = $file->getPathname();
 			}
-			$this->_iterator->getInnerIterator()->rewind();
+			
+			foreach (new DirectoryIterator(EXTENSIONS) as $path) {
+				if(!$path->isDir() || $path->isDot() || !is_dir($path->getPathname() . '/sections')) continue;
+				
+				$status = ExtensionManager::instance()->fetchStatus($path->getBasename());
+				
+				if ($status != Extension::ENABLED) continue;
+				
+				foreach(new SectionFilterIterator($path->getPathname() . '/sections') as $file){
+					self::$sections[] = $file->getPathname();
+				}
+			}
 		}
-
-		public function current(){
-			return Section::load($this->_iterator->current()->getPathname());
-		}
-
-		public function innerIterator(){
-			return $this->_iterator;
-		}
-
-		public function next(){
-			$this->_position++;
-			$this->_iterator->next();
-		}
-
-		public function key(){
-			return $this->_iterator->key();
-		}
-
-		public function valid(){
-			return $this->_iterator->valid();
-		}
-
-		public function rewind(){
-			$this->_position = 0;
-			$this->_iterator->rewind();
-		}
-
-		public function position(){
-			return $this->_position;
+		
+		public static function clearCachedFiles() {
+			self::$sections = array();
 		}
 
 		public function length(){
-			return $this->_length;
+			return count(self::$sections);
 		}
 
+		public function rewind(){
+			$this->position = 0;
+		}
+
+		public function current(){
+			return Section::load(self::$sections[$this->position]);
+		}
+
+		public function key(){
+			return $this->position;
+		}
+
+		public function next(){
+			++$this->position;
+		}
+
+		public function valid(){
+			return isset(self::$sections[$this->position]);
+		}
 	}
 
 

@@ -16,33 +16,39 @@
 	}
 
 	Class EventIterator implements Iterator{
-
+		private static $events;
 		private $position;
-		private $events;
 
 		public function __construct(){
-
-			$this->events = array();
 			$this->position = 0;
-
-			$this->events = glob("{" . EVENTS . "/*.php," . EVENTS . "/*/events/*.php}", GLOB_BRACE);
-/*
-			foreach(new EventFilterIterator(EVENTS) as $file){
-				$this->events[] = $file->getPathname();
+			
+			if (!empty(self::$events)) return;
+			
+			self::clearCachedFiles();
+			
+			foreach (new EventFilterIterator(EVENTS) as $file) {
+				self::$events[] = $file->getPathname();
 			}
-
-			foreach(new DirectoryIterator(EXTENSIONS) as $dir){
-				if(!$dir->isDir() || $dir->isDot() || !is_dir($dir->getPathname() . '/events')) continue;
-
-				foreach(new EventFilterIterator($dir->getPathname() . '/events') as $file){
-					$this->events[] = $file->getPathname();
+			
+			foreach (new DirectoryIterator(EXTENSIONS) as $path) {
+				if(!$path->isDir() || $path->isDot() || !is_dir($path->getPathname() . '/events')) continue;
+				
+				$status = ExtensionManager::instance()->fetchStatus($path->getBasename());
+				
+				if ($status != Extension::ENABLED) continue;
+				
+				foreach(new EventFilterIterator($path->getPathname() . '/events') as $file){
+					self::$events[] = $file->getPathname();
 				}
 			}
-*/
+		}
+		
+		public static function clearCachedFiles() {
+			self::$events = array();
 		}
 
 		public function length(){
-			return count($this->events);
+			return count(self::$events);
 		}
 
 		public function rewind(){
@@ -50,7 +56,7 @@
 		}
 
 		public function current(){
-			return $this->events[$this->position]; //Datasource::loadFromPath($this->events[$this->position]);
+			return self::$events[$this->position]; //Datasource::loadFromPath($this->events[$this->position]);
 		}
 
 		public function key(){
@@ -62,7 +68,7 @@
 		}
 
 		public function valid(){
-			return isset($this->events[$this->position]);
+			return isset(self::$events[$this->position]);
 		}
 	}
 
