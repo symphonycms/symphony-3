@@ -481,7 +481,7 @@
 			# Delegate: FrontendProcessDataSources
 			# Description: Manipulate the data source array and data source element wrapper
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendProcessDataSources', 
 				'/frontend/', 
 				array(

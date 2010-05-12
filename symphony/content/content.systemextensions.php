@@ -14,7 +14,7 @@
 		);
 		
 		public function view(){
-			
+
 			$this->lists = (object)array(
 				'status' => array(
 					Extension::STATUS_ENABLED => array(),
@@ -259,7 +259,7 @@
 
 		}
 		
-		function buildTable(array $extensions=NULL, $prefixes=false){
+		private function buildTable(array $extensions=NULL, $prefixes=false){
 
 			$aTableHead = array(
 				array(__('Name'), 'col'),
@@ -361,59 +361,33 @@
 			return $table;
 		}
 
-		function action(){
+		public function action(){
 			$checked  = array_keys($_POST['items']);
 			
 			try {
 				if(isset($_POST['with-selected']) && is_array($checked) && !empty($checked)){
 					$action = $_POST['with-selected'];
 					
-					switch($action){
-						case 'enable':
-							## FIXME: Fix this delegate
+					if(method_exists('Extension', $action)){
+						foreach($checked as $handle){
 							###
-							# Delegate: Enable
-							# Description: Notifies of enabling Extension. Array of selected services is provided.
-							#              This can not be modified.
-							//ExtensionManager::instance()->notifyMembers('Enable', getCurrentPage(), array('services' => $checked));
-	
-							foreach($checked as $name){
-								if(ExtensionManager::instance()->enable($name) === false) return;
-							}
-							break;
-						case 'disable':
-							## FIXME: Fix this delegate
-							###
-							# Delegate: Disable
-							# Description: Notifies of disabling Extension. Array of selected services is provided.
+							# Delegate: {name of the action} (enable|disable|uninstall)
+							# Description: Notifies of enabling, disabling or uninstalling of an Extension. Array of selected extensions is provided.
 							#              This can be modified.
-							//ExtensionManager::instance()->notifyMembers('Disable', getCurrentPage(), array('services' => &$checked));
-	
-							foreach($checked as $name){
-								if(ExtensionManager::instance()->disable($name) === false) return;
-							}
-							break;
-						case 'uninstall':
-							## FIXME: Fix this delegate
-							###
-							# Delegate: Uninstall
-							# Description: Notifies of uninstalling Extension. Array of selected services is provided.
-							#              This can be modified.
-							//ExtensionManager::instance()->notifyMembers('Uninstall', getCurrentPage(), array('services' => &$checked));
-	
-							foreach($checked as $name){
-								if(ExtensionManager::instance()->uninstall($name) === false) return;
-							}
-							
-							break;
+							Extension::notify($action, getCurrentPage(), array('extensions' => &$checked));
+
+							call_user_func(array('Extension', $action), $handle);
+
+						}
 					}
-	
+					
 					redirect(Administration::instance()->getCurrentPageURL());
+					
 				}
 			}
 			
-			catch (Exception $e) {
-				$extension = ExtensionManager::instance()->create($name);
+			catch (ExtensionException $e) {
+				$extension = Extension::load($name);
 				$about = $extension->about();
 				
 				switch ($action) {

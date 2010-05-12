@@ -1,9 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extensions>
-  <extension handle="test" version="1.0.0" status="enabled">
+  <extension handle="administration_access_control" version="1.0" status="not-installed">
     <delegates>
+      <item page="/administration/" delegate="AdminPagePostGenerate" callback="cbModifyPages"/>
+      <item page="/system/users/new/" delegate="PreCreate" callback="cbUpdateUserRole"/>
+      <item page="/system/users/edit/" delegate="PreSave" callback="cbUpdateUserRole"/>
+    </delegates>
+  </extension>
+  <extension handle="cron" version="0.1" status="not-installed"/>
+  <extension handle="devkit_debug" version="2.0" status="not-installed">
+    <delegates>
+      <item page="/frontend/" delegate="FrontendPreInitialise" callback="frontendPreInitialise"/>
+      <item page="/frontend/" delegate="FrontendPreRender" callback="frontendPreRender"/>
+      <item page="/frontend/" delegate="DevKiAppendtMenuItem" callback="appendDevKitMenuItem"/>
+    </delegates>
+  </extension>
+  <extension handle="ds_dynamicxml" version="1.0.0" status="enabled"/>
+  <extension handle="ds_navigation" version="1.0.0" status="enabled">
+    <delegates>
+      <item page="/backend/" delegate="DataSourceFormPrepare" callback="prepare"/>
+      <item page="/backend/" delegate="DataSourceFormAction" callback="action"/>
+      <item page="/backend/" delegate="DataSourceFormView" callback="view"/>
+    </delegates>
+  </extension>
+  <extension handle="ds_sections" version="1.0.0" status="enabled"/>
+  <extension handle="ds_staticxml" version="1.0.0" status="enabled"/>
+  <extension handle="ds_users" version="1.0.0" status="enabled"/>
+  <extension handle="export_ensemble" version="1.11" status="not-installed">
+    <delegates>
+      <item page="/system/settings/" delegate="AddCustomToolFieldsets" callback="appendPreferences"/>
+    </delegates>
+  </extension>
+  <extension handle="field_checkbox" version="2.0.0" status="enabled"/>
+  <extension handle="field_date" version="2.0.0" status="enabled"/>
+  <extension handle="field_link" version="2.0.0" status="enabled"/>
+  <extension handle="field_selectbox" version="2.0.0" status="enabled"/>
+  <extension handle="field_taglist" version="2.0.0" status="enabled"/>
+  <extension handle="field_textbox" version="2.0.17" status="enabled"/>
+  <extension handle="field_upload" version="2.0.0" status="enabled"/>
+  <extension handle="field_user" version="2.0.0" status="enabled"/>
+  <extension handle="jit_image_manipulation" version="1.08" status="not-installed">
+    <delegates>
+      <item page="/system/settings/" delegate="AddCustomToolFieldsets" callback="appendPreferences"/>
+      <item page="/system/settings/" delegate="Save" callback="__SavePreferences"/>
+    </delegates>
+  </extension>
+  <extension handle="maintenance_mode" version="1.2" status="disabled">
+    <delegates>
+      <item page="/system/settings/extensions/" delegate="AddSettingsFieldsets" callback="cbAppendPreferences"/>
+      <item page="/system/settings/extensions/" delegate="CustomSaveActions" callback="cbSavePreferences"/>
+      <item page="/system/settings/" delegate="CustomActions" callback="__toggleMaintenanceMode"/>
       <item page="/frontend/" delegate="FrontendPrePageResolve" callback="__checkForMaintenanceMode"/>
       <item page="/frontend/" delegate="FrontendParamsResolve" callback="__addParam"/>
+      <item page="/backend/" delegate="AppendPageAlert" callback="__appendAlert"/>
+    </delegates>
+  </extension>
+  <extension handle="markdown" version="1.10" status="not-installed"/>
+  <extension handle="shell" version="0.3" status="not-installed"/>
+  <extension handle="test" version="1.0.0" status="not-installed"/>
+  <extension handle="ui_navexpander" version="1.0.0" status="not-installed">
+    <delegates>
+      <item page="/backend/" delegate="InitaliseAdminPageHead" callback="loadStylesheet"/>
+      <item page="/backend/" delegate="AppendElementBelowView" callback="prependButton"/>
     </delegates>
   </extension>
 </extensions>

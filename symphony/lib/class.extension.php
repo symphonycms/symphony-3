@@ -24,6 +24,7 @@
 	Abstract Class Extension{
 		
 		static private $loaded_extensions;
+		static private $extension_configuration;
 		static private $extensions;
 		
 		const NAVIGATION_CHILD = 'child';
@@ -34,11 +35,63 @@
 		const STATUS_NOT_INSTALLED = 'not-installed';
 		const STATUS_REQUIRES_UPDATE = 'requires-update';
 
-		public static function enable(){}
-		public static function disable(){}
-		public static function install(){}
-		public static function update(){}
-		public static function uninstall(){}
+		public static function enable($handle){
+			
+			$extension = self::load($handle);
+			$status = self::status($handle);
+			
+			$node = end(self::$extension_configuration->xpath("//extension[@handle='{$handle}'][1]"));
+			
+			if($status == self::STATUS_NOT_INSTALLED){
+				if(is_callable(array($extension, 'install'))){
+					$extension->install();
+				}
+				
+				// Create the XML configuration object
+				if(empty($node)){
+					$node = self::$extension_configuration->addChild('extension');
+					$node->addAttribute('handle', $handle);
+					$node->addAttribute('version', $extension->about()->version);
+				}
+			}
+			
+			elseif($status == self::STATUS_REQUIRES_UPDATE){
+				if(is_callable(array($extension, 'update'))){
+					$extension->update($this->extension_configuration->xpath((string)"//extension[@handle='{$handle}']/@version"));
+				}
+				
+				$node['version'] = $extension->about()->version;
+
+			}
+			
+			if(is_callable(array($extension, 'enable'))){
+				$extension->enable();
+			}
+			
+			$node['status'] = self::STATUS_ENABLED;
+			
+			self::rebuildConfiguration();
+		}
+		
+		public static function disable($handle){
+			$extension = self::load($handle);
+			$node = end(self::$extension_configuration->xpath("//extension[@handle='{$handle}'][1]"));
+			if(is_callable(array($extension, 'disable'))){
+				$extension->disable();
+			}
+			$node['status'] = self::STATUS_DISABLED;
+			self::rebuildConfiguration();
+		}
+		
+		public static function uninstall($handle){
+			$extension = self::load($handle);
+			$node = end(self::$extension_configuration->xpath("//extension[@handle='{$handle}'][1]"));
+			if(is_callable(array($extension, 'uninstall'))){
+				$extension->uninstall();
+			}
+			$node['status'] = self::STATUS_NOT_INSTALLED;
+			self::rebuildConfiguration();
+		}
 		
 		public static function notify($delegate, $page, $context=array()){
 
@@ -49,7 +102,7 @@
 				implode(' or ', array_map(create_function('$value', 'return "@page=\'{$value}\'";'), (array)$page))
 			);
 			
-			$nodes = self::$extensions->xpath("//extension[@status='enabled'][{$xpath}]");
+			$nodes = self::$extension_configuration->xpath("//extension[@status='enabled'][{$xpath}]");
 			if(empty($nodes)) return;
 			
 			foreach($nodes as $e){
@@ -63,19 +116,22 @@
 		}
 		
 		public static function init($config=NULL){
+			
+			self::$extensions = array();
+			
 			if(is_null($config)){
 				$config = MANIFEST . '/extensions.xml';
 			}
 			
 			if(!file_exists($config)){
-				self::$extensions = new SimpleXMLElement('<extensions></extensions>');
+				self::$extension_configuration = new SimpleXMLElement('<extensions></extensions>');
 			}
 			else{
 				$previous = libxml_use_internal_errors(true);
-				self::$extensions = simplexml_load_file($config);
+				self::$extension_configuration = simplexml_load_file($config);
 				libxml_use_internal_errors($previous);
 			
-				if(!(self::$extensions instanceof SimpleXMLElement)){
+				if(!(self::$extension_configuration instanceof SimpleXMLElement)){
 					throw new ExtensionException('Failed to load Extension configuration file ' . $config);
 				}
 			}
@@ -96,7 +152,7 @@
 			}
 			
 			// Import the SimpleXMLElement object into a DOMDocument object. This ensures formatting is preserved
-			$doc = dom_import_simplexml(self::$extensions);
+			$doc = dom_import_simplexml(self::$extension_configuration);
 			$doc->ownerDocument->preserveWhiteSpace = false;
 			$doc->ownerDocument->formatOutput = true;
 			
@@ -112,7 +168,7 @@
 			
 			foreach(new ExtensionIterator as $extension){
 				
-				// TODO: Check if the extension is already present in the config, and retain the version if it is
+				// TODO: Check if the extension is already present in the config, and retain the version & status if it is
 				// This ensures that the status of "requires-update" remains intact.
 				
 				$pathname = self::getPathFromClass(get_class($extension));
@@ -120,8 +176,17 @@
 				
 				$element = $doc->createElement('extension');
 				$element->setAttribute('handle', $handle);
-				$element->setAttribute('version', $extension->about()->version);
-				$element->setAttribute('status', self::status($handle));
+				
+				$node = end(self::$extension_configuration->xpath("//extension[@handle='{$handle}'][1]"));
+				if(!empty($node)){
+					$element->setAttribute('version', $node->attributes()->version);
+					$element->setAttribute('status', $node->attributes()->status);
+				}
+				else{
+					$element->setAttribute('version', $extension->about()->version);
+					$element->setAttribute('status', self::status($handle));
+				}
+				
 				$root->appendChild($element);
 				
 				if(method_exists($extension, 'getSubscribedDelegates')){
@@ -138,7 +203,7 @@
 				}	
 			}
 			
-		 	self::$extensions = simplexml_import_dom($doc);
+		 	self::$extension_configuration = simplexml_import_dom($doc);
 			self::saveConfiguration($config_pathname);
 		}
 		
@@ -156,9 +221,11 @@
 				}
 				
 				self::$loaded_extensions[$pathname] = require_once(realpath($pathname) . '/extension.driver.php');
+				self::$extensions[$handle] = new self::$loaded_extensions[$pathname];
 			}
 
-			return new self::$loaded_extensions[$pathname];
+			return clone self::$extensions[$handle];
+			
 		}
 		
 		public static function status($handle){
@@ -167,7 +234,7 @@
 			
 			$extension = self::load($handle);
 			
-			$node = end(self::$extensions->xpath("//extension[@handle='{$handle}'][1]"));
+			$node = end(self::$extension_configuration->xpath("//extension[@handle='{$handle}'][1]"));
 
 			if(!empty($node)){
 

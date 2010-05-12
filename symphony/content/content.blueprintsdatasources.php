@@ -123,8 +123,8 @@
 						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
 					else{
-						$extension = ExtensionManager::instance()->about($ds->getExtension());
-						$col_type = Widget::TableData($extension['name']);
+						$extension = Extension::load($ds->getExtension())->about();
+						$col_type = Widget::TableData($extension->name);
 					}
 					
 					$dsTableBody[] = Widget::TableRow(array(
@@ -174,7 +174,7 @@
 					$this->type = Symphony::Configuration()->core()->{'default-datasource-type'};
 				}
 
-				$this->datasource = ExtensionManager::instance()->create($this->type)->prepareDatasource(
+				$this->datasource = Extension::load($this->type)->prepareDatasource(
 					NULL, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 			}
@@ -191,7 +191,7 @@
 				$this->datasource = Datasource::loadFromHandle($this->handle);
 				$this->type = $this->datasource->getExtension();
 
-				$this->datasource = ExtensionManager::instance()->create($this->type)->prepareDatasource(
+				$this->datasource = Extension::load($this->type)->prepareDatasource(
 					$this->datasource, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 
@@ -288,10 +288,16 @@
 				$label = Widget::Label(__('Select Type'));
 
 				$options = array();
-				foreach(ExtensionManager::instance()->listByType('Data Source') as $e){
-					if($e['status'] != Extension::ENABLED) continue;
-					$options[] = array($e['handle'], ($this->type == $e['handle']), $e['name']);
+				
+				foreach(new ExtensionIterator(ExtensionIterator::FLAG_TYPE, array('Data Source')) as $extension){
+					$path = Extension::getPathFromClass(get_class($extension));
+					$handle = Extension::getHandleFromPath($path);
+					
+				//foreach(ExtensionManager::instance()->listByType('Data Source') as $e){
+					if(Extension::status($handle) != Extension::STATUS_ENABLED) continue;
+					$options[] = array($handle, ($this->type == $handle), $extension->about()->name);
 				}
+
 
 				$select = Widget::Select('type', $options);
 
@@ -314,7 +320,7 @@
 				$this->appendSubheading(General::sanitize($this->datasource->about()->name));
 			}
 
-			ExtensionManager::instance()->create($this->type)->viewDatasource($this->datasource, $this->Form, $this->errors);
+			Extension::load($this->type)->viewDatasource($this->datasource, $this->Form, $this->errors);
 
 			/*
 			###

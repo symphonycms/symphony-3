@@ -174,10 +174,14 @@
 		public static function findLanguagePath($lang) {
 			$file = sprintf('/lang.%s.php', $lang);
 			if(!file_exists(LANG . $file)) {
-				foreach(ExtensionManager::instance()->listAll() as $extension => $about) {
+				foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
+					$path = Extension::getPathFromClass(get_class($extension));
+					$handle = Extension::getHandleFromPath($path);
+					
+				//foreach(ExtensionManager::instance()->listAll() as $extension => $about) {
 					// Explicitly match localisation extensions
-					if(strpos($about['handle'], 'lang_') === false) continue;
-					$path = EXTENSIONS . '/' . $about['handle'] . '/lang';
+					if(strpos($handle, 'lang_') === false) continue;
+					$path = EXTENSIONS . "/{$handle}/lang";
 					if(file_exists($path . $file)) {
 						return $path;
 					}

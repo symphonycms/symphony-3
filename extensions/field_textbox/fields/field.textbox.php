@@ -186,7 +186,7 @@
 			parent::displaySettingsPanel($wrapper, $errors);
 
 			$document = $wrapper->ownerDocument;
-			$driver = ExtensionManager::instance()->create('field_textbox');
+			$driver = Extension::load('field_textbox');
 			$driver->addSettingsHeaders($document);
 
 		/*---------------------------------------------------------------------
@@ -302,7 +302,7 @@
 
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry=NULL, $data=NULL) {
 			$document = $wrapper->ownerDocument;
-			$driver = ExtensionManager::instance()->create('field_textbox');
+			$driver = Extension::load('field_textbox');
 			$driver->addPublishHeaders($document);
 
 			$sortorder = $this->{'sortorder'};

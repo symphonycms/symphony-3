@@ -116,8 +116,8 @@
 						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
 					else{
-						$extension = ExtensionManager::instance()->about($event->getExtension());
-						$col_type = Widget::TableData($extension['name']);
+						$extension = Extension::load($event->getExtension())->about();
+						$col_type = Widget::TableData($extension->name);
 					}
 					
 					$eTableBody[] = Widget::TableRow(
@@ -167,7 +167,7 @@
 					$this->type = Symphony::Configuration()->core()->{'default-event-type'};
 				}
 
-				$this->event = ExtensionManager::instance()->create($this->type)->prepareEvent(
+				$this->event = Extension::load($this->type)->prepareEvent(
 					null, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 			}
@@ -184,7 +184,7 @@
 				$this->event = Event::loadFromHandle($this->handle);
 				$this->type = $this->event->getExtension();
 
-				$this->event = ExtensionManager::instance()->create($this->type)->prepareEvent(
+				$this->event = Extension::load($this->type)->prepareEvent(
 					$this->event, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
 				);
 
@@ -194,6 +194,45 @@
 
 				$this->type = $this->event->getExtension();
 			}
+		}
+		protected function __actionDelete(array $datasources, $redirect=NULL) {
+			$success = true;
+
+			foreach ($datasources as $handle) {
+				try{
+					Datasource::delete($handle);
+				}
+				catch(DatasourceException $e){
+					$success = false;
+					$this->alerts()->append(
+						$e->getMessage(),
+						AlertStack::ERROR, $e
+					);
+				}
+				catch(Exception $e){
+					$success = false;
+					$this->alerts()->append(
+						__('An unknown error has occurred. <a class="more">Show trace information.</a>'),
+						AlertStack::ERROR, $e
+					);
+				}
+
+				// TODO: Delete reference from View XML
+
+				/*$sql = "SELECT * FROM `tbl_pages` WHERE `data_sources` REGEXP '[[:<:]]".$ds."[[:>:]]' ";
+				$pages = Symphony::Database()->fetch($sql);
+
+				if(is_array($pages) && !empty($pages)){
+					foreach($pages as $page){
+
+						$page['data_sources'] = preg_replace('/\b'.$ds.'\b/i', '', $page['data_sources']);
+
+						Symphony::Database()->update($page, 'tbl_pages', "`id` = '".$page['id']."'");
+					}
+				}*/
+			}
+
+			if($success) redirect($redirect);
 		}
 
 		protected function __actionForm() {
@@ -282,9 +321,14 @@
 				$label = Widget::Label(__('Select Type'));
 
 				$options = array();
-				foreach(ExtensionManager::instance()->listByType('Event') as $e){
-					if($e['status'] != Extension::ENABLED) continue;
-					$options[] = array($e['handle'], ($this->type == $e['handle']), $e['name']);
+				
+				foreach(new ExtensionIterator(ExtensionIterator::FLAG_TYPE, array('Event')) as $extension){
+					$path = Extension::getPathFromClass(get_class($extension));
+					$handle = Extension::getHandleFromPath($path);
+					
+				//foreach(ExtensionManager::instance()->listByType('Event') as $e){
+					if(Extension::status($handle) != Extension::STATUS_ENABLED) continue;
+					$options[] = array($handle, ($this->type == $handle), $extension->about()->name);
 				}
 
 				$select = Widget::Select('type', $options);
@@ -308,7 +352,7 @@
 				$this->appendSubheading(General::sanitize($this->event->about()->name));
 			}
 
-			ExtensionManager::instance()->create($this->type)->viewEvent($this->event, $this->Form, $this->errors);
+			Extension::load($this->type)->viewEvent($this->event, $this->Form, $this->errors);
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');

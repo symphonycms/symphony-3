@@ -477,7 +477,7 @@
 			# Delegate: FrontendEventsAppend
 			# Description: Append additional Events.
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendEventsAppend', '/frontend/', array(
 					'events'	=> &$events
 				)
@@ -506,7 +506,7 @@
 			# Delegate: FrontendDataSourceAppend
 			# Description: Append additional DataSources.
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendDataSourcesAppend', '/frontend/', array(
 					'datasources'	=> &$datasources
 				)
@@ -569,7 +569,7 @@
 			# Delegate: FrontendTemplatePreRender
 			# Description: Access to the template source, before it is rendered.
 			# Global: Yes
-			ExtensionManager::instance()->notifyMembers(
+			Extension::notify(
 				'FrontendTemplatePreRender', '/frontend/', array(
 					'template'	=> &$template
 				)

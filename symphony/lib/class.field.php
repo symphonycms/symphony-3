@@ -302,8 +302,10 @@
 	//		}
 			
 			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
-				$path = Extension::getPathFromClass(get_class($extension));
-				if(is_file("{$path}/fields/field.{$type}.php")) return "{$path}/fields/field.{$type}.php";
+				$path = Extension::getPathFromClass(get_class($e));
+				if(is_file("{$path}/fields/field.{$type}.php")){
+					return "{$path}/fields";
+				}
 			}
 	
 		    return false;

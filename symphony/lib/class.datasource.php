@@ -128,7 +128,15 @@
 
 		    if(is_file(DATASOURCES . "/{$name}.php")) return DATASOURCES;
 		    else{
-
+				
+				foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
+					$path = Extension::getPathFromClass(get_class($extension));
+					$handle = Extension::getHandleFromPath($path);
+					
+					if(is_file(EXTENSIONS . "/{$handle}/data-sources/{$name}.php")) return EXTENSIONS . "/{$handle}/data-sources";
+				}
+				
+				/*
 				$extensions = ExtensionManager::instance()->listInstalledHandles();
 
 				if(is_array($extensions) && !empty($extensions)){
@@ -136,6 +144,7 @@
 						if(is_file(EXTENSIONS . "/{$e}/data-sources/{$name}.php")) return EXTENSIONS . "/{$e}/data-sources";
 					}
 				}
+				*/
 	    	}
 
 		    return false;
@@ -220,7 +229,7 @@
 					vsprintf(file_get_contents($this->getTemplate()), $data),
 					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
 				)){
-					if($editing != $this->handle) General::deleteFile(DATASOURCES . '/' . $editing . '.php');
+					if($editing !== false && $editing != $this->handle) General::deleteFile(DATASOURCES . '/' . $editing . '.php');
 
 					return $pathname;
 				}

@@ -120,7 +120,14 @@
 
 		    if(is_file(EVENTS . "/{$name}.php")) return EVENTS;
 		    else{
-
+				
+				foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
+					$path = Extension::getPathFromClass(get_class($extension));
+					$handle = Extension::getHandleFromPath($path);
+					
+					if(is_file(EXTENSIONS . "/{$handle}/events/{$name}.php")) return EXTENSIONS . "/{$handle}/events";
+				}
+				/*
 				$extensions = ExtensionManager::instance()->listInstalledHandles();
 
 				if(is_array($extensions) && !empty($extensions)){
@@ -128,6 +135,7 @@
 						if(is_file(EXTENSIONS . "/{$e}/events/{$name}.php")) return EXTENSIONS . "/{$e}/events";
 					}
 				}
+				*/
 	    	}
 
 		    return false;
@@ -204,7 +212,7 @@
 					vsprintf(file_get_contents($this->getTemplate()), $data),
 					Symphony::Configuration()->core()->symphony->{'file-write-mode'}
 				)){
-					if($editing != $this->handle) General::deleteFile(EVENTS . '/' . $editing . '.php');
+					if($editing !== false && $editing != $this->handle) General::deleteFile(EVENTS . '/' . $editing . '.php');
 
 					return $pathname;
 				}

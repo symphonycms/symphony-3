@@ -186,7 +186,7 @@
 				);
 			}
 			
-			$driver = ExtensionManager::instance()->create('field_upload');
+			$driver = Extension::load('field_upload');
 			$driver->addHeaders();
 			
 			$handle = $this->{'element-name'};
