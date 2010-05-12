@@ -760,6 +760,7 @@
 			$db = Symphony::Database();
 
 			$values = DataSource::prepareFilterValue($filter->value, $parameter_output, $filter_join);
+			
 			if (!is_array($values)) $values = array();
 
 			// Exact matches:

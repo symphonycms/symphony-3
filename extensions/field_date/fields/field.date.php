@@ -19,8 +19,6 @@
 						`id` int(11) unsigned NOT NULL auto_increment,
 						`entry_id` int(11) unsigned NOT NULL,
 						`value` varchar(80) default NULL,
-						`local` int(11) default NULL,
-						`gmt` int(11) default NULL,
 						PRIMARY KEY  (`id`),
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
@@ -271,16 +269,6 @@
 			Publish:
 		-------------------------------------------------------------------------*/
 
-		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL) {
-			$value = null;
-
-			if (isset($data->gmt) && !is_null($data->gmt)) {
-				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data->gmt);
-			}
-
-			return parent::prepareTableValue((object)array('value' => $value), $link);
-		}
-
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null){
 			$name = $this->{'element-name'};
 			$value = null;
@@ -291,8 +279,9 @@
 			}
 
 			// Empty entry:
-			else if (isset($data->gmt) && !is_null($data->gmt)) {
-				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $data->gmt);
+			else if (isset($data->value) && !is_null($data->value)) {
+				$timestamp = DateTimeObj::fromGMT($data->value);
+				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $timestamp, 'Australia/Brisbane');
 			}
 
 			$label = Widget::Label($this->label, Widget::Input("fields[{$name}]", $value), array(
@@ -318,27 +307,24 @@
 
 			else {
 				$result = (object)array(
-					'value' => null,
-					'local' => null,
-					'gmt' => null
+					'value' => null
 				);
 			}
-
+			
 			if(is_null($data) || strlen(trim($data)) == 0){
 				if ($this->{'pre-populate'} == 'yes') {
 					$timestamp = strtotime(DateTimeObj::get('c', null));
 				}
 			}
+			
 			else{
 				$timestamp = strtotime($data);
 			}
 
 			if(!is_null($timestamp)){
-				$result->value = DateTimeObj::get('c', $timestamp);
-				$result->local = strtotime(DateTimeObj::get('c', $timestamp));
-				$result->gmt = strtotime(DateTimeObj::getGMT('c', $timestamp));
+				$result->value = DateTimeObj::getGMT('Y-m-d H:i:s', $timestamp);
 			}
-
+			
 			return $result;
 		}
 
@@ -356,31 +342,47 @@
 			return self::STATUS_OK;
 		}
 
-		/*-------------------------------------------------------------------------
-			Output:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Output:
+	-------------------------------------------------------------------------*/
+		
+		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL) {
+			$value = null;
+			
+			if (isset($data->value) && !is_null($data->value)) {
+				$timestamp = DateTimeObj::fromGMT($data->value);
+				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $timestamp);
+			}
+
+			return parent::prepareTableValue((object)array('value' => $value), $link);
+		}
+		
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
-			if (isset($data->gmt) && !is_null($data->gmt)) {
-				$wrapper->appendChild(General::createXMLDateObject($wrapper->ownerDocument, $data->local, $this->{'element-name'}));
+			if (isset($data->value) && !is_null($data->value)) {
+				$wrapper->appendChild(General::createXMLDateObject(
+					$wrapper->ownerDocument, DateTimeObj::fromGMT($data->value), $this->{'element-name'}
+				));
 			}
 		}
-
+		
 		public function getParameterPoolValue($data){
-     		return DateTimeObj::get('Y-m-d H:i:s', $data->local);
+			$timestamp = DateTimeObj::fromGMT($data->value);
+			
+     		return DateTimeObj::get('Y-m-d H:i:s', $timestamp);
 		}
+		
+	/*-------------------------------------------------------------------------
+		Filtering:
+	-------------------------------------------------------------------------*/
 
-		/*-------------------------------------------------------------------------
-			Filtering:
-		-------------------------------------------------------------------------*/
-
-		public function provideFilterTypes($data) {
+		public function getFilterTypes($data) {
 			return array(
 				array('is', false, 'Is'),
-				array('is-not', $data['type'] == 'is-not', 'Is not'),
-				array('earlier-than', $data['type'] == 'earlier-than', 'Earlier than'),
-				array('earlier-than-or-equalto', $data['type'] == 'earlier-than-or-equalto', 'Earlier than or equal to'),
-				array('later-than', $data['type'] == 'later-than', 'Later than'),
-				array('later-than-or-equalto', $data['type'] == 'later-than-or-equalto', 'Later than or equal to')
+				array('is-not', $data->type == 'is-not', 'Is not'),
+				array('earlier-than', $data->type == 'earlier-than', 'Earlier than'),
+				array('earlier-than-or-equal', $data->type == 'earlier-than-or-equal', 'Earlier than or equal'),
+				array('later-than', $data->type == 'later-than', 'Later than'),
+				array('later-than-or-equal', $data->type == 'later-than-or-equal', 'Later than or equal')
 			);
 		}
 
@@ -390,60 +392,54 @@
 		//	have to be as 'split here and do magic' as it is now.
 		//	The problem then is that what is a simple BETWEEN statement now is a bunch of joins and >=/<= operads
 		//	which is slow
-		public function buildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL) {
-
-/*
-
-			var_dump($filter, $joins, $where);
-
-			self::$key++;
-
-			$joins .= sprintf('
-				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});			
-
-			$type = self::__parseFilter($filter['value']);
-			if($type == self::ERROR) return false;
-
-			switch($type) {
-				case self::RANGE:
-					$this->__buildRangeFilterSQL($filter, $joins, $where, $operation_type);
-					break;
-
-				case self::SIMPLE:
-					$this->__buildSimpleFilterSQL($filter, $joins, $where, $operation_type);
-					break;
+		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output = null) {
+			$filter = $this->processFilter($filter);
+			$filter_join = DataSource::FILTER_OR;
+			$values = DataSource::prepareFilterValue($filter->value, $parameter_output, $filter_join);
+			$db = Symphony::Database();
+			$statements = array();
+			
+			if (!is_array($values)) $values = array();
+			
+			// Exact matches:
+			switch ($filter->type) {
+				case 'is':						$operator = '='; break;
+				case 'is-not':					$operator = '!='; break;
+				case 'earlier-than':			$operator = '>'; break;
+				case 'earlier-than-or-equal':	$operator = '>='; break;
+				case 'later-than':				$operator = '<'; break;
+				case 'later-than-or-equal':		$operator = '<='; break;
 			}
-
-			if(self::isFilterRegex($data[0])) return parent::buildFilterQuery($data, $joins, $where, $andOperation);
-
-			$parsed = array();
-
-			foreach($data as $string){
-				$type = self::__parseFilter($string);
-
-				if($type == self::ERROR) return false;
-
-				if(!is_array($parsed[$type])) $parsed[$type] = array();
-
-				$parsed[$type][] = $string;
+			
+			if ($filter_join == DataSource::FILTER_OR) {
+				$handle = $this->buildFilterJoin($joins);
 			}
-
-			foreach($parsed as $type => $value){
-
-				switch($type){
-
-					case self::RANGE:
-						$this->__buildRangeFilterSQL($value, $joins, $where, $andOperation);
-						break;
-
-					case self::SIMPLE:
-						$this->__buildSimpleFilterSQL($value, $joins, $where, $andOperation);
-						break;
-
+			
+			foreach ($values as $index => $value) {
+				if ($filter_join != DataSource::FILTER_OR) {
+					$handle = $this->buildFilterJoin($joins);
 				}
+				
+				$value = DateTimeObj::toGMT($value);
+				
+				$statements[] = $db->prepareQuery(
+					"%d {$operator} UNIX_TIMESTAMP({$handle}.value)",
+					array($value)
+				);
 			}
-*/
+
+			if (empty($statements)) return true;
+
+			if ($filter_join == DataSource::FILTER_OR) {
+				$statement = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
+			}
+
+			else {
+				$statement = "(\n\t" . implode("\n\tAND ", $statements) . "\n)";
+			}
+
+			$where[] = $statement;
+			
 			return true;
 		}
 
