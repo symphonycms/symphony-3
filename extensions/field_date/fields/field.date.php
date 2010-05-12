@@ -18,7 +18,7 @@
 					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
 						`id` int(11) unsigned NOT NULL auto_increment,
 						`entry_id` int(11) unsigned NOT NULL,
-						`value` varchar(80) default NULL,
+						`value` DATETIME default NULL,
 						PRIMARY KEY  (`id`),
 						KEY `entry_id` (`entry_id`),
 						KEY `value` (`value`)
