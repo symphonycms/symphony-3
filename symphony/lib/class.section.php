@@ -32,14 +32,14 @@
 				self::$sections[] = $file->getPathname();
 			}
 			
-			foreach (new DirectoryIterator(EXTENSIONS) as $path) {
-				if(!$path->isDir() || $path->isDot() || !is_dir($path->getPathname() . '/sections')) continue;
+			$extensions = new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED);
+			
+			foreach ($extensions as $extension) {
+				$path = Extension::getPathFromClass(get_class($extension));
 				
-				$status = ExtensionManager::instance()->fetchStatus($path->getBasename());
+				if (!is_dir($path . '/sections')) continue;
 				
-				if ($status != Extension::ENABLED) continue;
-				
-				foreach(new SectionFilterIterator($path->getPathname() . '/sections') as $file){
+				foreach (new SectionFilterIterator($path . '/sections') as $file) {
 					self::$sections[] = $file->getPathname();
 				}
 			}

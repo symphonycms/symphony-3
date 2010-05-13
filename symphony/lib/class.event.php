@@ -30,14 +30,14 @@
 				self::$events[] = $file->getPathname();
 			}
 			
-			foreach (new DirectoryIterator(EXTENSIONS) as $path) {
-				if(!$path->isDir() || $path->isDot() || !is_dir($path->getPathname() . '/events')) continue;
+			$extensions = new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED);
+			
+			foreach ($extensions as $extension) {
+				$path = Extension::getPathFromClass(get_class($extension));
 				
-				$status = ExtensionManager::instance()->fetchStatus($path->getBasename());
+				if (!is_dir($path . '/events')) continue;
 				
-				if ($status != Extension::ENABLED) continue;
-				
-				foreach(new EventFilterIterator($path->getPathname() . '/events') as $file){
+				foreach (new EventFilterIterator($path . '/events') as $file) {
 					self::$events[] = $file->getPathname();
 				}
 			}

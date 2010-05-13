@@ -30,14 +30,14 @@
 				self::$datasources[] = $file->getPathname();
 			}
 			
-			foreach (new DirectoryIterator(EXTENSIONS) as $path) {
-				if(!$path->isDir() || $path->isDot() || !is_dir($path->getPathname() . '/data-sources')) continue;
+			$extensions = new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED);
+			
+			foreach ($extensions as $extension) {
+				$path = Extension::getPathFromClass(get_class($extension));
 				
-				$status = ExtensionManager::instance()->fetchStatus($path->getBasename());
+				if (!is_dir($path . '/data-sources')) continue;
 				
-				if ($status != Extension::ENABLED) continue;
-				
-				foreach(new DataSourceFilterIterator($path->getPathname() . '/data-sources') as $file){
+				foreach (new DataSourceFilterIterator($path . '/data-sources') as $file) {
 					self::$datasources[] = $file->getPathname();
 				}
 			}
