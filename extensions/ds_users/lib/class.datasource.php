@@ -1,5 +1,7 @@
 <?php
-
+	
+	require_once LIB . '/class.datasource.php';
+	
 	Class UsersDataSource extends DataSource {
 		public function __construct(){
 			$this->_about = new StdClass;
