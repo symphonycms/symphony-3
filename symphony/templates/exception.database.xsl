@@ -18,10 +18,12 @@
 			<h1>Symphony Fatal Database Error</h1>
 			<div class="panel">
 				<h2><xsl:value-of select="details/message"/></h2>
-				<p>An error occurred while attempting to execute the following query</p>
-				<ul>
-					<li><xsl:value-of select="details/query"/></li>
-				</ul>
+				<xsl:if test="details/query">
+					<p>An error occurred while attempting to execute the following query</p>
+					<ul>
+						<li><xsl:value-of select="details/query"/></li>
+					</ul>
+				</xsl:if>
 			</div>
 			<h3>Backtrace</h3>
 			<div class="panel">
@@ -42,21 +44,23 @@
 					</xsl:for-each>
 				</ul>
 			</div>
-			<h3>Database Query Log</h3>
-			<div class="panel">
-				<ul>
-					<xsl:for-each select="query-log/item">
-						<li>
-							<xsl:if test="position() mod 2 = 0">
-								<xsl:attribute name="class">odd</xsl:attribute>
-							</xsl:if>
-							<code>
-								<xsl:value-of select="."/></code>
-								<small><xsl:value-of select="concat('[', @time, ']')"/></small>
-						</li>
-					</xsl:for-each>
-				</ul>
-			</div>
+			<xsl:if test="query-log/item">
+				<h3>Database Query Log</h3>
+				<div class="panel">
+					<ul>
+						<xsl:for-each select="query-log/item">
+							<li>
+								<xsl:if test="position() mod 2 = 0">
+									<xsl:attribute name="class">odd</xsl:attribute>
+								</xsl:if>
+								<code>
+									<xsl:value-of select="."/></code>
+									<small><xsl:value-of select="concat('[', @time, ']')"/></small>
+							</li>
+						</xsl:for-each>
+					</ul>
+				</div>
+			</xsl:if>
 		</body>
 	</html>
 </xsl:template>

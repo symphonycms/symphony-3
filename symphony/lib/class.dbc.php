@@ -3,19 +3,23 @@
 	require_once('class.errorhandler.php');
 	
 	Class DatabaseException extends Exception{
-		private $_error;
+		private $error;
+		
 		public function __construct($message, array $error=NULL){
 			parent::__construct($message);
-			$this->_error = $error;
+			$this->error = $error;
 		}
+		
 		public function getQuery(){
-			return $this->_error['query'];
+			return (isset($this->error['query']) ? $this->error['query'] : NULL);
 		}
+		
 		public function getDatabaseErrorMessage(){
-			return $this->_error['msg'];
+			return (isset($this->error['message']) ? $this->error['message'] : NULL);
 		}
+		
 		public function getDatabaseErrorCode(){
-			return $this->_error['num'];
+			return (isset($this->error['code']) ? $this->error['code'] : NULL);
 		}
 	}
 
@@ -33,7 +37,9 @@
 
 			$details = $xml->createElement('details');
 			$details->appendChild($xml->createElement('message', General::sanitize($e->getDatabaseErrorMessage())));
-			$details->appendChild($xml->createElement('query', General::sanitize($e->getQuery())));
+			if(!is_null($e->getQuery())){
+				$details->appendChild($xml->createElement('query', General::sanitize($e->getQuery())));
+			}
 			$root->appendChild($details);
 
 
@@ -53,18 +59,20 @@
 			}
 			$root->appendChild($trace);
 
-			if(is_object(Symphony::Database())){
+			if(is_object(Symphony::Database()) && method_exists(Symphony::Database(), 'log')){
 
-				$debug = Symphony::Database()->debug();
+				$query_log = Symphony::Database()->log();
 
-				if(count($debug['query']) > 0){
+				if(count($query_log) > 0){
 
 					$queries = $xml->createElement('query-log');
 
-					foreach($debug['query'] as $query){
+					$query_log = array_reverse($query_log);
+					
+					foreach($query_log as $q){
 
-						$item = $xml->createElement('item', General::sanitize($query['query']));
-						if(isset($query['time'])) $item->setAttribute('time', $query['time']);
+						$item = $xml->createElement('item', General::sanitize(trim($q->query)));
+						if(isset($q->time)) $item->setAttribute('time', number_format($q->time, 5));
 						$queries->appendChild($item);
 					}
 
@@ -231,24 +239,24 @@
 	}
 
 	Class DBCMySQL extends Database{
-	    protected $_log;
+	    protected $log;
 
 	    protected function handleError($query) {
-			$msg = @mysql_error();
-			$num = @mysql_errno();
+			$message = @mysql_error();
+			$code = @mysql_errno();
 
-			$this->_log['error'][] = array(
+			$this->log['error'][] = array(
 				'query'	=> $query,
-				'msg'	=> $msg,
-				'num'	=> $num
+				'message'	=> $message,
+				'code'	=> $code
 			);
 
 			throw new DatabaseException(
 				__(
 					'MySQL Error (%1$s): %2$s in query "%3$s"',
-					array($num, $msg, $query)
+					array($code, $message, $query)
 				),
-				end($this->_log['error'])
+				end($this->log['error'])
 			);
 	    }
 
@@ -445,30 +453,26 @@
 	*/
 	Final Class DBCMySQLProfiler extends DBCMySQL{
 
-		private $_query_log;
+		private static $query_log;
 
 		private static function __precisionTimer($action = 'start', $start_time = null){
 			return precision_timer($action, $start_time);
 		}
-
-		public function __construct(){
-			$this->_query_log = array();
-		}
-
+		
 		public function log(){
-			return $this->_query_log;
+			return self::$query_log;
 		}
 
 		public function queryCount(){
-			return count($this->_query_log);
+			return count(self::$query_log);
 		}
 
 		public function slowQueryCount($threshold){
 
 			$total = 0;
 
-			foreach($this->_query_log as $q){
-				if((float)$q[1] > $threshold) $total++;
+			foreach(self::$query_log as $q){
+				if((float)$q->time > $threshold) $total++;
 			}
 
 			return $total;
@@ -478,8 +482,8 @@
 
 			$queries = array();
 
-			foreach($this->_query_log as $q){
-				if((float)$q[1] > $threshold) $queries[] = $q;
+			foreach(self::$query_log as $q){
+				if((float)$q->time > $threshold) $queries[] = $q;
 			}
 
 			return $queries;
@@ -490,7 +494,7 @@
 
 			$total = 0.0;
 
-			foreach($this->_query_log as $q){
+			foreach(self::$query_log as $q){
 				$total += (float)$q[1];
 			}
 
@@ -498,12 +502,16 @@
 		}
 
 		public function query($query, array $values = array(), $returnType='DBCMySQLResult'){
+
 			$start = self::__precisionTimer();
 			$result = parent::query($query, $values, $returnType);
-
 			$query = preg_replace(array('/[\r\n]/', '/\s{2,}/'), ' ', $query);
-
-			$this->_query_log[] = array($query, self::__precisionTimer('stop', $start));
+			
+			if(!is_array(self::$query_log)){
+				self::$query_log = array();
+			}
+			
+			self::$query_log[] = (object)array('query' => $query, 'time' => self::__precisionTimer('stop', $start));
 
 			return $result;
 		}
