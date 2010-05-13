@@ -73,7 +73,7 @@
 		}
 
 		public static function loadFromID($id){
-			return Symphony::Database()->query("SELECT * FROM `tbl_entries` WHERE `id` = {$id} LIMIT 1", array(), 'EntryResult')->current();
+			return Symphony::Database()->query("SELECT * FROM `tbl_entries` WHERE `id` = %d LIMIT 1", array($id), 'EntryResult')->current();
 		}
 
 		public function setFieldDataFromFormArray(array $data){
