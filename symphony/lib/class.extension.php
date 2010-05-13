@@ -221,6 +221,9 @@
 				}
 				
 				self::$loaded_extensions[$pathname] = require_once(realpath($pathname) . '/extension.driver.php');
+				if(is_null(self::$loaded_extensions[$pathname]) || !class_exists(self::$loaded_extensions[$pathname])){
+					throw new ExtensionException('Extension driver found at "'.$pathname.'" did not return a valid classname for instantiation.');
+				}
 				self::$extensions[$handle] = new self::$loaded_extensions[$pathname];
 			}
 
