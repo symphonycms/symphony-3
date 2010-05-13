@@ -232,7 +232,7 @@
 
 			$section->handle = preg_replace('/\.xml$/', NULL, basename($path));
 			$section->path = dirname($path);
-
+			
 			if(!file_exists($path)){
 				throw new SectionException(__('Section `%s` could not be found.', array(basename($path))), self::ERROR_SECTION_NOT_FOUND);
 			}
@@ -327,9 +327,26 @@
 			return $section;
 		}
 
-		public function loadFromHandle($handle){
-			return self::load(SECTIONS . '/' . $handle . '.xml');
+		public static function loadFromHandle($name){
+			return self::load(self::__find($name) . "/{$name}.xml");
 		}
+
+		protected static function __find($name) {
+		    if (is_file(SECTIONS . "/{$name}.xml")) return SECTIONS;
+		    
+		    else {
+				foreach (new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension) {
+					$path = Extension::getPathFromClass(get_class($extension));
+					$handle = Extension::getHandleFromPath($path);
+					
+					if (!is_file(EXTENSIONS . "/{$handle}/sections/{$name}.xml")) continue;
+					
+					return EXTENSIONS . "/{$handle}/sections";
+				}
+	    	}
+
+		    return false;
+	    }
 
 		public static function save(Section $section, MessageStack $messages, $essentials = null, $simulate = false) {
 			$pathname = sprintf('%s/%s.xml', $section->path, $section->handle);
