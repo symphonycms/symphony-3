@@ -106,7 +106,7 @@
 			if(empty($nodes)) return;
 			
 			foreach($nodes as $e){
-				$extension = self::load($e->attributes()->handle);
+				$extension = self::load((string)$e->attributes()->handle);
 				$delegates = $e->xpath($xpath);
 				
 				foreach($delegates as $d){
