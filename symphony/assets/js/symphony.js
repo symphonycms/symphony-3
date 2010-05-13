@@ -537,7 +537,7 @@ var Symphony;
 								+ ']'
 							);
 
-							console.log(input.attr('name'));
+							//console.log(input.attr('name'));
 						});
 					});
 				});
