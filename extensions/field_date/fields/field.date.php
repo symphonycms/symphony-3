@@ -169,8 +169,14 @@
 			$message = NULL;
 
 			if(!self::__isValidDateString($data->value)){
-				$message = __("The date specified in '%s' is invalid.", array($this->label));
-				return self::ERROR_INVALID;
+				$errors->append(
+					null, (object)array(
+					 	'message' => __("The date specified in '%s' is invalid.", array($this->label)),
+						'code' => self::ERROR_INVALID
+					)
+				);
+				
+				return self::STATUS_ERROR;
 			}
 
 			return self::STATUS_OK;
