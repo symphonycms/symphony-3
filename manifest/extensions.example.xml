@@ -57,7 +57,6 @@
   </extension>
   <extension handle="markdown" version="1.10" status="not-installed"/>
   <extension handle="shell" version="0.3" status="not-installed"/>
-  <extension handle="test" version="1.0.0" status="not-installed"/>
   <extension handle="ui_navexpander" version="1.0.0" status="not-installed">
     <delegates>
       <item page="/backend/" delegate="InitaliseAdminPageHead" callback="loadStylesheet"/>

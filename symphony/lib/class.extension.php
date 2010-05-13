@@ -1,7 +1,7 @@
 <?php
 
 	Interface iExtension{
-	}
+
 /*		
 		public function about();
 
@@ -14,9 +14,10 @@
 
 		public function getSubscribedDelegates();
 		public function fetchNavigation();
+*/
 
 	}
-*/
+
 
 	Class ExtensionException extends Exception{
 	}
@@ -93,26 +94,50 @@
 			self::rebuildConfiguration();
 		}
 		
-		public static function notify($delegate, $page, $context=array()){
-
+		public static function findSubscribed($delegate, $page){
 			// Prepare the xpath
 			$xpath = sprintf(
 				"delegates/item[@delegate='%s'][@page='*' or %s]", 
 				$delegate, 
 				implode(' or ', array_map(create_function('$value', 'return "@page=\'{$value}\'";'), (array)$page))
 			);
-			
+
 			$nodes = self::$extension_configuration->xpath("//extension[@status='enabled'][{$xpath}]");
-			if(empty($nodes)) return;
 			
-			foreach($nodes as $e){
-				$extension = self::load((string)$e->attributes()->handle);
-				$delegates = $e->xpath($xpath);
+			return $nodes;
+		}
+		
+		public static function delegateSubscriptionCount($delegate, $page){
+			$nodes = self::findSubscribed($delegate, $page);
+			return count($nodes);
+		}
+		
+		public static function notify($delegate, $page, $context=array()){
+			
+			$count = 0;
+			$nodes = self::findSubscribed($delegate, $page);
+			
+			if(!empty($nodes)){
 				
-				foreach($delegates as $d){
-					$extension->{(string)$d->attributes()->callback}($context);
+				// Prepare the xpath
+				$xpath = sprintf(
+					"delegates/item[@delegate='%s'][@page='*' or %s]", 
+					$delegate, 
+					implode(' or ', array_map(create_function('$value', 'return "@page=\'{$value}\'";'), (array)$page))
+				);
+				
+				foreach($nodes as $e){
+					$extension = self::load((string)$e->attributes()->handle);
+					$delegates = $e->xpath($xpath);
+				
+					foreach($delegates as $d){
+						$count++;
+						$extension->{(string)$d->attributes()->callback}($context);
+					}
 				}
 			}
+			
+			return $count;
 		}
 		
 		public static function init($config=NULL){
@@ -221,6 +246,9 @@
 				}
 				
 				self::$loaded_extensions[$pathname] = require_once(realpath($pathname) . '/extension.driver.php');
+				if(is_null(self::$loaded_extensions[$pathname]) || !class_exists(self::$loaded_extensions[$pathname])){
+					throw new ExtensionException('Extension driver found at "'.$pathname.'" did not return a valid classname for instantiation.');
+				}
 				self::$extensions[$handle] = new self::$loaded_extensions[$pathname];
 			}
 

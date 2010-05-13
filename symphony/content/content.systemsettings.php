@@ -18,7 +18,7 @@
 
 			$path = URL . '/symphony/system/settings/';
 			
-			if(Symphony::Database()->query("SELECT * FROM `tbl_extensions_delegates` WHERE `delegate` = '%s' AND `page` = '%s'", array('AddSettingsFieldsets', '/system/settings/extensions/'))->length() > 0){
+			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') > 0){
 			
 				$viewoptions = array(
 					'Preferences'	=> $path,
@@ -199,8 +199,7 @@
 			
 			$path = URL . '/symphony/system/settings/';
 
-			if(Symphony::Database()->query("SELECT * FROM `tbl_extensions_delegates` WHERE `delegate` = '%s' AND `page` = '%s'", array('AddSettingsFieldsets', '/system/settings/extensions/'))->length() == 0){
-		
+			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') <= 0){
 				// No settings for extensions here
 				redirect($path);
 			}

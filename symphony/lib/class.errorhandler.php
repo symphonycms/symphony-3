@@ -43,16 +43,21 @@
 
 				$output = call_user_func(array($class, 'render'), $e);
 				
-				header('HTTP/1.0 500 Internal Server Error');
-				header('Content-Type: text/html; charset=utf-8');
-				header(sprintf('Content-Length: %d', strlen($output)));
+				if(!headers_sent()){
+					header('HTTP/1.0 500 Internal Server Error');
+					header('Content-Type: text/html; charset=utf-8');
+					header(sprintf('Content-Length: %d', strlen($output)));
+				}
+
 				echo $output;
 				
 			}
 			catch(Exception $e){
-				header('Content-Type: text/plain; charset=utf-8');
-				print "<h1>Looks like the Exception handler crapped out</h1>";
-				print_r($e);
+				if(!headers_sent()){
+					header('Content-Type: text/plain; charset=utf-8');
+				}
+				echo "<h1>Looks like the Exception handler crapped out</h1>";
+				echo "<pre>"; print_r($e); echo "</pre>";
 			}
 			
 			exit;
