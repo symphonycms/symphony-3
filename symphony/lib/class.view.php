@@ -484,6 +484,7 @@
 			);
 			
 			if (!empty($events)) {
+				$postdata = General::getPostData();
 				$events_ordered = array();
 				
 				foreach($events as $handle){
@@ -493,7 +494,9 @@
 				uasort($events_ordered, array($this, '__cbSortEventsByPriority'));
 				
 				foreach($events_ordered as $e){
-					$fragment = $e->trigger($ParameterOutput);
+					if (!$e->canTrigger($postdata)) continue;
+					
+					$fragment = $e->trigger($ParameterOutput, $postdata);
 					
 					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
 						$node = $Document->importNode($fragment->documentElement, true);

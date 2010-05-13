@@ -299,12 +299,13 @@
 		
 	/*-----------------------------------------------------------------------*/
 		
-		public function trigger(Register $ParameterOutput){
-
-			$postdata = General::getPostData();
-
-			if(!isset($postdata['action'][$this->parameters()->{'root-element'}])) return NULL;
-
+		public function canTrigger(array $data) {
+			if (!isset($postdata['action'][$this->parameters()->{'root-element'}])) return false;
+			
+			return true;
+		}
+		
+		public function trigger(Register $ParameterOutput, array $postdata){
 			$result = new XMLDocument;
 			$result->appendChild($result->createElement($this->parameters()->{'root-element'}));
 

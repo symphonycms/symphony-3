@@ -83,7 +83,8 @@
 
 		protected static $_loaded;
 		
-		abstract public function trigger(Register $ParameterOutput);
+		abstract public function canTrigger(array $data);
+		abstract public function trigger(Register $ParameterOutput, array $data);
 		
 		protected $_about;
 		protected $_parameters;
