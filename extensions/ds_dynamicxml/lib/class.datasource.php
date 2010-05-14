@@ -19,8 +19,8 @@
 			);
 		}
 
-		final public function getExtension(){
-			return 'ds_dynamicxml';
+		public function getType() {
+			return 'DynamicXMLDataSource';
 		}
 
 		public function getTemplate(){

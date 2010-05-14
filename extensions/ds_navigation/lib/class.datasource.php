@@ -12,8 +12,8 @@
 			);
 		}
 
-		final public function getExtension(){
-			return 'ds_navigation';
+		public function getType() {
+			return 'NavigationDataSource';
 		}
 
 		public function getTemplate(){

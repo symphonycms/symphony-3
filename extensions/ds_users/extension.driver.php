@@ -5,7 +5,7 @@
 	Class Extension_DS_Users implements iExtension {
 		public function about() {
 			return (object)array(
-				'name'			=> 'Users',
+				'name'			=> 'Users DataSource',
 				'version'		=> '1.0.0',
 				'release-date'	=> '2010-02-26',
 				'type'			=> array(
@@ -20,6 +20,19 @@
 					'datasource_template'
 				),
 				'description'	=> 'Create data sources from backend user data.'
+			);
+		}
+		
+	/*-------------------------------------------------------------------------
+		DataSources:
+	-------------------------------------------------------------------------*/
+		
+		public function getDataSourceTypes() {
+			return array(
+				(object)array(
+					'class'		=> 'UsersDataSource',
+					'name'		=> __('Users')
+				)
 			);
 		}
 

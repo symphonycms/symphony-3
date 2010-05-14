@@ -5,7 +5,7 @@
 	class Extension_DS_Navigation implements iExtension {
 		public function about() {
 			return (object)array(
-				'name'			=> 'Navigation',
+				'name'			=> 'Navigation DataSource',
 				'version'		=> '1.0.0',
 				'release-date'	=> '2010-02-26',
 				'type'			=> array(
@@ -22,23 +22,16 @@
 				'description'	=> 'Create data sources from page navigation data.'
 			);
 		}
-
-		public function getSubscribedDelegates() {
+		
+	/*-------------------------------------------------------------------------
+		DataSources:
+	-------------------------------------------------------------------------*/
+		
+		public function getDataSourceTypes() {
 			return array(
-				array(
-					'page'		=> '/backend/',
-					'delegate'	=> 'DataSourceFormPrepare',
-					'callback'	=> 'prepare'
-				),
-				array(
-					'page'		=> '/backend/',
-					'delegate'	=> 'DataSourceFormAction',
-					'callback'	=> 'action'
-				),
-				array(
-					'page'		=> '/backend/',
-					'delegate'	=> 'DataSourceFormView',
-					'callback'	=> 'view'
+				(object)array(
+					'class'		=> 'NavigationDataSource',
+					'name'		=> __('Navigation')
 				)
 			);
 		}

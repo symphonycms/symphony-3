@@ -13,7 +13,7 @@
     <directory-write-mode>0775</directory-write-mode>
     <condense-scripts-and-stylesheets>no</condense-scripts-and-stylesheets>
   </symphony>
-  <default-datasource-type>ds_sections</default-datasource-type>
+  <default-datasource-type>SectionsDataSource</default-datasource-type>
   <default-event-type>ds_sections</default-event-type>
   <log>
     <archive>1</archive>

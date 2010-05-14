@@ -6,7 +6,7 @@
 	Class Extension_DS_Sections implements iExtension {
 		public function about() {
 			return (object)array(
-				'name'			=> 'Sections',
+				'name'			=> 'Sections DataSource and Event',
 				'version'		=> '1.0.0',
 				'release-date'	=> '2010-03-02',
 				'type'			=> array(
@@ -24,6 +24,19 @@
 			);
 		}
 		
+	/*-------------------------------------------------------------------------
+		DataSources:
+	-------------------------------------------------------------------------*/
+		
+		public function getDataSourceTypes() {
+			return array(
+				(object)array(
+					'class'		=> 'SectionsDataSource',
+					'name'		=> __('Sections')
+				)
+			);
+		}
+		
 		public function prepareDatasource(DataSource $datasource = null, array $data = null) {
 			if (is_null($datasource)) {
 				$datasource = new SectionsDataSource;
@@ -37,6 +50,10 @@
 		public function viewDatasource(DataSource $datasource, SymphonyDOMElement $wrapper, MessageStack $errors) {
 			$datasource->view($wrapper, $errors);
 		}
+		
+	/*-------------------------------------------------------------------------
+		Events:
+	-------------------------------------------------------------------------*/
 		
 		public function prepareEvent(Event $event = null, array $data = null) {
 			if (is_null($event)) {

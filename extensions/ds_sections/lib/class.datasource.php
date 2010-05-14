@@ -23,9 +23,9 @@
 				'parameter-output' => array()
 			);
 		}
-
-		final public function getExtension(){
-			return 'ds_sections';
+		
+		public function getType() {
+			return 'SectionsDataSource';
 		}
 
 		public function getTemplate(){

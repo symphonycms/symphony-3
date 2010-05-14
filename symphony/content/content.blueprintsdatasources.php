@@ -15,6 +15,7 @@
 		protected $handle;
 		protected $status;
 		protected $type;
+		protected $types;
 
 		protected static $_loaded_views;
 
@@ -25,6 +26,19 @@
 			$this->fields = array();
 			$this->editing = $this->failed = false;
 			$this->datasource = $this->handle = $this->status = $this->type = NULL;
+			$this->types = array();
+			
+			foreach (new ExtensionIterator(ExtensionIterator::FLAG_TYPE, array('Data Source')) as $extension) {
+				$path = Extension::getPathFromClass(get_class($extension));
+				$handle = Extension::getHandleFromPath($path);
+				
+				if (Extension::status($handle) != Extension::STATUS_ENABLED) continue;
+				if (!method_exists($extension, 'getDataSourceTypes')) continue;
+				
+				foreach ($extension->getDataSourceTypes() as $type) {
+					$this->types[$type->class] = $type;
+				}
+			}
 		}
 
 		public function __viewIndex() {
@@ -119,12 +133,12 @@
 					}
 
 					// Type
-					if(is_null($ds->getExtension())){
+					if (is_null($ds->getType())) {
 						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
+					
 					else{
-						$extension = Extension::load($ds->getExtension())->about();
-						$col_type = Widget::TableData($extension->name);
+						$col_type = Widget::TableData($this->types[$ds->getType()]->name);
 					}
 					
 					$dsTableBody[] = Widget::TableRow(array(
@@ -174,9 +188,18 @@
 					$this->type = Symphony::Configuration()->core()->{'default-datasource-type'};
 				}
 
-				$this->datasource = Extension::load($this->type)->prepareDatasource(
-					NULL, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
-				);
+				foreach ($this->types as $type) {
+					if ($type->class != $this->type) continue;
+					
+					$this->datasource = new $type->class;
+					$this->datasource->prepare(
+						isset($_POST['fields'])
+							? $_POST['fields']
+							: NULL
+					);
+					
+					break 2;
+				}
 			}
 
 			else {
@@ -189,17 +212,17 @@
 				}
 
 				$this->datasource = Datasource::loadFromHandle($this->handle);
-				$this->type = $this->datasource->getExtension();
+				$this->type = $this->datasource->getType();
 
-				$this->datasource = Extension::load($this->type)->prepareDatasource(
-					$this->datasource, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
+				$this->datasource->prepare(
+					isset($_POST['fields'])
+						? $_POST['fields']
+						: NULL
 				);
 
 				if (!$this->datasource->allowEditorToParse()) {
 					redirect(URL . '/symphony/blueprints/datasources/info/' . $this->handle . '/');
 				}
-
-				$this->type = $this->datasource->getExtension();
 			}
 		}
 
@@ -231,7 +254,7 @@
 				);
 			}
 		}
-
+		
 		protected function __viewForm() {
 
 			// Show page alert:
@@ -289,16 +312,11 @@
 
 				$options = array();
 				
-				foreach(new ExtensionIterator(ExtensionIterator::FLAG_TYPE, array('Data Source')) as $extension){
-					$path = Extension::getPathFromClass(get_class($extension));
-					$handle = Extension::getHandleFromPath($path);
-					
-				//foreach(ExtensionManager::instance()->listByType('Data Source') as $e){
-					if(Extension::status($handle) != Extension::STATUS_ENABLED) continue;
-					$options[] = array($handle, ($this->type == $handle), $extension->about()->name);
+				foreach ($this->types as $type) {
+					$options[] = array($type->class, ($this->type == $type->class), $type->name);
 				}
-
-
+				
+				usort($options, 'General::optionsSort');
 				$select = Widget::Select('type', $options);
 
 				$div->appendChild($label);
@@ -319,27 +337,8 @@
 				)));
 				$this->appendSubheading(General::sanitize($this->datasource->about()->name));
 			}
-
-			Extension::load($this->type)->viewDatasource($this->datasource, $this->Form, $this->errors);
-
-			/*
-			###
-			# Delegate: DataSourceFormView
-			# Description: Prepare any data before the form view and action are fired.
-			Extension::notify(
-				'DataSourceFormView', '/backend/',
-				array(
-					'type'		=> &$this->type,
-					'handle'		=> &$this->handle,
-					'datasource'	=> $this->datasource,
-					'editing'		=> $this->editing,
-					'failed'		=> &$this->failed,
-					'fields'		=> &$this->fields,
-					'errors'		=> &$this->errors,
-					'wrapper'		=> $this->Form
-				)
-			);
-			*/
+			
+			$this->datasource->view($this->Form, $this->errors);
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');

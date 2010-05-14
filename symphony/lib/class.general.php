@@ -784,6 +784,19 @@
 		public static function fileSortR($f1, $f2){
 			return strcmp($f2['name'], $f1['name']);
 		}
+		
+		/***
+
+		Method: optionsSort
+		Description: Sort options array in format for Widget::Select.
+		Param: $a - First options set
+		       $b - Second options set
+		Return: -1, 0 or 1
+
+		***/
+		public static function optionsSort($a, $b) {
+			return strnatcasecmp($a[2], $b[2]);
+		}
 
 		/***
 

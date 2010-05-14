@@ -5,7 +5,7 @@
 	class Extension_DS_DynamicXML implements iExtension {
 		public function about() {
 			return (object)array(
-				'name'			=> 'Dynamic XML',
+				'name'			=> 'Dynamic XML DataSource',
 				'version'		=> '1.0.0',
 				'release-date'	=> '2010-02-26',
 				'type'			=> array(
@@ -20,6 +20,19 @@
 					'datasource_template'
 				),
 				'description'	=> 'Create data sources from XML fetched over HTTP or FTP.'
+			);
+		}
+
+	/*-------------------------------------------------------------------------
+		DataSources:
+	-------------------------------------------------------------------------*/
+		
+		public function getDataSourceTypes() {
+			return array(
+				(object)array(
+					'class'		=> 'DynamicXMLDataSource',
+					'name'		=> __('Dynamic XML')
+				)
 			);
 		}
 

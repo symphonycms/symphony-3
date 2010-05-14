@@ -11,8 +11,8 @@
 			);
 		}
 
-		final public function getExtension(){
-			return 'ds_staticxml';
+		public function getType() {
+			return 'StaticXMLDataSource';
 		}
 
 		public function getTemplate(){

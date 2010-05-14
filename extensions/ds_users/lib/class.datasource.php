@@ -12,8 +12,8 @@
 			);
 		}
 
-		final public function getExtension(){
-			return 'ds_users';
+		public function getType() {
+			return 'UsersDataSource';
 		}
 
 		public function getTemplate(){
