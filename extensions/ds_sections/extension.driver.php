@@ -45,38 +45,6 @@
 				)
 			);
 		}
-		
-		public function prepareDatasource(DataSource $datasource = null, array $data = null) {
-			if (is_null($datasource)) {
-				$datasource = new SectionsDataSource;
-			}
-			
-			$datasource->prepare($data);
-			
-			return $datasource;
-		}
-
-		public function viewDatasource(DataSource $datasource, SymphonyDOMElement $wrapper, MessageStack $errors) {
-			$datasource->view($wrapper, $errors);
-		}
-		
-	/*-------------------------------------------------------------------------
-		Events:
-	-------------------------------------------------------------------------*/
-		
-		public function prepareEvent(Event $event = null, array $data = null) {
-			if (is_null($event)) {
-				$event = new SectionsEvent;
-			}
-			
-			$event->prepare($data);
-			
-			return $event;
-		}
-
-		public function viewEvent(Event $event, SymphonyDOMElement $wrapper, MessageStack $errors) {
-			$event->view($wrapper, $errors);
-		}
 	}
 
 	return 'Extension_DS_Sections';

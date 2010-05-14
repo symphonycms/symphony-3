@@ -35,20 +35,6 @@
 				)
 			);
 		}
-
-		public function prepareDatasource(DataSource $datasource = null, array $data = null) {
-			if (is_null($datasource)) {
-				$datasource = new DynamicXMLDataSource;
-			}
-			
-			$datasource->prepare($data);
-			
-			return $datasource;
-		}
-
-		public function viewDatasource(DataSource $datasource, SymphonyDOMElement $wrapper, MessageStack $errors) {
-			$datasource->view($wrapper, $errors);
-		}
 	}
 	
 	return 'Extension_DS_DynamicXML';
