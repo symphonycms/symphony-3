@@ -17,8 +17,8 @@
 			);
 		}
 
-		final public function getExtension(){
-			return 'ds_sections';
+		public function getType() {
+			return 'SectionsEvent';
 		}
 
 		public function getTemplate(){

@@ -25,13 +25,22 @@
 		}
 		
 	/*-------------------------------------------------------------------------
-		DataSources:
+		DataSources and Events:
 	-------------------------------------------------------------------------*/
 		
 		public function getDataSourceTypes() {
 			return array(
 				(object)array(
 					'class'		=> 'SectionsDataSource',
+					'name'		=> __('Sections')
+				)
+			);
+		}
+		
+		public function getEventTypes() {
+			return array(
+				(object)array(
+					'class'		=> 'SectionsEvent',
 					'name'		=> __('Sections')
 				)
 			);

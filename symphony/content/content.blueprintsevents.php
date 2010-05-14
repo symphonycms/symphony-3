@@ -13,6 +13,7 @@
 		protected $handle;
 		protected $status;
 		protected $type;
+		protected $types;
 		
 		protected static $_loaded_views;
 		
@@ -23,6 +24,19 @@
 			$this->fields = array();
 			$this->editing = $this->failed = false;
 			$this->event = $this->handle = $this->status = $this->type = NULL;
+			$this->types = array();
+			
+			foreach (new ExtensionIterator(ExtensionIterator::FLAG_TYPE, array('Event')) as $extension) {
+				$path = Extension::getPathFromClass(get_class($extension));
+				$handle = Extension::getHandleFromPath($path);
+				
+				if (Extension::status($handle) != Extension::STATUS_ENABLED) continue;
+				if (!method_exists($extension, 'getEventTypes')) continue;
+				
+				foreach ($extension->getEventTypes() as $type) {
+					$this->types[$type->class] = $type;
+				}
+			}
 		}
 
 		public function __viewIndex() {
@@ -112,12 +126,12 @@
 					}
 
 					// Type
-					if(is_null($event->getExtension())){
+					if (is_null($event->getType())) {
 						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
+					
 					else{
-						$extension = Extension::load($event->getExtension())->about();
-						$col_type = Widget::TableData($extension->name);
+						$col_type = Widget::TableData($this->types[$event->getType()]->name);
 					}
 					
 					$eTableBody[] = Widget::TableRow(
@@ -167,9 +181,18 @@
 					$this->type = Symphony::Configuration()->core()->{'default-event-type'};
 				}
 
-				$this->event = Extension::load($this->type)->prepareEvent(
-					null, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
-				);
+				foreach ($this->types as $type) {
+					if ($type->class != $this->type) continue;
+					
+					$this->event = new $type->class;
+					$this->event->prepare(
+						isset($_POST['fields'])
+							? $_POST['fields']
+							: NULL
+					);
+					
+					break;
+				}
 			}
 
 			else {
@@ -322,15 +345,11 @@
 
 				$options = array();
 				
-				foreach(new ExtensionIterator(ExtensionIterator::FLAG_TYPE, array('Event')) as $extension){
-					$path = Extension::getPathFromClass(get_class($extension));
-					$handle = Extension::getHandleFromPath($path);
-					
-				//foreach(ExtensionManager::instance()->listByType('Event') as $e){
-					if(Extension::status($handle) != Extension::STATUS_ENABLED) continue;
-					$options[] = array($handle, ($this->type == $handle), $extension->about()->name);
+				foreach ($this->types as $type) {
+					$options[] = array($type->class, ($this->type == $type->class), $type->name);
 				}
-
+				
+				usort($options, 'General::optionsSort');
 				$select = Widget::Select('type', $options);
 
 				$div->appendChild($label);
@@ -351,8 +370,8 @@
 				)));
 				$this->appendSubheading(General::sanitize($this->event->about()->name));
 			}
-
-			Extension::load($this->type)->viewEvent($this->event, $this->Form, $this->errors);
+			
+			$this->event->view($this->Form, $this->errors);
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
