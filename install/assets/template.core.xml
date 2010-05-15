@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <symphony>
+    <maximum-upload-size>524288000000</maximum-upload-size>
+    <administration-path>symphony/</administration-path>
+    <pagination-maximum-rows>17</pagination-maximum-rows>
+    <allow-page-subscription>1</allow-page-subscription>
+    <lang>en</lang>
+    <cookie-prefix>sym-</cookie-prefix>
+    <version>%s</version>
+    <sitename>%s</sitename>
+    <file-write-mode>%s</file-write-mode>
+    <directory-write-mode>%s</directory-write-mode>
+    <condense-scripts-and-stylesheets>no</condense-scripts-and-stylesheets>
+  </symphony>
+  <default-datasource-type>ds_sections</default-datasource-type>
+  <default-event-type>ds_sections</default-event-type>
+  <log>
+    <archive>1</archive>
+    <maxsize>102400</maxsize>
+  </log>
+  <public>
+    <display-event-xml-in-source>yes</display-event-xml-in-source>
+  </public>
+  <region>
+    <time-format>%s</time-format>
+    <date-format>%s</date-format>
+    <timezone>%s</timezone>
+  </region>
+  <cache-driver>File</cache-driver>
+</configuration>
