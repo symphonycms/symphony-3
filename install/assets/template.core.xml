@@ -13,8 +13,8 @@
     <directory-write-mode>%s</directory-write-mode>
     <condense-scripts-and-stylesheets>no</condense-scripts-and-stylesheets>
   </symphony>
-  <default-datasource-type>ds_sections</default-datasource-type>
-  <default-event-type>ds_sections</default-event-type>
+  <default-datasource-type>SectionsDataSource</default-datasource-type>
+  <default-event-type>SectionsEvent</default-event-type>
   <log>
     <archive>1</archive>
     <maxsize>102400</maxsize>
