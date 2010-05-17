@@ -4,12 +4,12 @@
 		
 	Class Log{
 
-		const kNOTICE = E_NOTICE;
-		const kWARNING = E_WARNING;
-		const kERROR = E_ERROR;
+		const NOTICE = E_NOTICE;
+		const WARNING = E_WARNING;
+		const ERROR = E_ERROR;
 
-		const kAPPEND = 10;
-		const kOVERWRITE = 11;
+		const APPEND = 10;
+		const OVERWRITE = 11;
 
 		private static $__errorTypeStrings = array (
 			
@@ -98,12 +98,12 @@
 		public function writeToLog($message, $addbreak=true){
 			
 			if(!$handle = @fopen($this->_log_path, 'a')) {
-				$this->pushToLog("Could Not Open Log File '".$this->_log_path."'", self::kERROR);
+				$this->pushToLog("Could Not Open Log File '".$this->_log_path."'", self::ERROR);
 				return false;
 			}
 	
 			if(@fwrite($handle, $message . ($addbreak ? "\r\n" : '')) === FALSE) {
-				$this->pushToLog('Could Not Write To Log', self::kERROR);
+				$this->pushToLog('Could Not Write To Log', self::ERROR);
 				return false;
 			}
 			
@@ -117,13 +117,13 @@
 			return $this->_log;
 		}
 		
-		public function open($mode = self::kAPPEND){			
+		public function open($mode = self::APPEND){			
 			
-			if(!is_file($this->_log_path)) $mode = self::kOVERWRITE;
+			if(!is_file($this->_log_path)) $mode = self::OVERWRITE;
 			
-			if($mode == self::kAPPEND){
+			if($mode == self::APPEND){
 				if($this->_max_size > 0 && @filesize($this->_log_path) > $this->_max_size){
-					$mode = self::kOVERWRITE;
+					$mode = self::OVERWRITE;
 					
 					if($this->_archive){
 						$handle = gzopen(LOGS . '/main.'.DateTimeObj::get('Ymdh').'.gz','w9');
@@ -133,7 +133,7 @@
 				}
 			}
 			
-			if($mode == self::kOVERWRITE){
+			if($mode == self::OVERWRITE){
 				@unlink($this->_log_path);
 			
 				$this->writeToLog('============================================', true);
