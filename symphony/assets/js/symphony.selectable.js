@@ -49,9 +49,14 @@
 				slice.addClass('changing');
 			});
 			
+			// Ignore text selection:
+			items.live('selectstart', function() {
+				return false;
+			});
+			
 			// Start:
 			items.live('mousedown', function(event) {
-				if (event.button != 0 || event.target instanceof HTMLAnchorElement) {
+				if (event.button != (jQuery.browser.msie != undefined) || event.target instanceof HTMLAnchorElement) {
 					items.removeClass('changing');
 					state = null;
 					return;
