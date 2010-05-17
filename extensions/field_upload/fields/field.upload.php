@@ -302,6 +302,7 @@
 		}
 		
 		protected function getMetaInformation(Entry $entry, STDClass $data, $file) {
+
 			$meta = array(
 				'creation'	=> DateTimeObj::get('c', @filemtime($file)),
 				'type'		=> 'application/octet-stream'
@@ -313,7 +314,7 @@
 			}
 			
 			// Get image meta information:
-			if ($basic = @getimagesize($file)) {
+			if (strlen(trim($file)) > 0 && $basic = @getimagesize($file)) {
 				$meta['type'] = $basic['mime'];
 				$meta['dimension'] = array(
 					'width'		=> $basic[0],
