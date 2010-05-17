@@ -7,10 +7,10 @@
     <allow-page-subscription>1</allow-page-subscription>
     <lang>en</lang>
     <cookie-prefix>sym-</cookie-prefix>
-    <version>3.0.0alpha</version>
-    <sitename>Symphony 3.0 alpha</sitename>
-    <file-write-mode>0775</file-write-mode>
-    <directory-write-mode>0775</directory-write-mode>
+    <version>%s</version>
+    <sitename>%s</sitename>
+    <file-write-mode>%s</file-write-mode>
+    <directory-write-mode>%s</directory-write-mode>
     <condense-scripts-and-stylesheets>no</condense-scripts-and-stylesheets>
   </symphony>
   <default-datasource-type>SectionsDataSource</default-datasource-type>
@@ -23,9 +23,9 @@
     <display-event-xml-in-source>yes</display-event-xml-in-source>
   </public>
   <region>
-    <time-format>H:i</time-format>
-    <date-format>d F Y</date-format>
-    <timezone>Australia/Brisbane</timezone>
+    <time-format>%s</time-format>
+    <date-format>%s</date-format>
+    <timezone>%s</timezone>
   </region>
   <cache-driver>File</cache-driver>
 </configuration>

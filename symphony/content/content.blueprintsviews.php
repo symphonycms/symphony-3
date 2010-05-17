@@ -430,7 +430,7 @@
 				
 				// Flatten the url-parameters array:
 				$fields['url-parameters'] = (
-					(isset($fields['url-parameters']) and is_array())
+					(isset($fields['url-parameters']) and is_array($fields['url-parameters']))
 						? implode('/', $fields['url-parameters'])
 						: null
 				);
