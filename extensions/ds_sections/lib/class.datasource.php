@@ -648,7 +648,7 @@
 			return 'desc';
 		}*/
 
-		public function render(Register $ParameterOutput, $joins = NULL, array $where = array()){
+		public function render(Register $ParameterOutput, $joins = NULL, array $where = array(), $filter_operation_type = self::FILTER_AND){
 			$execute = true;
 
 			$result = new XMLDocument;
@@ -771,7 +771,7 @@
 
 				$joins,
 				$section->handle,
-				is_array($where) && !empty($where) ? 'AND (' . implode(($this->filter_operation_type == self::FILTER_AND ? ' AND ' : ' OR '), $where) . ')' : NULL,
+				is_array($where) && !empty($where) ? 'AND (' . implode(($filter_operation_type == self::FILTER_AND ? ' AND ' : ' OR '), $where) . ')' : NULL,
 				$order,
 				$pagination->{'record-start'},
 				$pagination->{'entries-per-page'}
