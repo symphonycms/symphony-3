@@ -300,7 +300,7 @@
 	/*-----------------------------------------------------------------------*/
 		
 		public function canTrigger(array $data) {
-			if (!isset($postdata['action'][$this->parameters()->{'root-element'}])) return false;
+			if (!isset($data['action'][$this->parameters()->{'root-element'}])) return false;
 			
 			return true;
 		}

@@ -83,7 +83,6 @@
 		protected $_about;
 		protected $_parameters;
 		protected $_dependencies;
-		protected $filter_operation_type = self::FILTER_AND;
 
 		protected static $_loaded;
 
