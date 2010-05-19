@@ -76,7 +76,7 @@
 
 		}
 
-		function findAllTags(){
+		public function findAllTags(){
 			$values = $sources = array();
 
 			if($this->{'suggestion-list-include-existing'} === true) {
@@ -135,7 +135,7 @@
 		-------------------------------------------------------------------------*/
 
 		public function findDefaultSettings(array &$fields){
-			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array('existing');
+			if(!isset($fields['suggestion-list-source'])) $fields['suggestion-list-source'] = array();
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors = null) {
@@ -148,7 +148,7 @@
 			$suggestion_list_source = $this->{'suggestion-list-source'};
 
 			$options = array(
-				array('existing', ($this->{'suggestion-list-include-existing'} === true), __('Existing Values')),
+				array('existing', ($this->{'suggestion-list-include-existing'} === true || $this->{'suggestion-list-include-existing'} == 'yes'), __('Existing Values')),
 			);
 
 			foreach (new SectionIterator as $section) {
