@@ -74,6 +74,7 @@
 			$list->setAttribute('class', 'error-list');
 
 			foreach ($this as $key => $message) {
+				
 				if (!is_numeric($key)) {
 					$key = $key . ': ';
 				}
@@ -95,6 +96,15 @@
 				else if ($message instanceof STDClass) {
 					$message = (array)$message;
 					$item = $document->createElement('li', $key . array_shift($message));
+				}
+				
+				elseif($message instanceof DOMDocumentFragment){
+					
+					$fragment = Administration::instance()->Page->createDocumentFragment();
+					$fragment->appendChild(new DOMText());
+					
+					$item = $document->createElement('li');
+					$item->appendChild($fragment);
 				}
 				
 				else {
