@@ -128,6 +128,12 @@ var Symphony;
 		min_opacity:	0.8,
 		max_opacity:	1,
 		post: function(message, type, replace) {
+			if ($('#alerts').length == 0) {
+				$('<ol />')
+					.attr('id', 'alerts')
+					.insertAfter('form');
+			}
+			
 			var self = Symphony.Alert;
 			var block = function() {
 				return false;
@@ -327,10 +333,10 @@ var Symphony;
 			});
 		}
 	};
-
+	
 	// Start timers:
 	window.setInterval(Symphony.Alert.ticker, 1000);
-
+	
 	// Initialize notices:
 	$(document).ready(function() {
 		$('#alerts > li').each(function() {
@@ -362,6 +368,46 @@ var Symphony;
 	});
 
 /*-----------------------------------------------------------------------------
+	Tabs
+-----------------------------------------------------------------------------*/
+	
+	$(document).ready(function() {
+		var tabs = $('#tab');
+		
+		// No tabs:
+		if (tabs.length == 0) return;
+		
+		var form = $('form');
+		var changed = false;
+		
+		Symphony.Language.add({
+			'You have unsaved changes, please save first.': false
+		});
+		
+		// Form has errors:
+		changed = form.find('.invalid:first').length == 1;
+		
+		// Listen for changes:
+		form.bind('change', function() {
+			changed = true;
+		});
+		
+		// Save before changing tabs:
+		$('#tab a').bind('click', function() {
+			if (changed == false) return true;
+			
+			Symphony.Alert.post(
+				'<div class="message">'
+				+ Symphony.Language.get('You have unsaved changes, please save first.')
+				+ '</div>',
+				'error'
+			);
+			
+			return false;
+		});
+	});
+	
+/*-----------------------------------------------------------------------------
 	Datasources Page
 -----------------------------------------------------------------------------*/
 	
@@ -370,7 +416,7 @@ var Symphony;
 			window.location.search = '?type=' + $(this).val();
 		});
 	});
-
+	
 /*-----------------------------------------------------------------------------
 	Events Page
 -----------------------------------------------------------------------------*/
@@ -403,7 +449,7 @@ var Symphony;
 
 		selector.trigger('change');
 	});
-
+	
 /*-----------------------------------------------------------------------------
 	Sections Page
 -----------------------------------------------------------------------------*/
@@ -411,31 +457,11 @@ var Symphony;
 	jQuery(document).ready(function() {
 		var duplicator = jQuery('#section-duplicator');
 		var layout = jQuery('#section-layout');
-
+		
 		// Not on the section editor:
 		if (duplicator.length == 0 && layout.length == 0) return;
 
 		var form = $('form');
-		var changed = false;
-
-		Symphony.Language.add({
-			'Discard your changes?': false
-		});
-
-		// Form has errors:
-		changed = form.find('.invalid:first').length == 1;
-
-		// Listen for changes:
-		form.bind('change', function() {
-			changed = true;
-		});
-
-		// Save before changing tabs:
-		$('#tab a').bind('click', function() {
-			if (changed == false) return true;
-
-			return confirm(Symphony.Language.get('Discard your changes?'));
-		});
 
 		if (duplicator.length) {
 			duplicator.symphonyFieldsDuplicator({
@@ -459,7 +485,7 @@ var Symphony;
 			});
 
 			// Update input names before submit:
-			$('form').submit(function() {
+			form.bind('submit', function() {
 				var expression = /^fields\[[0-9]+\]\[(.*)]$/;
 
 				duplicator.find('> .content > .instances > li').each(function(index) {
@@ -491,7 +517,7 @@ var Symphony;
 			layout.symphonyLayout();
 
 			// Update input names before submit:
-			$('form').submit(function() {
+			form.bind('submit', function() {
 				var expression = /^layout\[[0-9]+\]\[fieldsets\]\[[0-9]+\]\[fields\]\[(.*)]$/;
 
 				layout.find('> .columns > .column').each(function(column) {
@@ -536,8 +562,6 @@ var Symphony;
 								+ field
 								+ ']'
 							);
-
-							//console.log(input.attr('name'));
 						});
 					});
 				});
