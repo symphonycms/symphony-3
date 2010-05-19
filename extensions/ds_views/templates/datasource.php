@@ -1,8 +1,8 @@
 <?php
 	
-	require_once EXTENSIONS . '/ds_navigation/lib/navigationdatasource.php';
+	require_once EXTENSIONS . '/ds_views/lib/class.datasource.php';
 	
-	Final Class DataSource%1$s extends NavigationDataSource {
+	Final Class DataSource%1$s extends ViewsDataSource {
 
 		public function __construct(){
 			parent::__construct();
