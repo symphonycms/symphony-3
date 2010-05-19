@@ -214,7 +214,7 @@
 			$right = $layout->createColumn(Layout::SMALL);
 
 			if(!empty($_POST)){
-				$view->template = $_POST['fields']['template'];
+				$view->template = stripslashes($_POST['fields']['template']);
 			}
 
 			$fieldset = Widget::Fieldset(__('Template'));
