@@ -37,6 +37,15 @@
 					$this->types[$type->class] = $type;
 				}
 			}
+			
+			if(empty($this->types)){
+				$this->alerts()->append(
+					__(
+						'There are no Event types currently available. You will not be able to create or edit Events.'
+					),
+					AlertStack::ERROR
+				);
+			}
 		}
 
 		public function __viewIndex() {
@@ -48,7 +57,8 @@
 					'class' => 'create button'
 				)
 			));
-
+			
+			
 			$eTableHead = array(
 				array(__('Name'), 'col'),
 				array(__('Destination'), 'col'),
@@ -179,6 +189,11 @@
 
 				if (is_null($this->type)){
 					$this->type = Symphony::Configuration()->core()->{'default-event-type'};
+				}
+				
+				// Should the default type or the selected type no longer be valid, choose the first available one instead
+				if(!in_array($this->type, array_keys($this->types))){
+					$this->type = current(array_keys($this->types));
 				}
 
 				foreach ($this->types as $type) {
@@ -357,7 +372,7 @@
 				$this->Form->appendChild($div);
 			}
 
-			if(is_null($this->event->about()->name) || strlen(trim($this->event->about()->name)) == 0){
+			if(!($this->event instanceof Event) || is_null($this->event->about()->name) || strlen(trim($this->event->about()->name)) == 0){
 				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
 					__('Symphony'), __('Events'), __('Untitled')
 				)));
@@ -371,7 +386,9 @@
 				$this->appendSubheading(General::sanitize($this->event->about()->name));
 			}
 			
-			$this->event->view($this->Form, $this->errors);
+			if($this->event instanceof Event){
+				$this->event->view($this->Form, $this->errors);
+			}
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
@@ -382,6 +399,9 @@
 					'accesskey' => 's'
 				)
 			);
+			if(!($this->event instanceof Event)){
+				$save->setAttribute('disabled', 'disabled');
+			}
 			$actions->appendChild($save);
 
 			if ($this->editing == true) {

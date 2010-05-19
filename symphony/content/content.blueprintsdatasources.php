@@ -39,9 +39,19 @@
 					$this->types[$type->class] = $type;
 				}
 			}
+
+			if(empty($this->types)){
+				$this->alerts()->append(
+					__(
+						'There are no Data Source types currently available. You will not be able to create or edit Data Sources.'
+					),
+					AlertStack::ERROR
+				);
+			}
 		}
 
 		public function __viewIndex() {
+			
 			// This is the 'correct' way to append a string containing an entity
 			$title = $this->createElement('title');
 			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
@@ -187,10 +197,15 @@
 				if (is_null($this->type)){
 					$this->type = Symphony::Configuration()->core()->{'default-datasource-type'};
 				}
-
+				
+				// Should the default type or the selected type no longer be valid, choose the first available one instead
+				if(!in_array($this->type, array_keys($this->types))){
+					$this->type = current(array_keys($this->types));
+				}
+				
 				foreach ($this->types as $type) {
 					if ($type->class != $this->type) continue;
-					
+
 					$this->datasource = new $type->class;
 					$this->datasource->prepare(
 						isset($_POST['fields'])
@@ -324,7 +339,7 @@
 				$this->Form->appendChild($div);
 			}
 
-			if(is_null($this->datasource->about()->name) || strlen(trim($this->datasource->about()->name)) == 0){
+			if(!($this->datasource instanceof Datasource) || is_null($this->datasource->about()->name) || strlen(trim($this->datasource->about()->name)) == 0){
 				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
 					__('Symphony'), __('Data Sources'), __('Untitled')
 				)));
@@ -338,7 +353,9 @@
 				$this->appendSubheading(General::sanitize($this->datasource->about()->name));
 			}
 			
-			$this->datasource->view($this->Form, $this->errors);
+			if($this->datasource instanceof Datasource){
+				$this->datasource->view($this->Form, $this->errors);
+			}
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
@@ -349,6 +366,9 @@
 					'accesskey' => 's'
 				)
 			);
+			if(!($this->datasource instanceof Datasource)){
+				$save->setAttribute('disabled', 'disabled');
+			}
 			$actions->appendChild($save);
 
 			if ($this->editing == true) {
