@@ -393,7 +393,7 @@ var Symphony;
 		});
 		
 		// Save before changing tabs:
-		$('#tab a').bind('click', function() {
+		tabs.find('a').bind('click', function() {
 			if (changed == false) return true;
 			
 			Symphony.Alert.post(
