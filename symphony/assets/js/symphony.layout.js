@@ -8,8 +8,7 @@
 		Symphony.Language.add({
 			'Add Fieldset': false,
 			'Remove Fieldset': false,
-			'Choose Layout': false,
-			'Untitled': false
+			'Choose Layout': false
 		});
 		
 		jQuery.extend(settings, custom_settings);
@@ -176,7 +175,6 @@
 					// Add header:
 					jQuery('<input />')
 						.attr('name', 'name')
-						.attr('value', Symphony.Language.get('Untitled'))
 						.appendTo(
 							jQuery('<h3 />').appendTo(fieldset)
 						);
