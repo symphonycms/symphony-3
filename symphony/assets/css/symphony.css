@@ -700,7 +700,7 @@
 		padding-bottom: 6px;
 		margin-bottom: 15px;
 	}
-	form h3:after {
+	form h3:empty:after {
 		content: '\a0';
 	}
 	form h3 input {
