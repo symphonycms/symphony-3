@@ -73,6 +73,22 @@
 
 	##	Convenience Methods for DOMElement
 	Class SymphonyDOMElement extends DOMElement {
+		public function addClass($class) {
+			$classes = preg_split('%\s+%', $this->getAttribute('class'));
+			$classes[] = $class;
+			$classes = implode(' ', $classes);
+			
+			$this->setAttribute('class', $classes);
+		}
+		
+		public function removeClass($class) {
+			$classes = preg_split('%\s+%', $this->getAttribute('class'));
+			$classes = array_diff($classes, array($class));
+			$classes = implode(' ', $classes);
+			
+			$this->setAttribute('class', $classes);
+		}
+		
 		public function prependChild(DOMNode $node) {
 			if (is_null($this->firstChild)) {
 				$this->appendChild($node);
