@@ -279,11 +279,7 @@
 						);
 
 						foreach ($column->fieldset as $fieldset) {
-							if (!isset($fieldset->name) or trim((string)$fieldset->name) == '') {
-								$name = __('Untitled');
-							}
-
-							else {
+							if (isset($fieldset->name) or trim((string)$fieldset->name) == '') {
 								$name = (string)$fieldset->name;
 							}
 
@@ -685,7 +681,7 @@
 				if (empty($column->fieldsets)) {
 					$column->fieldsets = array(
 						(object)array(
-							'name'		=> __('Untitled'),
+							'name'		=> null,
 							'fields'	=> array()
 						)
 					);
@@ -787,7 +783,7 @@
 						$fieldset = $doc->createElement('fieldset');
 
 						if (!isset($data->name) or trim($data->name) == '') {
-							$data->name = __('Untitled');
+							$data->name = null;
 						}
 
 						$name = $doc->createElement('name', $data->name);

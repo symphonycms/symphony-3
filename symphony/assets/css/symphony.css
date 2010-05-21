@@ -700,6 +700,9 @@
 		padding-bottom: 6px;
 		margin-bottom: 15px;
 	}
+	form h3:empty:after {
+		content: '\a0';
+	}
 	form h3 input {
 		background: transparent;
 		border: none;
@@ -1098,7 +1101,6 @@
 	#alerts > li {
 		border: 1px solid hsla(0, 0%, 0%, 0.2);
 		border-top: none;
-		background: #8c8c8c;
 		background: -moz-linear-gradient(
 			hsla(0, 0%, 0%, 0.3),
 			hsla(0, 0%, 0%, 0.1) 3px,
@@ -1112,6 +1114,7 @@
 			color-stop(3%, hsla(0, 0%, 0%, 0.1)),
 			color-stop(10%, hsla(0, 0%, 0%, 0))
 		);
+		background-color: #8c8c8c;
 		border-bottom-right-radius: 5px;
 		border-bottom-left-radius: 5px;
 		-moz-border-radius-bottomright: 5px;
