@@ -387,7 +387,7 @@
 			}
 			
 			catch (ExtensionException $e) {
-				$extension = Extension::load($name);
+				$extension = Extension::load($handle);
 				$about = $extension->about();
 				
 				switch ($action) {

@@ -218,7 +218,7 @@
 											$details->db);
 
 			$db->connect($connection_string);
-			$db->prefix = $details->{'tbl-prefix'};
+			$db->prefix = $details->{'table-name-prefix'};
 
 			$db->force_query_caching = NULL;
 			if(!is_null($details->disable_query_caching)) $db->force_query_caching = ($details->disable_query_caching == 'yes' ? true : false);
