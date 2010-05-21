@@ -35,7 +35,7 @@
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Extensions'))));
 			$this->appendSubheading(__('Extensions'));
 
-			$path = URL . '/symphony/system/extensions/';
+			$path = ADMIN_URL . '/system/extensions/';
 			$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL());
 			
 		## Define layout

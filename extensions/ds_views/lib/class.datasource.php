@@ -264,7 +264,7 @@
 		public function prepareSourceColumnValue() {
 
 			return Widget::TableData(
-				Widget::Anchor("Views", URL . '/symphony/blueprints/views/', array(
+				Widget::Anchor("Views", ADMIN_URL . '/blueprints/views/', array(
 					'title' => 'Views'
 				))
 			);

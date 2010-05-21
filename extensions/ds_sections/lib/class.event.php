@@ -30,7 +30,7 @@
 
 			if ($section instanceof Section) {
 				return Widget::TableData(
-					Widget::Anchor($section->name, URL . '/symphony/blueprints/sections/edit/' . $section->handle . '/', array(
+					Widget::Anchor($section->name, ADMIN_URL . '/blueprints/sections/edit/' . $section->handle . '/', array(
 						'title' => $section->handle
 					))
 				);

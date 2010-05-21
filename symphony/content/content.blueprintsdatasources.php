@@ -113,7 +113,7 @@
 
 					// Name
 					$col_name = Widget::TableData(
-						Widget::Anchor($ds->about()->name, URL . "/symphony/blueprints/datasources/{$view_mode}/{$handle}/", array(
+						Widget::Anchor($ds->about()->name, ADMIN_URL . "/blueprints/datasources/{$view_mode}/{$handle}/", array(
 							'title' => $ds->parameters()->pathname
 						))
 					);
@@ -130,7 +130,7 @@
 							if($fragment_views->hasChildNodes()) $fragment_views->appendChild(new DOMText(', '));
 
 							$fragment_views->appendChild(
-								Widget::Anchor($view['title'], URL . "/symphony/blueprints/views/edit/{$view['handle']}/")
+								Widget::Anchor($view['title'], ADMIN_URL . "/blueprints/views/edit/{$view['handle']}/")
 							);
 						}
 					}
@@ -236,7 +236,7 @@
 				);
 
 				if (!$this->datasource->allowEditorToParse()) {
-					redirect(URL . '/symphony/blueprints/datasources/info/' . $this->handle . '/');
+					redirect(ADMIN_URL . '/blueprints/datasources/info/' . $this->handle . '/');
 				}
 			}
 		}
@@ -252,7 +252,7 @@
 			try{
 				$pathname = $this->datasource->save($this->errors);
 				$handle = preg_replace('/.php$/i', NULL, basename($pathname));
-				redirect(URL . "/symphony/blueprints/datasources/edit/{$handle}/:".($this->editing == true ? 'saved' : 'created')."/");
+				redirect(ADMIN_URL . "/blueprints/datasources/edit/{$handle}/:".($this->editing == true ? 'saved' : 'created')."/");
 			}
 
 			catch (DatasourceException $e) {
@@ -288,8 +288,8 @@
 								'Data source updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									URL . '/symphony/blueprints/datasources/new/',
-									URL . '/symphony/blueprints/datasources/'
+									ADMIN_URL . '/blueprints/datasources/new/',
+									ADMIN_URL . '/blueprints/datasources/'
 								)
 							),
 							AlertStack::SUCCESS
@@ -302,8 +302,8 @@
 								'Data source created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									URL . '/symphony/blueprints/datasources/new/',
-									URL . '/symphony/blueprints/datasources/'
+									ADMIN_URL . '/blueprints/datasources/new/',
+									ADMIN_URL . '/blueprints/datasources/'
 								)
 							),
 							AlertStack::SUCCESS
@@ -598,7 +598,7 @@
 			if(is_array($checked) && !empty($checked)) {
 				switch ($_POST['with-selected']) {
 					case 'delete':
-						$this->__actionDelete($checked, URL . '/symphony/blueprints/datasources/');
+						$this->__actionDelete($checked, ADMIN_URL . '/blueprints/datasources/');
 						break;
 				}
 			}

@@ -92,8 +92,8 @@
 			elseif(!$page && !$this->_callback) trigger_error(__('Cannot request a page callback without first specifying the page.'));
 
 			// Remove multiple slashes and any flags from the URL (e.g. :saved/ or :created/)
-			$this->_currentPage = URL . preg_replace(array('/:[^\/]+\/?$/', '/\/{2,}/'), '/', '/symphony' . $page);
-			
+			$this->_currentPage = ADMIN_URL . preg_replace(array('/:[^\/]+\/?$/', '/\/{2,}/'), '/', $page);
+
 			$bits = preg_split('/\//', trim($page, '/'), 3, PREG_SPLIT_NO_EMPTY);
 			
 			if($bits[0] == 'login'){

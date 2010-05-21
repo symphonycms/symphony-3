@@ -301,7 +301,7 @@
 		public function prepareSourceColumnValue() {
 
 			return Widget::TableData(
-				Widget::Anchor("Users", URL . '/symphony/system/users/', array(
+				Widget::Anchor("Users", ADMIN_URL . '/system/users/', array(
 					'title' => 'Users'
 				))
 			);
