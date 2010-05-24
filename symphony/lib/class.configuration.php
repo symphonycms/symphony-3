@@ -2,9 +2,6 @@
 
 	Class ConfigurationElement{
 		
-		const NODE_OBJECT = 'object';
-		const NODE_ARRAY = 'array';
-		
 		protected $doc;
 		protected $path;
 		protected $properties;
@@ -23,29 +20,15 @@
 	
 		protected function __loadVariablesFromNode(SimpleXMLElement $elements, &$group){
 			
-			$node_type = NULL;
-			
 			// Determine the type of group being created. Either an array or stdclass object
-			if(isset($elements->item)){
-				$group = array();
-				$node_type = self::NODE_ARRAY;
-			}
-			else{
-				$group = new StdClass;
-				$node_type = self::NODE_OBJECT;
-			}
+			$group = isset($elements->item) ? array() : new StdClass;
 			
 			foreach($elements as $e){
 
 				$name = $e->getName();
 				
 				// If the name is 'item' use a numeric index
-				if($name == 'item'){
-					$index = count($group);
-				}
-				else{
-					$index = $name;
-				}
+				$index = ($name == 'item') ? count($group) : $name;
 				
 				if(count($e->children()) > 0){
 					$value = NULL;
@@ -56,7 +39,7 @@
 				}
 				
 				// Using the value above, construct the group
-				if($node_type == self::NODE_ARRAY){
+				if(is_array($group)){
 					$group[$index] = $value;
 				}
 				
