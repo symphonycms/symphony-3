@@ -1,12 +1,16 @@
 <?php
 
 	Class ConfigurationElement{
+		
+		const NODE_OBJECT = 'object';
+		const NODE_ARRAY = 'array';
+		
 		protected $doc;
 		protected $path;
 		protected $properties;
 	
 		public function __construct($path){
-			$this->properties = new StdClass;
+			$this->properties = NULL;
 			$this->path = $path;
 			if(!file_exists($path)){
 				$this->doc = new SimpleXMLElement('<configuration></configuration>');
@@ -17,17 +21,49 @@
 			}
 		}
 	
-		protected function __loadVariablesFromNode(SimpleXMLElement $elements, StdClass &$group){
+		protected function __loadVariablesFromNode(SimpleXMLElement $elements, &$group){
+			
+			$node_type = NULL;
+			
+			// Determine the type of group being created. Either an array or stdclass object
+			if(isset($elements->item)){
+				$group = array();
+				$node_type = self::NODE_ARRAY;
+			}
+			else{
+				$group = new StdClass;
+				$node_type = self::NODE_OBJECT;
+			}
+			
 			foreach($elements as $e){
+
 				$name = $e->getName();
 				
-				if(count($e->children()) > 0){
-					$group->$name = new StdClass;
-					self::__loadVariablesFromNode($e, $group->$name);
+				// If the name is 'item' use a numeric index
+				if($name == 'item'){
+					$index = count($group);
 				}
 				else{
-					$group->$name = (string)$e;
+					$index = $name;
 				}
+				
+				if(count($e->children()) > 0){
+					$value = NULL;
+					self::__loadVariablesFromNode($e, $value);
+				}
+				else{
+					$value = (string)$e;
+				}
+				
+				// Using the value above, construct the group
+				if($node_type == self::NODE_ARRAY){
+					$group[$index] = $value;
+				}
+				
+				else{
+					$group->$name = $value;
+				}
+				
 			}
 		}
 		
@@ -61,20 +97,25 @@
 			$doc->appendChild($root);
 		
 			self::__generateXML($this->properties, $root);
-		
+
 			return $doc->saveXML();
 		}
 	
-		protected static function __generateXML(StdClass $elements, DOMNode &$parent){
+		protected static function __generateXML($elements, DOMNode &$parent){
+			
 			foreach($elements as $name => $e){
-				if($e instanceof StdClass){
-					$element = $parent->ownerDocument->createElement($name);
+				
+				$element_name = (is_numeric($name) ? 'item' : $name);
+				
+				if($e instanceof StdClass || is_array($e)){
+					$element = $parent->ownerDocument->createElement($element_name);
 					self::__generateXML($e, $element);
 				}
+				
 				else{
-					$element = $parent->ownerDocument->createElement($name, (string)$e);
+					$element = $parent->ownerDocument->createElement($element_name, (string)$e);
 				}
-			
+				
 				$parent->appendChild($element);
 			}
 		}
