@@ -22,12 +22,11 @@
 	define_safe('CACHE',	MANIFEST . '/cache');
 	define_safe('TMP',		MANIFEST . '/tmp');
 	define_safe('LOGS',		MANIFEST . '/logs');
-	define_safe('CONFIG', 	MANIFEST . '/conf');
+	define_safe('CONF', 	MANIFEST . '/conf');
 
 	define_safe('CONTENT', 	SYMPHONY . '/content');
 
 	define_safe('TEMPLATES', SYMPHONY . '/templates');
-	define_safe('TEMPLATE', SYMPHONY . '/templates');
 
 	define_safe('STARTTIME', precision_timer());
 

@@ -111,7 +111,7 @@
 			if(!isset(self::$objects[$handle]) || !(self::$objects[$handle] instanceof ConfigurationElement)){
 				$class = 'ConfigurationElement';
 				if(isset($param[0]) && strlen(trim($param[0])) > 0) $class = $param[0];
-				self::$objects[$handle] = new $class(CONFIG . "/{$handle}.xml");
+				self::$objects[$handle] = new $class(CONF . "/{$handle}.xml");
 			}
 			return self::$objects[$handle];
 		}
