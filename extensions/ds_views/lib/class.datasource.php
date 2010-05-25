@@ -2,7 +2,7 @@
 	
 	require_once LIB . '/class.datasource.php';
 	
-	Class NavigationDataSource extends DataSource {
+	Class ViewsDataSource extends DataSource {
 		public function __construct(){
 			$this->_about = new StdClass;
 			$this->_parameters = (object)array(
@@ -13,11 +13,11 @@
 		}
 
 		public function getType() {
-			return 'NavigationDataSource';
+			return 'ViewsDataSource';
 		}
 
 		public function getTemplate(){
-			return EXTENSIONS . '/ds_navigation/templates/datasource.php';
+			return EXTENSIONS . '/ds_views/templates/datasource.php';
 		}
 		
 	/*-----------------------------------------------------------------------*/
@@ -264,7 +264,7 @@
 		public function prepareSourceColumnValue() {
 
 			return Widget::TableData(
-				Widget::Anchor("Views", URL . '/symphony/blueprints/views/', array(
+				Widget::Anchor("Views", ADMIN_URL . '/blueprints/views/', array(
 					'title' => 'Views'
 				))
 			);

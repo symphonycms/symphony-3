@@ -39,9 +39,19 @@
 					$this->types[$type->class] = $type;
 				}
 			}
+
+			if(empty($this->types)){
+				$this->alerts()->append(
+					__(
+						'There are no Data Source types currently available. You will not be able to create or edit Data Sources.'
+					),
+					AlertStack::ERROR
+				);
+			}
 		}
 
 		public function __viewIndex() {
+			
 			// This is the 'correct' way to append a string containing an entity
 			$title = $this->createElement('title');
 			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
@@ -103,7 +113,7 @@
 
 					// Name
 					$col_name = Widget::TableData(
-						Widget::Anchor($ds->about()->name, URL . "/symphony/blueprints/datasources/{$view_mode}/{$handle}/", array(
+						Widget::Anchor($ds->about()->name, ADMIN_URL . "/blueprints/datasources/{$view_mode}/{$handle}/", array(
 							'title' => $ds->parameters()->pathname
 						))
 					);
@@ -120,7 +130,7 @@
 							if($fragment_views->hasChildNodes()) $fragment_views->appendChild(new DOMText(', '));
 
 							$fragment_views->appendChild(
-								Widget::Anchor($view['title'], URL . "/symphony/blueprints/views/edit/{$view['handle']}/")
+								Widget::Anchor($view['title'], ADMIN_URL . "/blueprints/views/edit/{$view['handle']}/")
 							);
 						}
 					}
@@ -187,10 +197,15 @@
 				if (is_null($this->type)){
 					$this->type = Symphony::Configuration()->core()->{'default-datasource-type'};
 				}
-
+				
+				// Should the default type or the selected type no longer be valid, choose the first available one instead
+				if(!in_array($this->type, array_keys($this->types))){
+					$this->type = current(array_keys($this->types));
+				}
+				
 				foreach ($this->types as $type) {
 					if ($type->class != $this->type) continue;
-					
+
 					$this->datasource = new $type->class;
 					$this->datasource->prepare(
 						isset($_POST['fields'])
@@ -221,7 +236,7 @@
 				);
 
 				if (!$this->datasource->allowEditorToParse()) {
-					redirect(URL . '/symphony/blueprints/datasources/info/' . $this->handle . '/');
+					redirect(ADMIN_URL . '/blueprints/datasources/info/' . $this->handle . '/');
 				}
 			}
 		}
@@ -237,7 +252,7 @@
 			try{
 				$pathname = $this->datasource->save($this->errors);
 				$handle = preg_replace('/.php$/i', NULL, basename($pathname));
-				redirect(URL . "/symphony/blueprints/datasources/edit/{$handle}/:".($this->editing == true ? 'saved' : 'created')."/");
+				redirect(ADMIN_URL . "/blueprints/datasources/edit/{$handle}/:".($this->editing == true ? 'saved' : 'created')."/");
 			}
 
 			catch (DatasourceException $e) {
@@ -273,8 +288,8 @@
 								'Data source updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									URL . '/symphony/blueprints/datasources/new/',
-									URL . '/symphony/blueprints/datasources/'
+									ADMIN_URL . '/blueprints/datasources/new/',
+									ADMIN_URL . '/blueprints/datasources/'
 								)
 							),
 							AlertStack::SUCCESS
@@ -287,8 +302,8 @@
 								'Data source created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									URL . '/symphony/blueprints/datasources/new/',
-									URL . '/symphony/blueprints/datasources/'
+									ADMIN_URL . '/blueprints/datasources/new/',
+									ADMIN_URL . '/blueprints/datasources/'
 								)
 							),
 							AlertStack::SUCCESS
@@ -324,7 +339,7 @@
 				$this->Form->appendChild($div);
 			}
 
-			if(is_null($this->datasource->about()->name) || strlen(trim($this->datasource->about()->name)) == 0){
+			if(!($this->datasource instanceof Datasource) || is_null($this->datasource->about()->name) || strlen(trim($this->datasource->about()->name)) == 0){
 				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
 					__('Symphony'), __('Data Sources'), __('Untitled')
 				)));
@@ -338,7 +353,9 @@
 				$this->appendSubheading(General::sanitize($this->datasource->about()->name));
 			}
 			
-			$this->datasource->view($this->Form, $this->errors);
+			if($this->datasource instanceof Datasource){
+				$this->datasource->view($this->Form, $this->errors);
+			}
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
@@ -349,6 +366,9 @@
 					'accesskey' => 's'
 				)
 			);
+			if(!($this->datasource instanceof Datasource)){
+				$save->setAttribute('disabled', 'disabled');
+			}
 			$actions->appendChild($save);
 
 			if ($this->editing == true) {
@@ -578,7 +598,7 @@
 			if(is_array($checked) && !empty($checked)) {
 				switch ($_POST['with-selected']) {
 					case 'delete':
-						$this->__actionDelete($checked, URL . '/symphony/blueprints/datasources/');
+						$this->__actionDelete($checked, ADMIN_URL . '/blueprints/datasources/');
 						break;
 				}
 			}

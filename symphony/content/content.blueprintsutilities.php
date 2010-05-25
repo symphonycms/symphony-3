@@ -46,7 +46,7 @@
 					$uRow = Widget::TableData(
 						Widget::Anchor(
 							$util,
-							URL . '/symphony/blueprints/utilities/edit/' . str_replace('.xsl', '', $util) . '/')
+							ADMIN_URL . '/blueprints/utilities/edit/' . str_replace('.xsl', '', $util) . '/')
 						);
 
 					$uRow->appendChild(Widget::Input("items[{$util}]", null, 'checkbox'));
@@ -100,12 +100,12 @@
 				$file_abs = UTILITIES . '/' . $this->_existing_file;
 				$filename = $this->_existing_file;
 
-				if(!is_file($file_abs) && !is_readable($file_abs)) redirect(URL . '/symphony/blueprints/utilities/new/');
+				if(!is_file($file_abs) && !is_readable($file_abs)) redirect(ADMIN_URL . '/blueprints/utilities/new/');
 
 				$fields['name'] = $filename;
 				$fields['template'] = file_get_contents($file_abs);
 
-				$this->Form->setAttribute('action', URL . '/symphony/blueprints/utilities/edit/' . $this->_context[1] . '/');
+				$this->Form->setAttribute('action', ADMIN_URL . '/blueprints/utilities/edit/' . $this->_context[1] . '/');
 			}
 
 			else{
@@ -131,8 +131,8 @@
 								'Utility updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									URL . '/symphony/blueprints/utilities/new/',
-									URL . '/symphony/blueprints/utilities/'
+									ADMIN_URL . '/blueprints/utilities/new/',
+									ADMIN_URL . '/blueprints/utilities/'
 								)
 							),
 							AlertStack::SUCCESS
@@ -145,8 +145,8 @@
 								'Utility created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									URL . '/symphony/blueprints/utilities/new/',
-									URL . '/symphony/blueprints/utilities/'
+									ADMIN_URL . '/blueprints/utilities/new/',
+									ADMIN_URL . '/blueprints/utilities/'
 								)
 							),
 							AlertStack::SUCCESS
@@ -198,7 +198,7 @@
 						$li->setAttribute('class', 'odd');
 					}
 
-					$li->appendChild(Widget::Anchor($util, URL . '/symphony/blueprints/utilities/edit/' . str_replace('.xsl', '', $util) . '/', array()));
+					$li->appendChild(Widget::Anchor($util, ADMIN_URL . '/blueprints/utilities/edit/' . str_replace('.xsl', '', $util) . '/', array()));
 					$ul->appendChild($li);
 				}
 
@@ -300,7 +300,7 @@
 						# Description: After saving the asset, the file path is provided.
 						//Extension::notify('Edit', getCurrentPage(), array('file' => $file));
 
-						redirect(URL . '/symphony/blueprints/utilities/edit/'.str_replace('.xsl', '', $fields['name']) . '/'.($this->_context[0] == 'new' ? 'created' : 'saved') . '/');
+						redirect(ADMIN_URL . '/blueprints/utilities/edit/'.str_replace('.xsl', '', $fields['name']) . '/'.($this->_context[0] == 'new' ? 'created' : 'saved') . '/');
 
 					}
 				}
@@ -313,7 +313,7 @@
 				# Delegate: Delete
 				# Description: Prior to deleting the asset file. Target file path is provided.
 				//Extension::notify('Delete', getCurrentPage(), array('file' => WORKSPACE . '/' . $this->_existing_file_rel));
-				$this->__actionDelete(UTILITIES . '/' . $this->_existing_file, URL . '/symphony/blueprints/components/');
+				$this->__actionDelete(UTILITIES . '/' . $this->_existing_file, ADMIN_URL . '/blueprints/components/');
 		  	}
 		}
 
@@ -335,7 +335,7 @@
 			if(is_array($checked) && !empty($checked)) {
 				switch ($_POST['with-selected']) {
 					case 'delete':
-						$this->__actionDelete($checked, URL . '/symphony/blueprints/utilities/');
+						$this->__actionDelete($checked, ADMIN_URL . '/blueprints/utilities/');
 						break;
 				}
 			}

@@ -1,12 +1,13 @@
 <?php
 
 	Class ConfigurationElement{
+		
 		protected $doc;
 		protected $path;
 		protected $properties;
 	
 		public function __construct($path){
-			$this->properties = new StdClass;
+			$this->properties = NULL;
 			$this->path = $path;
 			if(!file_exists($path)){
 				$this->doc = new SimpleXMLElement('<configuration></configuration>');
@@ -17,17 +18,35 @@
 			}
 		}
 	
-		protected function __loadVariablesFromNode(SimpleXMLElement $elements, StdClass &$group){
+		protected function __loadVariablesFromNode(SimpleXMLElement $elements, &$group){
+			
+			// Determine the type of group being created. Either an array or stdclass object
+			$group = isset($elements->item) ? array() : new StdClass;
+			
 			foreach($elements as $e){
+
 				$name = $e->getName();
 				
+				// If the name is 'item' use a numeric index
+				$index = ($name == 'item') ? count($group) : $name;
+				
 				if(count($e->children()) > 0){
-					$group->$name = new StdClass;
-					self::__loadVariablesFromNode($e, $group->$name);
+					$value = NULL;
+					self::__loadVariablesFromNode($e, $value);
 				}
 				else{
-					$group->$name = (string)$e;
+					$value = (string)$e;
 				}
+				
+				// Using the value above, construct the group
+				if(is_array($group)){
+					$group[$index] = $value;
+				}
+				
+				else{
+					$group->$name = $value;
+				}
+				
 			}
 		}
 		
@@ -61,20 +80,25 @@
 			$doc->appendChild($root);
 		
 			self::__generateXML($this->properties, $root);
-		
+
 			return $doc->saveXML();
 		}
 	
-		protected static function __generateXML(StdClass $elements, DOMNode &$parent){
+		protected static function __generateXML($elements, DOMNode &$parent){
+			
 			foreach($elements as $name => $e){
-				if($e instanceof StdClass){
-					$element = $parent->ownerDocument->createElement($name);
+				
+				$element_name = (is_numeric($name) ? 'item' : $name);
+				
+				if($e instanceof StdClass || is_array($e)){
+					$element = $parent->ownerDocument->createElement($element_name);
 					self::__generateXML($e, $element);
 				}
+				
 				else{
-					$element = $parent->ownerDocument->createElement($name, (string)$e);
+					$element = $parent->ownerDocument->createElement($element_name, (string)$e);
 				}
-			
+				
 				$parent->appendChild($element);
 			}
 		}

@@ -295,7 +295,7 @@
 			}
 			
 			if($errors->length() == 0){
-				redirect(URL . '/symphony');
+				redirect(ADMIN_URL);
 			}
 			
 		}

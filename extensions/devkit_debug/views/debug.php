@@ -171,7 +171,7 @@
 				$this->createStylesheetElement(URL . '/extensions/devkit_debug/assets/devkit.css')
 			);
 			$wrapper->appendChild(
-				$this->createScriptElement(URL . '/symphony/assets/js/jquery.js')
+				$this->createScriptElement(ADMIN_URL . '/assets/js/jquery.js')
 			);
 			$wrapper->appendChild(
 				$this->createScriptElement(URL . '/extensions/devkit_debug/assets/jquery.scrollto.js')

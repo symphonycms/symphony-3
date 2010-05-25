@@ -16,7 +16,7 @@
 		public function __viewIndex() {
 			$this->appendSubheading(__('Settings'));
 
-			$path = URL . '/symphony/system/settings/';
+			$path = ADMIN_URL . '/system/settings/';
 			
 			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') > 0){
 			
@@ -197,7 +197,7 @@
 		public function __viewExtensions() {
 			$this->appendSubheading(__('Settings'));
 			
-			$path = URL . '/symphony/system/settings/';
+			$path = ADMIN_URL . '/system/settings/';
 
 			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') <= 0){
 				// No settings for extensions here

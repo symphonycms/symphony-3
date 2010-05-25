@@ -2,10 +2,10 @@
 
 	require_once 'lib/class.datasource.php';
 
-	class Extension_DS_Navigation implements iExtension {
+	class Extension_DS_Views implements iExtension {
 		public function about() {
 			return (object)array(
-				'name'			=> 'Navigation DataSource',
+				'name'			=> 'Views DataSource',
 				'version'		=> '1.0.0',
 				'release-date'	=> '2010-02-26',
 				'type'			=> array(
@@ -19,7 +19,7 @@
 				'provides'		=> array(
 					'datasource_template'
 				),
-				'description'	=> 'Create data sources from page navigation data.'
+				'description'	=> 'Create data sources from view navigation data.'
 			);
 		}
 		
@@ -30,11 +30,11 @@
 		public function getDataSourceTypes() {
 			return array(
 				(object)array(
-					'class'		=> 'NavigationDataSource',
-					'name'		=> __('Navigation')
+					'class'		=> 'ViewsDataSource',
+					'name'		=> __('Views')
 				)
 			);
 		}
 	}
 	
-	return 'Extension_DS_Navigation';
+	return 'Extension_DS_Views';

@@ -132,7 +132,9 @@
 				
 					foreach($delegates as $d){
 						$count++;
-						$extension->{(string)$d->attributes()->callback}($context);
+						if(is_callable(array($extension, (string)$d->attributes()->callback))){
+							$extension->{(string)$d->attributes()->callback}($context);
+						}
 					}
 				}
 			}

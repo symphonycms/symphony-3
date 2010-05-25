@@ -37,6 +37,15 @@
 					$this->types[$type->class] = $type;
 				}
 			}
+			
+			if(empty($this->types)){
+				$this->alerts()->append(
+					__(
+						'There are no Event types currently available. You will not be able to create or edit Events.'
+					),
+					AlertStack::ERROR
+				);
+			}
 		}
 
 		public function __viewIndex() {
@@ -48,7 +57,8 @@
 					'class' => 'create button'
 				)
 			));
-
+			
+			
 			$eTableHead = array(
 				array(__('Name'), 'col'),
 				array(__('Destination'), 'col'),
@@ -95,7 +105,7 @@
 
 
 					$col_name = Widget::TableData(
-						Widget::Anchor($event->about()->name, URL . "/symphony/blueprints/events/{$view_mode}/{$handle}/", array(
+						Widget::Anchor($event->about()->name, ADMIN_URL . "/blueprints/events/{$view_mode}/{$handle}/", array(
 							'title' => $event->parameters()->pathname
 						))
 					);
@@ -113,7 +123,7 @@
 							if($fragment_views->hasChildNodes()) $fragment_views->appendChild(new DOMText(', '));
 
 							$fragment_views->appendChild(
-								Widget::Anchor($view['title'], URL . "/symphony/blueprints/views/edit/{$view['handle']}/")
+								Widget::Anchor($view['title'], ADMIN_URL . "/blueprints/views/edit/{$view['handle']}/")
 							);
 						}
 					}
@@ -180,6 +190,11 @@
 				if (is_null($this->type)){
 					$this->type = Symphony::Configuration()->core()->{'default-event-type'};
 				}
+				
+				// Should the default type or the selected type no longer be valid, choose the first available one instead
+				if(!in_array($this->type, array_keys($this->types))){
+					$this->type = current(array_keys($this->types));
+				}
 
 				foreach ($this->types as $type) {
 					if ($type->class != $this->type) continue;
@@ -212,7 +227,7 @@
 				);
 
 				if (!$this->event->allowEditorToParse()) {
-					redirect(URL . '/symphony/blueprints/events/info/' . $this->handle . '/');
+					redirect(ADMIN_URL . '/blueprints/events/info/' . $this->handle . '/');
 				}
 
 				$this->type = $this->event->getExtension();
@@ -269,7 +284,7 @@
 				$pathname = $this->event->save($this->errors);
 				$handle = preg_replace('/.php$/i', NULL, basename($pathname));
 				redirect(
-					URL . "/symphony/blueprints/events/edit/{$handle}/:"
+					ADMIN_URL . "/blueprints/events/edit/{$handle}/:"
 					. ($this->editing == true ? 'saved' : 'created') . "/"
 				);
 			}
@@ -306,8 +321,8 @@
 								'Event updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									URL . '/symphony/blueprints/events/new/',
-									URL . '/symphony/blueprints/events/'
+									ADMIN_URL . '/blueprints/events/new/',
+									ADMIN_URL . '/blueprints/events/'
 								)
 							),
 							AlertStack::SUCCESS
@@ -320,8 +335,8 @@
 								'Event created at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
-									URL . '/symphony/blueprints/events/new/',
-									URL . '/symphony/blueprints/events/'
+									ADMIN_URL . '/blueprints/events/new/',
+									ADMIN_URL . '/blueprints/events/'
 								)
 							),
 							AlertStack::SUCCESS
@@ -357,7 +372,7 @@
 				$this->Form->appendChild($div);
 			}
 
-			if(is_null($this->event->about()->name) || strlen(trim($this->event->about()->name)) == 0){
+			if(!($this->event instanceof Event) || is_null($this->event->about()->name) || strlen(trim($this->event->about()->name)) == 0){
 				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
 					__('Symphony'), __('Events'), __('Untitled')
 				)));
@@ -371,7 +386,9 @@
 				$this->appendSubheading(General::sanitize($this->event->about()->name));
 			}
 			
-			$this->event->view($this->Form, $this->errors);
+			if($this->event instanceof Event){
+				$this->event->view($this->Form, $this->errors);
+			}
 
 			$actions = $this->createElement('div');
 			$actions->setAttribute('class', 'actions');
@@ -382,6 +399,9 @@
 					'accesskey' => 's'
 				)
 			);
+			if(!($this->event instanceof Event)){
+				$save->setAttribute('disabled', 'disabled');
+			}
 			$actions->appendChild($save);
 
 			if ($this->editing == true) {
