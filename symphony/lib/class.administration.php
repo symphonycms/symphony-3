@@ -25,14 +25,25 @@
 		
 		private $_currentPage;
 		private $_callback;
+		
+		protected static $Headers;
 
 		public $Page;
+		
+		public static function Headers() {
+			return self::$Headers;
+		}
 		
 		public static function instance(){
 			if(!(self::$_instance instanceof Administration)) 
 				self::$_instance = new self;
 				
 			return self::$_instance;
+		}
+		
+		public function __construct(){
+			parent::__construct();
+			self::$Headers = new DocumentHeaders;
 		}
 		
 		private function __buildPage($page){
@@ -214,7 +225,15 @@
 		}
 		
 		public function display($page){
-
+			
+			// Default headers. Can be overwritten later
+			//self::$Headers->append('HTTP/1.0 200 OK');
+			self::$Headers->append('Content-Type', 'text/html;charset=utf-8');
+			self::$Headers->append('Expires', 'Mon, 12 Dec 1982 06:14:00 GMT');
+			self::$Headers->append('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT');
+			self::$Headers->append('Cache-Control', 'no-cache, must-revalidate, max-age=0');
+			self::$Headers->append('Pragma', 'no-cache');
+			
 			$this->__buildPage($page);
 			
 			####
@@ -230,6 +249,8 @@
 			# Description: Immediately after generating the admin page. Provided with string containing page source
 			# Global: Yes
 			Extension::notify('AdminPagePostGenerate', '/backend/', array('output' => &$output));
+			
+			self::Headers()->render();
 			
 			return $output;	
 		}
