@@ -19,11 +19,9 @@
 	require_once(DOCROOT . '/symphony/lib/include.utilities.php');	
 	require_once(DOCROOT . '/symphony/defines.php');
 	
-	if(!file_exists(CONFIG . '/db.xml')){
-		if (file_exists(DOCROOT . '/install.php')){
-			header(sprintf('Location: %s/install.php', URL));
-			exit();
-		}
+	if(!file_exists(CONF . '/db.xml') && file_exists(DOCROOT . '/install/index.php')){
+		header(sprintf('Location: %s/install/', URL));
+		exit();
 		
 		die('<h2>Error</h2><p>Could not locate Symphony configuration files. Please check they exist in <code>manifest/conf/</code>.</p>');
 	}
