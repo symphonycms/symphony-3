@@ -6,22 +6,26 @@
 	require(DOCROOT . '/symphony/bundle.php');
 
 	function renderer($handle){
-		if(!file_exists(LIB . "/class.{$handle}.php")){
+		
+		if(file_exists(realpath($handle))){
+			$path = realpath($handle);
+		}
+		
+		elseif(file_exists(LIB . "/class.{$handle}.php")){
+			$path = LIB . "/class.{$handle}.php";
+		}
+		
+		else{
 			throw new Exception('Invalid Symphony renderer handle specified.');
 		}
 
-		$classname = require_once(LIB . "/class.{$handle}.php");
+		$classname = require_once($path);
 		return call_user_func("{$classname}::instance");
 	}
 
 	$handle = (isset($_GET['symphony-renderer'])
 		? $_GET['symphony-renderer']
 		: 'frontend');
-	
-	header('Expires: Mon, 12 Dec 1982 06:14:00 GMT');
-	header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-	header('Cache-Control: no-cache, must-revalidate, max-age=0');
-	header('Pragma: no-cache');
 	
 	$output = renderer($handle)->display(getCurrentPage());
 
