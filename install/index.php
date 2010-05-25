@@ -180,122 +180,140 @@
 			elseif(!preg_match('/^\w(?:\.?[\w%+-]+)*@\w(?:[\w-]*\.)+?[a-z]{2,}$/i', $settings['user']['email-address'])){
 				$errors->append('user', 'Email Address is invalid.');
 			}
-		
 
-		// Start The Installation ------------------------------------------------------------------------------------
 		if($errors->length() == 0){
-
-			$rewrite_base = preg_replace('/\/install$/i', NULL, dirname($_SERVER['PHP_SELF']));
-
-			$htaccess = sprintf(
-				file_get_contents('assets/template.htaccess.txt'), 
-				empty($rewrite_base) ? '/' : $rewrite_base
-			);
-
-			// Cannot write .htaccess
-			if(!General::writeFile(sprintf('%s/.htaccess', rtrim($settings['website-preferences']['path'], '/')), $htaccess, $settings['website-preferences']['file-permissions'])){
-				throw new Exception('Could not write .htaccess file. TODO: Handle this by recording to the log and showing nicer error page.');
-			}
 			
-			// Create a DB connection
-			$db = new DBCMySQLProfiler;
+			/// Create a DB connection --------------------------------------------------------------------------
+				$db = new DBCMySQLProfiler;
 
-			$db->character_encoding = 'utf8';
-			$db->character_set = 'utf8';
-			$db->force_query_caching = false;
-			$db->prefix = $settings['database']['table-prefix'];
+				$db->character_encoding = 'utf8';
+				$db->character_set = 'utf8';
+				$db->force_query_caching = false;
+				$db->prefix = $settings['database']['table-prefix'];
 			
-			$connection_string = sprintf(
-				'mysql://%s:%s@%s:%s/%s/',
-				$settings['database']['username'],
-				$settings['database']['password'],
-				$settings['database']['host'],
-				$settings['database']['port'],
-				$settings['database']['database']
-			);
-
-			try{
-				$db->connect($connection_string);
-			}
-			catch(DatabaseException $e){
-				$errors->append('database', 'Could not establish database connection. The following error was returned: ' . $e->getMessage());
-			}
-
-			try{
-				// Import the database
-				$queries = preg_split('/;[\\r\\n]+/', file_get_contents('assets/install.sql'), -1, PREG_SPLIT_NO_EMPTY);
-
-				if(is_array($queries) && !empty($queries)){
-				    foreach($queries as $sql){
-				        $db->query($sql);
-				    }
-				}
-				
-				// Create the default user
-				$db->insert('tbl_users', array(
-					'username' => $settings['user']['username'],
-					'password' => md5($settings['user']['password']),
-					'first_name' => $settings['user']['first-name'],
-					'last_name' => $settings['user']['last-name'],
-					'email' => $settings['user']['email-address'],
-					'default_section' => 'articles',
-					'auth_token_active' => 'no',
-					'language' => 'en'
-				));
-			}
-			catch(DatabaseException $e){
-				$errors->append('database', $e->getMessage());
-			}
-			
-			
-			if($errors->length() == 0){
-				
-				// Workspace is missing, create it
-				$permission = intval($settings['website-preferences']['directory-permissions'], 8);
-				if(!is_dir(realpath('../workspace'))){
-					@mkdir(realpath('../workspace'), $permission);
-					@mkdir(realpath('../workspace/views'), $permission);
-					@mkdir(realpath('../workspace/utilities'), $permission);
-					@mkdir(realpath('../workspace/sections'), $permission);
-					@mkdir(realpath('../workspace/data-sources'), $permission);
-					@mkdir(realpath('../workspace/events'), $permission);
-				}
-				
-				// Save the config
-				$config_core = sprintf(
-					file_get_contents('assets/template.core.xml'), 
-					VERSION,
-					$settings['website-preferences']['name'],
-					$settings['website-preferences']['file-permissions'],
-					$settings['website-preferences']['directory-permissions'],
-					$settings['date-time']['time-format'],
-					$settings['date-time']['date-format'],
-					$settings['date-time']['region']
-				);
-			
-				$config_db = sprintf(
-					file_get_contents('assets/template.db.xml'), 
+				$connection_string = sprintf(
+					'mysql://%s:%s@%s:%s/%s/',
+					$settings['database']['username'],
+					$settings['database']['password'],
 					$settings['database']['host'],
 					$settings['database']['port'],
-	 				$settings['database']['username'],
-					$settings['database']['password'],
-					$settings['database']['database'],
-					$settings['database']['table-prefix']
+					$settings['database']['database']
 				);
 
-				// Wite the core config file
-				if(!General::writeFile(sprintf('%s/manifest/conf/core.xml', rtrim($settings['website-preferences']['path'], '/')), $config_core, $settings['website-preferences']['file-permissions'])){
-					throw new Exception('Could not write manifest/conf/core.xml file. TODO: Handle this by recording to the log and showing nicer error page.');
+				try{
+					$db->connect($connection_string);
 				}
+				catch(DatabaseException $e){
+					$errors->append('database', 'Could not establish database connection. The following error was returned: ' . $e->getMessage());
+				}
+
+			if($errors->length() == 0){
+				
+				$permission = intval($settings['website-preferences']['directory-permissions'], 8);
+				
+				/// Create the .htaccess ------------------------------------------------------------------
+					$rewrite_base = preg_replace('/\/install$/i', NULL, dirname($_SERVER['PHP_SELF']));
+
+					$htaccess = sprintf(
+						file_get_contents('assets/template.htaccess.txt'), 
+						empty($rewrite_base) ? '/' : $rewrite_base
+					);
+
+					// Cannot write .htaccess
+					if(!General::writeFile(sprintf('%s/.htaccess', rtrim($settings['website-preferences']['path'], '/')), $htaccess, $settings['website-preferences']['file-permissions'])){
+						throw new Exception('Could not write .htaccess file. TODO: Handle this by recording to the log and showing nicer error page.');
+					}
+				
+				
+				/// Create Folder Structures ---------------------------------------------------------------
+				
+					// These folders are necessary, and can be created if missing
+					$folders = array(
+						'workspace', 'workspace/views', 'workspace/utilities', 'workspace/sections', 'workspace/data-sources', 'workspace/events',
+						'manifest', 'manifest/conf', 'manifest/logs', 'manifest/templates', 'manifest/tmp', 'manifest/cache'
+					);
+				
+					foreach($folders as $f){
+						$path = realpath("../{$f}");
+						if(!is_dir($path) && !mkdir($path, $permission)){
+							throw new Exception('Could not create directory '.$f.'. TODO: Handle this by recording to the log and showing nicer error page.');
+						}
+					}
+				
+				/// Save the config ------------------------------------------------------------------------
+					$config_core = sprintf(
+						file_get_contents('assets/template.core.xml'), 
+						VERSION,
+						$settings['website-preferences']['name'],
+						$settings['website-preferences']['file-permissions'],
+						$settings['website-preferences']['directory-permissions'],
+						$settings['date-time']['time-format'],
+						$settings['date-time']['date-format'],
+						$settings['date-time']['region']
+					);
 			
-				// Wite the core config file
-				if(!General::writeFile(sprintf('%s/manifest/conf/db.xml', rtrim($settings['website-preferences']['path'], '/')), $config_db, $settings['website-preferences']['file-permissions'])){
-					throw new Exception('Could not write manifest/conf/db.xml file. TODO: Handle this by recording to the log and showing nicer error page.');
-				}
+					$config_db = sprintf(
+						file_get_contents('assets/template.db.xml'), 
+						$settings['database']['host'],
+						$settings['database']['port'],
+		 				$settings['database']['username'],
+						$settings['database']['password'],
+						$settings['database']['database'],
+						$settings['database']['table-prefix']
+					);
+
+					// Wite the core config file
+					if(!General::writeFile(
+						sprintf('%s/manifest/conf/core.xml', rtrim($settings['website-preferences']['path'], '/')), 
+						$config_core, 
+						$settings['website-preferences']['file-permissions']
+					)){
+						throw new Exception('Could not write manifest/conf/core.xml file. TODO: Handle this by recording to the log and showing nicer error page.');
+					}
+			
+					// Wite the core config file
+					if(!General::writeFile(
+						sprintf('%s/manifest/conf/db.xml', rtrim($settings['website-preferences']['path'], '/')), 
+						$config_db, 
+						$settings['website-preferences']['file-permissions']
+					)){
+						throw new Exception('Could not write manifest/conf/db.xml file. TODO: Handle this by recording to the log and showing nicer error page.');
+					}
 			}
 			
+			/// Import the Database --------------------------------------------------------------------------------
+				if($errors->length() == 0){
+					try{
+
+						$queries = preg_split('/;[\\r\\n]+/', file_get_contents('assets/install.sql'), -1, PREG_SPLIT_NO_EMPTY);
+
+						if(!is_array($queries) || empty($queries) || count($queries) <= 0){
+							throw new Exception('install/assets/install.sql file contained no queries.');
+						}
+						
+						foreach($queries as $sql){
+							$db->query($sql);
+						}
+
+						// Create the default user
+						$db->insert('tbl_users', array(
+							'username' => $settings['user']['username'],
+							'password' => md5($settings['user']['password']),
+							'first_name' => $settings['user']['first-name'],
+							'last_name' => $settings['user']['last-name'],
+							'email' => $settings['user']['email-address'],
+							'default_section' => 'articles',
+							'auth_token_active' => 'no',
+							'language' => 'en'
+						));
+					}
+					catch(Exception $e){
+						$errors->append('database', $e->getMessage());
+					}
+				}
+			
 			if($errors->length() == 0){
-				redirect(ADMIN_URL);
+				redirect(URL . '/symphony');
 			}
 			
 		}
