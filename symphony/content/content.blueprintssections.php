@@ -345,6 +345,7 @@
 			$list->setAttribute('class', 'fields');
 
 			$input = Widget::Input('name', $data->name);
+			$input->setAttribute('placeholder', __('Fieldset'));
 
 			$header->appendChild($input);
 			$fieldset->appendChild($header);
