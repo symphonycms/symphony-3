@@ -358,6 +358,11 @@
 		font-size: 11pt;
 		padding: 15px 30px 20px;
 	}
+	h2 select {
+		font-size: 9pt;
+		margin: 0 1ex;
+		vertical-align: text-top;
+	}
 	code {
 		font-family: 'Monaco', 'Consolas', 'Andale Mono', monospace;
 		font-size: 8pt;

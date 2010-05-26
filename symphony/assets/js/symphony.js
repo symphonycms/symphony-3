@@ -412,7 +412,7 @@ var Symphony;
 -----------------------------------------------------------------------------*/
 	
 	$(document).ready(function() {
-		$('#master-switch select').bind('change', function() {
+		$('h2 select').bind('change', function() {
 			window.location.search = '?type=' + $(this).val();
 		});
 	});
