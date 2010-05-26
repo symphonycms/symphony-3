@@ -132,7 +132,7 @@
 		public function __viewEdit(){
 			
 			if(!($this->user instanceof User) && !($this->user = User::load((int)$this->_context[1]))){
-				Administration::instance()->customError(E_USER_ERROR, 'User not found', 'The user profile you requested does not exist.');
+				throw new SymphonyErrorPage('The user profile you requested does not exist.', 'User not found');
 			}
 			
 			$this->__form();
@@ -197,7 +197,7 @@
 				if(!$user_id = $this->_context[1]) redirect(ADMIN_URL . '/system/users/');
 
 				if(!$user = UserManager::fetchByID($user_id)){
-					Administration::instance()->customError(E_USER_ERROR, 'User not found', 'The user profile you requested does not exist.');
+					throw new SymphonyErrorPage('The user profile you requested does not exist.', 'User not found');
 				}
 			}
 
