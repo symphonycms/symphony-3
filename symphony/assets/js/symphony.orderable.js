@@ -87,16 +87,31 @@
 			
 			state.object.removeClass('ordering');
 			state.item.removeClass('ordering')
-				.trigger('orderable-completed');
+				.trigger('orderable-ordered');
 			state = null;
 			
 			return false;
 		};
 		
 		$('.orderable-widget .orderable-handle')
-			.live('mousedown', start)
-			.live('mousemove', move)
-			.live('mouseup', stop);
+			.live('orderable-start', start)
+			.live('orderable-move', move)
+			.live('orderable-stop', stop)
+			
+			// Click actions:
+			.live('mousedown', function(event) {
+				$(this).trigger('orderable-start');
+			})
+			.live('mousemove', function(event) {
+				var new_event = jQuery.Event('orderable-move');
+				
+				new_event.pageY = event.pageY;
+				
+				$(this).trigger(new_event);
+			})
+			.live('mouseup', function(event) {
+				$(this).trigger('orderable-stop');
+			});
 	});
 	
 /*---------------------------------------------------------------------------*/

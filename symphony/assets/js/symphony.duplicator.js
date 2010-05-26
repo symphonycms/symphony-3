@@ -58,6 +58,8 @@
 				var tab = $(this);
 				var instance = tab.data('instance');
 				
+				tab.filter('.ordering').trigger('orderable-stop');
+				
 				tab.remove(); instance.remove();
 			})
 			

@@ -206,7 +206,7 @@
 
 			$fieldset = Widget::Fieldset(__('Conditions'), '<code>$param</code>');
 
-			$duplicator = new Duplicator(__('Add Conditions'));
+			$duplicator = new Duplicator(__('Add Condition'));
 			//$duplicator->setAttribute('class', 'conditions-duplicator');
 
 			// Templates:
@@ -308,7 +308,7 @@
 				$section_active = ($this->parameters()->section == $section_handle);
 				$filter_data = $this->parameters()->filters;
 				$fields = array();
-				$duplicator = new Duplicator(__('Add Items'));
+				$duplicator = new Duplicator(__('Add Filter'));
 				$duplicator->addClass('context context-' . $section_handle);
 				
 				// System ID template:
