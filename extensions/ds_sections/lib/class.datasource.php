@@ -309,6 +309,7 @@
 				$filter_data = $this->parameters()->filters;
 				$fields = array();
 				$duplicator = new Duplicator(__('Add Items'));
+				$duplicator->addClass('context context-' . $section_handle);
 				
 				// System ID template:
 				$item = $duplicator->createTemplate(__('System ID'));
