@@ -221,8 +221,12 @@
 		public function display($url=NULL){
 			
 			// Default headers. Can be overwritten later
+			//self::$Headers->append('HTTP/1.0 200 OK');
 			self::$Headers->append('Content-Type', 'text/html;charset=utf-8');
-			self::$Headers->append('HTTP/1.0 200 OK');
+			self::$Headers->append('Expires', 'Mon, 12 Dec 1982 06:14:00 GMT');
+			self::$Headers->append('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT');
+			self::$Headers->append('Cache-Control', 'no-cache, must-revalidate, max-age=0');
+			self::$Headers->append('Pragma', 'no-cache');
 			
 			####
 			# Delegate: FrontendPreInitialise

@@ -29,7 +29,7 @@
 			
 			}
 			
-			if (!is_writable(CONFIG)) {
+			if (!is_writable(CONF)) {
 		        $this->alerts()->append(
 					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
 				);
@@ -182,7 +182,7 @@
 
 			$attr = array('accesskey' => 's');
 			
-			if(!is_writable(CONFIG)) $attr['disabled'] = 'disabled';
+			if(!is_writable(CONF)) $attr['disabled'] = 'disabled';
 			
 			$div->appendChild(
 				Widget::Submit(
@@ -213,7 +213,7 @@
 			$this->appendViewOptions($viewoptions);
 			
 			/*
-			if (!is_writable(CONFIG)) {
+			if (!is_writable(CONF)) {
 		        $this->alerts()->append(
 					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
 				);
@@ -311,7 +311,7 @@
 
 		public function __actionIndex() {
 			
-			if (!is_writable(CONFIG)) {
+			if (!is_writable(CONF)) {
 				return;
 			}
 

@@ -69,10 +69,7 @@
 		}
 	
 		public function save(){
-			file_put_contents($this->path, (string)$this);
-		}
-	
-		public function __toString(){
+		
 			$doc = new DOMDocument('1.0', 'UTF-8');
 			$doc->formatOutput = true;
 		
@@ -80,8 +77,9 @@
 			$doc->appendChild($root);
 		
 			self::__generateXML($this->properties, $root);
-
-			return $doc->saveXML();
+			
+			file_put_contents($this->path, $doc->saveXML());
+			
 		}
 	
 		protected static function __generateXML($elements, DOMNode &$parent){
@@ -96,7 +94,8 @@
 				}
 				
 				else{
-					$element = $parent->ownerDocument->createElement($element_name, (string)$e);
+					$element = $parent->ownerDocument->createElement($element_name);
+					$element->appendChild(new DOMText((string)$e));
 				}
 				
 				$parent->appendChild($element);
@@ -111,7 +110,7 @@
 			if(!isset(self::$objects[$handle]) || !(self::$objects[$handle] instanceof ConfigurationElement)){
 				$class = 'ConfigurationElement';
 				if(isset($param[0]) && strlen(trim($param[0])) > 0) $class = $param[0];
-				self::$objects[$handle] = new $class(CONFIG . "/{$handle}.xml");
+				self::$objects[$handle] = new $class(CONF . "/{$handle}.xml");
 			}
 			return self::$objects[$handle];
 		}
