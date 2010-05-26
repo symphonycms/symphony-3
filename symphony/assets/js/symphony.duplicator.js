@@ -1,7 +1,220 @@
 /*-----------------------------------------------------------------------------
 	Duplicator plugin
 -----------------------------------------------------------------------------*/
+	
+	jQuery(document).ready(function() {
+		var $ = jQuery;
+		var select = {
+			instances:			'.content > .instances > *',
+			instance_parent:	'.content > .instances',
+			tabs:				'> .content > .tabs > *',
+			tab_parent:			'.content > .tabs',
+			templates:			'.templates > *',
+			template_parent:	'.templates',
+			controls_add:		'> .controls > .add',
+			controls_parent:	'> .controls'
+		};
+		var block = function() {
+			// TODO: Find a way to block that doesn't break orderable.
+			//return false;
+		};
+		
+		jQuery('.duplicator-widget.auto').each(function() {
+			var object = jQuery(this);
+			var form = object.closest('form');
+			var content = object.find('*');
+			var find = function(selector) {
+				return object.find(selector);
+			};
+			
+		/*-------------------------------------------------------------------*/
+			
+			content.live('duplicator-templates-hide', function() {
+				find(select.template_parent).hide();
+				find(select.controls_add)
+					.removeClass('visible');
+			})
+			
+			content.live('duplicator-templates-show', function() {
+				find(select.template_parent).show();
+				find(select.controls_add)
+					.addClass('visible');
+			})
+			
+		/*-------------------------------------------------------------------*/
 
+			content.live('duplicator-tab-initialize', function() {
+				var tab = jQuery(this);
+				var index = tab.prevAll().length;
+				var instance = find(select.instances + ':eq(' + index + ')');
+				var name = tab.find('.name');
+				
+				// Store data:
+				tab.data('instance', instance);
+				tab.data('name', name);
+				
+				tab.trigger('duplicator-tab-refresh');
+			});
+			
+			content.live('duplicator-tab-refresh', function() {
+				var tab = jQuery(this);
+				var index = tab.prevAll().length;
+				var name = tab.data('name');
+				
+				if (!name.text()) {
+					name.text(Symphony.Language.get('Untitled'));
+				}
+				
+				tab.data('index', index);
+			});
+			
+			content.live('duplicator-tab-select-only', function() {
+				
+			});
+			
+			content.live('duplicator-tab-select', function() {
+				
+			});
+			
+			content.live('duplicator-tab-deselect', function() {
+				var tab = jQuery(this);
+				var index = tab.data('index');
+				
+				find(select.tabs)
+					.filter(':eq(' + index + ')')
+					.removeClass('active');
+				
+				find(select.instances)
+					.filter(':eq(' + index + ')')
+					.removeClass('active');
+			});
+			
+			content.live('duplicator-tab-reorder', function() {
+				var tab = jQuery(this);
+				var new_index = tab.prevAll().length;
+				var old_index = tab.data('index');
+
+				// Nothing to do:
+				if (new_index == old_index) return;
+
+				var items = find(select.instances);
+				var parent = items.parent();
+				var places = [];
+
+				items.not(items[old_index]).each(function(index) {
+					if (index == new_index) {
+						places.push(null);
+					}
+
+					places.push(this);
+				});
+
+				places[new_index] = items[old_index];
+
+				parent.empty().append(places);
+			});
+		});
+		
+	/*-----------------------------------------------------------------------*/
+		
+		var tab_select = function() {
+			var tab = jQuery(this);
+			var index = tab.data('index');
+			var object = tab.closest('.duplicator-widget');
+			var select = [], deselect = [];
+			
+			if (object.is('.multiselect-widget') && event.shiftKey == true) {
+				if (tab.is('.active') && find(select.tabs + '.active').length > 1) {
+					//tab.trigger('duplicator-tab-deselect');
+				}
+				
+				else {
+					/*
+					object.find(select.tabs)
+						.filter(':eq(' + index + ')')
+						.addClass('active')
+						.trigger('duplicator-tab-select');
+					
+					object.find(select.instances)
+						.filter(':eq(' + index + ')')
+						.addClass('active');
+					*/
+				}
+			}
+			
+			else {
+				select.push(index);
+				
+				/*
+				object.find(select.tabs)
+					.removeClass('active')
+					.filter(':eq(' + index + ')')
+					.addClass('active');
+				
+				object.find(select.instances)
+					.removeClass('active')
+					.filter(':eq(' + index + ')')
+					.addClass('active');
+				*/
+				//tab.trigger('duplicator-tab-select-only');
+			}
+		};
+		
+	/*-----------------------------------------------------------------------*/
+		
+		// Select/deselect tabs:
+		$('.duplicator-widget' + select.tabs)
+			.live('mousedown', block)
+			.live('click', tab_select)
+			.trigger('duplicator-tab-initialize');		
+		
+		// Reorder tabs:
+		$('.duplicator-widget' + select.tabs)
+			.live('orderable-started', function() {
+				var object = $(this).closest('.duplicator-widget');
+				
+				object.find(select.tabs + '.ordering')
+					.trigger('duplicator-tab-select-only');
+			})
+			.live('orderable-completed', function() {
+				var object = $(this).closest('.duplicator-widget');
+				
+				jQuery(this).trigger('duplicator-tab-reorder');
+				object.find(select.tabs).trigger('duplicator-tab-refresh');
+			});
+		
+		// Toggle templates:
+		$('.duplicator-widget' + select.controls_add)
+			.live('click', function() {
+				var object = $(this).closest('.duplicator-widget');
+				var pallet = object.find(select.template_parent);
+				
+				if (pallet.is(':visible')) {
+					pallet.trigger('duplicator-templates-hide');
+				}
+				
+				else {
+					pallet.trigger('duplicator-templates-show');
+				}
+			});
+	});
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	jQuery.fn.symphonyDuplicator = function(custom_settings) {
 		var objects = this;
 		var select = {

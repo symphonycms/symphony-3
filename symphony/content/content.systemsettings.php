@@ -1,6 +1,7 @@
 <?php
 
-	require_once(LIB . '/class.administrationpage.php');
+	require_once LIB . '/class.administrationpage.php';
+	require_once LIB . '/class.duplicator.php';
 
 	class contentSystemSettings extends AdministrationPage {
 		public function __construct(){
@@ -11,25 +12,43 @@
 			$element->appendChild(new DOMEntityReference('ndash'));
 			$this->Body->appendChild($element);*/
 		}
+<<<<<<< Updated upstream:symphony/content/content.systemsettings.php
 
 		## Overload the parent 'view' function since we dont need the switchboard logic
 		public function __viewIndex() {
 			$this->appendSubheading(__('Settings'));
 
 			$path = ADMIN_URL . '/system/settings/';
+=======
+		
+		public function appendTabs() {
+			$path = URL . '/symphony/system/settings/';
+>>>>>>> Stashed changes:symphony/content/content.systemsettings.php
 			
-			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') > 0){
+			$options = array(
+				__('Preferences')	=> $path,
+				__('Extensions')	=> $path . 'extensions/',
+				__('Navigation')	=> $path . 'navigation/'
+			);
 			
-				$viewoptions = array(
-					'Preferences'	=> $path,
-					'Extensions'	=> $path . 'extensions/'
-				);
-
-				$this->appendViewOptions($viewoptions);
-			
+			// Hide Extensions tab:
+			if (Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') == 0) {
+				unset($options[__('Extensions')]);
 			}
 			
+<<<<<<< Updated upstream:symphony/content/content.systemsettings.php
 			if (!is_writable(CONF)) {
+=======
+			$this->appendViewOptions($options);
+		}
+
+		## Overload the parent 'view' function since we dont need the switchboard logic
+		public function __viewIndex() {
+			$this->appendSubheading(__('Settings'));
+			$this->appendTabs();
+			
+			if (!is_writable(CONFIG)) {
+>>>>>>> Stashed changes:symphony/content/content.systemsettings.php
 		        $this->alerts()->append(
 					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
 				);
@@ -193,17 +212,60 @@
 
 			$this->Form->appendChild($div);
 		}
+		
+		public function __viewNavigation() {
+			$this->appendSubheading(__('Settings'));
+			$this->appendTabs();
+			
+			$layout = new Layout();
+			$right = $layout->createColumn(Layout::LARGE);
+			
+			$fieldset = Widget::Fieldset(__('Navigation'));
+			
+			$navigation = new XMLDocument();
+			$navigation->load(ASSETS . '/navigation.xml');
+			
+			$duplicator = new Duplicator(__('Add Items'));
+			$duplicator->addClass('auto');
+			
+			foreach ($navigation->xpath('/navigation/group') as $group) {
+				$name = $group->getAttribute('name');
+				$type = $group->getAttribute('type');
+				$instance = $duplicator->createInstance();
+				
+				switch ($type) {
+					case 'links':
+						$tab = $duplicator->createTab($name, __('Links'));
+						break;
+						
+					case 'sections':
+						$tab = $duplicator->createTab($name, __('Sections'));
+						break;
+				}
+			}
+			
+			$duplicator->appendTo($fieldset);
+			$right->appendChild($fieldset);
+			$layout->appendTo($this->Form);
+		}
 
 		public function __viewExtensions() {
 			$this->appendSubheading(__('Settings'));
+			$this->appendTabs();
 			
+<<<<<<< Updated upstream:symphony/content/content.systemsettings.php
 			$path = ADMIN_URL . '/system/settings/';
 
+=======
+			$path = URL . '/symphony/system/settings/';
+			
+			// No settings for extensions here
+>>>>>>> Stashed changes:symphony/content/content.systemsettings.php
 			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') <= 0){
-				// No settings for extensions here
 				redirect($path);
 			}
 			
+<<<<<<< Updated upstream:symphony/content/content.systemsettings.php
 			// TODO: Check if there are any extensions that will append their junk before adding tabs
 			$viewoptions = array(
 				'Preferences'	=> $path,
@@ -220,6 +282,8 @@
 			}
 			*/
 			
+=======
+>>>>>>> Stashed changes:symphony/content/content.systemsettings.php
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 
