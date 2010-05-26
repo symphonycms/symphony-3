@@ -368,7 +368,7 @@
 			$input->setAttribute('length', (integer)$this->{'text-length'});
 
 			Extension::notify(
-				$delegate, '/backend/',
+				$delegate, '/administration/',
 				array(
 					'field'		=> &$this,
 					'label'		=> &$label,

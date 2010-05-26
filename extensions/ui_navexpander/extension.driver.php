@@ -21,12 +21,12 @@
 		public function getSubscribedDelegates() {
 			return array(
 				array(
-					'page'		=> '/backend/',
+					'page'		=> '/administration/',
 					'delegate'	=> 'InitaliseAdminPageHead',
 					'callback'	=> 'loadStylesheet'
 				),
 				array(
-					'page'		=> '/backend/',
+					'page'		=> '/administration/',
 					'delegate'	=> 'AppendElementBelowView',
 					'callback'	=> 'prependButton'
 				)

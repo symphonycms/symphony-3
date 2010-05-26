@@ -36,7 +36,7 @@
 			# Delegate: LayoutPreGenerate
 			# Description: Allows developers to access the layout content
 			#			   before it is appended to the page.
-			Extension::notify('LayoutPreGenerate', '/backend/', $this->layout);
+			Extension::notify('LayoutPreGenerate', '/administration/', $this->layout);
 			
 			if ($wrapper->tagName == 'form') {
 				$this->layout->setAttribute('id', 'layout');
