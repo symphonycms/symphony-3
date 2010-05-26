@@ -12,18 +12,9 @@
 			$element->appendChild(new DOMEntityReference('ndash'));
 			$this->Body->appendChild($element);*/
 		}
-<<<<<<< Updated upstream:symphony/content/content.systemsettings.php
-
-		## Overload the parent 'view' function since we dont need the switchboard logic
-		public function __viewIndex() {
-			$this->appendSubheading(__('Settings'));
-
-			$path = ADMIN_URL . '/system/settings/';
-=======
 		
 		public function appendTabs() {
-			$path = URL . '/symphony/system/settings/';
->>>>>>> Stashed changes:symphony/content/content.systemsettings.php
+			$path = ADMIN_URL . '/system/settings/';
 			
 			$options = array(
 				__('Preferences')	=> $path,
@@ -36,9 +27,6 @@
 				unset($options[__('Extensions')]);
 			}
 			
-<<<<<<< Updated upstream:symphony/content/content.systemsettings.php
-			if (!is_writable(CONF)) {
-=======
 			$this->appendViewOptions($options);
 		}
 
@@ -48,7 +36,6 @@
 			$this->appendTabs();
 			
 			if (!is_writable(CONFIG)) {
->>>>>>> Stashed changes:symphony/content/content.systemsettings.php
 		        $this->alerts()->append(
 					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
 				);
@@ -253,37 +240,13 @@
 			$this->appendSubheading(__('Settings'));
 			$this->appendTabs();
 			
-<<<<<<< Updated upstream:symphony/content/content.systemsettings.php
-			$path = ADMIN_URL . '/system/settings/';
-
-=======
-			$path = URL . '/symphony/system/settings/';
+			$path = ADMIN_URL . '/symphony/system/settings/';
 			
 			// No settings for extensions here
->>>>>>> Stashed changes:symphony/content/content.systemsettings.php
 			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') <= 0){
 				redirect($path);
 			}
 			
-<<<<<<< Updated upstream:symphony/content/content.systemsettings.php
-			// TODO: Check if there are any extensions that will append their junk before adding tabs
-			$viewoptions = array(
-				'Preferences'	=> $path,
-				'Extensions'	=> $path . 'extensions/'
-			);
-
-			$this->appendViewOptions($viewoptions);
-			
-			/*
-			if (!is_writable(CONF)) {
-		        $this->alerts()->append(
-					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
-				);
-			}
-			*/
-			
-=======
->>>>>>> Stashed changes:symphony/content/content.systemsettings.php
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
 
