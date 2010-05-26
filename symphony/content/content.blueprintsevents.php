@@ -220,17 +220,17 @@
 				}
 
 				$this->event = Event::loadFromHandle($this->handle);
-				$this->type = $this->event->getExtension();
-
-				$this->event = Extension::load($this->type)->prepareEvent(
-					$this->event, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
+				$this->type = $this->event->getType();
+				
+				$this->event->prepare(
+					isset($_POST['fields'])
+						? $_POST['fields']
+						: NULL
 				);
-
+				
 				if (!$this->event->allowEditorToParse()) {
 					redirect(ADMIN_URL . '/blueprints/events/info/' . $this->handle . '/');
 				}
-
-				$this->type = $this->event->getExtension();
 			}
 		}
 		protected function __actionDelete(array $datasources, $redirect=NULL) {
