@@ -6,6 +6,7 @@
 		protected $page;
 		protected $tabs;
 		protected $templates;
+		protected $reflection;
 		
 		public function __construct($add, $orderable = true) {
 			$this->child_name = $child_name;
@@ -35,16 +36,20 @@
 			$content->appendChild($this->tabs);
 			
 			if ($orderable) {
-				$this->tabs->addClass('orderable-widget');
+				$this->duplicator->addClass('orderable-widget');
 			}
 			
 			$this->instances = $this->page->createElement('ol');
 			$this->instances->addClass('instances');
 			$content->appendChild($this->instances);
+			
+			$this->reflection = new ReflectionObject($this->duplicator);
 		}
 		
 		public function __call($name, $params) {
-			return call_user_method_array($name, $this->duplicator, $params);
+			$method = $this->reflection->getMethod($name);
+			
+			return $method->invokeArgs($this->duplicator, $params);
 		}
 		
 		public function __get($name) {
@@ -55,10 +60,21 @@
 			return $this->duplicator->$name = $value;
 		}
 		
-		public function createTemplate() {
+		public function createTemplate($name, $type = null) {
 			$template = $this->page->createElement('li');
 			$template->addClass('template');
 			$this->templates->appendChild($template);
+			
+			$span = $this->page->createElement('span');
+			$span->addClass('name');
+			$span->setValue($name);
+			$template->appendChild($span);
+			
+			if (!is_null($type)) {
+				$em = $this->page->createElement('em');
+				$em->setValue($type);
+				$span->appendChild($em);
+			}
 			
 			return $template;
 		}
@@ -83,7 +99,7 @@
 			if (!is_null($type)) {
 				$em = $this->page->createElement('em');
 				$em->setValue($type);
-				$tab->appendChild($em);
+				$span->appendChild($em);
 			}
 			
 			$remove = $this->page->createElement('a');

@@ -5,59 +5,44 @@
 	jQuery(document).ready(function() {
 		var $ = jQuery;
 		var select = {
-			instances:			'.content > .instances > *',
-			instance_parent:	'.content > .instances',
+			instances:			'> .content > .instances > *',
+			instance_parent:	'> .content > .instances',
 			tabs:				'> .content > .tabs > *',
-			tab_parent:			'.content > .tabs',
-			templates:			'.templates > *',
-			template_parent:	'.templates',
+			tab_parent:			'> .content > .tabs',
+			templates:			'> .templates > *',
+			template_parent:	'> .templates',
 			controls_add:		'> .controls > .add',
 			controls_parent:	'> .controls'
 		};
 		var block = function() {
-			// TODO: Find a way to block that doesn't break orderable.
-			//return false;
+			return false;
 		};
 		
-		jQuery('.duplicator-widget.auto').each(function() {
-			var object = jQuery(this);
-			var form = object.closest('form');
-			var content = object.find('*');
-			var find = function(selector) {
-				return object.find(selector);
-			};
-			
-		/*-------------------------------------------------------------------*/
-			
-			content.live('duplicator-templates-hide', function() {
-				find(select.template_parent).hide();
-				find(select.controls_add)
-					.removeClass('visible');
-			})
-			
-			content.live('duplicator-templates-show', function() {
-				find(select.template_parent).show();
-				find(select.controls_add)
-					.addClass('visible');
-			})
-			
-		/*-------------------------------------------------------------------*/
-
-			content.live('duplicator-tab-initialize', function() {
-				var tab = jQuery(this);
+	/*-------------------------------------------------------------------------
+		Tabs
+	-------------------------------------------------------------------------*/
+		
+		$('.duplicator-widget' + select.tabs)
+			// Initialize:
+			.live('tab-initialize', function() {
+				var tab = $(this);
+				var object = tab.closest('.duplicator-widget');
 				var index = tab.prevAll().length;
-				var instance = find(select.instances + ':eq(' + index + ')');
+				var name = tab.find('.name');
+				var instance = object.find(select.instances + ':eq(' + index + ')');
 				var name = tab.find('.name');
 				
 				// Store data:
 				tab.data('instance', instance);
 				tab.data('name', name);
 				
-				tab.trigger('duplicator-tab-refresh');
-			});
+				tab.addClass('orderable-item orderable-handle')
+					.trigger('tab-refresh');
+			})
 			
-			content.live('duplicator-tab-refresh', function() {
-				var tab = jQuery(this);
+			// Refresh:
+			.live('tab-refresh', function() {
+				var tab = $(this);
 				var index = tab.prevAll().length;
 				var name = tab.data('name');
 				
@@ -66,38 +51,27 @@
 				}
 				
 				tab.data('index', index);
-			});
+			})
 			
-			content.live('duplicator-tab-select-only', function() {
+			// Remove:
+			.live('tab-remove', function() {
+				var tab = $(this);
+				var instance = tab.data('instance');
 				
-			});
+				tab.remove(); instance.remove();
+			})
 			
-			content.live('duplicator-tab-select', function() {
-				
-			});
-			
-			content.live('duplicator-tab-deselect', function() {
+			// Reorder:
+			.live('tab-reorder', function() {
 				var tab = jQuery(this);
-				var index = tab.data('index');
-				
-				find(select.tabs)
-					.filter(':eq(' + index + ')')
-					.removeClass('active');
-				
-				find(select.instances)
-					.filter(':eq(' + index + ')')
-					.removeClass('active');
-			});
-			
-			content.live('duplicator-tab-reorder', function() {
-				var tab = jQuery(this);
+				var object = tab.closest('.duplicator-widget');
 				var new_index = tab.prevAll().length;
 				var old_index = tab.data('index');
-
+				
 				// Nothing to do:
 				if (new_index == old_index) return;
 
-				var items = find(select.instances);
+				var items = object.find(select.instances);
 				var parent = items.parent();
 				var places = [];
 
@@ -112,417 +86,150 @@
 				places[new_index] = items[old_index];
 
 				parent.empty().append(places);
-			});
-		});
-		
-	/*-----------------------------------------------------------------------*/
-		
-		var tab_select = function() {
-			var tab = jQuery(this);
-			var index = tab.data('index');
-			var object = tab.closest('.duplicator-widget');
-			var select = [], deselect = [];
+			})
 			
-			if (object.is('.multiselect-widget') && event.shiftKey == true) {
-				if (tab.is('.active') && find(select.tabs + '.active').length > 1) {
-					//tab.trigger('duplicator-tab-deselect');
-				}
+			// Select/deselect:
+			.live('tab-select', function() {
+				var tab = $(this);
+				var instance = tab.data('instance');
 				
-				else {
-					/*
-					object.find(select.tabs)
-						.filter(':eq(' + index + ')')
-						.addClass('active')
-						.trigger('duplicator-tab-select');
-					
-					object.find(select.instances)
-						.filter(':eq(' + index + ')')
-						.addClass('active');
-					*/
-				}
-			}
+				tab.addClass('active');
+				instance.addClass('active');
+			})
+			.live('tab-deselect', function() {
+				var tab = $(this);
+				var instance = tab.data('instance');
+				
+				tab.removeClass('active');
+				instance.removeClass('active');
+			})
 			
-			else {
-				select.push(index);
-				
-				/*
-				object.find(select.tabs)
-					.removeClass('active')
-					.filter(':eq(' + index + ')')
-					.addClass('active');
-				
-				object.find(select.instances)
-					.removeClass('active')
-					.filter(':eq(' + index + ')')
-					.addClass('active');
-				*/
-				//tab.trigger('duplicator-tab-select-only');
-			}
-		};
-		
-	/*-----------------------------------------------------------------------*/
-		
-		// Select/deselect tabs:
-		$('.duplicator-widget' + select.tabs)
-			.live('mousedown', block)
-			.live('click', tab_select)
-			.trigger('duplicator-tab-initialize');		
-		
-		// Reorder tabs:
-		$('.duplicator-widget' + select.tabs)
+			// Reorder actions:
 			.live('orderable-started', function() {
-				var object = $(this).closest('.duplicator-widget');
-				
-				object.find(select.tabs + '.ordering')
-					.trigger('duplicator-tab-select-only');
+				$(this)
+					.trigger('tab-select')
+					.siblings('.active')
+					.trigger('tab-deselect');
 			})
 			.live('orderable-completed', function() {
-				var object = $(this).closest('.duplicator-widget');
+				var tab = $(this);
+				var object = tab.closest('.duplicator-widget');
 				
-				jQuery(this).trigger('duplicator-tab-reorder');
-				object.find(select.tabs).trigger('duplicator-tab-refresh');
-			});
+				tab.trigger('tab-reorder');
+				object.find(select.tabs)
+					.trigger('tab-refresh');
+			})
+			
+			// Click actions:
+			.live('click', function(event) {
+				var tab = $(this);
+				var target = $(event.target);
+				
+				// Remove:
+				if (target.is('.remove')) {
+					// Select another tab first:
+					if (!tab.is('.active') || !tab.siblings('.active').length > 0) {
+						if (tab.next().length) tab.next().trigger('tab-select');
+						else if (tab.prev().length) tab.prev().trigger('tab-select');
+					}
+					
+					tab.trigger('tab-remove');
+				}
+				
+				// Select:
+				else {
+					if (event.shiftKey == true) {
+						if (tab.is('.active') && tab.siblings('.active').length > 0) {
+							tab.trigger('tab-deselect');
+						}
+						
+						else {
+							tab.trigger('tab-select');
+						}
+					}
+					
+					// Deselect everything else:
+					else {
+						tab
+							.trigger('tab-select')
+							.siblings('.active')
+							.trigger('tab-deselect');
+					}
+				}
+			})
+			
+			// Ignore mouse clicks:
+			.live('mousedown', block)
+			
+			// Initialize:
+			.trigger('tab-initialize');
 		
-		// Toggle templates:
+	/*-------------------------------------------------------------------------
+		Templates
+	-------------------------------------------------------------------------*/
+		
+		// Toggle template pallet:
 		$('.duplicator-widget' + select.controls_add)
 			.live('click', function() {
-				var object = $(this).closest('.duplicator-widget');
+				var button = $(this);
+				var object = button.closest('.duplicator-widget');
 				var pallet = object.find(select.template_parent);
 				
 				if (pallet.is(':visible')) {
-					pallet.trigger('duplicator-templates-hide');
+					pallet.hide();
+					button.removeClass('visible');
 				}
 				
 				else {
-					pallet.trigger('duplicator-templates-show');
+					pallet.show();
+					button.addClass('visible');
 				}
-			});
-	});
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	jQuery.fn.symphonyDuplicator = function(custom_settings) {
-		var objects = this;
-		var select = {
-			instances:			'.content > .instances > *',
-			instance_parent:	'.content > .instances',
-			tabs:				'.content > .tabs > *',
-			tab_parent:			'.content > .tabs',
-			templates:			'.templates > *',
-			template_parent:	'.templates'
-		}
-
-		var settings = {
-			multiselect:		false,
-			orderable:			false
-		}
-
-		Symphony.Language.add({
-			'Add Items': false,
-			'Untitled': false
-		});
-
-		jQuery.extend(settings, custom_settings);
-
-	/*-----------------------------------------------------------------------*/
-
-		objects = objects.map(function() {
-			var object = jQuery(this).addClass('duplicator-widget'),
-				form = object.closest('form'),
-				container = object.find('*');
-
-			var find = function(selector) {
-				return object.find(selector);
-			};
-			var block = function() {
-				return false;
-			};
-
-		/*-------------------------------------------------------------------*/
-
-			container.live('duplicator-templates-hide', function() {
-				find(select.template_parent).hide();
 			})
-
-			container.live('duplicator-templates-show', function() {
-				find(select.template_parent).show();
-			})
-
-			container.live('duplicator-template-initialize', function() {
-				var template = jQuery(this);
-
-				template.bind('mousedown', block);
-				template.bind('click', function() {
-					template
-						.trigger('duplicator-template-insert');
-				});
-			});
-
-			container.live('duplicator-template-insert', function() {
-				var template = jQuery(this);
-				var instance = jQuery('<li />')
+			
+			// Ignore mouse clicks:
+			.live('mousedown', block);
+		
+		$('.duplicator-widget' + select.templates)
+			// Insert template:
+			.live('template-insert', function() {
+				var template = $(this);
+				var object = template.closest('.duplicator-widget');
+				var instance = $('<li />')
 					.append(template.find('> :not(.name)').clone(true))
-					.appendTo(object.find('> .content > .instances'));
-				var tab = jQuery('<li />')
+					.appendTo(object.find(select.instance_parent));
+				var tab = $('<li />')
 					.append(
-						jQuery('<span />')
+						$('<span />')
 							.addClass('name')
 							.html(template.find('> .name').html())
 					)
-					.appendTo(object.find('> .content > .tabs'))
-					.trigger('duplicator-tab-initialize')
-					.trigger('duplicator-tab-select-only');
-			});
-
-		/*-------------------------------------------------------------------*/
-
-			container.live('duplicator-tab-initialize', function() {
-				var tab = jQuery(this);
-				var index = tab.prevAll().length;
-				var instance = find(select.instances + ':eq(' + index + ')');
-				var name = tab.find('.name');
-
-				var action_remove = function() {
-					jQuery(this).parent()
-						.trigger('duplicator-tab-remove');
-					find(select.tabs)
-						.trigger('duplicator-tab-refresh')
-						.filter(':first')
-						.trigger('duplicator-tab-select-only');
-
-					return false;
-				};
-
-				jQuery('<a />')
-					.addClass('remove')
-					.text('×')
-					.bind('click', action_remove)
-					.appendTo(tab);
-
-				tab.bind('mousedown', block);
-
-				// Store data:
-				tab.data('instance', instance);
-				tab.data('name', name);
-
-				tab.trigger('duplicator-tab-refresh')
-					.trigger('orderable-item-initialize');
-			});
-
-			container.live('duplicator-tab-refresh', function() {
-				var tab = jQuery(this);
-				var index = tab.prevAll().length;
-				var name = tab.data('name');
-
-				if (!name.text()) {
-					name.text(Symphony.Language.get('Untitled'));
-				}
-
-				tab.data('index', index);
-			});
-
-			container.live('duplicator-tab-select-only', function() {
-				var tab = jQuery(this);
-				var index = tab.data('index');
-
-				find(select.tabs)
-					.removeClass('active')
-					.filter(':eq(' + index + ')')
-					.addClass('active');
-
-				find(select.instances)
-					.removeClass('active')
-					.filter(':eq(' + index + ')')
-					.addClass('active');
-			});
-
-			container.live('duplicator-tab-select', function() {
-				var tab = jQuery(this);
-				var index = tab.data('index');
-
-				find(select.tabs)
-					.filter(':eq(' + index + ')')
-					.addClass('active');
-
-				find(select.instances)
-					.filter(':eq(' + index + ')')
-					.addClass('active');
-			});
-
-			container.live('duplicator-tab-deselect', function() {
-				var tab = jQuery(this);
-				var index = tab.data('index');
-
-				find(select.tabs)
-					.filter(':eq(' + index + ')')
-					.removeClass('active');
-
-				find(select.instances)
-					.filter(':eq(' + index + ')')
-					.removeClass('active');
-			});
-
-			container.live('duplicator-tab-reorder', function() {
-				var tab = jQuery(this);
-				var new_index = tab.prevAll().length;
-				var old_index = tab.data('index');
-
-				// Nothing to do:
-				if (new_index == old_index) return;
-
-				var items = find(select.instances);
-				var parent = items.parent();
-				var places = [];
-
-				items.not(items[old_index]).each(function(index) {
-					if (index == new_index) {
-						places.push(null);
-					}
-
-					places.push(this);
-				});
-
-				places[new_index] = items[old_index];
-
-				parent.empty().append(places);
-			});
-
-			container.live('duplicator-tab-remove', function() {
-				var tab = jQuery(this);
-				var index = tab.data('index');
-				var instance = tab.data('instance');
-
-				tab.remove(); instance.remove();
-			});
-
-		/*-------------------------------------------------------------------*/
-
-			find(select.templates)
-				.trigger('duplicator-template-initialize');
-
-			// Wrap contents:
-			object.find('> :not(.templates)')
-				.wrapAll('<div class="content" />');
-
-			// Add tabs:
-			jQuery('<ol />')
-				.addClass('tabs')
-				.prependTo(object.find('> .content'));
-
-			find(select.instances)
-				.each(function() {
-					jQuery('<li />')
-						.append(
-							jQuery('<span />')
-								.addClass('name')
-								.html(jQuery(this).find('> .name').remove().html())
-						)
-						.appendTo(object.find('> .content > .tabs'))
-						.trigger('duplicator-tab-initialize');
-				});
-
-			// Make tabs orderable:
-			if (settings.orderable) {
-				find(select.tab_parent)
-					.symphonyOrderable({
-						items:		'> *',
-						handles:	''
-					});
-
-				// Reorder tabs:
-				find(select.tabs)
-					.live('orderable-started', function(event, target) {
-						find(select.tabs + '.ordering')
-							.trigger('duplicator-tab-select-only');
-					})
-					.live('orderable-completed', function(event, target) {
-						target.trigger('duplicator-tab-reorder');
-						find(select.tabs).trigger('duplicator-tab-refresh');
-					})
-			}
-
-			// Select tabs:
-			find(select.tabs)
-				.live('click', function(event) {
-					var tab = jQuery(this);
-
-					if (settings.multiselect && event.shiftKey == true) {
-						if (tab.is('.active') && find(select.tabs + '.active').length > 1) {
-							tab.trigger('duplicator-tab-deselect');
-						}
-
-						else {
-							tab.trigger('duplicator-tab-select');
-						}
-					}
-
-					else {
-						tab.trigger('duplicator-tab-select-only');
-					}
-				})
-				.filter(':first')
-				.trigger('duplicator-tab-select-only');
-
-			// Add controls:
-			jQuery('<div />')
-				.addClass('controls')
-				.append(
-					jQuery('<a />')
-						.addClass('add')
-						.text(Symphony.Language.get('Add Items'))
-				)
-				.bind('mousedown', function() { return false; })
-				.prependTo(object)
-				.find('.add')
-				.bind('click', function() {
-					var pallet = find(select.template_parent);
-
-					if (pallet.is(':visible')) {
-						pallet.trigger('duplicator-templates-hide');
-						jQuery(this).removeClass('visible');
-					}
-
-					else {
-						pallet.trigger('duplicator-templates-show');
-						jQuery(this).addClass('visible');
-					}
-				});
-
-			// Hide templates pallet when not empty:
-			if (find(select.instances).length > 0) {
-				find(select.template_parent)
-					.trigger('duplicator-templates-hide');
-			}
-
-			// Remove templates on form submit
-			form.bind('submit', function() {
-				find(select.template_parent)
-					.trigger('duplicator-templates-hide')
-					.remove();
-			});
-		});
-
-		return objects;
-	};
-
+					.append(
+						$('<a />')
+							.addClass('remove')
+							.text('×')
+					)
+					.appendTo(object.find(select.tab_parent))
+					.trigger('tab-initialize')
+					.trigger('tab-select')
+					.siblings('.active')
+					.trigger('tab-deselect');
+			})
+			
+			// Click actions:
+			.live('click', function() {
+				$(this)
+					.trigger('template-insert');
+			})
+			
+			// Ignore mouse clicks:
+			.live('mousedown', block);
+	});
+	
 /*-----------------------------------------------------------------------------
 	Fields Duplicator
 -----------------------------------------------------------------------------*/
-
+	
+	/*
 	jQuery.fn.symphonyFieldsDuplicator = function(custom_settings) {
 		var duplicator = jQuery(this);
 
@@ -565,5 +272,6 @@
 
 		return duplicator;
 	};
+	*/
 
 /*---------------------------------------------------------------------------*/
