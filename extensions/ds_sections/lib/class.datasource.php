@@ -761,7 +761,7 @@
 			$where = array_map(create_function('$string', 'return str_replace(\'%\', \'%%\', $string);'), $where);
 			
 			$query = sprintf(
-				'SELECT SQL_CALC_FOUND_ROWS e.*
+				'SELECT DISTINCT SQL_CALC_FOUND_ROWS e.*
 				FROM `tbl_entries` AS `e`
 				%1$s
 				WHERE `section` = "%2$s"
