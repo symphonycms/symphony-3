@@ -141,15 +141,10 @@
 
 			self::$_lang = (self::Configuration()->core()->symphony->lang ? self::Configuration()->core()->symphony->lang : 'en');
 
-			// Legacy support for __LANG__ constant
-			define_safe('__LANG__', self::lang());
-
 			define_safe('__SYM_DATE_FORMAT__', self::Configuration()->core()->region->{'date-format'});
 			define_safe('__SYM_TIME_FORMAT__', self::Configuration()->core()->region->{'time-format'});
-			define_safe('__SYM_DATETIME_FORMAT__', __SYM_DATE_FORMAT__ . ' ' . __SYM_TIME_FORMAT__);
-
-			define_safe('ADMIN', trim(self::Configuration()->core()->symphony->{'administration-path'}, '/'));
-			define_safe('ADMIN_URL', URL . '/' . ADMIN);
+			define_safe('__SYM_DATETIME_FORMAT__', sprintf('%s %s', __SYM_DATE_FORMAT__, __SYM_TIME_FORMAT__));
+			define_safe('ADMIN_URL', sprintf('%s/%s', URL, trim(self::Configuration()->core()->symphony->{'administration-path'}, '/')));
 
 			$this->initialiseLog();
 
@@ -171,10 +166,15 @@
 		public function lang(){
 			return self::$_lang;
 		}
+		
 		public function initialiseCookie(){
-			
-			$cookie_path = @parse_url(URL, PHP_URL_PATH);
-			$cookie_path = '/' . trim($cookie_path, '/');
+			try{
+				$cookie_path = parse_url(URL, PHP_URL_PATH);
+				$cookie_path = '/' . trim($cookie_path, '/');
+			}
+			catch(Exception $e){
+				$cookie_path = '/';
+			}
 
 			define_safe('__SYM_COOKIE_PATH__', $cookie_path);
 			define_safe('__SYM_COOKIE_PREFIX__', self::Configuration()->core()->symphony->{'cookie-prefix'});
@@ -279,7 +279,7 @@
 					);
 
 					$this->User = User::load($this->_user_id);
-					$this->reloadLangFromAuthorPreference();
+					$this->reloadLangFromUserPreference();
 
 					return true;
 				}
@@ -326,7 +326,7 @@
 						"`id` = '%d'"
 					);
 
-					$this->reloadLangFromAuthorPreference();
+					$this->reloadLangFromUserPreference();
 
 					return true;
 				}
@@ -354,8 +354,10 @@
 							`f`.token = '%s'
 						LIMIT 1
 					",
-					DateTimeObj::getGMT('c'),
-					$token
+					array(
+						DateTimeObj::getGMT('c'),
+						$token
+					)
 				);
 
 				Symphony::Database()->delete('tbl_forgotpass', array($token), "`token` = '%s'");
@@ -373,7 +375,7 @@
 							auth_token_active = 'yes'
 						LIMIT 1
 					",
-					$token
+					array($token)
 				);
 			}
 
@@ -392,7 +394,7 @@
 					"`id` = '%d'"
 				);
 
-				$this->reloadLangFromAuthorPreference();
+				$this->reloadLangFromUserPreference();
 
 				return true;
 			}
@@ -401,7 +403,7 @@
 
 		}
 
-		public function reloadLangFromAuthorPreference(){
+		public function reloadLangFromUserPreference(){
 
 			$lang = $this->User->language;
 			if($lang && $lang != self::lang()){
@@ -414,70 +416,7 @@
 					Lang::clear();
 				}
 			}
-
 		}
-/*
-		public function resolvePageTitle($page_id) {
-			$path = $this->resolvePage($page_id, 'title');
-
-			if(!is_array($path)) $path = array($path);
-
-			return implode(': ', $path);
-		}
-
-		public function resolvePagePath($page_id) {
-			$path = $this->resolvePage($page_id, 'handle');
-
-			if(!is_array($path)) $path = array($path);
-
-			return implode('/', $path);
-		}
-
-
-		// TODO: Fix this, now that Pages are Views and not in the database
-		public function resolvePage($page_id, $column) {
-			$page = self::$Database->query("
-				SELECT
-					p.{$column},
-					p.parent
-				FROM
-					`tbl_pages` AS p
-				WHERE
-					p.id = '{$page_id}'
-					OR p.handle = '{$page_id}'
-				LIMIT 1
-			");
-
-			$path = array(
-				$page[$column]
-			);
-
-			if ($page['parent'] != null) {
-				$next_parent = $page['parent'];
-
-				while (
-					$parent = self::$Database->fetchRow(0, "
-						SELECT
-							p.*
-						FROM
-							`tbl_pages` AS p
-						WHERE
-							p.id = '{$next_parent}'
-					")
-				) {
-					array_unshift($path, $parent[$column]);
-
-					$next_parent = $parent['parent'];
-				}
-			}
-
-			return $path;
-		}
-*/
-		public function customError($code, $heading, $message, $log=true, $forcekill=false, $template='general', array $additional=array()){
-			throw new SymphonyErrorPage($message, $heading, $template, $additional);
-		}
-
 	}
 
 	return 'Symphony';
