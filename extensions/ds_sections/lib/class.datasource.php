@@ -2,6 +2,7 @@
 
 	require_once LIB . '/class.datasource.php';
 	require_once LIB . '/class.entry.php';
+	require_once LIB . '/class.duplicator.php';
 
 	Class SectionsDataSource extends DataSource {
 		public function __construct(){
@@ -205,28 +206,20 @@
 
 			$fieldset = Widget::Fieldset(__('Conditions'), '<code>$param</code>');
 
-			$container = $page->createElement('div');
-			$container->setAttribute('class', 'conditions-duplicator');
-
-			$templates = $page->createElement('ol');
-			$templates->setAttribute('class', 'templates');
-
-			$instances = $page->createElement('ol');
-			$instances->setAttribute('class', 'instances');
+			$duplicator = new Duplicator(__('Add Conditions'));
+			//$duplicator->setAttribute('class', 'conditions-duplicator');
 
 			// Templates:
-			$this->appendCondition($templates);
+			$this->appendCondition($duplicator);
 
 			// Instances:
 			if(is_array($this->parameters()->conditions) && !empty($this->parameters()->conditions)){
 				foreach($this->parameters()->conditions as $condition){
-					$this->appendCondition($instances, $condition);
+					$this->appendCondition($duplicator, $condition);
 				}
 			}
 
-			$container->appendChild($templates);
-			$container->appendChild($instances);
-			$fieldset->appendChild($container);
+			$duplicator->appendTo($fieldset);
 			$right->appendChild($fieldset);
 
 		//	Filtering ---------------------------------------------------------
@@ -315,23 +308,10 @@
 				$section_active = ($this->parameters()->section == $section_handle);
 				$filter_data = $this->parameters()->filters;
 				$fields = array();
-
-				// Filters:
-				$context = $page->createElement('div');
-				$context->setAttribute('class', 'filters-duplicator context context-' . $section_handle);
-
-				$templates = $page->createElement('ol');
-				$templates->setAttribute('class', 'templates');
-
-				$instances = $page->createElement('ol');
-				$instances->setAttribute('class', 'instances');
+				$duplicator = new Duplicator(__('Add Items'));
 				
 				// System ID template:
-				$item = $page->createElement('li');
-
-				$name = $page->createElement('span', __('System ID'));
-				$name->setAttribute('class', 'name');
-				$item->appendChild($name);
+				$item = $duplicator->createTemplate(__('System ID'));
 				
 				$label = Widget::Label(__('Type'));
 				$label->appendChild(Widget::Select(
@@ -350,7 +330,6 @@
 				));
 				
 				$item->appendChild($label);
-				$templates->appendChild($item);
 				
 				// Field templates:
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
@@ -360,11 +339,10 @@
 						$element_name = $field->{'element-name'};
 						$fields[$element_name] = $field;
 						
-						$item = $page->createElement('li');
+						$item = $duplicator->createTemplate($field->label, $field->name());
 						$field->displayDatasourceFilterPanel(
 							$item, null, null
 						);
-						$templates->appendChild($item);
 					}
 				}
 				
@@ -374,20 +352,15 @@
 						if (isset($fields[$filter['element-name']])) {
 							$element_name = $filter['element-name'];
 							$field = $fields[$element_name];
-							$item = $page->createElement('li');
+							$item = $duplicator->createTemplate($field->label, $field->name());
 							
 							$field->displayDatasourceFilterPanel(
 								$item, $filter, $errors->$element_name
 							);
-							$instances->appendChild($item);
 						}
 						
 						else if ($filter['element-name'] == 'system:id') {
-							$item = $page->createElement('li');
-		
-							$name = $page->createElement('span', __('System ID'));
-							$name->setAttribute('class', 'name');
-							$item->appendChild($name);
+							$item = $duplicator->createTemplate(__('System ID'));
 							
 							$label = Widget::Label(__('Type'));
 							$label->appendChild(Widget::Select(
@@ -408,17 +381,13 @@
 								'element-name', 'system:id', 'hidden'
 							));
 							$item->appendChild($label);
-							
-							$instances->appendChild($item);
 						}
 						
 						// TODO: What about creation, modified date and author?
 					}
 				}
 
-				$context->appendChild($templates);
-				$context->appendChild($instances);
-				$container_filter_results->appendChild($context);
+				$duplicator->appendTo($container_filter_results);
 
 				// Select boxes:
 				$sort_by_options = array(
@@ -535,8 +504,16 @@
 			$context_content->remove();
 		}
 		
-		protected function appendCondition(SymphonyDOMElement $wrapper, $condition = array()) {
-			$document = $wrapper->ownerDocument;
+		protected function appendCondition(Duplicator $duplicator, $condition = array()) {
+			$document = $duplicator->ownerDocument;
+			
+			if (empty($condition)) {
+				$item = $duplicator->createTemplate(__('Don\'t Execute When'));
+			}
+			
+			else {
+				$item = $duplicator->createInstance(__('Don\'t Execute When'));
+			}
 			
 			if (!isset($condition['parameter'])) {
 				$condition['parameter'] = null;
@@ -545,12 +522,6 @@
 			if (!isset($condition['logic'])) {
 				$condition['logic'] = 'empty';
 			}
-			
-			$li = $document->createElement('li');
-
-			$name = $document->createElement('span', __('Don\'t Execute When'));
-			$name->setAttribute('class', 'name');
-			$li->appendChild($name);
 
 			$group = $document->createElement('div');
 			$group->setAttribute('class', 'group double');
@@ -569,8 +540,7 @@
 			$group->appendChild($label);
 
 			$group->appendChild($label);
-			$li->appendChild($group);
-			$wrapper->appendChild($li);
+			$item->appendChild($group);
 		}
 
 		public function save(MessageStack $errors){

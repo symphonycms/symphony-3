@@ -408,46 +408,13 @@ var Symphony;
 	});
 	
 /*-----------------------------------------------------------------------------
-	Datasources Page
+	Master Switch
 -----------------------------------------------------------------------------*/
 	
 	$(document).ready(function() {
 		$('#master-switch select').bind('change', function() {
 			window.location.search = '?type=' + $(this).val();
 		});
-	});
-	
-/*-----------------------------------------------------------------------------
-	Events Page
------------------------------------------------------------------------------*/
-
-	$(document).ready(function() {
-		var selector = jQuery('#event-context-selector');
-		var duplicators = jQuery('.event-duplicator').symphonyDuplicator({
-			multiselect:	true,
-			orderable:		true
-		});
-
-		selector.bind('change', function() {
-			var options = selector.find('option');
-
-			options.each(function() {
-				var option = $(this);
-				var context = jQuery('.event-context-' + option.val());
-
-				if (context.length == 0) return;
-
-				if (option.val() == selector.val()) {
-					context.show();
-				}
-
-				else {
-					context.hide();
-				}
-			});
-		});
-
-		selector.trigger('change');
 	});
 	
 /*-----------------------------------------------------------------------------
@@ -462,16 +429,11 @@ var Symphony;
 		if (duplicator.length == 0 && layout.length == 0) return;
 
 		var form = $('form');
-
+		
 		if (duplicator.length) {
-			duplicator.symphonyFieldsDuplicator({
-				multiselect:	true,
-				orderable:		true
-			});
-
 			if (duplicator.find('.instances > li .invalid').length) {
 				duplicator.find('.tabs > li:first')
-					.trigger('duplicator-tab-deselect');
+					.trigger('tab-deselect');
 			}
 
 			// Show errors:
@@ -481,7 +443,7 @@ var Symphony;
 				if (instance.find('.invalid').length == 0) return;
 
 				duplicator.find('.tabs > li:eq(' + index + ')')
-					.trigger('duplicator-tab-select');
+					.trigger('tab-select');
 			});
 
 			// Update input names before submit:

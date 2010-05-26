@@ -5,19 +5,9 @@ jQuery(document).ready(function() {
 			.show();
 	};
 	
-	jQuery('#context').bind('change', update).bind('keyup', update).change();
-	
-	// Conditions duplicator:
-	jQuery('.conditions-duplicator').symphonyDuplicator({
-		multiselect:	true,
-		orderable:		true
-	});
-	
-	// Filters duplicator:
-	var filters = jQuery('.filters-duplicator').symphonyDuplicator({
-		multiselect:	true,
-		orderable:		true
-	});
+	jQuery('#context')
+		.bind('change', update)
+		.bind('keyup', update).change();
 	
 	jQuery(document).bind('submit', function() {
 		var expression = /^fields\[filters\]\[[0-9]+\]\[(.*)]$/;

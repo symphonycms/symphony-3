@@ -74,16 +74,18 @@
 	##	Convenience Methods for DOMElement
 	Class SymphonyDOMElement extends DOMElement {
 		public function addClass($class) {
-			$classes = preg_split('%\s+%', $this->getAttribute('class'));
-			$classes[] = $class;
-			$classes = implode(' ', $classes);
+			$current = preg_split('%\s+%', $this->getAttribute('class'), 0, PREG_SPLIT_NO_EMPTY);
+			$added = preg_split('%\s+%', $class, 0, PREG_SPLIT_NO_EMPTY);
+			$current = array_merge($current, $added);
+			$classes = implode(' ', $current);
 			
 			$this->setAttribute('class', $classes);
 		}
 		
 		public function removeClass($class) {
-			$classes = preg_split('%\s+%', $this->getAttribute('class'));
-			$classes = array_diff($classes, array($class));
+			$classes = preg_split('%\s+%', $this->getAttribute('class'), 0, PREG_SPLIT_NO_EMPTY);
+			$removed = preg_split('%\s+%', $class, 0, PREG_SPLIT_NO_EMPTY);
+			$classes = array_diff($classes, $removed);
 			$classes = implode(' ', $classes);
 			
 			$this->setAttribute('class', $classes);
