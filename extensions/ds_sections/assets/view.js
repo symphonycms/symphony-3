@@ -16,7 +16,7 @@ jQuery(document).ready(function() {
 		jQuery('.context:not(:visible)').remove();
 		
 		// Set filter names:
-		jQuery('.filters-duplicator > .content > .instances > li').each(function(index) {
+		jQuery('.duplicator-widget.context > .content > .instances > li').each(function(index) {
 			var instance = jQuery(this);
 			
 			instance.find('[name]').each(function() {
@@ -35,8 +35,6 @@ jQuery(document).ready(function() {
 					+ name
 					+ ']'
 				);
-				
-				//console.log(input.attr('name'));
 			});
 		});
 	});

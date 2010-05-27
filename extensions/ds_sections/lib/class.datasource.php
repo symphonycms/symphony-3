@@ -353,7 +353,8 @@
 						if (isset($fields[$filter['element-name']])) {
 							$element_name = $filter['element-name'];
 							$field = $fields[$element_name];
-							$item = $duplicator->createTemplate($field->label, $field->name());
+							$duplicator->createTab($field->label, $field->name());
+							$item = $duplicator->createInstance();
 							
 							$field->displayDatasourceFilterPanel(
 								$item, $filter, $errors->$element_name
@@ -513,7 +514,8 @@
 			}
 			
 			else {
-				$item = $duplicator->createInstance(__('Don\'t Execute When'));
+				$tab = $duplicator->createTab(__('Don\'t Execute When'));
+				$item = $duplicator->createInstance();
 			}
 			
 			if (!isset($condition['parameter'])) {

@@ -225,6 +225,11 @@
 			
 			// Ignore mouse clicks:
 			.live('mousedown', block);
+		
+		// Remove templates on form submit:
+		$(document).bind('submit', function() {
+			$('.duplicator-widget' + select.templates).remove();
+		});
 	});
 	
 /*-----------------------------------------------------------------------------
