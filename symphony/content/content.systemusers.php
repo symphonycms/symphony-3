@@ -8,12 +8,8 @@
 		private $user;
 
 		public function __viewIndex(){
-			// This is the 'correct' way to append a string containing an entity
-			$title = $this->createElement('title');
-			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
-			$title->appendChild($this->createEntityReference('ndash'));
-			$title->appendChild($this->createTextNode(' ' . __('Users')));
-			$this->insertNodeIntoHead($title);
+			
+			$this->setTitle(__('Symphony') . ' &ndash; ' . __('Users'));
 
 			$this->appendSubheading(__('Users'), Widget::Anchor(
 				__('Add a User'), Administration::instance()->getCurrentPageURL() . 'new/', array(
