@@ -312,6 +312,20 @@
 				}
 			}
 
+			if(!($this->datasource instanceof Datasource) || is_null($this->datasource->about()->name) || strlen(trim($this->datasource->about()->name)) == 0){
+				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
+					__('Symphony'), __('Data Sources'), __('Untitled')
+				)));
+				$this->appendSubheading(General::sanitize(__('Data Source')));
+			}
+
+			else{
+				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
+					__('Symphony'), __('Data Sources'), $this->datasource->about()->name
+				)));
+				$this->appendSubheading(General::sanitize($this->datasource->about()->name));
+			}
+
 			// Track type with a hidden field:
 			if($this->editing || ($this->editing && isset($_POST['type']))){
 				$input = Widget::Input('type', $this->type, 'hidden');
@@ -320,11 +334,7 @@
 
 			 // Let user choose type:
 			else{
-				$div = $this->createElement('div');
-				$div->setAttribute('id', 'master-switch');
-
-				$label = Widget::Label(__('Select Type'));
-
+				$header = $this->xpath('//h2')->item(0);
 				$options = array();
 				
 				foreach ($this->types as $type) {
@@ -333,24 +343,9 @@
 				
 				usort($options, 'General::optionsSort');
 				$select = Widget::Select('type', $options);
-
-				$div->appendChild($label);
-				$div->appendChild($select);
-				$this->Form->appendChild($div);
-			}
-
-			if(!($this->datasource instanceof Datasource) || is_null($this->datasource->about()->name) || strlen(trim($this->datasource->about()->name)) == 0){
-				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
-					__('Symphony'), __('Data Sources'), __('Untitled')
-				)));
-				$this->appendSubheading(General::sanitize(__('New Data Source')));
-			}
-
-			else{
-				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
-					__('Symphony'), __('Data Sources'), $this->datasource->about()->name
-				)));
-				$this->appendSubheading(General::sanitize($this->datasource->about()->name));
+				
+				$header->prependChild($select);
+				$header->prependChild(new DOMText(__('New')));
 			}
 			
 			if($this->datasource instanceof Datasource){

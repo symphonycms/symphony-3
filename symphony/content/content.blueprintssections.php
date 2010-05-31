@@ -3,6 +3,7 @@
 	require_once(LIB . '/class.administrationpage.php');
 	require_once(LIB . '/class.messagestack.php');
  	require_once(LIB . '/class.section.php');
+ 	require_once(LIB . '/class.duplicator.php');
 
 	Class contentBlueprintsSections extends AdministrationPage{
 
@@ -789,8 +790,6 @@
 			$label->prependChild($input);
 
 			$fieldset->appendChild($label);
-
-
 			$left->appendChild($fieldset);
 
 			// Fields
@@ -802,19 +801,9 @@
 			$h3 = $this->createElement('h3', __('Fields'));
 			$h3->setAttribute('class', 'label');
 			$div->appendChild($h3);
-
-			$duplicator = $this->createElement('div');
+			
+			$duplicator = new Duplicator(__('Add Field'));
 			$duplicator->setAttribute('id', 'section-duplicator');
-
-			$templates = $this->createElement('ol');
-			$templates->setAttribute('class', 'templates');
-
-			$instances = $this->createElement('ol');
-			$instances->setAttribute('class', 'instances');
-
-			$ol = $this->createElement('ol');
-			$ol->setAttribute('class', 'section-duplicator');
-
 			$fields = $this->section->fields;
 			$types = array();
 
@@ -835,11 +824,9 @@
 				foreach ($defaults as $key => $value) {
 					$field->$key = $value;
 				}
-
-				$item = $this->createElement('li');
-
+				
+				$item = $duplicator->createTemplate($field->name());
 				$field->displaySettingsPanel($item, new MessageStack);
-				$templates->appendChild($item);
 			}
 
 			if (is_array($fields)) foreach($fields as $position => $field) {
@@ -852,16 +839,13 @@
 				else {
 					$messages = new MessageStack;
 				}
-
-				$item = $this->createElement('li');
+				
+				$duplicator->createTab($field->label, $field->name());
+				$item = $duplicator->createInstance();
 				$field->displaySettingsPanel($item, $messages);
-
-				$instances->appendChild($item);
 			}
 
-			$duplicator->appendChild($templates);
-			$duplicator->appendChild($instances);
-			$fieldset->appendChild($duplicator);
+			$duplicator->appendTo($fieldset);
 			$right->appendChild($fieldset);
 
 			$layout->appendTo($this->Form);

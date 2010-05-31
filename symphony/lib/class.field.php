@@ -421,18 +421,6 @@
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages){
 			$document = $wrapper->ownerDocument;
 
-			if ($this->label) {
-				$name = $document->createElement('span', $this->label);
-				$name->appendChild($document->createElement('em', $this->name()));
-			}
-
-			else {
-				$name = $document->createElement('span', $this->name());
-			}
-
-			$name->setAttribute('class', 'name');
-			$wrapper->appendChild($name);
-
 			$label = Widget::Label(__('Label'));
 			$label->setAttribute('class', 'field-label');
 			$label->appendChild(Widget::Input('label', $this->label));
@@ -712,11 +700,6 @@
 		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
 			$data = $this->processFilter($data);
 			$document = $wrapper->ownerDocument;
-
-			$name = $document->createElement('span', $this->label);
-			$name->setAttribute('class', 'name');
-			$name->appendChild($document->createElement('em', $this->name()));
-			$wrapper->appendChild($name);
 
 			$type_label = Widget::Label(__('Type'));
 			$type_label->setAttribute('class', 'small');
