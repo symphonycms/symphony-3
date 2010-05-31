@@ -6,20 +6,21 @@
 		protected $page;
 		protected $tabs;
 		protected $templates;
+		protected $reflection;
 		
 		public function __construct($add, $orderable = true) {
 			$this->child_name = $child_name;
 			$this->page = Symphony::Parent()->Page;
 			
 			$this->duplicator = $this->page->createElement('div');
-			$this->duplicator->setAttribute('class', 'duplicator-widget');
+			$this->duplicator->addClass('duplicator-widget');
 			
 			$controls = $this->page->createElement('div');
-			$controls->setAttribute('class', 'controls');
+			$controls->addClass('controls');
 			$this->duplicator->appendChild($controls);
 			
 			$add_item = $this->page->createElement('a', $add);
-			$add_item->setAttribute('class', 'add');
+			$add_item->addClass('add');
 			$controls->appendChild($add_item);
 			
 			$this->templates = $this->page->createElement('ol');
@@ -27,24 +28,28 @@
 			$this->duplicator->appendChild($this->templates);
 			
 			$content = $this->page->createElement('div');
-			$content->setAttribute('class', 'content');
+			$content->addClass('content');
 			$this->duplicator->appendChild($content);
 			
 			$this->tabs = $this->page->createElement('ol');
-			$this->tabs->setAttribute('class', 'tabs');
+			$this->tabs->addClass('tabs');
 			$content->appendChild($this->tabs);
 			
 			if ($orderable) {
-				$this->tabs->addClass('orderable-widget');
+				$this->duplicator->addClass('orderable-widget');
 			}
 			
 			$this->instances = $this->page->createElement('ol');
-			$this->instances->setAttribute('class', 'instances');
+			$this->instances->addClass('instances');
 			$content->appendChild($this->instances);
+			
+			$this->reflection = new ReflectionObject($this->duplicator);
 		}
 		
 		public function __call($name, $params) {
-			return call_user_method_array($name, $this->duplicator, $params);
+			$method = $this->reflection->getMethod($name);
+			
+			return $method->invokeArgs($this->duplicator, $params);
 		}
 		
 		public function __get($name) {
@@ -55,28 +60,67 @@
 			return $this->duplicator->$name = $value;
 		}
 		
-		public function createTemplate() {
+		public function createTemplate($name, $type = null) {
 			$template = $this->page->createElement('li');
-			$template->setAttribute('class', 'templates');
+			$template->addClass('template');
 			$this->templates->appendChild($template);
+			
+			$span = $this->page->createElement('span');
+			$span->addClass('name');
+			$span->setValue($name);
+			$template->appendChild($span);
+			
+			if (!is_null($type)) {
+				$em = $this->page->createElement('em');
+				$em->setValue($type);
+				$span->appendChild($em);
+			}
 			
 			return $template;
 		}
 		
-		public function createTab() {
-			$template = $this->page->createElement('ol');
-			$template->setAttribute('class', 'templates');
-			$this->templates->appendChild($template);
+		public function createTab($name, $type = null) {
+			$tab = $this->page->createElement('li');
+			$tab->addClass('tab');
+			$tab->addClass('orderable-item');
+			$tab->addClass('orderable-handle');
 			
-			return $template;
+			if (!$this->tabs->hasChildNodes()) {
+				$tab->addClass('active');
+			}
+			
+			$this->tabs->appendChild($tab);
+			
+			$span = $this->page->createElement('span');
+			$span->addClass('name');
+			$span->setValue($name);
+			$tab->appendChild($span);
+			
+			if (!is_null($type)) {
+				$em = $this->page->createElement('em');
+				$em->setValue($type);
+				$span->appendChild($em);
+			}
+			
+			$remove = $this->page->createElement('a');
+			$remove->addClass('remove');
+			$remove->setValue('×');
+			$tab->appendChild($remove);
+			
+			return $tab;
 		}
 		
 		public function createInstance() {
-			$template = $this->page->createElement('ol');
-			$template->setAttribute('class', 'templates');
-			$this->templates->appendChild($template);
+			$instance = $this->page->createElement('li');
+			$instance->addClass('instance');
 			
-			return $template;
+			if (!$this->instances->hasChildNodes()) {
+				$instance->addClass('active');
+			}
+			
+			$this->instances->appendChild($instance);
+			
+			return $instance;
 		}
 		
 		public function appendTo(SymphonyDOMElement $wrapper) {

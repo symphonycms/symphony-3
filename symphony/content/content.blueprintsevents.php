@@ -220,17 +220,17 @@
 				}
 
 				$this->event = Event::loadFromHandle($this->handle);
-				$this->type = $this->event->getExtension();
-
-				$this->event = Extension::load($this->type)->prepareEvent(
-					$this->event, (isset($_POST['fields']) ? $_POST['fields'] : NULL)
+				$this->type = $this->event->getType();
+				
+				$this->event->prepare(
+					isset($_POST['fields'])
+						? $_POST['fields']
+						: NULL
 				);
-
+				
 				if (!$this->event->allowEditorToParse()) {
 					redirect(ADMIN_URL . '/blueprints/events/info/' . $this->handle . '/');
 				}
-
-				$this->type = $this->event->getExtension();
 			}
 		}
 		protected function __actionDelete(array $datasources, $redirect=NULL) {
@@ -345,6 +345,20 @@
 				}
 			}
 
+			if(!($this->event instanceof Event) || is_null($this->event->about()->name) || strlen(trim($this->event->about()->name)) == 0){
+				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
+					__('Symphony'), __('Events'), __('Untitled')
+				)));
+				$this->appendSubheading(General::sanitize(__('Event')));
+			}
+
+			else{
+				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
+					__('Symphony'), __('Events'), $this->event->about()->name
+				)));
+				$this->appendSubheading(General::sanitize($this->event->about()->name));
+			}
+
 			// Track type with a hidden field:
 			if($this->editing || ($this->editing && isset($_POST['type']))){
 				$input = Widget::Input('type', $this->type, 'hidden');
@@ -353,11 +367,7 @@
 
 			 // Let user choose type:
 			else{
-				$div = $this->createElement('div');
-				$div->setAttribute('id', 'master-switch');
-
-				$label = Widget::Label(__('Select Type'));
-
+				$header = $this->xpath('//h2')->item(0);
 				$options = array();
 				
 				foreach ($this->types as $type) {
@@ -366,24 +376,9 @@
 				
 				usort($options, 'General::optionsSort');
 				$select = Widget::Select('type', $options);
-
-				$div->appendChild($label);
-				$div->appendChild($select);
-				$this->Form->appendChild($div);
-			}
-
-			if(!($this->event instanceof Event) || is_null($this->event->about()->name) || strlen(trim($this->event->about()->name)) == 0){
-				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
-					__('Symphony'), __('Events'), __('Untitled')
-				)));
-				$this->appendSubheading(General::sanitize(__('New Event')));
-			}
-
-			else{
-				$this->setTitle(__('%1$s &ndash; %2$s &ndash; %3$s', array(
-					__('Symphony'), __('Events'), $this->event->about()->name
-				)));
-				$this->appendSubheading(General::sanitize($this->event->about()->name));
+				
+				$header->prependChild($select);
+				$header->prependChild(new DOMText(__('New')));
 			}
 			
 			if($this->event instanceof Event){

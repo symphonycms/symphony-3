@@ -1,5 +1,6 @@
 <?php
 
+	require_once LIB . '/class.duplicator.php';
 	require_once LIB . '/class.entry.php';
 	require_once LIB . '/class.event.php';
 
@@ -82,6 +83,7 @@
 		
 		public function view(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			$page = Administration::instance()->Page;
+			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'));
 			$layout = new Layout;
 
 			$column_1 = $layout->createColumn(Layout::SMALL);
@@ -106,7 +108,7 @@
 				$options[] = array($section->handle, ($this->parameters()->section == $section->handle), $section->name);
 			}
 
-			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'event-context-selector')));
+			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'context')));
 			$fieldset->appendChild($label);
 			$column_1->appendChild($fieldset);
 
@@ -170,23 +172,10 @@
 		
 		protected function appendDuplicator(SymphonyDOMElement $wrapper, Section $section, array $items = null) {
 			$document = $wrapper->ownerDocument;
-			$duplicator = $document->createElement('div');
-			$duplicator->setAttribute('class', 'event-duplicator event-context-' . $section->handle);
+			$duplicator = new Duplicator(__('Add Item'));
+			$duplicator->addClass('context context-' . $section->handle);
 
-			$templates = $document->createElement('ol');
-			$templates->setAttribute('class', 'templates');
-
-			$instances = $document->createElement('ol');
-			$instances->setAttribute('class', 'instances');
-
-			$ol = $document->createElement('ol');
-			$ol->setAttribute('id', 'section-' . $section->handle);
-
-			$item = $document->createElement('li');
-			$span = $document->createElement('span', 'Override');
-			$span->setAttribute('class', 'name');
-			$item->appendChild($span);
-
+			$item = $duplicator->createTemplate(__('Override'));
 			$label = Widget::Label(__('Field'));
 			$options = array(array('system:id', false, 'System ID'));
 
@@ -201,18 +190,11 @@
 			$label->appendChild(Widget::Input('fields[overrides][replacement][]'));
 			$item->appendChild($label);
 
-			$templates->appendChild($item);
-
-
-			$item = $document->createElement('li');
-			$span = $document->createElement('span', 'Default Value');
-			$span->setAttribute('class', 'name');
-			$item->appendChild($span);
-
+			$item = $duplicator->createTemplate(__('Default Value'));
 			$label = Widget::Label(__('Field'));
 			$options = array(array('system:id', false, 'System ID'));
 
-			foreach($section->fields as $f){
+			foreach ($section->fields as $f) {
 				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
 			}
 
@@ -223,19 +205,10 @@
 			$label->appendChild(Widget::Input('fields[defaults][replacement][]'));
 			$item->appendChild($label);
 
-			$templates->appendChild($item);
-
 			if(is_array($items['overrides'])){
-				//$field_names = $items['overrides']['field'];
-				//$replacement_values = $items['overrides']['replacement'];
-
-				//for($ii = 0; $ii < count($field_names); $ii++){
 				foreach($items['overrides'] as $field_name => $replacement){
-					$item = $document->createElement('li');
-					$span = $document->createElement('span', 'Override');
-					$span->setAttribute('class', 'name');
-					$item->appendChild($span);
-
+					$tab = $duplicator->createTab(__('Override'));
+					$item = $duplicator->createInstance();
 					$label = Widget::Label(__('Field'));
 					$options = array(array('system:id', false, 'System ID'));
 
@@ -258,17 +231,9 @@
 			}
 
 			if(is_array($items['defaults'])){
-
-				//$field_names = $items['defaults']['field'];
-				//$replacement_values = $items['defaults']['replacement'];
-
-				//for($ii = 0; $ii < count($field_names); $ii++){
 				foreach($items['defaults'] as $field_name => $replacement){
-					$item = $document->createElement('li');
-					$span = $document->createElement('span', 'Default Value');
-					$span->setAttribute('class', 'name');
-					$item->appendChild($span);
-
+					$tab = $duplicator->createTab(__('Default Value'));
+					$item = $duplicator->createInstance();
 					$label = Widget::Label(__('Field'));
 					$options = array(array('system:id', false, 'System ID'));
 
@@ -289,12 +254,8 @@
 					$instances->appendChild($item);
 				}
 			}
-
-
-
-			$duplicator->appendChild($templates);
-			$duplicator->appendChild($instances);
-			$wrapper->appendChild($duplicator);
+			
+			$duplicator->appendTo($wrapper);
 		}
 		
 	/*-----------------------------------------------------------------------*/

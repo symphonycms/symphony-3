@@ -5,19 +5,9 @@ jQuery(document).ready(function() {
 			.show();
 	};
 	
-	jQuery('#context').bind('change', update).bind('keyup', update).change();
-	
-	// Conditions duplicator:
-	jQuery('.conditions-duplicator').symphonyDuplicator({
-		multiselect:	true,
-		orderable:		true
-	});
-	
-	// Filters duplicator:
-	var filters = jQuery('.filters-duplicator').symphonyDuplicator({
-		multiselect:	true,
-		orderable:		true
-	});
+	jQuery('#context')
+		.bind('change', update)
+		.bind('keyup', update).change();
 	
 	jQuery(document).bind('submit', function() {
 		var expression = /^fields\[filters\]\[[0-9]+\]\[(.*)]$/;
@@ -26,7 +16,7 @@ jQuery(document).ready(function() {
 		jQuery('.context:not(:visible)').remove();
 		
 		// Set filter names:
-		jQuery('.filters-duplicator > .content > .instances > li').each(function(index) {
+		jQuery('.duplicator-widget.context > .content > .instances > li').each(function(index) {
 			var instance = jQuery(this);
 			
 			instance.find('[name]').each(function() {
@@ -45,8 +35,6 @@ jQuery(document).ready(function() {
 					+ name
 					+ ']'
 				);
-				
-				//console.log(input.attr('name'));
 			});
 		});
 	});

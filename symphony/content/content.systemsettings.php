@@ -1,6 +1,7 @@
 <?php
 
-	require_once(LIB . '/class.administrationpage.php');
+	require_once LIB . '/class.administrationpage.php';
+	require_once LIB . '/class.duplicator.php';
 
 	class contentSystemSettings extends AdministrationPage {
 		public function __construct(){
@@ -11,25 +12,30 @@
 			$element->appendChild(new DOMEntityReference('ndash'));
 			$this->Body->appendChild($element);*/
 		}
+		
+		public function appendTabs() {
+			$path = ADMIN_URL . '/system/settings/';
+			
+			$options = array(
+				__('Preferences')	=> $path,
+				__('Extensions')	=> $path . 'extensions/',
+				__('Navigation')	=> $path . 'navigation/'
+			);
+			
+			// Hide Extensions tab:
+			if (Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') == 0) {
+				unset($options[__('Extensions')]);
+			}
+			
+			$this->appendViewOptions($options);
+		}
 
 		## Overload the parent 'view' function since we dont need the switchboard logic
 		public function __viewIndex() {
 			$this->appendSubheading(__('Settings'));
-
-			$path = ADMIN_URL . '/system/settings/';
+			$this->appendTabs();
 			
-			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') > 0){
-			
-				$viewoptions = array(
-					'Preferences'	=> $path,
-					'Extensions'	=> $path . 'extensions/'
-				);
-
-				$this->appendViewOptions($viewoptions);
-			
-			}
-			
-			if (!is_writable(CONF)) {
+			if (!is_writable(CONFIG)) {
 		        $this->alerts()->append(
 					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
 				);
@@ -193,32 +199,53 @@
 
 			$this->Form->appendChild($div);
 		}
+		
+		public function __viewNavigation() {
+			$this->appendSubheading(__('Settings'));
+			$this->appendTabs();
+			
+			$layout = new Layout();
+			$right = $layout->createColumn(Layout::LARGE);
+			
+			$fieldset = Widget::Fieldset(__('Navigation'));
+			
+			$navigation = new XMLDocument();
+			$navigation->load(ASSETS . '/navigation.xml');
+			
+			$duplicator = new Duplicator(__('Add Items'));
+			$duplicator->addClass('auto');
+			
+			foreach ($navigation->xpath('/navigation/group') as $group) {
+				$name = $group->getAttribute('name');
+				$type = $group->getAttribute('type');
+				$instance = $duplicator->createInstance();
+				
+				switch ($type) {
+					case 'links':
+						$tab = $duplicator->createTab($name, __('Links'));
+						break;
+						
+					case 'sections':
+						$tab = $duplicator->createTab($name, __('Sections'));
+						break;
+				}
+			}
+			
+			$duplicator->appendTo($fieldset);
+			$right->appendChild($fieldset);
+			$layout->appendTo($this->Form);
+		}
 
 		public function __viewExtensions() {
 			$this->appendSubheading(__('Settings'));
+			$this->appendTabs();
 			
-			$path = ADMIN_URL . '/system/settings/';
-
+			$path = ADMIN_URL . '/symphony/system/settings/';
+			
+			// No settings for extensions here
 			if(Extension::delegateSubscriptionCount('AddSettingsFieldsets', '/system/settings/extensions/') <= 0){
-				// No settings for extensions here
 				redirect($path);
 			}
-			
-			// TODO: Check if there are any extensions that will append their junk before adding tabs
-			$viewoptions = array(
-				'Preferences'	=> $path,
-				'Extensions'	=> $path . 'extensions/'
-			);
-
-			$this->appendViewOptions($viewoptions);
-			
-			/*
-			if (!is_writable(CONF)) {
-		        $this->alerts()->append(
-					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
-				);
-			}
-			*/
 			
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();

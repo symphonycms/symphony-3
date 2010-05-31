@@ -1,5 +1,8 @@
 <navigation>
-	<group name="Blueprints" index="200">
+	<group name="Content" type="sections" align="left">
+		
+	</group>
+	<group name="Blueprints" index="200" type="links" align="right">
 		<children>
 			<item link="/blueprints/views/" name="Views" />
 			<item link="/blueprints/views/new/" name="Views New" visible="no" />
@@ -25,7 +28,7 @@
 		</children>
 	</group>
 
-	<group name="System" index="100">
+	<group name="System" index="100" type="links" align="right">
 		<children>
 			<item link="/system/users/" name="Users" />
 			<item link="/system/users/edit/" name="User Edit" visible="no" />
