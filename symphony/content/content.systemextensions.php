@@ -296,7 +296,7 @@
 					if(!empty($about->{'table-link'}) && $this->lists->extensions[$handle]['status'] == Extension::STATUS_ENABLED) {
 
 						$fragment->appendChild(
-							Widget::Anchor($about->{'name'}, Administration::instance()->getCurrentPageURL() . 'extension/' . trim($about->{'table-link'}, '/'))
+							Widget::Anchor($about->{'name'}, Administration::instance()->getCurrentPageURL() . '/extension/' . trim($about->{'table-link'}, '/'))
 						);
 					}
 					else{

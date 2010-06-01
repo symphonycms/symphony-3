@@ -14,7 +14,7 @@
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 
 			$this->appendSubheading(__('Sections'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', array(
+				__('Create New'), Administration::instance()->getCurrentPageURL().'/new/', array(
 					'title' => __('Create a new section'),
 					'class' => 'create button'
 				)
@@ -67,7 +67,7 @@
 
 					// Setup each cell
 					$td1 = Widget::TableData(
-						Widget::Anchor($s->name, Administration::instance()->getCurrentPageURL() . "edit/{$s->handle}/", array(
+						Widget::Anchor($s->name, Administration::instance()->getCurrentPageURL() . "/edit/{$s->handle}/", array(
 						'class' => 'content'
 						))
 					);

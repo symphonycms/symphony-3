@@ -69,7 +69,7 @@
 				$section->name,
 				Widget::Anchor(
 					__('Create New'),
-					sprintf('%snew/%s', Administration::instance()->getCurrentPageURL(), ($filter ? "?prepopulate[{$filter}]={$filter_value}" : NULL)), array(
+					sprintf('%s/new/%s', Administration::instance()->getCurrentPageURL(), ($filter ? "?prepopulate[{$filter}]={$filter_value}" : NULL)), array(
 						'title' => __('Create a new entry'),
 						'class' => 'create button'
 					)
@@ -206,7 +206,7 @@
 
 					$link = Widget::Anchor(
 						'None',
-						Administration::instance()->getCurrentPageURL() . "edit/{$entry->id}/",
+						Administration::instance()->getCurrentPageURL() . "/edit/{$entry->id}/",
 						array('id' => $entry->id, 'class' => 'content')
 					);
 
@@ -279,7 +279,7 @@
 			$this->Form->appendChild($tableActions);
 
 			if($pagination['total-pages'] > 1){
-				$current_url = Administration::instance()->getCurrentPageURL() . '?pg=';
+				$current_url = Administration::instance()->getCurrentPageURL() . '/?pg=';
 
 				$ul = $this->createElement('ul');
 				$ul->setAttribute('class', 'page');
