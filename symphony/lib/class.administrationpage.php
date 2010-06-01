@@ -107,7 +107,7 @@
 			# Delegate: InitaliseAdminPageHead
 			# Description: Allows developers to insert items into the page HEAD. Use $context['parent']->Page
 			#			   for access to the page object
-			Extension::notify('InitaliseAdminPageHead', '/backend/');
+			Extension::notify('InitaliseAdminPageHead', '/administration/');
 
 			$this->Headers->append('Content-Type', 'text/html; charset=UTF-8');
 
@@ -137,7 +137,7 @@
 			# Delegate: AppendElementBelowView
 			# Description: Allows developers to add items just above the page footer. Use $context['parent']->Page
 			#			   for access to the page object
-			Extension::notify('AppendElementBelowView', '/backend/');
+			Extension::notify('AppendElementBelowView', '/administration/');
 
 			$this->appendAlert();
 		}
@@ -182,7 +182,7 @@
 			# Delegate: AppendPageAlert
 			# Description: Allows for appending of alerts. Administration::instance()->Page->Alert is way to tell what
 			# is currently in the system
-			Extension::notify('AppendPageAlert', '/backend/');
+			Extension::notify('AppendPageAlert', '/administration/');
 			
 			if ($this->alerts()->valid()) {
 				$this->alerts()->appendTo($this->Body);
@@ -209,7 +209,7 @@
 			###
 			# Delegate: AddElementToFooter
 			# Description: Add new list elements to the footer
-			Extension::notify('AddElementToFooter', '/backend/', array('wrapper' => &$ul));
+			Extension::notify('AddElementToFooter', '/administration/', array('wrapper' => &$ul));
 
 			$this->Form->appendChild($ul);
 		}
@@ -230,7 +230,7 @@
 			# Description: Immediately before displaying the admin navigation. Provided with the navigation array
 			#              Manipulating it will alter the navigation for all pages.
 			# Global: Yes
-			Extension::notify('NavigationPreRender', '/backend/', array('navigation' => &$nav));
+			Extension::notify('NavigationPreRender', '/administration/', array('navigation' => &$nav));
 
 			$xNav = $this->createElement('ul');
 			$xNav->setAttribute('id', 'nav');
@@ -368,11 +368,14 @@
 //			$extensions = ExtensionManager::instance()->listInstalledHandles();
 
 			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
-				$info = (array)$e->about();
+				
+				if(!method_exists($e, 'fetchNavigation')) continue;
+				
+				$e_navigation = $e->fetchNavigation();
 
-				if(isset($info['navigation']) && is_array($info['navigation']) && !empty($info['navigation'])){
+				if(isset($e_navigation) && is_array($e_navigation) && !empty($e_navigation)){
 
-					foreach($info['navigation'] as $item){
+					foreach($e_navigation as $item){
 
 						$type = (isset($item['children']) ? Extension::NAVIGATION_GROUP : Extension::NAVIGATION_CHILD);
 
@@ -392,7 +395,7 @@
 								foreach($item['children'] as $child){
 
 									if(!isset($child['relative']) || $child['relative'] == true){
-										$link = '/extension/' . $e . '/' . ltrim($child['link'], '/');
+										$link = '/extension/' . Extension::getHandleFromPath(Extension::getPathFromClass(get_class($e))) . '/' . ltrim($child['link'], '/');
 									}
 									else{
 										$link = '/' . ltrim($child['link'], '/');
@@ -412,7 +415,7 @@
 							case Extension::NAVIGATION_CHILD:
 
 								if(!isset($item['relative']) || $item['relative'] == true){
-									$link = '/extension/' . $e . '/' . ltrim($item['link'], '/');
+									$link = '/extension/' . Extension::getHandleFromPath(Extension::getPathFromClass(get_class($e))) . '/' . ltrim($item['link'], '/');
 								}
 								else{
 									$link = '/' . ltrim($item['link'], '/');
@@ -466,7 +469,7 @@
 			#			to edit existing navigation elements, use the 'NavigationPreRender' delegate.
 			# Global: Yes
 			Extension::notify(
-				'ExtensionsAddToNavigation', '/backend/', array('navigation' => &$nav)
+				'ExtensionsAddToNavigation', '/administration/', array('navigation' => &$nav)
 			);
 
 			$pageCallback = Administration::instance()->getPageCallback();

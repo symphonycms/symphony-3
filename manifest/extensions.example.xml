@@ -18,9 +18,9 @@
   <extension handle="ds_dynamicxml" version="1.0.0" status="enabled"/>
   <extension handle="ds_navigation" version="1.0.0" status="enabled">
     <delegates>
-      <item page="/backend/" delegate="DataSourceFormPrepare" callback="prepare"/>
-      <item page="/backend/" delegate="DataSourceFormAction" callback="action"/>
-      <item page="/backend/" delegate="DataSourceFormView" callback="view"/>
+      <item page="/administration/" delegate="DataSourceFormPrepare" callback="prepare"/>
+      <item page="/administration/" delegate="DataSourceFormAction" callback="action"/>
+      <item page="/administration/" delegate="DataSourceFormView" callback="view"/>
     </delegates>
   </extension>
   <extension handle="ds_sections" version="1.0.0" status="enabled"/>
@@ -52,15 +52,15 @@
       <item page="/system/settings/" delegate="CustomActions" callback="__toggleMaintenanceMode"/>
       <item page="/frontend/" delegate="FrontendPrePageResolve" callback="__checkForMaintenanceMode"/>
       <item page="/frontend/" delegate="FrontendParamsResolve" callback="__addParam"/>
-      <item page="/backend/" delegate="AppendPageAlert" callback="__appendAlert"/>
+      <item page="/administration/" delegate="AppendPageAlert" callback="__appendAlert"/>
     </delegates>
   </extension>
   <extension handle="markdown" version="1.10" status="not-installed"/>
   <extension handle="shell" version="0.3" status="not-installed"/>
   <extension handle="ui_navexpander" version="1.0.0" status="not-installed">
     <delegates>
-      <item page="/backend/" delegate="InitaliseAdminPageHead" callback="loadStylesheet"/>
-      <item page="/backend/" delegate="AppendElementBelowView" callback="prependButton"/>
+      <item page="/administration/" delegate="InitaliseAdminPageHead" callback="loadStylesheet"/>
+      <item page="/administration/" delegate="AppendElementBelowView" callback="prependButton"/>
     </delegates>
   </extension>
 </extensions>

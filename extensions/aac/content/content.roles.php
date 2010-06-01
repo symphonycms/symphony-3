@@ -1,35 +1,37 @@
 <?php
 
 	require_once(LIB . '/class.administrationpage.php');
- 	//require_once(LIB . '/class.sectionmanager.php');
 
-	Class contentSystemUsers extends AdministrationPage{
-
-		private $user;
-
+	Class contentExtensionAACRoles extends AdministrationPage{
+		private $driver;
+		
+		public function __construct(){
+			parent::__construct();
+			$this->driver = Extension::load('aac');
+		}
+		
 		public function __viewIndex(){
 			
-			$this->setTitle(__('Symphony') . ' &ndash; ' . __('Users'));
+			$this->setTitle(__('Symphony') . ' &ndash; ' . __('Roles'));
 
-			$this->appendSubheading(__('Users'), Widget::Anchor(
-				__('Add a User'), Administration::instance()->getCurrentPageURL() . 'new/', array(
-					'title' => __('Add a new User'),
+			$this->appendSubheading(__('Roles'), Widget::Anchor(
+				__('Add a Role'), Administration::instance()->getCurrentPageURL() . 'new/', array(
+					'title' => __('Add a new Role'),
 					'class' => 'create button'
 				)
 			));
 
-		    $users = new UserIterator;
+		    $roles = new RoleIterator;
 
 			$aTableHead = array(
 				array(__('Name'), 'col'),
-				array(__('Email Address'), 'col'),
-				array(__('Last Seen'), 'col'),
+				array(__('Users'), 'col')
 			);
 
 			$aTableBody = array();
 			$colspan = count($aTableHead);
 
-			if($users->length() == 0){
+			if($roles->length() == 0){
 				$aTableBody = array(Widget::TableRow(
 					array(
 						Widget::TableData(__('None found.'), array(
@@ -44,76 +46,77 @@
 			}
 
 			else{
-				foreach($users as $u){
-
+				$role_move_options = array();
+				
+				foreach($roles as $r){
+					
+					## Move options
+					$role_move_options[] = array('move::' . $r->id, false, $r->name);
+					
 					## Setup each cell
 					$td1 = Widget::TableData(
 						Widget::Anchor(
-							$u->getFullName(), Administration::instance()->getCurrentPageURL() . 'edit/' . $u->id . '/', array(
-								'title' => $u->username
-							)
+							$r->name, sprintf('%sedit/%d/', Administration::instance()->getCurrentPageURL(), $r->id)
 						)
 					);
-
+				
 					$td2 = Widget::TableData(
-						Widget::Anchor(
-							$u->email, 'mailto:'.$u->email, array(
-								'title' => 'Email this user'
-							)
-						)
+						Symphony::Database()->query('SELECT COUNT(*) AS `count` FROM `tbl_users` WHERE `role_id` = %d', array($r->id))->current()->count
 					);
-
-					if($u->last_seen != NULL){
-						$td3 = Widget::TableData(DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($u->last_seen)));
-					}
-					else{
-						$td3 = Widget::TableData('Unknown', array('class' => 'inactive'));
-					}
-
-					$td3->appendChild(Widget::Input('items['.$u->id.']', NULL, 'checkbox'));
+				
+					$td2->appendChild(Widget::Input("items[{$r->id}]", NULL, 'checkbox'));
 
 					## Add a row to the body array, assigning each cell to the row
-
-					$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3));
+					$aTableBody[] = Widget::TableRow(array($td1, $td2));
 				}
 			}
 
 			$table = Widget::Table(Widget::TableHead($aTableHead), NULL, Widget::TableBody($aTableBody));
 
 			$this->Form->appendChild($table);
+			
+			if($roles->length() > 0){
+				
+				$tableActions = $this->createElement('div');
+				$tableActions->setAttribute('class', 'actions');
 
-			$tableActions = $this->createElement('div');
-			$tableActions->setAttribute('class', 'actions');
+				$options = array(
+					array(NULL, false, 'With Selected...'),
+					array('delete', false, 'Delete'),
+					array(
+						'label' => 'Move Users',
+						'options' => $role_move_options
+					)
+				);
 
-			$options = array(
-				array(NULL, false, 'With Selected...'),
-				array('delete', false, 'Delete')
-			);
+				$tableActions->appendChild(Widget::Select('with-selected', $options));
+				$tableActions->appendChild(Widget::Input('action[apply]', 'Apply', 'submit'));
 
-			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', 'Apply', 'submit'));
-
-			$this->Form->appendChild($tableActions);
-
+				$this->Form->appendChild($tableActions);
+			}
+			
 		}
 
 		public function __actionIndex(){
-			if($_POST['with-selected'] == 'delete'){
+			$action = $_POST['with-selected'];
+			
+			if(preg_match('/^move::(\d+)$/i', $action, $matches)){
+				foreach(array_keys($_POST['items']) as $role_id){
+					Role::moveUsers($role_id, (int)$matches[1]);
+				}
+			}
+			
+			elseif($action == 'delete'){
 
 				$checked = array_keys($_POST['items']);
-
-				## FIXME: Fix this delegate
-				###
-				# Delegate: Delete
-				# Description: Prior to deleting an User. ID is provided.
-				//Extension::notify('Delete', getCurrentPage(), array('user_id' => $user_id));
-
-				foreach($checked as $user_id){
-					if(Administration::instance()->User->id == $user_id) continue;
-					User::delete($user_id);
+				
+				// TODO: Cannot remove role unless all users have been moved first. Throw exception if this has not been met
+				
+				foreach($checked as $role_id){
+					Role::delete($role_id);
 				}
 
-				redirect(ADMIN_URL . '/system/users/');
+				redirect(ADMIN_URL . '/extension/aac/roles/');
 			}
 		}
 

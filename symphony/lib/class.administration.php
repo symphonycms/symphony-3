@@ -240,7 +240,7 @@
 			# Delegate: AdminPagePreGenerate
 			# Description: Immediately before generating the admin page. Provided with the page object
 			# Global: Yes
-			Extension::notify('AdminPagePreGenerate', '/backend/', array('oPage' => &$this->Page));
+			Extension::notify('AdminPagePreGenerate', '/administration/', array('page' => &$this->Page));
 
 			$output = (string)$this->Page;
 
@@ -248,7 +248,7 @@
 			# Delegate: AdminPagePostGenerate
 			# Description: Immediately after generating the admin page. Provided with string containing page source
 			# Global: Yes
-			Extension::notify('AdminPagePostGenerate', '/backend/', array('output' => &$output));
+			Extension::notify('AdminPagePostGenerate', '/administration/', array('output' => &$output));
 			
 			self::Headers()->render();
 			
