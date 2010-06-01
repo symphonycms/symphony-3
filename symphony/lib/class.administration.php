@@ -142,13 +142,14 @@
 					$callback['pageroot'] .= $bits[0] . '/';
 				}
 				
-				if(isset($bits[1])) $callback['context'] = preg_split('/\//', $bits[1], -1, PREG_SPLIT_NO_EMPTY);
+				if(isset($bits[1])){ 
+					$callback['context'] = preg_split('/\//', $bits[1], -1, PREG_SPLIT_NO_EMPTY);
 
-				if(preg_match('/\/?:([^\/]+)\/?$/', end($callback['context']), $matches)){
-					$callback['flag'] = $matches[1];
-					unset($callback['context'][count($callback['context']) - 1]);
+					if(preg_match('/\/?:([^\/]+)\/?$/', end($callback['context']), $matches)){
+						$callback['flag'] = $matches[1];
+						unset($callback['context'][count($callback['context']) - 1]);
+					}
 				}
-				
 				if(!is_file($callback['driverlocation'] . '/content.' . $callback['driver'] . '.php')) return false;
 
 			}
