@@ -574,6 +574,7 @@
 			# Global: Yes
 			Extension::notify(
 				'FrontendTemplatePreRender', '/frontend/', array(
+					'document'	=> $Document,
 					'template'	=> &$template
 				)
 			);
