@@ -32,6 +32,7 @@
 				'sort-order' => %18$s,
 				'included-elements' => %19$s,
 				'parameter-output' => %20$s,
+				'dependencies' => %21$s,
 			);
 		}
 
