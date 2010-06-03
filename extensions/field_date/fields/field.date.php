@@ -205,7 +205,7 @@
 			}
 		}
 		
-		public function getParameterPoolValue($data){
+		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL){
 			$timestamp = DateTimeObj::fromGMT($data->value);
 			
      		return DateTimeObj::get('Y-m-d H:i:s', $timestamp);

@@ -314,6 +314,15 @@
 
 			$wrapper->appendChild($list);
 		}
+		
+		public function getParameterOutputValue(array $data, Entry $entry=NULL){
+			$result = array();
+			foreach($data as $d){
+				$result[] = $this->prepareTableValue($d);
+			}
+			
+			return $result;
+		}
 
 		/*-------------------------------------------------------------------------
 			Filtering:
