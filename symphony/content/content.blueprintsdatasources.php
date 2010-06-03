@@ -60,7 +60,7 @@
 			$this->insertNodeIntoHead($title);
 
 			$this->appendSubheading(__('Data Sources'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
+				__('Create New'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Create a new data source'),
 					'class' => 'create button'
 				)

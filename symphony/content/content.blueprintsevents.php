@@ -52,7 +52,7 @@
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Events'))));
 
 			$this->appendSubheading(__('Events'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
+				__('Create New'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Create a new event'),
 					'class' => 'create button'
 				)

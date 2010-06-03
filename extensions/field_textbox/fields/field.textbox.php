@@ -528,8 +528,8 @@
 			$wrapper->appendChild($result);
 		}
 		
-		public function getParameterPoolValue($data) {
-			return $data['handle'];
+		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL) {
+			return $data->handle;
 		}
 
 	/*-------------------------------------------------------------------------

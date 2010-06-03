@@ -82,7 +82,6 @@
 
 		protected $_about;
 		protected $_parameters;
-		protected $_dependencies;
 
 		protected static $_loaded;
 
@@ -261,12 +260,7 @@
 
 			return General::deleteFile(DATASOURCES . "/{$handle}.php");
 		}
-
-
-		public function getDependencies(){
-			return $this->_dependencies;
-		}
-
+		
 		public function emptyXMLSet(DOMElement $root){
 			if(is_null($root)) {
 				throw new DataSourceException('No valid DOMDocument present');

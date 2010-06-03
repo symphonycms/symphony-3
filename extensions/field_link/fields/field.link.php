@@ -668,7 +668,7 @@
 			return trim($output);
 		}
 
-		public function getParameterPoolValue($data){
+		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL){
 			return $data['relation_id'];
 		}
 

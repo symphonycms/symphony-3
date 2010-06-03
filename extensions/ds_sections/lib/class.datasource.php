@@ -21,7 +21,8 @@
 				'sort-field' => 'system:id',
 				'sort-order' => 'desc',
 				'included-elements' => array(),
-				'parameter-output' => array()
+				'parameter-output' => array(),
+				'dependencies' => array(),
 			);
 		}
 		
@@ -95,6 +96,13 @@
 				if(isset($data['parameter-output'])){
 					$this->parameters()->{'parameter-output'} = (array)$data['parameter-output'];
 				}
+				
+				// Calculate dependencies
+				$this->parameters()->{'dependencies'} = array();
+				if(preg_match_all('/\$ds-([^\s\/?*:;{},\\\\"\'\.]+)/i', serialize($this->parameters()), $matches) > 0){
+					$this->parameters()->{'dependencies'} = array_unique($matches[1]);
+				}
+				
 			}
 		}
 		
@@ -555,7 +563,7 @@
 			if (strlen(trim($this->parameters()->page)) == 0 || (is_numeric($this->parameters()->page) && $this->parameters()->page < 1)) {
 				$errors->append('page', __('A page number must be set'));
 			}
-
+			
 			return parent::save($errors);
 		}
 		
@@ -776,7 +784,7 @@
 
 				// Build Entry Records
 				if($entries->length() > 0){
-
+					
 					// Do some pre-processing on the include-elements.
 					if(is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 						$included_elements = (object)array('system' => array(), 'fields' => array());
@@ -815,9 +823,8 @@
 							}
 						}
 					}
-
+					
 					foreach($entries as $e){
-
 						// If there are included elements, need an entry element.
 						if(is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 							$entry = $result->createElement('entry');
@@ -875,7 +882,17 @@
 							}
 
 							foreach($parameter_output->fields as $field => $existing_values){
-								//	TODO?
+								$o = $section->fetchFieldByHandle($field)->getParameterOutputValue(
+									$e->data()->$field, $e
+								);
+								
+								if(is_array($o)){
+									$parameter_output->fields[$field] = array_merge($o, $parameter_output->fields[$field]);
+								}
+								else{
+									$parameter_output->fields[$field][]	= $o;
+								}
+								
 							}
 						}
 
@@ -884,12 +901,12 @@
 					// Add in the param output values to the ParameterOutput object
 					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
 						foreach($parameter_output->system as $field => $values){
-							$key = sprintf('ds-%s-%s', $this->parameters()->{'root-element'}, $field);
+							$key = sprintf('ds-%s.system.%s', $this->parameters()->{'root-element'}, $field);
 							$ParameterOutput->$key = array_unique($values);
 						}
 
 						foreach($parameter_output->fields as $field => $values){
-							$key = sprintf('ds-%s-%s', $this->parameters()->{'root-element'}, $field);
+							$key = sprintf('ds-%s.%s', $this->parameters()->{'root-element'}, $field);
 							$ParameterOutput->$key = array_unique($values);
 						}
 					}

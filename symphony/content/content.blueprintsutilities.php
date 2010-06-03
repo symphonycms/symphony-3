@@ -11,7 +11,7 @@
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Utilities'))));
 
 			$this->appendSubheading(__('Utilities'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
+				__('Create New'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Create a new utility'),
 					'class' => 'create button'
 				)

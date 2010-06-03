@@ -254,7 +254,7 @@
 				self::$extensions[$handle] = new self::$loaded_extensions[$pathname];
 			}
 
-			return clone self::$extensions[$handle];
+			return self::$extensions[$handle];
 			
 		}
 		
