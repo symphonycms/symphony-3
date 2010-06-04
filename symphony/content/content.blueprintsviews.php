@@ -587,7 +587,7 @@
 
 		// Fieldset -----------------------------------------------------------
 
-			$fieldset = Widget::Fieldset(__('View Resources'));
+			$fieldset = Widget::Fieldset(__('Resources'));
 
 			$label = Widget::Label(__('Events'));
 
