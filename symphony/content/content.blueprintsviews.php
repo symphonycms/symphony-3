@@ -184,7 +184,7 @@
 			if(!is_null($callback['flag']) && $callback['flag'] == 'saved') {
 				$this->alerts()->append(
 					__(
-						'View updated at %s. <a href="%s">View all Views</a>',
+						'View updated at %s. <a href="%s">View all</a>',
 						array(
 							DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 							ADMIN_URL . '/blueprints/views/'
