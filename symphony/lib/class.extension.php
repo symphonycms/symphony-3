@@ -25,8 +25,10 @@
 	Abstract Class Extension{
 		
 		static private $loaded_extensions;
+		static private $extensions_class_to_path;
 		static private $extension_configuration;
 		static private $extensions;
+		static private $extension_statuses;
 		
 		const NAVIGATION_CHILD = 'child';
 		const NAVIGATION_GROUP = 'group';
@@ -165,8 +167,11 @@
 		}
 		
 		public static function getPathFromClass($class){
-			$flipped = array_flip(self::$loaded_extensions);
-			return (isset($flipped[$class]) ? $flipped[$class] : NULL);
+			return (
+				isset(self::$extensions_class_to_path[$class])
+					? self::$extensions_class_to_path[$class]
+					: null
+			);
 		}
 		
 		public static function getHandleFromPath($pathname){
@@ -247,11 +252,15 @@
 					throw new ExtensionException('No extension driver found at ' . $pathname);
 				}
 				
-				self::$loaded_extensions[$pathname] = require_once(realpath($pathname) . '/extension.driver.php');
+				$class = require_once(realpath($pathname) . '/extension.driver.php');
+				self::$loaded_extensions[$pathname] = $class;
+				
 				if(is_null(self::$loaded_extensions[$pathname]) || !class_exists(self::$loaded_extensions[$pathname])){
 					throw new ExtensionException('Extension driver found at "'.$pathname.'" did not return a valid classname for instantiation.');
 				}
+				
 				self::$extensions[$handle] = new self::$loaded_extensions[$pathname];
+				self::$extensions_class_to_path[$class] = $pathname;
 			}
 
 			return self::$extensions[$handle];
@@ -259,23 +268,26 @@
 		}
 		
 		public static function status($handle){
-			
-			$status = self::STATUS_NOT_INSTALLED;
-			
-			$extension = self::load($handle);
-			
-			$node = end(self::$extension_configuration->xpath("//extension[@handle='{$handle}'][1]"));
-
-			if(!empty($node)){
-
-				if($node->attributes()->status == self::STATUS_ENABLED && $node->attributes()->version != $extension->about()->version){
-					$node['status'] = self::STATUS_REQUIRES_UPDATE;
+			if (!(isset(self::$extension_statuses[$handle]))) {
+				$status = self::STATUS_NOT_INSTALLED;
+				
+				$extension = self::load($handle);
+				
+				$node = end(self::$extension_configuration->xpath("//extension[@handle='{$handle}'][1]"));
+	
+				if(!empty($node)){
+	
+					if($node->attributes()->status == self::STATUS_ENABLED && $node->attributes()->version != $extension->about()->version){
+						$node['status'] = self::STATUS_REQUIRES_UPDATE;
+					}
+					
+					$status = $node->attributes()->status;
 				}
 				
-				$status = $node->attributes()->status;
+				self::$extension_statuses[$handle] = (string)$status;
 			}
-
-			return (string)$status;
+			
+			return self::$extension_statuses[$handle];
 		}
 	}
 	
@@ -286,30 +298,43 @@
 		
 		private $position;
 		private $extensions;
+		static private $extensions_by_flag;
 
 		public function __construct($flag=NULL, $value=NULL){
-			$this->extensions = array();
 			$this->position = 0;
-
-			foreach(new DirectoryIterator(EXTENSIONS) as $d){
-				if(!$d->isDir() || $d->isDot() || !file_exists($d->getPathname() . '/extension.driver.php')) continue;
-				
-				$extension = Extension::load($d->getFileName());
-				
-				if(!is_null($flag) && !is_null($value)){
-					switch($flag){
-						case self::FLAG_STATUS:
-							if(!in_array(Extension::status($d->getFileName()), (array)$value)) continue 2;
-							break;
-							
-						case self::FLAG_TYPE:
-							if(!isset($extension->about()->type) || (bool)array_intersect((array)$value, (array)$extension->about()->type) === false) continue 2;
-							break;
-					}
+			$key = null;
+			
+			if ($flag != null and $value != null) {
+				$key = "{$flag}.{$value}";
+			}
+			
+			if (!(isset(self::$extensions_by_flag[$key]))) {
+				if (!(is_array(self::$extensions_by_flag))) {
+					self::$extensions_by_flag = array();
 				}
 				
-				$this->extensions[] = $extension;
+				foreach(new DirectoryIterator(EXTENSIONS) as $d){
+					if(!$d->isDir() || $d->isDot() || !file_exists($d->getPathname() . '/extension.driver.php')) continue;
+					
+					$extension = Extension::load($d->getFileName());
+					
+					if(!is_null($flag) && !is_null($value)){
+						switch($flag){
+							case self::FLAG_STATUS:
+								if(!in_array(Extension::status($d->getFileName()), (array)$value)) continue 2;
+								break;
+								
+							case self::FLAG_TYPE:
+								if(!isset($extension->about()->type) || (bool)array_intersect((array)$value, (array)$extension->about()->type) === false) continue 2;
+								break;
+						}
+					}
+					
+					self::$extensions_by_flag[$key][] = $extension;
+				}
 			}
+			
+			$this->extensions = self::$extensions_by_flag[$key];
 		}
 
 		public function length(){
