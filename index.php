@@ -6,16 +6,23 @@
 	require(DOCROOT . '/symphony/bundle.php');
 
 	function renderer($handle){
+		$path = NULL;
 		
 		if(file_exists(realpath($handle))){
 			$path = realpath($handle);
+			
+			// Ensure the renderer is child of DOCROOT. Closes potential
+			// security hole
+			if(substr($path, 0, strlen(DOCROOT)) != DOCROOT){
+				$path = NULL;
+			}
 		}
 		
 		elseif(file_exists(LIB . "/class.{$handle}.php")){
 			$path = LIB . "/class.{$handle}.php";
 		}
 		
-		else{
+		if(is_null($path)){
 			throw new Exception('Invalid Symphony renderer handle specified.');
 		}
 
