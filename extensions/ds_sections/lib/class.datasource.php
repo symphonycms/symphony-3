@@ -695,15 +695,15 @@
 				if(preg_match('/^system:/i', $this->parameters()->{'sort-field'})){
 					switch(preg_replace('/^system:/i', NULL, $this->parameters()->{'sort-field'})){
 						case 'id':
-							$order = 'e.id';
+							$order = "e.id {$sort}";
 							break;
 
 						case 'creation-date':
-							$order = 'e.creation_date';
+							$order = "e.creation_date {$sort}";
 							break;
 
 						case 'modification-date':
-							$order = 'e.modification_date';
+							$order = "e.modification_date {$sort}";
 							break;
 
 					}
