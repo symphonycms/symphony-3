@@ -684,7 +684,7 @@
 
 			//	Apply the Sorting & Direction
 			if($this->parameters()->{'sort-order'} == 'random'){
-				$sort = 'RAND()';
+				$order = 'RAND()';
 			}
 
 			else{
