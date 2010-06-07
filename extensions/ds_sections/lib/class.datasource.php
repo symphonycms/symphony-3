@@ -392,8 +392,6 @@
 							));
 							$item->appendChild($label);
 						}
-						
-						// TODO: What about creation, modified date and author?
 					}
 				}
 
@@ -409,22 +407,22 @@
 					array(
 						'system:id',
 						($section_active and in_array('system:id', $this->parameters()->{'parameter-output'})),
-						__('System ID')
+						__('$ds-?-system-id')
 					),
 					array(
 						'system:creation-date',
 						($section_active and in_array('system:creation-date', $this->parameters()->{'parameter-output'})),
-						__('System Creation Date')
+						__('$ds-?-system-creation-date')
 					),
 					array(
 						'system:modification-date',
 						($section_active and in_array('system:modification-date', $this->parameters()->{'parameter-output'})),
-						__('System Modification Date')
+						__('$ds-?-system-modification-date')
 					),
 					array(
 						'system:user',
 						($section_active and in_array('system:user', $this->parameters()->{'parameter-output'})),
-						__('System User')
+						__('$ds-?-system-user')
 					)
 				);
 				$included_elements_options = array(
@@ -469,7 +467,7 @@
 							$options_parameter_output[] = array(
 								$field_handle,
 								($section_active and in_array($field_handle, $this->parameters()->{'parameter-output'})),
-								$field_label
+								__('$ds-?-%s', array($field_handle))
 							);
 						}
 

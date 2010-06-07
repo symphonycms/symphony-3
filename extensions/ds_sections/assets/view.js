@@ -1,3 +1,23 @@
+// Update form when the Name field is changed
+jQuery(document).ready(function() {
+	var name_field = jQuery('input[name = "fields[about][name]"]');
+	var param_field = jQuery('select[name = "fields[parameter-output][]"]');
+	
+	param_field.find('option').each(function() {
+		var option = jQuery(this);
+		var template = option.text();
+		
+		name_field.bind('change', function() {
+			var name = Symphony.Language.createHandle(name_field.val());
+			
+			if (!name) option.text(template);
+			else option.text(template.split('?').join(name));
+		});
+	});
+	
+	name_field.trigger('change');
+});
+
 jQuery(document).ready(function() {
 	var update = function() {
 		jQuery('.context').hide()
