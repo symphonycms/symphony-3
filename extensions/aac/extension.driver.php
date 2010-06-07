@@ -212,9 +212,11 @@
 		public function install(){
 
 			Symphony::Database()->query("CREATE TABLE `tbl_aac_roles` (
-				`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-				`name` VARCHAR(255) NOT NULL,
-				INDEX (`name`)
+			  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+			  `name` varchar(255) NOT NULL,
+			  `description` text,
+			  PRIMARY KEY (`id`),
+			  KEY `name` (`name`)
 			)");
 
 			// Default roles

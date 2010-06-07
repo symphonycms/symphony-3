@@ -12,7 +12,7 @@
 			$this->setTitle(__('Symphony') . ' &ndash; ' . __('Users'));
 
 			$this->appendSubheading(__('Users'), Widget::Anchor(
-				__('Add a User'), Administration::instance()->getCurrentPageURL() . 'new/', array(
+				__('Add a User'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Add a new User'),
 					'class' => 'create button'
 				)
@@ -49,7 +49,7 @@
 					## Setup each cell
 					$td1 = Widget::TableData(
 						Widget::Anchor(
-							$u->getFullName(), Administration::instance()->getCurrentPageURL() . 'edit/' . $u->id . '/', array(
+							$u->getFullName(), Administration::instance()->getCurrentPageURL() . '/edit/' . $u->id . '/', array(
 								'title' => $u->username
 							)
 						)

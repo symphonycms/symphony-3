@@ -104,7 +104,8 @@
 
 			// Remove multiple slashes and any flags from the URL (e.g. :saved/ or :created/)
 			$this->_currentPage = ADMIN_URL . preg_replace(array('/:[^\/]+\/?$/', '/\/{2,}/'), '/', $page);
-
+			$this->_currentPage = rtrim($this->_currentPage, '/');
+			
 			$bits = preg_split('/\//', trim($page, '/'), 3, PREG_SPLIT_NO_EMPTY);
 			
 			if($bits[0] == 'login'){
@@ -141,10 +142,16 @@
 					$callback['pageroot'] .= $bits[0] . '/';
 				}
 				
-				if(isset($bits[1])) $callback['context'] = preg_split('/\//', $bits[1], -1, PREG_SPLIT_NO_EMPTY);
-				
+				if(isset($bits[1])){ 
+					$callback['context'] = preg_split('/\//', $bits[1], -1, PREG_SPLIT_NO_EMPTY);
+
+					if(preg_match('/\/?:([^\/]+)\/?$/', end($callback['context']), $matches)){
+						$callback['flag'] = $matches[1];
+						unset($callback['context'][count($callback['context']) - 1]);
+					}
+				}
 				if(!is_file($callback['driverlocation'] . '/content.' . $callback['driver'] . '.php')) return false;
-								
+
 			}
 			
 			elseif($bits[0] == 'publish'){

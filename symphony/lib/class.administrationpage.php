@@ -529,7 +529,7 @@
 				$item = $this->createElement('li');
 				$item->appendChild(
 					Widget::Anchor($name, $link, array(
-						'class' => (Administration::instance()->getCurrentPageURL() == $link ? 'active' : null)
+						'class' => (Administration::instance()->getCurrentPageURL() == rtrim($link, '/') ? 'active' : null)
 					))
 				);
 				

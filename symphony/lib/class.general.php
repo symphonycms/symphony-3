@@ -592,7 +592,7 @@
 				return false;
 			}
 
-			chmod($file, intval($perm, 8));
+			@chmod($file, intval($perm, 8));
 
 			return true;
 		}

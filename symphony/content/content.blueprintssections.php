@@ -14,7 +14,7 @@
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
 
 			$this->appendSubheading(__('Sections'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL().'new/', array(
+				__('Create New'), Administration::instance()->getCurrentPageURL().'/new/', array(
 					'title' => __('Create a new section'),
 					'class' => 'create button'
 				)
@@ -67,7 +67,7 @@
 
 					// Setup each cell
 					$td1 = Widget::TableData(
-						Widget::Anchor($s->name, Administration::instance()->getCurrentPageURL() . "edit/{$s->handle}/", array(
+						Widget::Anchor($s->name, Administration::instance()->getCurrentPageURL() . "/edit/{$s->handle}/", array(
 						'class' => 'content'
 						))
 					);
@@ -573,7 +573,7 @@
 					case 'saved':
 						$this->alerts()->append(
 							__(
-								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
+								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',
@@ -705,7 +705,7 @@
 					case 'saved':
 						$this->alerts()->append(
 							__(
-								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all Sections</a>',
+								'Section updated at %1$s. <a href="%2$s">Create another?</a> <a href="%3$s">View all</a>',
 								array(
 									DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 									ADMIN_URL . '/blueprints/sections/new/',

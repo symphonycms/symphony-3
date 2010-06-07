@@ -65,6 +65,8 @@
 	$settings = array(
 	  'website-preferences' => array(
 	    'name' => 'Symphony CMS',
+	  ),
+	  'server-preferences' => array(
 	    'path' => realpath('..'),
 	    'file-permissions' => '0755',
 	    'directory-permissions' => '0755',
@@ -104,19 +106,25 @@
 			$settings['website-preferences'] = array_map('trim', $settings['website-preferences']);
 		
 			// Missing Sitename
+			if(missing(array($settings['website-preferences']['name']))){
+				$errors->append('website-preferences', 'Name is a required field.');
+			}
+			
+		// Server Preferences -------------------------------------------------------------------------------------------
+			
 			// Missing root path
-			if(missing(array($settings['website-preferences']['name'], $settings['website-preferences']['path']))){
-				$errors->append('website-preferences', 'Name and Path are both required fields.');
+			elseif(missing(array($settings['server-preferences']['path']))){
+				$errors->append('server-preferences', 'Root Path is a required field.');
 			}
 		
 			// Root Path does not exist or is not writable
-			elseif(!is_dir($settings['website-preferences']['path']) || !is_writable($settings['website-preferences']['path'])){
-				$errors->append('website-preferences', 'Path specified does not exist, or is not writable. Please check permissions on that location.');
+			elseif(!is_dir($settings['server-preferences']['path']) || !is_writable($settings['server-preferences']['path'])){
+				$errors->append('server-preferences', 'Path specified does not exist, or is not writable. Please check permissions on that location.');
 			}
 		
 			// Root Path contains another install of Symphony
-			elseif(file_exists(sprintf('%s/manifest/core.xml', rtrim($settings['website-preferences']['path'], '/')))){
-				$errors->append('website-preferences', 'An installation of Symphony already exists at that location.');
+			elseif(file_exists(sprintf('%s/manifest/core.xml', rtrim($settings['server-preferences']['path'], '/')))){
+				$errors->append('server-preferences', 'An installation of Symphony already exists at that location.');
 			}
 			
 		
@@ -220,7 +228,7 @@
 					);
 
 					// Cannot write .htaccess
-					if(!General::writeFile(sprintf('%s/.htaccess', rtrim($settings['website-preferences']['path'], '/')), $htaccess, $settings['website-preferences']['file-permissions'])){
+					if(!General::writeFile(sprintf('%s/.htaccess', rtrim($settings['server-preferences']['path'], '/')), $htaccess, $settings['server-preferences']['file-permissions'])){
 						throw new Exception('Could not write .htaccess file. TODO: Handle this by recording to the log and showing nicer error page.');
 					}
 				
@@ -245,8 +253,8 @@
 						file_get_contents('assets/template.core.xml'), 
 						VERSION,
 						$settings['website-preferences']['name'],
-						$settings['website-preferences']['file-permissions'],
-						$settings['website-preferences']['directory-permissions'],
+						$settings['server-preferences']['file-permissions'],
+						$settings['server-preferences']['directory-permissions'],
 						$settings['date-time']['time-format'],
 						$settings['date-time']['date-format'],
 						$settings['date-time']['region']
@@ -262,20 +270,20 @@
 						$settings['database']['table-prefix']
 					);
 
-					// Wite the core config file
+					// Write the core config file
 					if(!General::writeFile(
-						sprintf('%s/manifest/conf/core.xml', rtrim($settings['website-preferences']['path'], '/')), 
+						sprintf('%s/manifest/conf/core.xml', rtrim($settings['server-preferences']['path'], '/')), 
 						$config_core, 
-						$settings['website-preferences']['file-permissions']
+						$settings['server-preferences']['file-permissions']
 					)){
 						throw new Exception('Could not write manifest/conf/core.xml file. TODO: Handle this by recording to the log and showing nicer error page.');
 					}
 			
 					// Wite the core config file
 					if(!General::writeFile(
-						sprintf('%s/manifest/conf/db.xml', rtrim($settings['website-preferences']['path'], '/')), 
+						sprintf('%s/manifest/conf/db.xml', rtrim($settings['server-preferences']['path'], '/')), 
 						$config_db, 
-						$settings['website-preferences']['file-permissions']
+						$settings['server-preferences']['file-permissions']
 					)){
 						throw new Exception('Could not write manifest/conf/db.xml file. TODO: Handle this by recording to the log and showing nicer error page.');
 					}
@@ -329,7 +337,7 @@
 	
 	Widget::init($Document);
 	
-	$Document->insertNodeIntoHead($Document->createElement('title', 'Install Symphony'));
+	$Document->insertNodeIntoHead($Document->createElement('title', 'Symphony Installation'));
 	
 	$meta = $Document->createElement('meta');
 	$meta->setAttribute('http-equiv', 'Content-Type');
@@ -353,20 +361,23 @@
 	
 	$about = $Document->createElement('div');
 	$about->setAttribute('class', 'about');
-	$about->appendChild($Document->createElement('h1', 'Symphony Installation'));
+	$about->appendChild($Document->createElement('h1', 'You are Installing Symphony'));
 	$about->appendChild($Document->createElement('p', 'Version 3.0.0 alpha'));
 	$div->appendChild($about);
 	
 	// Website Preferences -------------------------------------------------------------------------------------------
-	$panel = createPanel($layout, 'Website Preferences', 'Install Symphony at the following location', $errors->{'website-preferences'});
+	$panel = createPanel($layout, 'Your Website', 'The essential details', $errors->{'website-preferences'});
 	
-	$label = Widget::Label('Name', NULL, array('class' => 'input'));
+	$label = Widget::Label('Website Name', NULL, array('class' => 'input'));
 	$input = Widget::Input('website-preferences[name]', $settings['website-preferences']['name']);
 	$label->appendChild($input);
 	$panel->appendChild($label);
 	
+	// Server Preferences -------------------------------------------------------------------------------------------
+	$panel = createPanel($layout, 'Your Server', 'Where to install and what permissions to use', $errors->{'server-preferences'});
+	
 	$label = Widget::Label('Root Path', NULL, array('class' => 'input'));
-	$input = Widget::Input('website-preferences[path]', $settings['website-preferences']['path']);
+	$input = Widget::Input('server-preferences[path]', $settings['server-preferences']['path']);
 	$label->appendChild($input);
 	$panel->appendChild($label);
 	
@@ -382,7 +393,7 @@
 	$label = Widget::Label('File Permissions', NULL, array('class' => 'select'));
 	$input = Widget::Select('website-preferences[file-permissions]', array(
 		array('0755', false, '0755'),
-		array('0777', $settings['website-preferences']['file-permissions'] == '0777', '0777')
+		array('0777', $settings['server-preferences']['file-permissions'] == '0777', '0777')
 	));
 	$label->appendChild($input);
 	$group->appendChild($label);
@@ -390,14 +401,14 @@
 	$label = Widget::Label('Directory Permissions', NULL, array('class' => 'select'));
 	$input = Widget::Select('website-preferences[directory-permissions]', array(
 		array('0755', false, '0755'),
-		array('0777', $settings['website-preferences']['directory-permissions'] == '0777', '0777')
+		array('0777', $settings['server-preferences']['directory-permissions'] == '0777', '0777')
 	));
 	$label->appendChild($input);
 	$group->appendChild($label);
 
 	
 	// Date and Time -------------------------------------------------------------------------------------------------
-	$panel = createPanel($layout, 'Date and Time', 'Region and format for the admin', $errors->{'date-time'});
+	$panel = createPanel($layout, 'Your Locale', 'Default region and date/time format', $errors->{'date-time'});
 
 	$label = Widget::Label('Region', NULL, array('class' => 'select'));
 	$options = array();
@@ -452,7 +463,7 @@
 
 
 	// Database Connection -------------------------------------------------------------------------------------------
-	$panel = createPanel($layout, 'Database Connection', 'Database access details for Symphony', $errors->{'database'});
+	$panel = createPanel($layout, 'Your Database', 'Access details and database preferences', $errors->{'database'});
 
 	$label = Widget::Label('Database', NULL, array('class' => 'input'));
 	$input = Widget::Input('database[database]', $settings['database']['database']);
@@ -511,7 +522,7 @@
 	
 	
 	// User Information ----------------------------------------------------------------------------------------------
-	$panel = createPanel($layout, 'User Information', 'Login access details for the admin', $errors->{'user'});
+	$panel = createPanel($layout, 'Your First User', 'Details for your first Symphony user', $errors->{'user'});
 	
 	$label = Widget::Label('Username', NULL, array('class' => 'input'));
 	$input = Widget::Input('user[username]', $settings['user']['username']);
@@ -563,7 +574,6 @@
 	
 	$submit = $Document->createElement('div');
 	$submit->setAttribute('class', 'content submission');
-	$submit->appendChild($Document->createElement('p', 'Make sure that you delete install.php file after Symphony has installed successfully.'));
 	$p = $Document->createElement('p');
 	$button = $Document->createElement('button', 'Install Symphony');
 	$button->setAttribute('name', 'action[install]');

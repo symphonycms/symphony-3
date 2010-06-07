@@ -656,7 +656,7 @@
 			);
 		}
 
-		public function getParameterPoolValue($data){
+		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL){
 			return $this->prepareTableValue($data);
 		}
 		

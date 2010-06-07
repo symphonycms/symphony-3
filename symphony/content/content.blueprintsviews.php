@@ -31,7 +31,7 @@
 
 			if($last != true){
 				$anchor = Widget::Anchor(
-					$page['title'], Administration::instance()->getCurrentPageURL() . '?parent=' . $page['id']
+					$page['title'], Administration::instance()->getCurrentPageURL() . '/?parent=' . $page['id']
 				);
 			}
 
@@ -51,7 +51,7 @@
 			$this->insertNodeIntoHead($title);
 
 			$this->appendSubheading(__('Views'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL() . 'new/', array(
+				__('Create New'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Create a new view'),
 					'class' => 'create button'
 				)
@@ -90,7 +90,7 @@
 					$page_title = $view->title;
 
 					$page_url = sprintf('%s/%s/', URL, $view->path);
-					$page_edit_url = sprintf('%sedit/%s/', Administration::instance()->getCurrentPageURL(), $view->path);
+					$page_edit_url = sprintf('%s/edit/%s/', Administration::instance()->getCurrentPageURL(), $view->path);
 
 					$page_types = $view->types;
 
@@ -184,7 +184,7 @@
 			if(!is_null($callback['flag']) && $callback['flag'] == 'saved') {
 				$this->alerts()->append(
 					__(
-						'View updated at %s. <a href="%s">View all Views</a>',
+						'View updated at %s. <a href="%s">View all</a>',
 						array(
 							DateTimeObj::getTimeAgo(__SYM_TIME_FORMAT__),
 							ADMIN_URL . '/blueprints/views/'
@@ -587,7 +587,7 @@
 
 		// Fieldset -----------------------------------------------------------
 
-			$fieldset = Widget::Fieldset(__('View Resources'));
+			$fieldset = Widget::Fieldset(__('Resources'));
 
 			$label = Widget::Label(__('Events'));
 
