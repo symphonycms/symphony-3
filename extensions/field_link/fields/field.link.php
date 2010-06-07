@@ -127,7 +127,7 @@
 			
 			return $values;
 		}
-
+/*
 		public function findFieldIDFromRelationID($id){
 			if(is_null($id)) return NULL;
 
@@ -199,7 +199,7 @@
 
 			return $primary_field;
 		}
-
+*/
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
@@ -631,41 +631,42 @@
 		}
 
 		public function prepareTableValue($data, DOMElement $link=NULL){
-			$result = array();
-
-			if(!is_array($data) || (is_array($data) && !isset($data['relation_id']))) return parent::prepareTableValue(NULL);
-
-			if(!is_array($data['relation_id'])){
-				$data['relation_id'] = array($data['relation_id']);
+			
+			if(!is_array($data) || empty($data)){
+				return parent::prepareTableValue(NULL, $link);
 			}
+			
+			$result = Administration::instance()->Page->createDocumentFragment();
+			
+			foreach($data as $index => $d){
+				$entry = Entry::loadFromID($d->relation_id);
+				
+				foreach($this->{'related-fields'} as $key => $value){
+					list($section_handle, $field_handle) = $value;
+					
+					if($section_handle != $entry->meta()->section) continue;
+					
+					$section = Section::loadFromHandle($section_handle);
+					$field = $section->fetchFieldByHandle($field_handle);
+					
+					$value = $field->prepareTableValue($entry->data()->{$field_handle});
+					
+					// TODO: handle passing links
+					if($index > 0){
+						$result->appendChild(new DOMText(', '));
+					}
+					
+					$result->appendChild(Widget::anchor(
+						$value, 
+						sprintf('%s/publish/%s/edit/%d/', ADMIN_URL, $section_handle, $entry->meta()->id)
+					));
 
-			foreach($data['relation_id'] as $relation_id){
-				if((int)$relation_id <= 0) continue;
-
-				$primary_field = $this->__findPrimaryFieldValueFromRelationID($relation_id);
-
-				if(!is_array($primary_field) || empty($primary_field)) continue;
-
-				$result[$relation_id] = $primary_field;
-			}
-
-			if(!is_null($link)){
-				$label = NULL;
-				foreach($result as $item){
-					$label .= ' ' . $item['value'];
+					break;
 				}
-				$link->setValue(General::sanitize(trim($label)));
-				return $link->generate();
 			}
+			
+			return $result;
 
-			$output = NULL;
-
-			foreach($result as $relation_id => $item){
-				$link = Widget::Anchor($item['value'], sprintf('%s/symphony/publish/%s/edit/%d/', URL, $item['section_handle'], $relation_id));
-				$output .= $link->generate() . ' ';
-			}
-
-			return trim($output);
 		}
 
 		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL){

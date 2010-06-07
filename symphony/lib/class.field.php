@@ -533,7 +533,7 @@
 		-------------------------------------------------------------------------*/
 
 		public function prepareTableValue(StdClass $data=NULL, DOMElement $link=NULL) {
-			$max_length = Symphony::Configuration()->core()->symphony->cell-truncation-length;
+			$max_length = Symphony::Configuration()->core()->symphony->{'cell-truncation-length'};
 			$max_length = ($max_length ? $max_length : 75);
 
 			$value = (!is_null($data) ? strip_tags($data->value) : NULL);
