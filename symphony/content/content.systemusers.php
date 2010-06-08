@@ -353,10 +353,10 @@
 				$this->user->language = $fields['language'];
 
 				###
-				# Delegate: PreCreate
+				# Delegate: UserPreCreate
 				# Description: Just before creation of a new User. User object, fields and error array provided
 				Extension::notify(
-					'PreCreate', '/system/users/new/',
+					'UserPreCreate', '/system/users/new/',
 					array(
 						'fields' => $fields,
 						'user' => &$this->user,
@@ -425,10 +425,10 @@
 				$this->user->language = $fields['language'];
 
 				###
-				# Delegate: PreSave
+				# Delegate: UserPreSave
 				# Description: Just before creation of a new User. User object, fields and error array provided
 				Extension::notify(
-					'PreSave', '/system/users/edit/',
+					'UserPreSave', '/system/users/edit/',
 					array(
 						'fields' => $fields,
 						'user' => &$this->user,
