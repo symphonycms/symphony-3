@@ -5,7 +5,7 @@
 	require_once(LIB . '/class.ajaxpage.php');
 
 	Class AdministrationPageNotFoundException extends SymphonyErrorPage{
-		public function __construct($page){
+		public function __construct($page=NULL){
 			parent::__construct(
 				__('The page you requested does not exist.'),
 				__('Page Not Found'),
@@ -45,58 +45,7 @@
 			parent::__construct();
 			self::$Headers = new DocumentHeaders;
 		}
-		
-		private function __buildPage($page){
-	
-			$this->isLoggedIn();
-			
-			if(empty($page)){
-				
-				if (!$this->isLoggedIn()) {
-					$page = '/login';
-				}
-				
-				else {
-					$section_handle = $this->User->default_section;
-					
-					// Make sure section exists:
-					try {
-						$section = Section::loadFromHandle($section_handle);
-						
-						redirect(ADMIN_URL . "/publish/{$section_handle}/");
-					}
-					
-					catch (Exception $e) {
-						redirect(ADMIN_URL . '/blueprints/sections/');
-					}
-				}
-			}
-			
-			if(!$this->_callback = $this->getPageCallback($page)){
-				throw new AdministrationPageNotFoundException($page);
-			}
-				
-			include_once((isset($this->_callback['driverlocation']) ? $this->_callback['driverlocation'] : CONTENT) . '/content.' . $this->_callback['driver'] . '.php'); 			
-			$this->Page = new $this->_callback['classname'];
-			
-			Widget::init($this->Page);
 
-			if(!$this->isLoggedIn() && $this->_callback['driver'] != 'login'){
-				if(is_callable(array($this->Page, 'handleFailedAuthorisation'))) $this->Page->handleFailedAuthorisation();
-				else{
-				
-					include_once(CONTENT . '/content.login.php'); 			
-					$this->Page = new contentLogin;
-					$this->Page->build();
-				
-				}
-			}
-			
-			else $this->Page->build($this->_callback['context']);
-			
-			return $this->Page;
-		}
-		
 		public function getPageCallback($page=NULL, $update=false){
 			
 			if((!$page || !$update) && $this->_callback) return $this->_callback;
@@ -112,11 +61,11 @@
 				array_shift($bits);
 				
 				$callback = array(
-						'driver' => 'login',
-						'context' => preg_split('/\//', implode('/', $bits), -1, PREG_SPLIT_NO_EMPTY),
-						'classname' => 'contentLogin',
-						'pageroot' => '/login/'
-					);
+					'driver' => 'login',
+					'context' => preg_split('/\//', implode('/', $bits), -1, PREG_SPLIT_NO_EMPTY),
+					'classname' => 'contentLogin',
+					'pageroot' => '/login/'
+				);
 			}
 			
 			elseif($bits[0] == 'extension' && isset($bits[1])){
@@ -125,12 +74,12 @@
 				$bits = preg_split('/\//', trim($bits[2], '/'), 2, PREG_SPLIT_NO_EMPTY);
 				
 				$callback = array(
-								'driver' => NULL,
-								'context' => NULL,
-								'pageroot' => NULL,
-								'classname' => NULL,
-								'driverlocation' => EXTENSIONS . '/' . $extention_name . '/content/'
-							);			
+					'driver' => NULL,
+					'context' => NULL,
+					'pageroot' => NULL,
+					'classname' => NULL,
+					'driverlocation' => EXTENSIONS . '/' . $extention_name . '/content/'
+				);			
 								
 				$callback['driver'] = 'index'; //ucfirst($extention_name);
 				$callback['classname'] = 'contentExtension' . ucfirst($extention_name) . 'Index';
@@ -189,12 +138,12 @@
 			else{
 				
 				$callback = array(
-								'driver' => NULL,
-								'context' => NULL,
-								'pageroot' => NULL,
-								'classname' => NULL,
-								'flag' => NULL
-							);
+					'driver' => NULL,
+					'context' => NULL,
+					'pageroot' => NULL,
+					'classname' => NULL,
+					'flag' => NULL
+				);
 			
 				$callback['driver'] = ucfirst($bits[0]);
 				$callback['pageroot'] = '/' . $bits[0] . '/';
@@ -241,7 +190,63 @@
 			self::$Headers->append('Cache-Control', 'no-cache, must-revalidate, max-age=0');
 			self::$Headers->append('Pragma', 'no-cache');
 			
-			$this->__buildPage($page);
+			$this->isLoggedIn();
+			
+			if(empty($page)){
+				
+				if (!$this->isLoggedIn()) {
+					$page = '/login';
+				}
+				
+				else {
+					$section_handle = $this->User->default_section;
+					
+					// Make sure section exists:
+					try {
+						$section = Section::loadFromHandle($section_handle);
+						redirect(ADMIN_URL . "/publish/{$section_handle}/");
+					}
+					
+					catch (Exception $e) {
+						redirect(ADMIN_URL . '/blueprints/sections/');
+					}
+				}
+			}
+			
+			if(!$this->_callback = $this->getPageCallback($page)){
+				throw new AdministrationPageNotFoundException($page);
+			}
+			
+			include_once((isset($this->_callback['driverlocation']) 
+				? $this->_callback['driverlocation'] 
+				: CONTENT) . '/content.' . $this->_callback['driver'] . '.php'
+			);
+			
+			$this->Page = new $this->_callback['classname'];
+
+			// Widget class needs a document in order to create elements
+			Widget::init($this->Page);
+
+			####
+			# Delegate: AdminPagePreBuild
+			# Description: Immediately before building the admin page. Provided with the page and callback
+			# Global: Yes
+			Extension::notify('AdminPagePreBuild', '/administration/', array('page' => &$this->Page, 'callback' => &$this->_callback));
+
+			if(!$this->isLoggedIn() && $this->_callback['driver'] != 'login'){
+				if(is_callable(array($this->Page, 'handleFailedAuthorisation'))) $this->Page->handleFailedAuthorisation();
+				else{
+				
+					include_once(CONTENT . '/content.login.php');
+					$this->Page = new contentLogin;
+					$this->Page->build();
+				
+				}
+			}
+			
+			else{
+				$this->Page->build($this->_callback['context']);
+			}
 			
 			####
 			# Delegate: AdminPagePreGenerate
