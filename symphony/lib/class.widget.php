@@ -23,7 +23,7 @@
 
 		## Forms
 		## First take at a generic fieldset builder for the new form layout
-		public static function Fieldset($value=null, $help=null, array $attributes = array()){
+		public static function Fieldset($value=null, $help=null, array $attributes=NULL){
 			$fieldset = Widget::$Symphony->createElement('fieldset', null, $attributes);
 
 			if(!is_null($value)){
@@ -46,7 +46,7 @@
 			return $fieldset;
 		}
 
-		public static function Form($action, $method, array $attributes = array()){
+		public static function Form($action, $method, array $attributes=NULL){
 			$form = Widget::$Symphony->createElement('form', null, $attributes);
 			$form->setAttribute('action', $action);
 			$form->setAttribute('method', $method);
@@ -54,7 +54,7 @@
 			return $form;
 		}
 
-		public static function Label($name=null, DOMNode $child=null, array $attributes = array()){
+		public static function Label($name=null, DOMNode $child=null, array $attributes=NULL){
 			$label = Widget::$Symphony->createElement('label', $name, $attributes);
 
 			if(!is_null($child)) $label->appendChild($child);
@@ -62,7 +62,7 @@
 			return $label;
 		}
 
-		public static function Input($name, $value=null, $type='text', array $attributes = array()){
+		public static function Input($name, $value=null, $type='text', array $attributes=NULL){
 			$obj = Widget::$Symphony->createElement('input', null, $attributes);
 			$obj->setAttribute('name', $name);
 
@@ -73,7 +73,7 @@
 			return $obj;
 		}
 		
-		public static function Submit($name, $value, array $attributes = array()) {
+		public static function Submit($name, $value, array $attributes=NULL) {
 			$obj = Widget::$Symphony->createElement('button', null, $attributes);
 			$obj->setAttribute('name', $name);
 			$obj->setAttribute('type', 'submit');
@@ -84,7 +84,7 @@
 			return $obj;
 		}
 		
-		public static function Textarea($name, $value=null, array $attributes = array()){
+		public static function Textarea($name, $value=null, array $attributes=NULL){
 			$obj = Widget::$Symphony->createElement('textarea', $value, $attributes);
 
 			$obj->appendChild(Widget::$Symphony->createTextNode(''));
@@ -94,17 +94,21 @@
 			return $obj;
 		}
 
-		public static function Select($name, $options, array $attributes = array()){
+		public static function Select($name, $options, array $attributes=NULL){
 			$obj = Widget::$Symphony->createElement('select');
 			
 			$attributes['name'] = $name;
 			
-			$obj->setAttributeArray($attributes);
+			if(!is_null($attributes)){
+				$obj->setAttributeArray($attributes);
+			}
 
 			$obj->appendChild(Widget::$Symphony->createTextNode(''));
 
 			if(!is_array($options) || empty($options)){
-				if(!isset($attributes['disabled'])) $obj->setAttribute('disabled', 'disabled');
+				if(is_null($attributes) || !isset($attributes['disabled'])){
+					$obj->setAttribute('disabled', 'disabled');
+				}
 				return $obj;
 			}
 
@@ -152,10 +156,12 @@
 		}
 
 		##	Tables
-		public static function Table($head=null, $foot=null, $body=null, array $attributes = array()){
+		public static function Table($head=null, $foot=null, $body=null, array $attributes=NULL){
  			$table = Widget::$Symphony->createElement('table');
 
-			$table->setAttributeArray($attributes);
+			if(!is_null($attributes)){
+				$table->setAttributeArray($attributes);
+			}
 
 			if($head) $table->appendChild($head);
 			if($foot) $table->appendChild($foot);
@@ -190,42 +196,50 @@
 			return $thead;
 		}
 
-		public static function TableBody($rows, array $attributes = array()){
+		public static function TableBody($rows, array $attributes=NULL){
 			$tbody = Widget::$Symphony->createElement('tbody');
-			$tbody->setAttributeArray($attributes);
+
+			if(!is_null($attributes)){
+				$tbody->setAttributeArray($attributes);
+			}
 
 			foreach($rows as $r) $tbody->appendChild($r);
 
 			return $tbody;
 		}
 
-		public static function TableRow($data, array $attributes = array()){
+		public static function TableRow($data, array $attributes=NULL){
 			$tr = Widget::$Symphony->createElement('tr');
-			$tr->setAttributeArray($attributes);
+			
+			if(!is_null($attributes)){
+				$tr->setAttributeArray($attributes);
+			}
 
 			foreach($data as $d) $tr->appendChild($d);
 
 			return $tr;
 		}
 
-		public static function TableData($value = null, array $attributes = array()){
+		public static function TableData($value = null, array $attributes=NULL){
 			$td = Widget::$Symphony->createElement('td');
 			$td->setValue($value);
 
-			$td->setAttributeArray($attributes);
+			if(!is_null($attributes)){
+				$td->setAttributeArray($attributes);
+			}
 
 			return $td;
 		}
 
 		## Misc
-		public static function Anchor($value, $href, array $attributes = array()){
+		public static function Anchor($value, $href, array $attributes=NULL){
 			$a = Widget::$Symphony->createElement('a', $value, $attributes);
 			$a->setAttribute('href', $href);
 
 			return $a;
 		}
 
-		public static function Acronym($value, array $attributes = array(), $text = null){
+		public static function Acronym($value, array $attributes=NULL, $text = null){
 			$doc = Widget::$Symphony->createDocumentFragment();
 			$doc->appendChild(
 				Widget::$Symphony->createElement('acronym', $value, $attributes)
