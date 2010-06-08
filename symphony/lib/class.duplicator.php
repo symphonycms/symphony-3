@@ -15,11 +15,11 @@
 			$this->duplicator = $this->page->createElement('div');
 			$this->duplicator->addClass('duplicator-widget');
 			
-			$controls = $this->page->createElement('div');
+			$controls = $this->page->createElement('ol');
 			$controls->addClass('controls');
 			$this->duplicator->appendChild($controls);
 			
-			$add_item = $this->page->createElement('a', $add);
+			$add_item = $this->page->createElement('li', $add);
 			$add_item->addClass('add');
 			$controls->appendChild($add_item);
 			
@@ -79,7 +79,7 @@
 			return $template;
 		}
 		
-		public function createTab($name, $type = null) {
+		public function createInstance($name, $type = null) {
 			$tab = $this->page->createElement('li');
 			$tab->addClass('tab');
 			$tab->addClass('orderable-item');
@@ -107,10 +107,6 @@
 			$remove->setValue('×');
 			$tab->appendChild($remove);
 			
-			return $tab;
-		}
-		
-		public function createInstance() {
 			$instance = $this->page->createElement('li');
 			$instance->addClass('instance');
 			
