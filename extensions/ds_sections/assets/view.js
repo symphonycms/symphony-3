@@ -36,7 +36,7 @@ jQuery(document).ready(function() {
 		jQuery('.context:not(:visible)').remove();
 		
 		// Set filter names:
-		jQuery('.duplicator-widget.context > .content > .instances > li').each(function(index) {
+		jQuery('.filtering-duplicator.context > .content > .instances > li').each(function(index) {
 			var instance = jQuery(this);
 			
 			instance.find('[name]').each(function() {

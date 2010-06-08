@@ -317,7 +317,7 @@
 				$filter_data = $this->parameters()->filters;
 				$fields = array();
 				$duplicator = new Duplicator(__('Add Filter'));
-				$duplicator->addClass('context context-' . $section_handle);
+				$duplicator->addClass('filtering-duplicator context context-' . $section_handle);
 				
 				// System ID template:
 				$item = $duplicator->createTemplate(__('System ID'));
@@ -361,8 +361,7 @@
 						if (isset($fields[$filter['element-name']])) {
 							$element_name = $filter['element-name'];
 							$field = $fields[$element_name];
-							$duplicator->createTab($field->label, $field->name());
-							$item = $duplicator->createInstance();
+							$item = $duplicator->createInstance($field->label, $field->name());
 							
 							$field->displayDatasourceFilterPanel(
 								$item, $filter, $errors->$element_name
@@ -520,8 +519,7 @@
 			}
 			
 			else {
-				$tab = $duplicator->createTab(__('Don\'t Execute When'));
-				$item = $duplicator->createInstance();
+				$item = $duplicator->createInstance(__('Don\'t Execute When'));
 			}
 			
 			if (!isset($condition['parameter'])) {
