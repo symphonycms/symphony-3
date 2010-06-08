@@ -1,4 +1,21 @@
 <?php
+
+	Class AdministrationForbiddenPageException extends SymphonyErrorPage{
+		public function __construct(){
+			parent::__construct(
+				__('You do not have permission to access this page.'),
+				__('Forbidden'),
+				NULL,
+				array('header' => 'HTTP/1.0 403 Forbidden')
+			);
+		}
+	}
+
+	Class AdministrationForbiddenPageExceptionHandler extends SymphonyErrorPageHandler{
+		public static function render($e){
+			parent::render($e);
+		}
+	}
 	
 	Class RoleException extends Exception{
 	}
@@ -12,6 +29,19 @@
 			$role->name = $record->name;
 			$role->description = $record->description;
 			
+			// Load Permissions
+			$permissions = Symphony::Database()->query(
+				"SELECT * FROM `tbl_aac_permissions` WHERE `role_id` = %d", array($role->id)
+			);
+			
+			if($permissions->length() > 0){
+				foreach($permissions as $p){
+					$role->permissions()->{"{$p->key}.{$p->type}"} = $p->level;
+				}
+			}
+			
+			// Load Forbidden Pages
+
 			return $role;
 		}
 	}
@@ -22,7 +52,7 @@
 
 	    public function __construct(){
 			$this->rows = Symphony::Database()->query(
-				"SELECT * FROM `tbl_aac_roles` ORDER BY `name` ASC", array(), 
+				"SELECT * FROM `tbl_aac_roles` ORDER BY `name` ASC", NULL, 
 				'RoleDatabaseResultIterator'
 			);
 	    }
@@ -57,9 +87,11 @@
 		
 		private $fields;
 		private $users;
+		private $permissions;
 		
 		public function __construct(){
 			$this->fields = array();
+			$this->permissions = new StdClass;
 		}
 		
 		public static function load($id){
@@ -75,6 +107,7 @@
 			if(strlen(trim($role->name)) == 0){
 				$errors->append('name', __('Name is required.'));
 			}
+			
 			elseif(
 				Symphony::Database()->query("SELECT `id` FROM `tbl_aac_roles` WHERE `name` = '%s' %s",
 				array(
@@ -85,13 +118,12 @@
 				$errors->append('name', __('A role with that name already exists.'));
 			}
 			
-			
 			if($errors->length() > 0){
 				throw new RoleException('Errors were encountered whist attempting to save.');
 			}
 			
 			// Saving
-			return Symphony::Database()->insert(
+			$result = Symphony::Database()->insert(
 				'tbl_aac_roles',
 				array(
 					'id' => $role->id,
@@ -100,12 +132,41 @@
 				),
 				Database::UPDATE_ON_DUPLICATE
 			);
+			
+			if(!isset($role->id)){
+				$role->id = $result;
+			}
+			
+			Symphony::Database()->delete('tbl_aac_permissions', array($role->id), '`role_id` = %d');
+			
+			foreach($role->permissions as $name => $level){
+				list($key, $type) = preg_split('/\./', $name, 2, PREG_SPLIT_NO_EMPTY);
+
+				Symphony::Database()->insert('tbl_aac_permissions', array(
+					'id' => NULL, 
+					'role_id' => $role->id, 
+					'key' => $key,
+					'type' => $type,
+					'level' => $level
+				));
+			}
+			
+			return $result;
+			
 		}
 		
 		public function users(){
 			return Symphony::Database()->query(
 				"SELECT * FROM `tbl_users` WHERE `role_id` = %d ORDER BY `id` ASC", array($this->id), 'UserResult'
 			);
+		}
+		
+		public function &permissions(){
+			return $this->permissions;
+		}
+		
+		public function flushPermissions(){
+			$this->permissions = new StdClass;
 		}
 		
 		public function __get($name){

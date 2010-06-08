@@ -231,6 +231,7 @@
 		// SETUP PAGE
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
+			$middle = $layout->createColumn(Layout::LARGE);
 			$right = $layout->createColumn(Layout::LARGE);
 
 			/** ESSENTIALS **/
@@ -241,13 +242,13 @@
 			$fieldset->appendChild((isset($this->errors->name) ? Widget::wrapFormElementWithError($label, $this->errors->name) : $label));
 
 			$label = Widget::Label(__('Description'));
-			$label->appendChild(Widget::Textarea('fields[description]', $this->role->description, array('rows' => 5, 'cols' => 50)));
+			$label->appendChild(Widget::Textarea('fields[description]', $this->role->description, array('rows' => 7, 'cols' => 50)));
 			$fieldset->appendChild((isset($this->errors->description) ? Widget::wrapFormElementWithError($label, $this->errors->description) : $label));
 
 			$left->appendChild($fieldset);
 
-			/// SECTION PERMISSIONS
-			$fieldset = Widget::Fieldset(__('Permissions'));
+			/// PUBLISHING PERMISSIONS
+			$fieldset = Widget::Fieldset(__('Publishing Permissions'));
 
 			$sections = new SectionIterator;
 
@@ -255,7 +256,7 @@
 				$p = $this->createElement('p', 'No sections exist. ');
 				$p->appendChild(Widget::Anchor(
 					__('Create one'),
-					URL . '/symphony/sections/new/'
+					ADMIN_URL . '/sections/new/'
 				));
 				$fieldset->appendChild($p);
 			}
@@ -264,12 +265,14 @@
 				$thead = array(
 					array(__('Section'), 'col'),
 					array(__('Create'), 'col', array('class' => 'checkbox')),
-					array(__('Edit'), 'col'),
+					array(__('Edit'), 'col', array('class' => 'checkbox'))
 				);
 				$tbody = array();
-
+/*
+				// TODO: Global permissions set all permissions
+				
 				$td1 = Widget::TableData(__('Global Permissions'));
-
+				
 				$td2 = Widget::TableData(
 					Widget::Input('global-add', '1', 'checkbox'),
 					array('class' => 'checkbox')
@@ -280,13 +283,37 @@
 				$td3->appendChild($this->createElement('span', 'n/a'));
 
 				$tbody[] = Widget::TableRow(array($td1, $td2, $td3), array('class' => 'global'));
-
+*/
 				foreach($sections as $section){
 
 					$td1 = Widget::TableData(
 						$section->name
 					);
-
+					
+					// TODO: Remove this and implement sliders
+					$td2 = Widget::TableData();
+					
+					$td2->appendChild(Widget::Input(
+						"fields[permissions][publish::{$section->handle}][create]", '0', 'checkbox',
+						array('checked' => 'checked', 'style' => 'display: none;')
+					));
+					
+					$td2->appendChild(Widget::Input(
+						"fields[permissions][publish::{$section->handle}][create]", '1', 'checkbox',
+						((int)$this->role->permissions()->{"publish::{$section->handle}.create"} > 0 ? array('checked' => 'checked') : NULL)
+					));
+					
+					$edit_level = (int)$this->role->permissions()->{"publish::{$section->handle}.edit"};
+					
+					$td3 = Widget::TableData(
+						Widget::Select("fields[permissions][publish::{$section->handle}][edit]", array(
+							array('0', false, 'None'),
+							array(1, $edit_level == 1, 'Own'),
+							array(2, $edit_level == 2, 'All'),
+						))
+					);
+					
+/*
 					$td2 = Widget::TableData(
 					 	Widget::Input(
 							"fields[permissions][{$section->handle}][create]",
@@ -309,7 +336,7 @@
 							'hidden'
 						)
 					);
-
+*/
 					$tbody[] = Widget::TableRow(array($td1, $td2, $td3));
 				}
 
@@ -320,8 +347,91 @@
 
 				$fieldset->appendChild($table);
 				$right->appendChild($fieldset);
+				
 			}
 
+
+			/// BLUEPRINTS PERMISSIONS
+			$fieldset = Widget::Fieldset(__('Blueprints Permissions'));
+
+			$thead = array(
+				array(__('Area'), 'col'),
+				array(__('Create'), 'col', array('class' => 'checkbox')),
+				array(__('Edit'), 'col', array('class' => 'checkbox'))
+			);
+			$tbody = array();
+			
+			$areas = array(
+				'sections' => 'Sections',
+				'datasources' => 'Data Sources',
+				'events' => 'Events',
+				'views' => 'Views',
+				'utilities' => 'Utilities'
+			);
+	
+			foreach($areas as $key => $name){
+				$td1 = Widget::TableData($name);
+
+				$td2 = Widget::TableData(Widget::Input(
+					"fields[permissions][blueprints::{$key}][create]", '1', 'checkbox',
+					((int)$this->role->permissions()->{"blueprints::{$key}.create"} > 0 ? array('checked' => 'checked') : NULL)
+				));
+
+				$td3 = Widget::TableData(Widget::Input(
+					"fields[permissions][blueprints::{$key}][edit]", '1', 'checkbox',
+					((int)$this->role->permissions()->{"blueprints::{$key}.edit"} > 0 ? array('checked' => 'checked') : NULL)
+				));
+
+				$tbody[] = Widget::TableRow(array($td1, $td2, $td3));
+			}
+
+			$table = Widget::Table(Widget::TableHead($thead), NULL,	Widget::TableBody($tbody), array(
+				'id' => 'role-permissions'
+				)
+			);
+
+			$fieldset->appendChild($table);
+			$middle->appendChild($fieldset);
+
+			
+
+
+			/// SYSTEM PERMISSIONS
+			$fieldset = Widget::Fieldset(__('System Permissions'));
+
+			$thead = array(
+				array(__('Description'), 'col'),
+				array(__('Enabled'), 'col', array('class' => 'checkbox')),
+			);
+			$tbody = array();
+			
+			$items = array(
+				'Create Users' => array('users', 'create', 1),
+				'Edit Users' => array('users', 'edit', 2)
+			);
+			
+			foreach($items as $name => $item){
+				list($key, $type, $level) = $item;
+				
+				$td1 = Widget::TableData($name);
+
+				$td2 = Widget::TableData(Widget::Input(
+					"fields[permissions][system::{$key}][{$type}]", (string)$level, 'checkbox',
+					((int)$this->role->permissions()->{"system::{$key}.{$type}"} > 0 ? array('checked' => 'checked') : NULL)
+				));
+
+				$tbody[] = Widget::TableRow(array($td1, $td2));
+			
+			}
+			
+			$table = Widget::Table(Widget::TableHead($thead), NULL,	Widget::TableBody($tbody), array(
+				'id' => 'role-permissions'
+				)
+			);
+			
+			$fieldset->appendChild($table);
+			$middle->appendChild($fieldset);
+			
 			/**********
 
 				BUILD view list and set up permissions interface
@@ -582,6 +692,14 @@
 			$fields = $_POST['fields'];
 			$role->name = $fields['name'];
 			$role->description = $fields['description'];
+			
+			$role->flushPermissions();
+			
+			foreach($fields['permissions'] as $key => $p){
+				foreach($p as $type => $level){
+					$role->permissions()->{"{$key}.{$type}"} = (int)$level;
+				}
+			}
 			
 			###
 			# Delegate: AACRolePreCreate
