@@ -38,6 +38,8 @@
 				
 				tab.addClass('orderable-item orderable-handle')
 					.trigger('tab-refresh');
+				
+				object.addClass('content-visible');
 			})
 			
 			// Refresh:
@@ -56,9 +58,14 @@
 			// Remove:
 			.live('tab-remove', function() {
 				var tab = $(this);
+				var object = tab.closest('.duplicator-widget');
 				var instance = tab.data('instance');
 				
 				tab.filter('.ordering').trigger('orderable-stop');
+				
+				if (tab.siblings().length == 0) {
+					object.removeClass('content-visible');
+				}
 				
 				tab.remove(); instance.remove();
 			})
@@ -93,10 +100,12 @@
 			// Select/deselect:
 			.live('tab-select', function() {
 				var tab = $(this);
+				var object = tab.closest('.duplicator-widget');
 				var instance = tab.data('instance');
 				
 				tab.addClass('active');
 				instance.addClass('active');
+				object.addClass('content-visible');
 			})
 			.live('tab-deselect', function() {
 				var tab = $(this);
@@ -130,7 +139,7 @@
 				// Remove:
 				if (target.is('.remove')) {
 					// Select another tab first:
-					if (!tab.is('.active') || !tab.siblings('.active').length > 0) {
+					if (tab.is('.active') || !tab.siblings('.active').length > 0) {
 						if (tab.next().length) tab.next().trigger('tab-select');
 						else if (tab.prev().length) tab.prev().trigger('tab-select');
 					}
@@ -178,13 +187,11 @@
 				var pallet = object.find(select.template_parent);
 				
 				if (pallet.is(':visible')) {
-					pallet.hide();
-					button.removeClass('visible');
+					object.removeClass('templates-visible');
 				}
 				
 				else {
-					pallet.show();
-					button.addClass('visible');
+					object.addClass('templates-visible');
 				}
 			})
 			
@@ -229,6 +236,20 @@
 		// Remove templates on form submit:
 		$(document).bind('submit', function() {
 			$('.duplicator-widget' + select.templates).remove();
+		});
+		
+	
+	/*-------------------------------------------------------------------------
+		Initialise
+	-------------------------------------------------------------------------*/
+		
+		$('.duplicator-widget').each(function() {
+			var object = $(this);
+			
+			// Show templates if there are no instances:
+			if (object.find(select.instances).length == 0) {
+				//object.find(select.controls_add).trigger('click');
+			}
 		});
 	});
 	

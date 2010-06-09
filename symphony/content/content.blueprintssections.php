@@ -840,8 +840,7 @@
 					$messages = new MessageStack;
 				}
 				
-				$duplicator->createTab($field->label, $field->name());
-				$item = $duplicator->createInstance();
+				$item = $duplicator->createInstance($field->label, $field->name());
 				$field->displaySettingsPanel($item, $messages);
 			}
 

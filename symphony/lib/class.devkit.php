@@ -136,14 +136,6 @@
 			$container = $this->document->createElement('div');
 			$container->setAttribute('id', 'sidebar');
 			
-			// Tab:
-			$tab = $this->document->createElement('p');
-			$tab->setAttribute('id', 'tab');
-			$tab->appendChild(Widget::Anchor(
-				$this->title, ''
-			));
-			$container->appendChild($tab);
-			
 			// Header:
 			$header = $this->document->createElement('h1');
 			$header->appendChild(Widget::Anchor(

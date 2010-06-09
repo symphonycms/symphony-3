@@ -111,19 +111,7 @@
 
 		public function __get($name){
 
-			if($name == 'handle'){
-
-				/*
-				[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
-				[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
-				*/
-
-				//if(!isset($this->handle) || strlen(trim($this->parameters->handle)) < 0){
-					$this->handle = Lang::createHandle($this->parameters->name, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
-				//}
-			}
-
-			elseif($name == 'guid' and !isset($this->guid)){
+			if($name == 'guid' and !isset($this->guid)){
 				$this->parameters->guid = Section::createGUID();
 			}
 
@@ -135,6 +123,10 @@
 		}
 
 		public function __set($name, $value){
+			if ($name == 'label') {
+				$this->parameters->handle = Lang::createHandle($this->parameters->name, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
+			}
+			
 			$this->parameters->$name = $value;
 		}
 
@@ -228,6 +220,10 @@
 		}
 
 		public static function load($path){
+			if (isset(self::$sections[$path]) and self::$sections[$path] instanceof Section) {
+				return self::$sections[$path];
+			}
+			
 			$section = new self;
 
 			$section->handle = preg_replace('/\.xml$/', NULL, basename($path));
@@ -319,6 +315,8 @@
 			if (isset($doc->attributes()->guid)) {
 				$section->guid = (string)$doc->attributes()->guid;
 			}
+			
+			self::$sections[$path] = $section;
 
 			return $section;
 		}

@@ -207,8 +207,7 @@
 
 			if(is_array($items['overrides'])){
 				foreach($items['overrides'] as $field_name => $replacement){
-					$tab = $duplicator->createTab(__('Override'));
-					$item = $duplicator->createInstance();
+					$item = $duplicator->createInstance(__('Override'));
 					$label = Widget::Label(__('Field'));
 					$options = array(array('system:id', false, 'System ID'));
 
@@ -226,14 +225,12 @@
 					$label = Widget::Label(__('Replacement'));
 					$label->appendChild(Widget::Input('fields[overrides][replacement][]', General::sanitize($replacement)));
 					$item->appendChild($label);
-					$instances->appendChild($item);
 				}
 			}
 
 			if(is_array($items['defaults'])){
 				foreach($items['defaults'] as $field_name => $replacement){
-					$tab = $duplicator->createTab(__('Default Value'));
-					$item = $duplicator->createInstance();
+					$item = $duplicator->createInstance(__('Default Value'));
 					$label = Widget::Label(__('Field'));
 					$options = array(array('system:id', false, 'System ID'));
 
@@ -251,7 +248,6 @@
 					$label = Widget::Label(__('Replacement'));
 					$label->appendChild(Widget::Input('fields[defaults][replacement][]', General::sanitize($replacement)));
 					$item->appendChild($label);
-					$instances->appendChild($item);
 				}
 			}
 			

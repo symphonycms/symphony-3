@@ -44,7 +44,7 @@
 			}
 			
 			else {
-				$this->show = 'browse';
+				$this->show = 'frontend';
 			}
 			
 			unset($this->url->parameters()->debug);
@@ -187,14 +187,8 @@
 			$list = $this->document->createElement('ul');
 			$url = clone $this->url;
 			
-			$url->parameters()->debug = 'browse';
-			$url->parameters()->{'debug-state'} = $this->state;
-			$this->appendLink(
-				$list, __('Browse Site'),
-				(string)$url, ($this->show == 'browse')
-			);
-			
 			$url->parameters()->debug = 'source';
+			$url->parameters()->{'debug-state'} = $this->state;
 			$this->appendLink(
 				$list, __('View Source'),
 				(string)$url, ($this->show == 'source')
@@ -212,6 +206,12 @@
 				(string)$url, ($this->show == 'params')
 			);
 			
+			$url->parameters()->debug = 'frontend';
+			$this->appendLink(
+				$list, __('View Frontend'),
+				(string)$url, ($this->show == 'frontend')
+			);
+			
 			$fieldset->appendChild($list);
 			
 			$fieldset = Widget::Fieldset(__('Templates'));
@@ -226,6 +226,12 @@
 			$this->appendUtilityLinks($item, $this->utilities);
 			
 			$fieldset->appendChild($list);
+			$sidebar->appendChild($fieldset);
+			
+			$fieldset = Widget::Fieldset(__('XPath Search'));
+			$search = Widget::Input('search');
+			$search->setAttribute('id', 'search');
+			$fieldset->appendChild($search);
 			$sidebar->appendChild($fieldset);
 			
 			return $sidebar;
@@ -259,7 +265,7 @@
 			$content = parent::appendContent($wrapper);
 			$source = null; $type = null;
 			
-			if ($this->show == 'browse') {
+			if ($this->show == 'frontend') {
 				$url = clone $this->url;
 				$url->parameters()->debug = 'iframe';
 				$url->parameters()->{'debug-state'} = $this->state;

@@ -380,13 +380,8 @@
 		var in_text = false, in_document = false;
 		var source_document  = new DOMParser()
 			.parseFromString(source.text(), 'text/xml');
-		var container = jQuery('<div />')
-			.attr('id', 'input')
-			.prependTo('#content');
-		var input = jQuery('<input />')
-			.attr('autocomplete', 'off')
-			.val('//*')
-			.appendTo(container);
+		var input = jQuery('#search')
+			.val('//*');
 		var output = jQuery('<div />')
 			.attr('id', 'output')
 			.insertBefore('#content')
@@ -575,7 +570,7 @@
 		
 		// TODO: DO NOT RELEASE THIS AS IS
 		// It needs a lot of tidying up.
-		
+		/*
 		var content = jQuery('#content');
 		var sidebar = jQuery('#sidebar');
 		var tab = jQuery('#tab');
@@ -609,6 +604,7 @@
 			
 			return false;
 		});
+		*/
 	});
 	
 /*---------------------------------------------------------------------------*/
