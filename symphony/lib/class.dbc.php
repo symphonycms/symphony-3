@@ -15,7 +15,7 @@
 		}
 		
 		public function getDatabaseErrorMessage(){
-			return (isset($this->error['message']) ? $this->error['message'] : NULL);
+			return (isset($this->error['message']) ? $this->error['message'] : $this->getMessage());
 		}
 		
 		public function getDatabaseErrorCode(){
@@ -106,8 +106,8 @@
 		abstract public function connect($string);
 		abstract public function select($database);
 		abstract public function insert($table, array $fields, $flag = null);
-		abstract public function update($table, array $fields, array $values = array(), $where = null);
-		abstract public function delete($table, array $values = array(), $where = null);
+		abstract public function update($table, array $fields, array $values=NULL, $where = null);
+		abstract public function delete($table, array $values=NULL, $where = null);
 		abstract public function query($query);
 		abstract public function truncate($table);
 		abstract public function lastError();
@@ -269,17 +269,19 @@
 	        return @mysql_affected_rows($this->_connection);
 	    }
 
-		public function prepareQuery($query, array $values = array()){
+		public function prepareQuery($query, array $values=NULL){
 			if ($this->prefix != 'tbl_') {
 				$query = preg_replace('/tbl_([^\b`]+)/i', $this->prefix . '\\1', $query);
 			}
 
-			// Sanitise values:
-			$values = array_map(array($this, 'escape'), $values);
+			if(is_array($values) && !empty($values)){
+				// Sanitise values:
+				$values = array_map(array($this, 'escape'), $values);
 
-			// Inject values:
-			$query = vsprintf(trim($query), $values);
-
+				// Inject values:
+				$query = vsprintf(trim($query), $values);
+			}
+			
 			if (isset($details->force_query_caching)) {
 				$query = preg_replace('/^SELECT\s+/i', 'SELECT SQL_'.(!$details->force_query_caching ? 'NO_' : NULL).'CACHE ', $query);
 			}
@@ -367,7 +369,7 @@
 			return mysql_insert_id($this->_connection);
 		}
 
-		public function update($table, array $fields, array $values = array(), $where = null){
+		public function update($table, array $fields, array $values=NULL, $where=NULL){
 			$sets = array(); $set_values = array();
 
 			foreach ($fields as $key => $value) {
@@ -383,14 +385,18 @@
 			if (!is_null($where)) {
 				$where = " WHERE {$where}";
 			}
-
-			$values = array_merge($set_values, $values);
+			
+			
+			$values = (is_array($values) && !empty($values) 
+				? array_merge($set_values, $values) 
+				: $set_values
+			);
 
 			$this->query("UPDATE `{$table}` SET " . implode(', ', $sets) . $where, $values);
 
 		}
 
-		public function delete($table, array $values = array(), $where = null){
+		public function delete($table, array $values=NULL, $where=NULL){
 			return $this->query("DELETE FROM `$table` WHERE {$where}", $values);
 		}
 
@@ -398,7 +404,7 @@
 			return $this->query("TRUNCATE TABLE `{$table}`");
 		}
 
-	    public function query($query, array $values = array(), $returnType='DBCMySQLResult'){
+	    public function query($query, array $values=NULL, $returnType='DBCMySQLResult'){
 	        if (!$this->connected()) throw new DatabaseException('No Database Connection Found.');
 
 			$query = $this->prepareQuery($query, $values);
@@ -501,7 +507,7 @@
 			return number_format((float)$total, 4, '.', ',');
 		}
 
-		public function query($query, array $values = array(), $returnType='DBCMySQLResult'){
+		public function query($query, array $values=NULL, $returnType='DBCMySQLResult'){
 
 			$start = self::__precisionTimer();
 			$result = parent::query($query, $values, $returnType);

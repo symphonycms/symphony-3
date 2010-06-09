@@ -1,6 +1,10 @@
 /*-----------------------------------------------------------------------------
 	User Roles
 -----------------------------------------------------------------------------*/
+table tbody tr td input[type=checkbox] {
+	display: inline;
+}
+
 
 table.role-permissions .checkbox {
 	width: 60px;

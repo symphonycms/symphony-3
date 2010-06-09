@@ -62,10 +62,10 @@
 		}
 
 		##	Overloaded Methods for DOMDocument
-		public function createElement($name, $value = null, array $attributes = array()){
+		public function createElement($name, $value = null, array $attributes=NULL){
 			$element = parent::createElement($name);
 			if(!is_null($value)) $element->setValue($value);
-			$element->setAttributeArray($attributes);
+			if(!is_null($attributes)) $element->setAttributeArray($attributes);
 
 			return $element;
 		}

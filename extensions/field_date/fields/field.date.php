@@ -57,11 +57,14 @@
 
 		protected static function __isValidDateString($string){
 			$string = trim($string);
-
+			
 			if(empty($string)) return false;
 
+			$timestamp = strtotime($string);
+			if($timestamp === false) return false;
+
 			## Its not a valid date, so just return it as is
-			if(!$info = getdate(strtotime($string))) return false;
+			if(!$info = getdate($timestamp)) return false;
 			elseif(!checkdate($info['mon'], $info['mday'], $info['year'])) return false;
 
 			return true;
@@ -146,6 +149,9 @@
 			}
 			
 			if(is_null($data) || strlen(trim($data)) == 0){
+				
+				$result->value = NULL;
+				
 				if ($this->{'pre-populate'} == 'yes') {
 					$timestamp = strtotime(DateTimeObj::get('c', null));
 				}
@@ -155,8 +161,12 @@
 				$timestamp = strtotime($data);
 			}
 
-			if(!is_null($timestamp)){
+			if(!is_null($timestamp) && $timestamp !== false){
 				$result->value = DateTimeObj::getGMT('Y-m-d H:i:s', $timestamp);
+			}
+			
+			else{
+				$result->value = $data;
 			}
 			
 			return $result;
@@ -166,9 +176,11 @@
 
 			if(empty($data)) return self::STATUS_OK;
 
-			$message = NULL;
+			if(self::STATUS_OK != parent::validateData($errors, $entry, $data)) {
+				return self::STATUS_ERROR;
+			}
 
-			if(!self::__isValidDateString($data->value)){
+			if(!is_null($data->value) && strlen(trim($data->value)) > 0 && !self::__isValidDateString($data->value)){
 				$errors->append(
 					null, (object)array(
 					 	'message' => __("The date specified in '%s' is invalid.", array($this->label)),

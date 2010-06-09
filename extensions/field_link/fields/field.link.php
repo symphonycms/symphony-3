@@ -589,6 +589,11 @@
 			//if(!($data instanceof StdClass) || empty($data)) return;
 			
 			$items = $this->processData($data);
+			
+			if(!is_array($items) || empty($items)){
+				return;
+			}
+			
 			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
 			
 			foreach($items as $data){
