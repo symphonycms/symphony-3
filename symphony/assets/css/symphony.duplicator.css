@@ -72,9 +72,8 @@
 		background: -moz-linear-gradient(#777777, #555555);
 		background: -webkit-gradient(
 			linear, left top, left bottom,
-			from(#666666),
-			to(#777777),
-			color-stop(red, 0.9)
+			from(#777777),
+			to(#555555)
 		);
 		border: 1px solid #555555;
 		border-top-color: #888888;
@@ -144,6 +143,17 @@
 		overflow: hidden;
 		table-layout: fixed;
 		width: 100%;
+		
+		background: #666666;
+		background: -moz-linear-gradient(#555555, #666666);
+		background: -webkit-gradient(
+			linear, left top, left bottom,
+			from(#555555),
+			to(#666666)
+		);
+		border: 1px solid #555555;
+		border-top: none;
+		padding: 0 10px 10px 10px;
 	}
 	.duplicator-widget.content-visible > .content {
 		display: table;
@@ -166,53 +176,56 @@
 		-webkit-border-bottom-left-radius: 4px;
 		list-style: none;
 		min-width: 130px;
-		padding: 15px 0;
+		padding: 0;
 		width: 20%;
+		
+		background: transparent;
 	}
 	.duplicator-widget > .content > .tabs:empty {
 		border: none;
 	}
 	.duplicator-widget > .content > .tabs > * {
-		border-bottom: 1px solid hsla(0, 0%, 0%, 0.1);
+		background: hsla(0, 0%, 100%, 0.7);
+		background: -moz-linear-gradient(left, #cccccc, #bbbbbb 98%, #aaaaaa);
+		background: -webkit-gradient(
+			linear, left top, right top,
+			from(#cccccc),
+			to(#aaaaaa),
+			color-stop(0.98, #bbbbbb)
+		);
+		border: none;
+		-moz-border-radius-bottomleft: 4px;
+		-moz-border-radius-topleft: 4px;
+		-webkit-border-bottom-left-radius: 4px;
+		-webkit-border-top-left-radius: 4px;
 		color: #444444;
 		display: block;
-		line-height: 35px;
+		line-height: 30px;
+		margin: 4px 0;
 		overflow: hidden;
 		position: relative;
-		text-indent: 20px;
+		text-indent: 10px;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	.duplicator-widget > .content > .tabs > :first-child {
-		border-top: 1px solid hsla(0, 0%, 0%, 0.1);
+	.duplicator-widget > .content > .tabs > :hover,
+	.duplicator-widget > .content > .tabs > .active {
+		background: #eeeeee;
+		background: -moz-linear-gradient(left, #ffffff, #eeeeee);
+		background: -webkit-gradient(
+			linear, left top, right top,
+			from(#ffffff),
+			to(#eeeeee)
+		);
+	}
+	.duplicator-widget > .content > .tabs > .ordering {
+		font-weight: bold;
 	}
 	.duplicator-widget > .content > .tabs > * em {
 		margin: 0 0 0 1ex;
 		opacity: 0.5;
 	}
-	.duplicator-widget > .content > .tabs > :hover {
-		background: hsla(0, 0%, 100%, 0.2);
-	}
-	.duplicator-widget > .content > .tabs > .active {
-		background: #eeeeee;
-		border-color: #aaaaaa;
-		box-sizing: content-box;
-		-moz-box-sizing: content-box;
-		-webkit-box-sizing: content-box;
-		color: #000000;
-		padding: 0 1px 0 0;
-		text-indent: 20px;
-		width: 100%;
-	}
-	.duplicator-widget > .content > .tabs > .active + .active {
-		border-top: 1px solid #cccccc;
-		margin-top: -1px;
-		position: relative;
-	}
-	.duplicator-widget > .content > .tabs > .ordering {
-		font-weight: bold;
-	}
-	.duplicator-widget > .content > .tabs > * > .remove {
+	.duplicator-widget > .content > .tabs > * .remove {
 		background: hsla(0, 0%, 0%, 0.3);
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
@@ -226,25 +239,22 @@
 		text-align: center;
 		text-decoration: none;
 		text-indent: 1px;
-		top: 10px;
+		top: 7px;
 		visibility: hidden;
 		width: 15px;
 	}
-	.duplicator-widget > .content > .tabs > :hover > .remove {
-		visibility: visible;
-	}
-	.duplicator-widget > .content > .tabs > .active > .remove {
-		right: 11px;
-	}
-	.duplicator-widget > .content > .tabs > * > .remove:hover {
+	.duplicator-widget > .content > .tabs > * .remove:hover {
 		background: hsla(0, 0%, 0%, 0.5);
+	}
+	.duplicator-widget > .content > .tabs > :hover .remove {
+		visibility: visible;
 	}
 	
 	.duplicator-widget > .content > .instances {
 		background: #eeeeee;
-		border-left: 1px solid #aaaaaa;
-		-moz-border-radius-bottomright: 4px;
-		-webkit-border-bottom-right-radius: 4px;
+		-moz-border-radius: 4px;
+		-webkit-border-radius: 4px;
+		-moz-box-shadow: 1px 1px 5px hsla(0, 0%, 0%, 0.5);
 		list-style: none;
 	}
 	.duplicator-widget > .content > .instances > * {
