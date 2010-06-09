@@ -188,6 +188,7 @@
 			$url = clone $this->url;
 			
 			$url->parameters()->debug = 'source';
+			$url->parameters()->{'debug-state'} = $this->state;
 			$this->appendLink(
 				$list, __('View Source'),
 				(string)$url, ($this->show == 'source')
@@ -206,7 +207,6 @@
 			);
 			
 			$url->parameters()->debug = 'frontend';
-			$url->parameters()->{'debug-state'} = $this->state;
 			$this->appendLink(
 				$list, __('View Frontend'),
 				(string)$url, ($this->show == 'frontend')
