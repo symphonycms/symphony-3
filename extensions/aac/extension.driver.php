@@ -85,6 +85,18 @@
 				){
 					throw new AdministrationForbiddenPageException;
 				}
+				
+				// User only has "edit own" permissions
+				if($context['callback']['context']['page'] == 'edit' && $role->permissions()->{"publish::{$handle}.edit"} < 2){
+					$entry = Entry::loadFromID($context['callback']['context']['entry_id']);
+					if(Administration::instance()->User->id != $entry->meta()->user_id){
+						$context['page']->alerts()->append(
+							__('Any changes made to this entry will not be saved since you do not have sufficient privileges.'),
+							AlertStack::ERROR
+						);
+					}
+				}
+				
 			}
 			
 			// Blueprints pages that have no create or edit permissions
@@ -132,14 +144,16 @@
 			}
 		}
 		
-		private function removeWithSelected(DOMDocument $doc){
-			$actions = $doc->xpath("//div[@class='actions']");
-			foreach($actions as $element){
-				$element->parentNode->removeChild($element);
-			}
-			
+		private function removeCheckboxesFromTableRows(DOMDocument $doc){
 			$checkboxes = $doc->xpath("//td/input[@type='checkbox' and starts-with(@name, 'items')]");
 			foreach($checkboxes as $element){
+				$element->parentNode->removeChild($element);
+			}
+		}
+		
+		private function removeFormActions(DOMDocument $doc){
+			$actions = $doc->xpath("//div[@class='actions']");
+			foreach($actions as $element){
 				$element->parentNode->removeChild($element);
 			}
 		}
@@ -225,7 +239,8 @@
 
 					// Remove the 'With Selected' and row checkboxes if user has no 'edit' privileges
 					if(!isset($role->permissions()->{"system::users.edit"}) || $role->permissions()->{"system::users.edit"} < 1){
-						$this->removeWithSelected($doc);
+						$this->removeFormActions($doc);
+						$this->removeCheckboxesFromTableRows($doc);
 					}
 					
 					$this->modifyUsersPageIndex($context);
@@ -245,7 +260,7 @@
 			// Publish
 			elseif(preg_match('/^\/publish\/([^\/]+)\/$/i', $callback['pageroot'], $match)){
 				$handle = $match[1];
-				
+
 				switch($callback['context']['page']){
 					case 'index':
 					
@@ -256,9 +271,22 @@
 						
 						// Remove the 'With Selected' and row checkboxes if user has no 'edit' privileges
 						if(!isset($role->permissions()->{"publish::{$handle}.edit"}) || $role->permissions()->{"publish::{$handle}.edit"} < 1){
-							$this->removeWithSelected($doc);
+							$this->removeFormActions($doc);
+							$this->removeCheckboxesFromTableRows($doc);
 						}
 						
+						break;
+						
+					case 'edit':
+					
+						// User only has "edit own" permissions
+						if($role->permissions()->{"publish::{$handle}.edit"} < 2){
+							$entry = Entry::loadFromID($callback['context']['entry_id']);
+							if(Administration::instance()->User->id != $entry->meta()->user_id){
+								$this->removeFormActions($doc);
+							}
+						}
+					
 						break;
 				}
 			}
