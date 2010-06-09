@@ -108,11 +108,7 @@
 
 		public function __get($name){
 
-			if($name == 'element-name'){
-				$this->{'element-name'} = Lang::createHandle($this->properties->label, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
-			}
-
-			else if ($name == 'guid' and !isset($this->guid)) {
+			if ($name == 'guid' and !isset($this->guid)) {
 				$this->guid = Field::createGUID($this);
 			}
 			
@@ -124,6 +120,10 @@
 		}
 
 		public function __set($name, $value){
+			if ($name == 'label') {
+				$this->properties->{'element-name'} = Lang::createHandle($value, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
+			}
+			
 			$this->properties->$name = $value;
 		}
 
