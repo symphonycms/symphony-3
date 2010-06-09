@@ -56,7 +56,8 @@
 		}
 		
 		public function cbCheckPagePermissions(array $context=NULL){
-
+			if(!Administration::instance()->isLoggedIn()) return;
+			
 			$role = Role::load(Administration::instance()->User->role_id);
 
 			// Sections that have no create or edit permissions
@@ -116,7 +117,7 @@
 				}
 			}
 			
-			// Forbidden pages
+			// TODO: Delegate for extensions to enforce their own permissions
 		}
 		
 		public function cbSetRoleFromPost(array $context=NULL){
@@ -144,14 +145,60 @@
 		}
 		
 		public function cbModifyPages($context=NULL){
+			
+			if(!Administration::instance()->isLoggedIn()) return;
+			
 			$callback = Administration::instance()->getPageCallback();
 			$doc = $context['page'];
 			$role = Role::load(Administration::instance()->User->role_id);
 			
-			// TODO: Remove items from navigation that the user has no permission to access
-			//			- Sections: if user has no edit or create privileges
-			//			- Forbidden Pages
-			
+			// Remove items from navigation that the user has no permission to access
+				
+				// Publish and Blueprints
+				$items = $doc->xpath("//ul[@id='nav']//li[./a[contains(@href, '/blueprints/') or contains(@href, '/publish/')]]");
+				foreach($items as $element){
+
+					$href = $element->getElementsByTagName('a')->item(0)->getAttribute('href');
+
+					if(!preg_match_all('/\/(publish|blueprints)\/([^\/]+)\//', $href, $match, PREG_SET_ORDER)) continue;
+				
+					$area = $match[0][1];
+					$handle = $match[0][2];
+
+					if(
+						// Cannot create or edit
+						(!isset($role->permissions()->{"{$area}::{$handle}.create"}) || $role->permissions()->{"{$area}::{$handle}.create"} < 1)
+						&&
+						(!isset($role->permissions()->{"{$area}::{$handle}.edit"}) || $role->permissions()->{"{$area}::{$handle}.edit"} < 1)
+					){
+						$element->parentNode->removeChild($element);
+					}
+					
+				}
+
+				// System
+				
+					// Users
+					if(
+						// Cannot create or edit
+						(!isset($role->permissions()->{"system::users.create"}) || $role->permissions()->{"system::users.create"} < 1)
+						&&
+						(!isset($role->permissions()->{"system::users.edit"}) || $role->permissions()->{"system::users.edit"} < 1)
+					){
+						$users = $doc->xpath("//ul[@id='nav']//li[./a[contains(@href, '/system/users/')]]");
+						foreach($users as $element){
+							$element->parentNode->removeChild($element);
+						}
+					}
+					
+					
+				// TODO: Add delegate for extensions to remove navigation items based on permissions
+				
+				// Remove empty navigation groups
+				foreach($doc->xpath("//ul[@id='nav']/li[not(./ul/li)]") as $element){
+					$element->parentNode->removeChild($element);
+				}
+
 			// Users
 			if($callback['pageroot'] == '/system/users/'){
 
@@ -217,9 +264,9 @@
 			}
 			
 			// Catch All
-			elseif(preg_match('/^\/([^\/]+)\/([^\/]+)\/$/i', $callback['pageroot'], $match)){
-				$area = $match[1];
-				$handle = $match[2];
+			elseif(preg_match('/^\/blueprints\/([^\/]+)\/$/i', $callback['pageroot'], $match)){
+
+				$handle = $match[1];
 
 				switch($callback['context'][0]){
 					
@@ -228,17 +275,19 @@
 					default:
 					
 						// Remove the 'Create New' button if user has no 'create' privileges
-						if(!isset($role->permissions()->{"{$area}::{$handle}.create"}) || $role->permissions()->{"{$area}::{$handle}.create"} < 1){
+						if(!isset($role->permissions()->{"blueprints::{$handle}.create"}) || $role->permissions()->{"blueprints::{$handle}.create"} < 1){
 							$this->removeCreateButton($doc);
 						}
 						
 						// Remove the 'With Selected' and row checkboxes if user has no 'edit' privileges
-						if(!isset($role->permissions()->{"{$area}::{$handle}.edit"}) || $role->permissions()->{"{$area}::{$handle}.edit"} < 1){
+						if(!isset($role->permissions()->{"blueprints::{$handle}.edit"}) || $role->permissions()->{"blueprints::{$handle}.edit"} < 1){
 							$this->removeWithSelected($doc);
 						}
 						break;
 				}
 			}
+			
+			// TODO: Delegate for extensions to modify pages based on their own permissions
 		}
 		
 		private function modifyUsersPageIndex($context=NULL){

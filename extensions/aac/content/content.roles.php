@@ -399,15 +399,12 @@
 			/// SYSTEM PERMISSIONS
 			$fieldset = Widget::Fieldset(__('System Permissions'));
 
-			$thead = array(
-				array(__('Description'), 'col'),
-				array(__('Enabled'), 'col', array('class' => 'checkbox')),
-			);
 			$tbody = array();
 			
 			$items = array(
-				'Create Users' => array('users', 'create', 1),
-				'Edit Users' => array('users', 'edit', 2)
+				'Access Settings' => array('settings', 'access', 1),
+				'Access Extensions' => array('extensions', 'access', 1),
+				'Create New Users' => array('users', 'create', 1),
 			);
 			
 			foreach($items as $name => $item){
@@ -424,7 +421,29 @@
 			
 			}
 			
-			$table = Widget::Table(Widget::TableHead($thead), NULL,	Widget::TableBody($tbody), array(
+			$user_edit_level = (int)$this->role->permissions()->{"system::users.edit"};
+			$td1 = Widget::TableData('Edit User Profiles');
+			$td2 = Widget::TableData(
+				Widget::Select("fields[permissions][system::users][edit]", array(
+					array('0', false, 'None'),
+					array(1, $user_edit_level == 1, 'Own'),
+					array(2, $user_edit_level == 2, 'All'),
+				))
+			);
+			$tbody[] = Widget::TableRow(array($td1, $td2));
+			
+			
+			$td1 = Widget::TableData('Change Users Role');
+
+			$td2 = Widget::TableData(Widget::Input(
+				"fields[permissions][system::users][change-role]", (string)$level, 'checkbox',
+				((int)$this->role->permissions()->{"system::users.change-role"} > 0 ? array('checked' => 'checked') : NULL)
+			));
+
+			$tbody[] = Widget::TableRow(array($td1, $td2));
+
+			
+			$table = Widget::Table(NULL, NULL,	Widget::TableBody($tbody), array(
 				'id' => 'role-permissions'
 				)
 			);
