@@ -35,8 +35,8 @@
 			$this->appendSubheading(__('Settings'));
 			$this->appendTabs();
 			
-			if (!is_writable(CONFIG)) {
-		        $this->alerts()->append(
+			if(!is_writable(CONF . '/core.xml')){
+				$this->alerts()->append(
 					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
 				);
 			}
