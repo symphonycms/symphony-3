@@ -275,12 +275,14 @@
 						);
 
 						foreach ($column->fieldset as $fieldset) {
+							
 							if (isset($fieldset->name) or trim((string)$fieldset->name) == '') {
 								$name = (string)$fieldset->name;
 							}
 
 							$data_fieldset = (object)array(
 								'name'		=> $name,
+								'collapsed' => (isset($fieldset->collapsed) ? (string)$fieldset->collapsed : 'no'),
 								'fields'	=> array()
 							);
 
