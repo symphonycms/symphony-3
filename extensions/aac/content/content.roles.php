@@ -167,7 +167,12 @@
 
 			$this->insertNodeIntoHead($this->createStylesheetElement(URL . '/extensions/aac/assets/roles.css'));
 			$this->insertNodeIntoHead($this->createScriptElement(URL . '/extensions/aac/assets/roles.js'));
-
+			
+			// The "symphony.selectable.js" messes up the checkboxes, so remove it
+			foreach($this->xpath("//head/script[contains(@src, 'symphony/assets/js/symphony.selectable.js')]") as $element){
+				$element->parentNode->removeChild($element);
+			}
+			
 			if(!in_array($this->_context[0], array('new', 'edit'))) throw new AdministrationPageNotFoundException;
 			
 			$callback = Administration::instance()->getPageCallback();
