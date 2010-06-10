@@ -737,6 +737,7 @@
 
 			foreach($views as $path){
 				try{
+					throw new ViewException('blah bah');
 					View::delete($path);
 				}
 				catch(Exception $e){
