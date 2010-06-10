@@ -217,7 +217,7 @@
 
 			if($errors->length() == 0){
 				
-				$permission = intval($settings['website-preferences']['directory-permissions'], 8);
+				$permission = intval($settings['server-preferences']['directory-permissions'], 8);
 				
 				/// Create the .htaccess ------------------------------------------------------------------
 					$rewrite_base = preg_replace('/\/install$/i', NULL, dirname($_SERVER['PHP_SELF']));
@@ -391,7 +391,7 @@
 	$div->appendChild($group);
 	
 	$label = Widget::Label('File Permissions', NULL, array('class' => 'select'));
-	$input = Widget::Select('website-preferences[file-permissions]', array(
+	$input = Widget::Select('server-preferences[file-permissions]', array(
 		array('0755', false, '0755'),
 		array('0777', $settings['server-preferences']['file-permissions'] == '0777', '0777')
 	));
@@ -399,7 +399,7 @@
 	$group->appendChild($label);
 
 	$label = Widget::Label('Directory Permissions', NULL, array('class' => 'select'));
-	$input = Widget::Select('website-preferences[directory-permissions]', array(
+	$input = Widget::Select('server-preferences[directory-permissions]', array(
 		array('0755', false, '0755'),
 		array('0777', $settings['server-preferences']['directory-permissions'] == '0777', '0777')
 	));
