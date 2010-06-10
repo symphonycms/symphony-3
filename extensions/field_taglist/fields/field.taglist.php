@@ -95,24 +95,30 @@
 			}
 
 			foreach($sources as $source) {
-				$result = Symphony::Database()->query("
-						SELECT
-							`value`
-						FROM
-							`tbl_data_%s_%s`
-						WHERE
-							`value` REGEXP '%s'
-						GROUP BY
-							`value`
-						HAVING
-							COUNT(`value`) >= %d
-					", array(
-						$source['section'],
-						$source['field_handle'],
-						(!empty($this->{'validator'})) ? rtrim(trim($this->{'validator'}, '/'), '/') : '.',
-						$this->{'suggestion-source-threshold'}
-					)
-				);
+				try {
+					$result = Symphony::Database()->query("
+							SELECT
+								`value`
+							FROM
+								`tbl_data_%s_%s`
+							WHERE
+								`value` REGEXP '%s'
+							GROUP BY
+								`value`
+							HAVING
+								COUNT(`value`) >= %d
+						", array(
+							$source['section'],
+							$source['field_handle'],
+							(!empty($this->{'validator'})) ? rtrim(trim($this->{'validator'}, '/'), '/') : '.',
+							$this->{'suggestion-source-threshold'}
+						)
+					);
+				}
+				
+				catch (Exception $e) {
+					continue;
+				}
 
 				if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
 			}
