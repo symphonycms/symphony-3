@@ -148,42 +148,44 @@
 		//	Timeouts ------------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Time Limits'));
-
-			$input = Widget::Input('fields[cache-lifetime]', max(0, intval($this->parameters()->{'cache-lifetime'})));
-			$input->setAttribute('size', 4);
-
-			$fragment = Symphony::Parent()->Page->createDocumentFragment();
-			$fragment->appendChild(
-				new DOMText(__('Update cached result every '))
+			
+			$label = Widget::Label(__('Cache Limit'));
+			$label->appendChild(Widget::Input(
+				'fields[cache-lifetime]', max(0, intval($this->parameters()->{'cache-lifetime'})))
 			);
-			$fragment->appendChild($input);
-			$fragment->appendChild(
-				new DOMText(__(' minutes'))
-			);
-			$label = Widget::Label(null, $fragment);
 
-			if(isset($errors->{'cache-lifetime'})){
+			if (isset($errors->{'cache-lifetime'})) {
 				$label = Widget::wrapFormElementWithError($label, $errors->{'cache-lifetime'});
 			}
+
 			$fieldset->appendChild($label);
+			$fragment = $page->createDocumentFragment();
+			$fragment->appendXML(__('How often to refresh the cache.'));
 
-			$input = Widget::Input('fields[timeout]', max(1, intval($this->parameters()->{'timeout'})));
-			$input->setAttribute('size', 4);
-
-			$fragment = Symphony::Parent()->Page->createDocumentFragment();
-			$fragment->appendChild(
-				new DOMText(__('Set gateway timeout limit to '))
+			$fieldset->appendChild(
+				$page->createElement('p', $fragment, array(
+					'class' => 'help'
+				))
 			);
-			$fragment->appendChild($input);
-			$fragment->appendChild(
-				new DOMText(__(' seconds'))
+			
+			
+			$label = Widget::Label(__('Gateway Timeout'));
+			$label->appendChild(Widget::Input(
+				'fields[timeout]', max(1, intval($this->parameters()->{'timeout'})))
 			);
-			$label = Widget::Label(null, $fragment);
 
 			if(isset($errors->{'timeout'})){
 				$label = Widget::wrapFormElementWithError($label, $errors->{'timeout'});
 			}
 			$fieldset->appendChild($label);
+			$fragment = $page->createDocumentFragment();
+			$fragment->appendXML(__('How long to wait for a response.'));
+
+			$fieldset->appendChild(
+				$page->createElement('p', $fragment, array(
+					'class' => 'help'
+				))
+			);
 
 
 			$left->appendChild($fieldset);
