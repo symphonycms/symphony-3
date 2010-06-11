@@ -29,7 +29,7 @@
 	}
 	a:active,
 	a:focus {
-		color: #d42;
+		color: #7092ef;
 	}
 	img {
 		border: none;
@@ -973,6 +973,7 @@
 		background-color: #f3f3f3;
 		border: 1px solid #ccc;
 		max-height: 480px;
+		margin-top: 32px;
 		overflow: auto;
 	}
 
