@@ -187,7 +187,7 @@
 	}
 	.duplicator-widget > .content > .tabs > :hover,
 	.duplicator-widget > .content > .tabs > .active {
-		background: #ffffff;
+		background: #FBFBFB;
 		margin-right: -1px;
 	}
 	.duplicator-widget > .content > .tabs > .ordering {
@@ -201,7 +201,7 @@
 		background: hsla(0, 0%, 0%, 0.3);
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
-		color: #ffffff;
+		color: #FBFBFB;
 		display: block;
 		font-weight: bold;
 		height: 15px;
@@ -223,7 +223,7 @@
 	}
 	
 	.duplicator-widget > .content > .instances {
-		background: #ffffff;
+		background: #FBFBFB;
 		border-left: 1px solid #bbbbbb;
 		-moz-box-shadow: -1px 0 5px hsla(0, 0%, 0%, 0.1);
 		-webkit-box-shadow: -1px 0 5px hsla(0, 0%, 0%, 0.1);
