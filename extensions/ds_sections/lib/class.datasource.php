@@ -112,7 +112,7 @@
 
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
-			$right = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -147,6 +147,46 @@
 			$fieldset->appendChild($label);
 			$left->appendChild($fieldset);
 
+
+		//	Conditions ---------------------------------------------------------
+
+			$fieldset = Widget::Fieldset(__('Conditions'), '<code>$param</code>');
+
+			$duplicator = new Duplicator(__('Add Condition'));
+			//$duplicator->setAttribute('class', 'conditions-duplicator');
+
+			// Templates:
+			$this->appendCondition($duplicator);
+
+			// Instances:
+			if(is_array($this->parameters()->conditions) && !empty($this->parameters()->conditions)){
+				foreach($this->parameters()->conditions as $condition){
+					$this->appendCondition($duplicator, $condition);
+				}
+			}
+
+			$duplicator->appendTo($fieldset);
+			$left->appendChild($fieldset);
+
+		//	Filtering ---------------------------------------------------------
+
+			$fieldset = Widget::Fieldset(__('Filtering'), '<code>{$param}</code> or <code>Value</code>');
+
+			$container_filter_results = $page->createElement('div');
+			$fieldset->appendChild($container_filter_results);
+
+		//	Redirect/404 ------------------------------------------------------
+		/*
+			$label = Widget::Label(__('Required URL Parameter <i>Optional</i>'));
+			$label->appendChild(Widget::Input('fields[required_url_param]', $this->parameters()->required_url_param));
+			$fieldset->appendChild($label);
+
+			$p = new XMLElement('p', __('An empty result will be returned when this parameter does not have a value. Do not wrap the parameter with curly-braces.'));
+			$p->setAttribute('class', 'help');
+			$fieldset->appendChild($p);
+		*/
+			$left->appendChild($fieldset);
+			
 		//	Sorting -----------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Sorting'));
@@ -165,7 +205,7 @@
 			$label->appendChild(Widget::Select('fields[sort-order]', $options));
 			$fieldset->appendChild($label);
 
-			$left->appendChild($fieldset);
+			$right->appendChild($fieldset);
 
 		//	Limiting ----------------------------------------------------------
 
@@ -207,46 +247,6 @@
 
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
-			$left->appendChild($fieldset);
-
-
-		//	Conditions ---------------------------------------------------------
-
-			$fieldset = Widget::Fieldset(__('Conditions'), '<code>$param</code>');
-
-			$duplicator = new Duplicator(__('Add Condition'));
-			//$duplicator->setAttribute('class', 'conditions-duplicator');
-
-			// Templates:
-			$this->appendCondition($duplicator);
-
-			// Instances:
-			if(is_array($this->parameters()->conditions) && !empty($this->parameters()->conditions)){
-				foreach($this->parameters()->conditions as $condition){
-					$this->appendCondition($duplicator, $condition);
-				}
-			}
-
-			$duplicator->appendTo($fieldset);
-			$right->appendChild($fieldset);
-
-		//	Filtering ---------------------------------------------------------
-
-			$fieldset = Widget::Fieldset(__('Filtering'), '<code>{$param}</code> or <code>Value</code>');
-
-			$container_filter_results = $page->createElement('div');
-			$fieldset->appendChild($container_filter_results);
-
-		//	Redirect/404 ------------------------------------------------------
-		/*
-			$label = Widget::Label(__('Required URL Parameter <i>Optional</i>'));
-			$label->appendChild(Widget::Input('fields[required_url_param]', $this->parameters()->required_url_param));
-			$fieldset->appendChild($label);
-
-			$p = new XMLElement('p', __('An empty result will be returned when this parameter does not have a value. Do not wrap the parameter with curly-braces.'));
-			$p->setAttribute('class', 'help');
-			$fieldset->appendChild($p);
-		*/
 			$right->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
