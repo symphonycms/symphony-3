@@ -123,8 +123,8 @@
 		}
 
 		public function __set($name, $value){
-			if ($name == 'label') {
-				$this->parameters->handle = Lang::createHandle($this->parameters->name, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
+			if ($name == 'name') {
+				$this->parameters->handle = Lang::createHandle($value, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
 			}
 			
 			$this->parameters->$name = $value;
