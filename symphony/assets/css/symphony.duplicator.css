@@ -189,6 +189,7 @@
 	.duplicator-widget > .content > .tabs > .active {
 		background: #ffffff;
 		margin-right: -1px;
+		cursor: move;
 	}
 	.duplicator-widget > .content > .tabs > .ordering {
 		font-weight: bold;
