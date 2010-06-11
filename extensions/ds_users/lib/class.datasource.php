@@ -69,56 +69,27 @@
 			$fieldset = Widget::Fieldset(__('Filtering'), '<code>{$param}</code> or <code>Value</code>', array(
 				'class' => 'settings'
 			));
-
+			
 			// Filters
-			$context = $page->createElement('div');
-			$context->setAttribute('class', 'filters-duplicator context context-' . $section_handle);
-
-			$templates = $page->createElement('ol');
-			$templates->setAttribute('class', 'templates');
-
-			$instances = $page->createElement('ol');
-			$instances->setAttribute('class', 'instances');
-
-			$sortableColumns = array(
-				array(
-					'name' => __('ID'),
-					'column' => 'id',
-					'value' => $this->parameters()->filters['id']
-				),
-				array(
-					'name' => __('Username'),
-					'column' => 'username',
-					'value' => $this->parameters()->filters['username']
-				),
-				array(
-					'name' => __('First Name'),
-					'column' => 'first-name',
-					'value' => $this->parameters()->filters['first-name']
-				),
-				array(
-					'name' => __('Last Name'),
-					'column' => 'last-name',
-					'value' => $this->parameters()->filters['last-name']
-				),
-				array(
-					'name' => __('Email Address'),
-					'column' => 'email',
-					'value' => $this->parameters()->filters['email']
-				)
+			$duplicator = new Duplicator(__('Add Filter'));
+			
+			$filters = array(
+				'id' => __('ID'),
+				'username' => __('Username'),
+				'first-name' => __('First Name'),
+				'last-name' => __('Last Name'),
+				'email' => __('Email Address'),
 			);
+			
+			foreach($filters as $handle => $name) {
+				$this->appendFilter($duplicator, $handle, $name);
 
-			foreach($sortableColumns as $column) {
-				$this->appendFilter($templates, $column);
-
-				if(is_array($this->parameters()->filters) && array_key_exists($column['column'], $this->parameters()->filters)) {
-					$this->appendFilter($instances, $column);
+				if(is_array($this->parameters()->filters) && array_key_exists($handle, $this->parameters()->filters)){
+					$this->appendFilter($duplicator, $handle, $name, $this->parameters()->filters[$handle]);
 				}
 			}
 
-			$context->appendChild($templates);
-			$context->appendChild($instances);
-			$fieldset->appendChild($context);
+			$duplicator->appendTo($fieldset);
 			$middle->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
@@ -145,29 +116,33 @@
 			$layout->appendTo($wrapper);
 		}
 
-		protected function appendFilter(SymphonyDOMElement $wrapper, $condition = array()) {
-			$document = $wrapper->ownerDocument;
-
-			$li = $document->createElement('li');
-
-			$name = $document->createElement('span', $condition['name']);
-			$name->setAttribute('class', 'name');
-			$li->appendChild($name);
-
-			$wrapper->appendChild($li);
-
-			$label = Widget::Label(__('Value'));
-			$input = Widget::Input('fields[filters][' . $condition['column'] . ']');
-
-			if(isset($condition['value'])) {
-				$input->setAttribute("value", $condition['value']);
+		protected function appendFilter(Duplicator $duplicator, $handle, $name, $value=NULL) {
+			$document = $duplicator->ownerDocument;
+		
+			if (is_null($value)) {
+				$item = $duplicator->createTemplate($name);
 			}
+		
+			else {
+				$item = $duplicator->createInstance($name);
+			}
+			
+			$group = $document->createElement('div');
+			$group->setAttribute('class', 'group double');
 
+			// Value
+			$label = $document->createElement('label', __('Value'));
+			$input = Widget::Input('fields[filters][' . $handle . ']');
+			
+			if(!is_null($value)) {
+				$input->setAttribute("value", $value);
+			}
 			$label->appendChild($input);
+			$group->appendChild($label);
 
-			$li->appendChild($label);
+			$group->appendChild($label);
+			$item->appendChild($group);
 
-			$wrapper->appendChild($li);
 		}
 		
 	/*-----------------------------------------------------------------------*/

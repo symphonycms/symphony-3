@@ -208,68 +208,55 @@
 			$right->appendChild($fieldset);
 
 		//	Namespace Declarations
-
 			$fieldset = Widget::Fieldset(__('Namespace Declarations'), $page->createElement('em', 'Optional'));
-
-			$container = $page->createElement('div');
-			$container->setAttribute('class', 'filters-duplicator');
-
-			$templates = $page->createElement('ol');
-			$templates->setAttribute('class', 'templates');
-
-			$instances = $page->createElement('ol');
-			$instances->setAttribute('class', 'instances');
-
-			$this->appendNamespace($templates);
-
-			if(is_array($this->parameters()->namespaces))
+			
+			$duplicator = new Duplicator(__('Add Namespace'));
+			$this->appendNamespace($duplicator);
+			
+			if(is_array($this->parameters()->namespaces)){
 				foreach($this->parameters()->namespaces as $index => $namespace) {
-
-				$this->appendNamespace($instances, $namespace);
+					$this->appendNamespace($duplicator, $namespace);
+				}
 			}
-
-			$container->appendChild($templates);
-			$container->appendChild($instances);
-			$fieldset->appendChild($container);
-
-			$input = Widget::Input('fields[automatically-discover-namespaces]', 'yes', 'checkbox');
-			if ($this->parameters()->{'automatically-discover-namespaces'} == 'yes') {
-				$input->setAttribute('checked', 'checked');
-			}
-
-			$label = Widget::Label(__('Automatically add discovered namespaces'));
-			$label->prependChild($input);
-			$fieldset->appendChild($label);
+			$duplicator->appendTo($fieldset);
 
 			$right->appendChild($fieldset);
 			$layout->appendTo($wrapper);
 		}
 
-		protected function appendNamespace(SymphonyDOMElement $wrapper, $namespace = array()) {
-			$document = $wrapper->ownerDocument;
-
-			$li = $document->createElement('li');
-
-			$name = $document->createElement('span', __('Namespace'));
-			$name->setAttribute('class', 'name');
-			$li->appendChild($name);
-
+		protected function appendNamespace(Duplicator $duplicator, array $namespace=NULL) {
+			$document = $duplicator->ownerDocument;
+		
+			if (is_null($namespace)) {
+				$item = $duplicator->createTemplate(__('Namespace'));
+			}
+		
+			else {
+				$item = $duplicator->createInstance(__('Namespace'));
+			}
+			
 			$group = $document->createElement('div');
 			$group->setAttribute('class', 'group double');
 
 			// Name
 			$label = Widget::Label(__('Name'));
-			$label->appendChild(Widget::Input('fields[namespaces][name][]', $namespace['name']));
+			$input = Widget::Input('fields[namespaces][name][]', $namespace['name']);
+			if(!is_null($namespace) && isset($namespace['name'])) {
+				$input->setAttribute("value", $namespace['name']);
+			}
+			$label->appendChild($input);
 			$group->appendChild($label);
 
 			// URI
 			$label = Widget::Label(__('URI'));
-			$label->appendChild(Widget::Input('fields[namespaces][uri][]', $namespace['uri']));
+			$input = Widget::Input('fields[namespaces][uri][]');
+			if(!is_null($namespace) && isset($namespace['uri'])) {
+				$input->setAttribute("value", $namespace['uri']);
+			}
+			$label->appendChild($input);
 			$group->appendChild($label);
+			$item->appendChild($group);
 
-			$group->appendChild($label);
-			$li->appendChild($group);
-			$wrapper->appendChild($li);
 		}
 
 		public function save(MessageStack $errors){

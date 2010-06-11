@@ -1,6 +1,6 @@
 <?php
 
-	require_once EXTENSIONS . '/ds_users/lib/usersdatasource.php';
+	require_once EXTENSIONS . '/ds_users/lib/class.datasource.php';
 
 	Final Class DataSource%1$s extends UsersDataSource {
 

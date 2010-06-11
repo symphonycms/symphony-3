@@ -1,6 +1,6 @@
 <?php
 
-	require_once EXTENSIONS . '/ds_dynamicxml/lib/dynamicxmldatasource.php';
+	require_once EXTENSIONS . '/ds_dynamicxml/lib/class.datasource.php';
 
 	Final Class DataSource%1$s extends DynamicXMLDataSource {
 
