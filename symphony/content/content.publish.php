@@ -82,7 +82,7 @@
 			foreach($section->fields as $column){
 				if($column->{'show-column'} != 'yes') continue;
 
-				$label = $column->label;
+				$label = $column->name;
 
 				if($column->isSortable()) {
 
@@ -95,7 +95,7 @@
 						$anchor = Widget::Anchor($label, $link, array(
 							'title' => __('Sort by %1$s %2$s', array(
 								($section->{'publish-order-direction'} == 'desc' ? __('ascending') : __('descending')),
-								strtolower($column->label)
+								strtolower($label)
 							)),
 							'class' => 'active'
 						));
@@ -103,7 +103,7 @@
 					else {
 						$link .= '?pg='.$current_page.'&sort='.$column->{'element-name'}.'&order=asc'.$current_filter;
 						$anchor = Widget::Anchor($label, $link, array(
-							'title' => __('Sort by %1$s %2$s', array(__('ascending'), strtolower($column->label)))
+							'title' => __('Sort by %1$s %2$s', array(__('ascending'), strtolower($label)))
 						));
 					}
 

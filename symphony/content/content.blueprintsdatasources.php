@@ -120,7 +120,12 @@
 					$col_name->appendChild(Widget::Input("items[{$handle}]", NULL, 'checkbox'));
 
 					// Source
-					$col_source = $ds->prepareSourceColumnValue();
+					try{
+						$col_source = $ds->prepareSourceColumnValue();
+					}
+					catch(Exception $e){
+						$col_source = Widget::TableData(__('None'), array('class' => 'inactive'));
+					}
 
 					// Attached On
 					$fragment_views = $this->createDocumentFragment();

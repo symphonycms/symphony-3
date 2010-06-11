@@ -184,8 +184,9 @@
 				switch ($e->getCode()) {
 					case Section::ERROR_MISSING_OR_INVALID_FIELDS:
 						$this->alerts()->append(
-							__('Could not save the layout, there are errors in your field configuration.'),
-							AlertStack::ERROR
+							__('Could not save the layout, there are errors in your field configuration. <a class="more">More information.</a>'),
+							AlertStack::ERROR,
+							$this->errors
 						);
 						break;
 					case Section::ERROR_FAILED_TO_WRITE:
@@ -840,7 +841,7 @@
 					$messages = new MessageStack;
 				}
 				
-				$item = $duplicator->createInstance($field->label, $field->name());
+				$item = $duplicator->createInstance($field->name, $field->name());
 				$field->displaySettingsPanel($item, $messages);
 			}
 

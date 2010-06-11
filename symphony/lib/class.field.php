@@ -120,7 +120,7 @@
 		}
 
 		public function __set($name, $value){
-			if ($name == 'label') {
+			if ($name == 'name') {
 				$this->properties->{'element-name'} = Lang::createHandle($value, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
 			}
 			
@@ -371,11 +371,11 @@
 		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
 			$parent_section = $this->{'parent-section'};
 
-			if ($this->label == '') {
-				$messages->append('label', __('This is a required field.'));
+			if (!isset($this->name) || strlen(trim($this->name)) == 0) {
+				$messages->append('name', __('This is a required field.'));
 			}
 
-			if ($this->{'element-name'} == '') {
+			if (!isset($this->{'element-name'}) || strlen(trim($this->{'element-name'})) == 0) {
 				$messages->append('element-name', __('This is a required field.'));
 			}
 
@@ -421,15 +421,32 @@
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $messages){
 			$document = $wrapper->ownerDocument;
 
-			$label = Widget::Label(__('Label'));
-			$label->setAttribute('class', 'field-label');
-			$label->appendChild(Widget::Input('label', $this->label));
+			$group = $document->createElement('div');
+			$group->setAttribute('class', 'group');
+			
+			$label = Widget::Label(__('Name'));
+			$label->setAttribute('class', 'field-name');
+			$label->appendChild(Widget::Input('name', $this->name));
 
-			if ($messages->{'label'}) {
-				$label = Widget::wrapFormElementWithError($label, $messages->{'label'});
+			if ($messages->{'name'}) {
+				$label = Widget::wrapFormElementWithError($label, $messages->{'name'});
 			}
 
-			$wrapper->appendChild($label);
+			$group->appendChild($label);
+			
+			
+			$label = Widget::Label(__('Publish Label'));
+			$label->appendChild($document->createElement('em', 'Optional'));
+			$label->appendChild(Widget::Input('publish-label', $this->{'publish-label'}));
+
+			if ($messages->{'publish-label'}) {
+				$label = Widget::wrapFormElementWithError($label, $messages->{'publish-label'});
+			}
+
+			$group->appendChild($label);
+						
+			$wrapper->appendChild($group);
+
 
 			if (isset($this->guid)) {
 				$wrapper->appendChild(Widget::Input('guid', $this->guid, 'hidden'));
@@ -508,13 +525,15 @@
 		public function appendValidationSelect(SymphonyDOMElement $wrapper, $selected=NULL, $name='fields[validator]', $label_value = null, $type='input'){
 			include(LIB . '/include.validators.php');
 
-			if (!$label_value) $label_value = __('Validation Rule');
-
+			if (is_null($label_value)){
+				$label_value = __('Validation Rule');
+			}
+			
 			$label = Widget::Label($label_value);
 			$document = $wrapper->ownerDocument;
 			$rules = ($type == 'upload' ? $upload : $validators);
 
-			$label->setValue($document->createElement('em', __('Optional')));
+			$label->appendChild($document->createElement('em', __('Optional')));
 			$label->appendChild(Widget::Input($name, $selected));
 			$wrapper->appendChild($label);
 
@@ -561,6 +580,7 @@
 		}
 
 		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null);
+		
 		/*-------------------------------------------------------------------------
 			Input:
 		-------------------------------------------------------------------------*/
