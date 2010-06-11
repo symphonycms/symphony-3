@@ -168,11 +168,42 @@
 			}
 
 			try {
+				$callback = Administration::instance()->getPageCallback();
+				$current_page = $callback['pageroot'] . $callback['context'][0] . '/';
+				
+				###
+				# Delegate: SectionPreSave
+				Extension::notify(
+					'SectionPreSave',
+					$current_page, array(
+						'section' => &$this->section, 'errors' => &$this->errors
+					)
+				);
+				
 				Section::save($this->section, $this->errors);
+
+				###
+				# Delegate: SectionPostSave
+				Extension::notify(
+					'SectionPostSave',
+					$current_page, array(
+						'section' => &$this->section, 'errors' => &$this->errors
+					)
+				);
 
 				// Rename section:
 				if ($old_handle !== false) {
 					Section::rename($this->section, $old_handle);
+					
+					###
+					# Delegate: SectionPostRename
+					Extension::notify(
+						'SectionPostRename',
+						$current_page, array(
+							'section' => &$this->section, 'old-handle' => $old_handle, 'errors' => &$this->errors
+						)
+					);
+					
 				}
 				
 				Section::synchronise($this->section);
@@ -271,10 +302,23 @@
 
 		public function __actionDelete(array $sections, $redirect) {
 			$success = true;
-
+			
+			$callback = Administration::instance()->getPageCallback();
+			$current_page = $callback['pageroot'] . (isset($callback['context'][0]) && $callback['context'][0] != 'index' ? $callback['context'][0] . '/' : NULL);
+			
 			foreach($sections as $handle){
 				try{
 					Section::delete(Section::loadFromHandle($handle));
+					
+					###
+					# Delegate: SectionPostDelete
+					Extension::notify(
+						'SectionPostDelete',
+						$current_page, array(
+							'handle' => $handle,
+						)
+					);
+					
 				}
 				catch(SectionException $e){
 					$success = false;
