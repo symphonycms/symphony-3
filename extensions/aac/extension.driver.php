@@ -528,7 +528,51 @@
 				));
 			}
 			
-			// TODO: Forbidden Pages
+			// Add permissions for blueprints area
+			$permissions = array(
+				'blueprints::sections',
+				'blueprints::datasources',
+				'blueprints::events',
+				'blueprints::views',
+				'blueprints::utilities',
+				'blueprints::datasources',
+			);
+			foreach($permissions as $p){
+				Symphony::Database()->insert('tbl_aac_permissions', array(
+					'id' => NULL,
+					'role_id' => 2,
+					'key' => $p,
+					'type' => 'create',
+					'level' => 1
+				));
+				
+				Symphony::Database()->insert('tbl_aac_permissions', array(
+					'id' => NULL,
+					'role_id' => 2,
+					'key' => $p,
+					'type' => 'edit',
+					'level' => 1
+				));
+			}
+			
+			
+			// Add permissions for system related things
+			$permissions = array(
+				array('system::extensions', 'access', 1),
+				array('system::settings', 'access', 1),
+				array('system::users', 'edit', 2),
+				array('system::users', 'create', 1),
+				array('system::users', 'change-role', 1)
+			);
+			foreach($permissions as $p){
+				Symphony::Database()->insert('tbl_aac_permissions', array(
+					'id' => NULL,
+					'role_id' => 2,
+					'key' => $p[0],
+					'type' => $p[1],
+					'level' => $p[2]
+				));
+			}
 			
 			return true;
 
