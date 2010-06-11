@@ -19,6 +19,31 @@
 
 		public function getSubscribedDelegates(){
 			return array(
+				
+				array(
+					'delegate' => 'SectionPostSave',
+					'page' => '/blueprints/sections/new/',
+					'callback' => 'cbSetDefaultPublishPermissions'
+				),
+				
+				array(
+					'delegate' => 'SectionPostRename',
+					'page' => '/blueprints/sections/edit/',
+					'callback' => 'cbSetDefaultPublishPermissions'
+				),
+			
+				array(
+					'delegate' => 'SectionPostDelete',
+					'page' => '/blueprints/sections/',
+					'callback' => 'cbRemoveSectionPublishPermissions'
+				),
+				
+				array(
+					'delegate' => 'SectionPostDelete',
+					'page' => '/blueprints/sections/edit/',
+					'callback' => 'cbRemoveSectionPublishPermissions'
+				),
+				
 				array(
 					'page' => '/administration/',
 					'delegate' => 'AdminPagePreGenerate',
@@ -53,6 +78,43 @@
 					'link' => '/roles/'
 				)
 			);
+		}
+		
+		public function cbRemoveSectionPublishPermissions(array $context=NULL){
+			Symphony::Database()->delete(
+				'tbl_aac_permissions', array($context['handle']), "`key` = 'publish::%s'"
+			);	
+		}
+		
+		public function cbSetDefaultPublishPermissions(array $context=NULL){
+			if(isset($context['old-handle'])){
+				// Update the old permissions
+				Symphony::Database()->update(
+					'tbl_aac_permissions', 
+					array('key' => 'publish::' . $context['section']->handle), 
+					array('publish::' . $context['old-handle']), 
+					"`key`='%s'"
+				);
+			}
+			else{
+				foreach(new RoleIterator as $role){
+					Symphony::Database()->insert('tbl_aac_permissions', array(
+						'id' => NULL,
+						'role_id' => $role->id,
+						'key' => "publish::" . $context['section']->handle,
+						'type' => 'create',
+						'level' => 1
+					));
+
+					Symphony::Database()->insert('tbl_aac_permissions', array(
+						'id' => NULL,
+						'role_id' => $role->id,
+						'key' => "publish::" . $context['section']->handle,
+						'type' => 'edit',
+						'level' => 2
+					));
+				}
+			}
 		}
 		
 		public function cbCheckPagePermissions(array $context=NULL){
