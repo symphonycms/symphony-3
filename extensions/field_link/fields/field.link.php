@@ -655,38 +655,51 @@
 			$result = Administration::instance()->Page->createDocumentFragment();
 			
 			foreach($data as $index => $d){
-				$entry = Entry::loadFromID($d->relation_id);
+				try{
+					$entry = Entry::loadFromID($d->relation_id);
+			
+					foreach($this->{'related-fields'} as $key => $value){
+						list($section_handle, $field_handle) = $value;
 				
-				foreach($this->{'related-fields'} as $key => $value){
-					list($section_handle, $field_handle) = $value;
-					
-					if($section_handle != $entry->meta()->section) continue;
-					
-					$section = Section::loadFromHandle($section_handle);
-					$field = $section->fetchFieldByHandle($field_handle);
-					
-					$value = $field->prepareTableValue($entry->data()->{$field_handle});
-					
-					// TODO: handle passing links
-					if($index > 0){
-						$result->appendChild(new DOMText(', '));
-					}
-					
-					$result->appendChild(Widget::anchor(
-						$value, 
-						sprintf('%s/publish/%s/edit/%d/', ADMIN_URL, $section_handle, $entry->meta()->id)
-					));
+						if($section_handle != $entry->meta()->section) continue;
+				
+						$section = Section::loadFromHandle($section_handle);
+						$field = $section->fetchFieldByHandle($field_handle);
+				
+						$value = $field->prepareTableValue($entry->data()->{$field_handle});
+				
+						// TODO: handle passing links
+						if($index > 0){
+							$result->appendChild(new DOMText(', '));
+						}
+				
+						$result->appendChild(Widget::anchor(
+							$value, 
+							sprintf('%s/publish/%s/edit/%d/', ADMIN_URL, $section_handle, $entry->meta()->id)
+						));
 
-					break;
+						break;
+					}
 				}
+				catch(Exception $e){}
+			}
+			
+			if(!$result->hasChildNodes()){
+				return parent::prepareTableValue(NULL, $link);
 			}
 			
 			return $result;
 
 		}
 
-		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL){
-			return $data['relation_id'];
+		public function getParameterOutputValue(array $data, Entry $entry=NULL){
+			$result = array();
+			if(!empty($data)){
+				foreach($data as $d){
+					$result[] = $d->relation_id;
+				}
+			}
+			return $result;
 		}
 
 		public function fetchAssociatedEntrySearchValue($data, $field_id=NULL, $parent_entry_id=NULL){
