@@ -5,10 +5,10 @@
 	Class contentLogin extends AdministrationPage{
 
 		public $_context;
-		private $_invalidPassword;
+		private $invalid_credentials;
 
 		function build($context=NULL){
-			$this->_invalidPassword = false;
+			$this->invalid_credentials = false;
 
 			$this->Headers->append('Content-Type', 'text/html; charset=UTF-8');
 
@@ -119,10 +119,21 @@
 				$fieldset->appendChild($label);
 				$this->Form->appendChild($fieldset);
 				
-				if($this->_invalidPassword){
+				if($this->invalid_credentials){
 					$div = $this->createElement('div', NULL, array('class' => 'invalid'));
-
-					$p = $this->createElement('p', __('The supplied password was rejected. '));
+					
+					if($this->missing_username == true){
+						$p = $this->createElement('p', __('Username is required and cannot be left blank. '));
+					}
+					
+					elseif($this->missing_password == true){
+						$p = $this->createElement('p', __('Password is required and cannot be left blank. '));
+					}
+					
+					else{
+						$p = $this->createElement('p', __('The username and password combination you provided is incorrect. '));
+					}
+					
 					$p->appendChild(
 						Widget::Anchor(__('Retrieve password?'), ADMIN_URL . '/login/retrieve-password/')
 					);
@@ -160,7 +171,17 @@
 				##Login Attempted
 				if($action == 'login'):
 
-					if(empty($_POST['username']) || empty($_POST['password']) || !Administration::instance()->login($_POST['username'], $_POST['password'])) {
+					if(!isset($_POST['username']) || strlen(trim($_POST['username'])) == 0){
+						$this->invalid_credentials = true;
+						$this->missing_username = true;
+					}
+					
+					if(!isset($_POST['password']) || strlen(trim($_POST['password'])) == 0){
+						$this->invalid_credentials = true;
+						$this->missing_password = true;
+					}
+
+					elseif(!Administration::instance()->login($_POST['username'], $_POST['password'])) {
 
 						## FIXME: Fix this delegate
 						###
@@ -170,7 +191,7 @@
 
 						//$this->Body->appendChild(new XMLElement('p', 'Login invalid. <a href="'.ADMIN_URL . '/?forgot">Forgot your password?</a>'));
 						//$this->_alert = 'Login invalid. <a href="'.ADMIN_URL . '/?forgot">Forgot your password?</a>';
-						$this->_invalidPassword = true;
+						$this->invalid_credentials = true;
 					}
 
 					else{
@@ -181,7 +202,7 @@
 						# Description: Successful login attempt. Username is provided.
 						//Extension::notify('LoginSuccess', getCurrentPage(), array('username' => $_POST['username']));
 
-						if(isset($_POST['redirect'])) redirect(URL . str_replace(parse_url(URL, PHP_URL_PATH), '', $_POST['redirect']));
+						if(isset($_POST['redirect'])) redirect(URL . str_replace(parse_url(URL, PHP_URL_PATH), NULL, $_POST['redirect']));
 
 						redirect(ADMIN_URL . '/');
 					}
