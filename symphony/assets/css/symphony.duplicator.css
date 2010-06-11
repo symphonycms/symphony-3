@@ -24,7 +24,7 @@
 			to(#bbbbbb)
 		);
 		border-bottom: 1px solid #aaaaaa;
-		border-top: 1px solid #eeeeee;
+		border-top: 1px solid #dadada;
 		-moz-border-radius: 4px;
 		-webkit-border-radius: 4px;
 		height: 35px;
@@ -78,13 +78,13 @@
 	
 	.duplicator-widget > .templates {
 		display: none;
-		background: #666666;
-		background: -moz-linear-gradient(#555555, #666666 4px, #777777);
+		background: #888888;
+		background: -moz-linear-gradient(#666666, #777777 4%, #666666);
 		background: -webkit-gradient(
 			linear, left top, left bottom,
-			from(#555555),
-			to(#777777),
-			color-stop(0.04, #666666)
+			from(#666666),
+			to(#666666),
+			color-stop(0.04, #777777)
 		);
 		border: 1px solid #555555;
 		-moz-border-radius-bottomleft: 5px;
