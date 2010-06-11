@@ -56,7 +56,7 @@
 				if(!headers_sent()){
 					header('Content-Type: text/plain; charset=utf-8');
 				}
-				echo "<h1>Looks like the Exception handler crapped out</h1>";
+				echo "<h1>An error occurred while attempting to handle an exception. See below for more details.</h1>";
 				echo "<pre>"; print_r($e); echo "</pre>";
 			}
 			
