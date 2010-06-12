@@ -96,11 +96,13 @@
 			$span->setValue($name);
 			$tab->appendChild($span);
 			
+			/* REMOVING THIS FOR NOW. SEEMS MAYBE SUPERFLUOUS.
+			
 			if (!is_null($type)) {
 				$em = $this->page->createElement('em');
 				$em->setValue($type);
 				$span->appendChild($em);
-			}
+			}*/
 			
 			$remove = $this->page->createElement('a');
 			$remove->addClass('remove');

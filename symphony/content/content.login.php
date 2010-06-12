@@ -119,6 +119,12 @@
 				$fieldset->appendChild($label);
 				$this->Form->appendChild($fieldset);
 				
+				$p = $this->createElement('p', NULL);
+				$p->appendChild(
+						Widget::Anchor(__('Forgot your password?'), ADMIN_URL . '/login/retrieve-password/')
+					);
+				$fieldset->appendChild($p);
+				
 				if($this->invalid_credentials){
 					$div = $this->createElement('div', NULL, array('class' => 'invalid'));
 					

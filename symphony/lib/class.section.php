@@ -319,7 +319,7 @@
 			}
 			
 			self::$sections[$path] = $section;
-
+			
 			return $section;
 		}
 
