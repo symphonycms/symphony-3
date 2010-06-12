@@ -414,7 +414,7 @@
 			$item = $document->createElement('li');
 			$item->setAttribute('class', 'field');
 
-			$name = $document->createElement('span', $field->label);
+			$name = $document->createElement('span', $field->name);
 			$name->setAttribute('class', 'name');
 			$name->appendChild($document->createElement('em', $field->name()));
 			$item->appendChild($name);
