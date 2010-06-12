@@ -17,7 +17,7 @@
 
 	define('DOMAIN', $clean_path); 
 	define('URL', 'http://' . $clean_path);
-	define('VERSION', '3.0.0alpha');
+	define('VERSION', '3.0.0beta');
 	
 	Lang::load(realpath('../symphony/lang') . '/lang.en.php', 'en', true);
 	
