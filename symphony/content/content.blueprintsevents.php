@@ -63,7 +63,7 @@
 				array(__('Name'), 'col'),
 				array(__('Destination'), 'col'),
 				array(__('Type'), 'col'),
-				array(__('Attached On'), 'col')
+				array(__('Used By'), 'col')
 			);
 
 			$eTableBody = array();
@@ -115,7 +115,7 @@
 					// Destination
 					$col_destination = $event->prepareDestinationColumnValue();
 
-					// Attached On
+					// Used By
 					$fragment_views = $this->createDocumentFragment();
 
 					foreach(self::$_loaded_views as $view) {

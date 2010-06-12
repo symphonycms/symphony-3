@@ -72,7 +72,7 @@
 				array(__('Name'), 'col'),
 				array(__('Source'), 'col'),
 				array(__('Type'), 'col'),
-				array(__('Attached On'), 'col')
+				array(__('Used By'), 'col')
 			);
 
 			$dsTableBody = array();
@@ -127,7 +127,7 @@
 						$col_source = Widget::TableData(__('None'), array('class' => 'inactive'));
 					}
 
-					// Attached On
+					// Used By
 					$fragment_views = $this->createDocumentFragment();
 
 					foreach(self::$_loaded_views as $view) {
