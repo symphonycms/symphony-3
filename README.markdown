@@ -1,6 +1,6 @@
 # Symphony 3 #
 
-- Version: 3.0.0 Alpha
+- Version: 3.0.0 Beta
 - Date: TBA
 - Release Notes: Please see commit log on github
 - Github Repository: <https://github.com/symphony/symphony-3>
