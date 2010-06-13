@@ -121,7 +121,11 @@
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $timestamp, 'Australia/Brisbane');
 			}
 
-			$label = Widget::Label($this->label, Widget::Input("fields[{$name}]", $value), array(
+			$label = Widget::Label(
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
+					? $this->{'publish-label'} 
+					: $this->name),
+				Widget::Input("fields[{$name}]", $value), array(
 				'class' => 'date')
 			);
 

@@ -18,8 +18,7 @@
 			
 			$options = array(
 				__('Preferences')	=> $path,
-				__('Extensions')	=> $path . 'extensions/',
-				__('Navigation')	=> $path . 'navigation/'
+				__('Extensions')	=> $path . 'extensions/'
 			);
 			
 			// Hide Extensions tab:
@@ -35,8 +34,8 @@
 			$this->appendSubheading(__('Settings'));
 			$this->appendTabs();
 			
-			if (!is_writable(CONFIG)) {
-		        $this->alerts()->append(
+			if(!is_writable(CONF . '/core.xml')){
+				$this->alerts()->append(
 					__('The core Symphony configuration file, /manifest/conf/core.xml, is not writable. You will not be able to save any changes.'), AlertStack::ERROR
 				);
 			}
@@ -198,42 +197,6 @@
 			);
 
 			$this->Form->appendChild($div);
-		}
-		
-		public function __viewNavigation() {
-			$this->appendSubheading(__('Settings'));
-			$this->appendTabs();
-			
-			$layout = new Layout();
-			$right = $layout->createColumn(Layout::LARGE);
-			
-			$fieldset = Widget::Fieldset(__('Navigation'));
-			
-			$navigation = new XMLDocument();
-			$navigation->load(ASSETS . '/navigation.xml');
-			
-			$duplicator = new Duplicator(__('Add Items'));
-			$duplicator->addClass('auto');
-			
-			foreach ($navigation->xpath('/navigation/group') as $group) {
-				$name = $group->getAttribute('name');
-				$type = $group->getAttribute('type');
-				$instance = $duplicator->createInstance();
-				
-				switch ($type) {
-					case 'links':
-						$tab = $duplicator->createTab($name, __('Links'));
-						break;
-						
-					case 'sections':
-						$tab = $duplicator->createTab($name, __('Sections'));
-						break;
-				}
-			}
-			
-			$duplicator->appendTo($fieldset);
-			$right->appendChild($fieldset);
-			$layout->appendTo($this->Form);
 		}
 
 		public function __viewExtensions() {

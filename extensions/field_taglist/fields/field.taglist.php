@@ -299,7 +299,11 @@
 				$data->value = NULL;
 			}
 
-			$label = Widget::Label($this->label);
+			$label = Widget::Label(
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
+					? $this->{'publish-label'} 
+					: $this->name)
+			);
 
 			$label->appendChild(
 				Widget::Input('fields['.$this->{'element-name'}.']', $data->value)

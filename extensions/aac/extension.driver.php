@@ -19,6 +19,31 @@
 
 		public function getSubscribedDelegates(){
 			return array(
+				
+				array(
+					'delegate' => 'SectionPostSave',
+					'page' => '/blueprints/sections/new/',
+					'callback' => 'cbSetDefaultPublishPermissions'
+				),
+				
+				array(
+					'delegate' => 'SectionPostRename',
+					'page' => '/blueprints/sections/edit/',
+					'callback' => 'cbSetDefaultPublishPermissions'
+				),
+			
+				array(
+					'delegate' => 'SectionPostDelete',
+					'page' => '/blueprints/sections/',
+					'callback' => 'cbRemoveSectionPublishPermissions'
+				),
+				
+				array(
+					'delegate' => 'SectionPostDelete',
+					'page' => '/blueprints/sections/edit/',
+					'callback' => 'cbRemoveSectionPublishPermissions'
+				),
+				
 				array(
 					'page' => '/administration/',
 					'delegate' => 'AdminPagePreGenerate',
@@ -55,8 +80,46 @@
 			);
 		}
 		
-		public function cbCheckPagePermissions(array $context=NULL){
+		public function cbRemoveSectionPublishPermissions(array $context=NULL){
+			Symphony::Database()->delete(
+				'tbl_aac_permissions', array($context['handle']), "`key` = 'publish::%s'"
+			);	
+		}
+		
+		public function cbSetDefaultPublishPermissions(array $context=NULL){
+			if(isset($context['old-handle'])){
+				// Update the old permissions
+				Symphony::Database()->update(
+					'tbl_aac_permissions', 
+					array('key' => 'publish::' . $context['section']->handle), 
+					array('publish::' . $context['old-handle']), 
+					"`key`='%s'"
+				);
+			}
+			else{
+				foreach(new RoleIterator as $role){
+					Symphony::Database()->insert('tbl_aac_permissions', array(
+						'id' => NULL,
+						'role_id' => $role->id,
+						'key' => "publish::" . $context['section']->handle,
+						'type' => 'create',
+						'level' => 1
+					));
 
+					Symphony::Database()->insert('tbl_aac_permissions', array(
+						'id' => NULL,
+						'role_id' => $role->id,
+						'key' => "publish::" . $context['section']->handle,
+						'type' => 'edit',
+						'level' => 2
+					));
+				}
+			}
+		}
+		
+		public function cbCheckPagePermissions(array $context=NULL){
+			if(!Administration::instance()->isLoggedIn()) return;
+			
 			$role = Role::load(Administration::instance()->User->role_id);
 
 			// Sections that have no create or edit permissions
@@ -84,6 +147,18 @@
 				){
 					throw new AdministrationForbiddenPageException;
 				}
+				
+				// User only has "edit own" permissions
+				if($context['callback']['context']['page'] == 'edit' && $role->permissions()->{"publish::{$handle}.edit"} < 2){
+					$entry = Entry::loadFromID($context['callback']['context']['entry_id']);
+					if(Administration::instance()->User->id != $entry->meta()->user_id){
+						$context['page']->alerts()->append(
+							__('Any changes made to this entry will not be saved since you do not have sufficient privileges.'),
+							AlertStack::ERROR
+						);
+					}
+				}
+				
 			}
 			
 			// Blueprints pages that have no create or edit permissions
@@ -116,7 +191,7 @@
 				}
 			}
 			
-			// Forbidden pages
+			// TODO: Delegate for extensions to enforce their own permissions
 		}
 		
 		public function cbSetRoleFromPost(array $context=NULL){
@@ -131,27 +206,75 @@
 			}
 		}
 		
-		private function removeWithSelected(DOMDocument $doc){
-			$actions = $doc->xpath("//div[@class='actions']");
-			foreach($actions as $element){
-				$element->parentNode->removeChild($element);
-			}
-			
+		private function removeCheckboxesFromTableRows(DOMDocument $doc){
 			$checkboxes = $doc->xpath("//td/input[@type='checkbox' and starts-with(@name, 'items')]");
 			foreach($checkboxes as $element){
 				$element->parentNode->removeChild($element);
 			}
 		}
 		
+		private function removeFormActions(DOMDocument $doc){
+			$actions = $doc->xpath("//div[@class='actions']");
+			foreach($actions as $element){
+				$element->parentNode->removeChild($element);
+			}
+		}
+		
 		public function cbModifyPages($context=NULL){
+			
+			if(!Administration::instance()->isLoggedIn()) return;
+			
 			$callback = Administration::instance()->getPageCallback();
 			$doc = $context['page'];
 			$role = Role::load(Administration::instance()->User->role_id);
 			
-			// TODO: Remove items from navigation that the user has no permission to access
-			//			- Sections: if user has no edit or create privileges
-			//			- Forbidden Pages
-			
+			// Remove items from navigation that the user has no permission to access
+				
+				// Publish and Blueprints
+				$items = $doc->xpath("//ul[@id='nav']//li[./a[contains(@href, '/blueprints/') or contains(@href, '/publish/')]]");
+				foreach($items as $element){
+
+					$href = $element->getElementsByTagName('a')->item(0)->getAttribute('href');
+
+					if(!preg_match_all('/\/(publish|blueprints)\/([^\/]+)\//', $href, $match, PREG_SET_ORDER)) continue;
+				
+					$area = $match[0][1];
+					$handle = $match[0][2];
+
+					if(
+						// Cannot create or edit
+						(!isset($role->permissions()->{"{$area}::{$handle}.create"}) || $role->permissions()->{"{$area}::{$handle}.create"} < 1)
+						&&
+						(!isset($role->permissions()->{"{$area}::{$handle}.edit"}) || $role->permissions()->{"{$area}::{$handle}.edit"} < 1)
+					){
+						$element->parentNode->removeChild($element);
+					}
+					
+				}
+
+				// System
+				
+					// Users
+					if(
+						// Cannot create or edit
+						(!isset($role->permissions()->{"system::users.create"}) || $role->permissions()->{"system::users.create"} < 1)
+						&&
+						(!isset($role->permissions()->{"system::users.edit"}) || $role->permissions()->{"system::users.edit"} < 1)
+					){
+						$users = $doc->xpath("//ul[@id='nav']//li[./a[contains(@href, '/system/users/')]]");
+						foreach($users as $element){
+							$element->parentNode->removeChild($element);
+						}
+					}
+					
+					
+				// TODO: Add delegate for extensions to remove navigation items based on permissions
+				
+				// Remove empty navigation groups
+				foreach($doc->xpath("//ul[@id='nav']/li[not(./ul/li)]") as $element){
+					$element->parentNode->removeChild($element);
+				}
+
 			// Users
 			if($callback['pageroot'] == '/system/users/'){
 
@@ -178,7 +301,8 @@
 
 					// Remove the 'With Selected' and row checkboxes if user has no 'edit' privileges
 					if(!isset($role->permissions()->{"system::users.edit"}) || $role->permissions()->{"system::users.edit"} < 1){
-						$this->removeWithSelected($doc);
+						$this->removeFormActions($doc);
+						$this->removeCheckboxesFromTableRows($doc);
 					}
 					
 					$this->modifyUsersPageIndex($context);
@@ -198,7 +322,7 @@
 			// Publish
 			elseif(preg_match('/^\/publish\/([^\/]+)\/$/i', $callback['pageroot'], $match)){
 				$handle = $match[1];
-				
+
 				switch($callback['context']['page']){
 					case 'index':
 					
@@ -209,17 +333,30 @@
 						
 						// Remove the 'With Selected' and row checkboxes if user has no 'edit' privileges
 						if(!isset($role->permissions()->{"publish::{$handle}.edit"}) || $role->permissions()->{"publish::{$handle}.edit"} < 1){
-							$this->removeWithSelected($doc);
+							$this->removeFormActions($doc);
+							$this->removeCheckboxesFromTableRows($doc);
 						}
 						
+						break;
+						
+					case 'edit':
+					
+						// User only has "edit own" permissions
+						if($role->permissions()->{"publish::{$handle}.edit"} < 2){
+							$entry = Entry::loadFromID($callback['context']['entry_id']);
+							if(Administration::instance()->User->id != $entry->meta()->user_id){
+								$this->removeFormActions($doc);
+							}
+						}
+					
 						break;
 				}
 			}
 			
 			// Catch All
-			elseif(preg_match('/^\/([^\/]+)\/([^\/]+)\/$/i', $callback['pageroot'], $match)){
-				$area = $match[1];
-				$handle = $match[2];
+			elseif(preg_match('/^\/blueprints\/([^\/]+)\/$/i', $callback['pageroot'], $match)){
+
+				$handle = $match[1];
 
 				switch($callback['context'][0]){
 					
@@ -228,17 +365,19 @@
 					default:
 					
 						// Remove the 'Create New' button if user has no 'create' privileges
-						if(!isset($role->permissions()->{"{$area}::{$handle}.create"}) || $role->permissions()->{"{$area}::{$handle}.create"} < 1){
+						if(!isset($role->permissions()->{"blueprints::{$handle}.create"}) || $role->permissions()->{"blueprints::{$handle}.create"} < 1){
 							$this->removeCreateButton($doc);
 						}
 						
 						// Remove the 'With Selected' and row checkboxes if user has no 'edit' privileges
-						if(!isset($role->permissions()->{"{$area}::{$handle}.edit"}) || $role->permissions()->{"{$area}::{$handle}.edit"} < 1){
+						if(!isset($role->permissions()->{"blueprints::{$handle}.edit"}) || $role->permissions()->{"blueprints::{$handle}.edit"} < 1){
 							$this->removeWithSelected($doc);
 						}
 						break;
 				}
 			}
+			
+			// TODO: Delegate for extensions to modify pages based on their own permissions
 		}
 		
 		private function modifyUsersPageIndex($context=NULL){
@@ -451,7 +590,51 @@
 				));
 			}
 			
-			// TODO: Forbidden Pages
+			// Add permissions for blueprints area
+			$permissions = array(
+				'blueprints::sections',
+				'blueprints::datasources',
+				'blueprints::events',
+				'blueprints::views',
+				'blueprints::utilities',
+				'blueprints::datasources',
+			);
+			foreach($permissions as $p){
+				Symphony::Database()->insert('tbl_aac_permissions', array(
+					'id' => NULL,
+					'role_id' => 2,
+					'key' => $p,
+					'type' => 'create',
+					'level' => 1
+				));
+				
+				Symphony::Database()->insert('tbl_aac_permissions', array(
+					'id' => NULL,
+					'role_id' => 2,
+					'key' => $p,
+					'type' => 'edit',
+					'level' => 1
+				));
+			}
+			
+			
+			// Add permissions for system related things
+			$permissions = array(
+				array('system::extensions', 'access', 1),
+				array('system::settings', 'access', 1),
+				array('system::users', 'edit', 2),
+				array('system::users', 'create', 1),
+				array('system::users', 'change-role', 1)
+			);
+			foreach($permissions as $p){
+				Symphony::Database()->insert('tbl_aac_permissions', array(
+					'id' => NULL,
+					'role_id' => 2,
+					'key' => $p[0],
+					'type' => $p[1],
+					'level' => $p[2]
+				));
+			}
 			
 			return true;
 

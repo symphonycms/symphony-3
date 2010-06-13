@@ -98,7 +98,7 @@
 
 		public function validateSettings(MessageStack $messages, $checkForDuplicates = true) {
 			if (!is_writable(DOCROOT . $this->{'destination'} . '/')) {
-				$messages->append(null, __('Folder is not writable. Please check permissions.'));
+				$messages->append('destination', __('Folder is not writable. Please check permissions.'));
 			}
 			
 			return parent::validateSettings($messages, $checkForDuplicates);
@@ -174,18 +174,18 @@
 	-------------------------------------------------------------------------*/
 		
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
-			if (!$errors->valid() and !is_writable(DOCROOT . $this->destination . '/')) {
+			/*if (!$errors->valid() and !is_writable(DOCROOT . $this->destination . '/')) {
 				$errors->append(
 					null, (object)array(
 					 	'message' => __(
-					 		'Destination folder, <code>%s</code>, is not writable. Please check permissions.',
+					 		'Destination folder, "%s", is not writable. Please check permissions.',
 					 		array(trim($this->destination, '/'))
 					 	),
 						'code' => self::ERROR_INVALID
 					)
 				);
-			}
-			
+			}*/
+
 			$driver = Extension::load('field_upload');
 			$driver->addHeaders();
 			
@@ -199,7 +199,11 @@
 			
 		// Preview ------------------------------------------------------------
 
-			$label = $document->createElement('div', $this->label);
+			$label = $document->createElement('div',
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
+					? $this->{'publish-label'} 
+					: $this->name)
+			);
 			$label->setAttribute('class', 'label');
 
 			if ($this->required != 'yes') {
@@ -270,12 +274,22 @@
 			
 			$upload = $document->createElement('div');
 			$upload->setAttribute('class', 'upload');
-			$input = Widget::Input(
-				"fields[{$handle}]", $filepath,
-				($filepath ? 'hidden' : 'file')
-			);
 			
-			$upload->appendChild($input);
+			if(!is_writable(DOCROOT . $this->destination . '/')){
+				$upload->setValue(__(
+			 		'Destination folder, "%s", is not writable. Please check permissions.',
+			 		array(trim($this->destination, '/'))
+			 	));
+			}
+			else{
+				$input = Widget::Input(
+					"fields[{$handle}]", $filepath,
+					($filepath ? 'hidden' : 'file')
+				);
+			
+				$upload->appendChild($input);
+			}
+			
 			$label->appendChild($upload);
 			
 			if($errors->valid()){

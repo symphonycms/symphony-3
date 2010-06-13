@@ -112,7 +112,7 @@
 
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
-			$right = $layout->createColumn(Layout::LARGE);
+			$right = $layout->createColumn(Layout::SMALL);
 
 		//	Essentials --------------------------------------------------------
 
@@ -147,6 +147,46 @@
 			$fieldset->appendChild($label);
 			$left->appendChild($fieldset);
 
+
+		//	Conditions ---------------------------------------------------------
+
+			$fieldset = Widget::Fieldset(__('Conditions'), '<code>$param</code>');
+
+			$duplicator = new Duplicator(__('Add Condition'));
+			//$duplicator->setAttribute('class', 'conditions-duplicator');
+
+			// Templates:
+			$this->appendCondition($duplicator);
+
+			// Instances:
+			if(is_array($this->parameters()->conditions) && !empty($this->parameters()->conditions)){
+				foreach($this->parameters()->conditions as $condition){
+					$this->appendCondition($duplicator, $condition);
+				}
+			}
+
+			$duplicator->appendTo($fieldset);
+			$left->appendChild($fieldset);
+
+		//	Filtering ---------------------------------------------------------
+
+			$fieldset = Widget::Fieldset(__('Filtering'), '<code>{$param}</code> or <code>Value</code>');
+
+			$container_filter_results = $page->createElement('div');
+			$fieldset->appendChild($container_filter_results);
+
+		//	Redirect/404 ------------------------------------------------------
+		/*
+			$label = Widget::Label(__('Required URL Parameter <i>Optional</i>'));
+			$label->appendChild(Widget::Input('fields[required_url_param]', $this->parameters()->required_url_param));
+			$fieldset->appendChild($label);
+
+			$p = new XMLElement('p', __('An empty result will be returned when this parameter does not have a value. Do not wrap the parameter with curly-braces.'));
+			$p->setAttribute('class', 'help');
+			$fieldset->appendChild($p);
+		*/
+			$left->appendChild($fieldset);
+			
 		//	Sorting -----------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Sorting'));
@@ -165,7 +205,7 @@
 			$label->appendChild(Widget::Select('fields[sort-order]', $options));
 			$fieldset->appendChild($label);
 
-			$left->appendChild($fieldset);
+			$right->appendChild($fieldset);
 
 		//	Limiting ----------------------------------------------------------
 
@@ -207,46 +247,6 @@
 
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
-			$left->appendChild($fieldset);
-
-
-		//	Conditions ---------------------------------------------------------
-
-			$fieldset = Widget::Fieldset(__('Conditions'), '<code>$param</code>');
-
-			$duplicator = new Duplicator(__('Add Condition'));
-			//$duplicator->setAttribute('class', 'conditions-duplicator');
-
-			// Templates:
-			$this->appendCondition($duplicator);
-
-			// Instances:
-			if(is_array($this->parameters()->conditions) && !empty($this->parameters()->conditions)){
-				foreach($this->parameters()->conditions as $condition){
-					$this->appendCondition($duplicator, $condition);
-				}
-			}
-
-			$duplicator->appendTo($fieldset);
-			$right->appendChild($fieldset);
-
-		//	Filtering ---------------------------------------------------------
-
-			$fieldset = Widget::Fieldset(__('Filtering'), '<code>{$param}</code> or <code>Value</code>');
-
-			$container_filter_results = $page->createElement('div');
-			$fieldset->appendChild($container_filter_results);
-
-		//	Redirect/404 ------------------------------------------------------
-		/*
-			$label = Widget::Label(__('Required URL Parameter <i>Optional</i>'));
-			$label->appendChild(Widget::Input('fields[required_url_param]', $this->parameters()->required_url_param));
-			$fieldset->appendChild($label);
-
-			$p = new XMLElement('p', __('An empty result will be returned when this parameter does not have a value. Do not wrap the parameter with curly-braces.'));
-			$p->setAttribute('class', 'help');
-			$fieldset->appendChild($p);
-		*/
 			$right->appendChild($fieldset);
 
 		//	Output options ----------------------------------------------------
@@ -322,15 +322,15 @@
 				// System ID template:
 				$item = $duplicator->createTemplate(__('System ID'));
 				
-				$label = Widget::Label(__('Type'));
-				$label->appendChild(Widget::Select(
+				$type_label = Widget::Label(__('Type'));
+				$type_label->setAttribute('class', 'small');
+				$type_label->appendChild(Widget::Select(
 					'type',
 					array(
 						array('is', false, 'Is'),
 						array('is-not', false, 'Is not')
 					)
 				));
-				$item->appendChild($label);
 				
 				$label = Widget::Label(__('Value'));
 				$label->appendChild(Widget::Input('value'));
@@ -338,7 +338,9 @@
 					'element-name', 'system:id', 'hidden'
 				));
 				
-				$item->appendChild($label);
+				$item->appendChild(Widget::Group(
+					$type_label, $label
+				));
 				
 				// Field templates:
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
@@ -348,7 +350,7 @@
 						$element_name = $field->{'element-name'};
 						$fields[$element_name] = $field;
 						
-						$item = $duplicator->createTemplate($field->label, $field->name());
+						$item = $duplicator->createTemplate($field->name, $field->name());
 						$field->displayDatasourceFilterPanel(
 							$item, null, null
 						);
@@ -369,17 +371,16 @@
 						}
 						
 						else if ($filter['element-name'] == 'system:id') {
-							$item = $duplicator->createTemplate(__('System ID'));
+							$item = $duplicator->createInstance(__('System ID'));
 							
-							$label = Widget::Label(__('Type'));
-							$label->appendChild(Widget::Select(
+							$type_label = Widget::Label(__('Type'));
+							$type_label->appendChild(Widget::Select(
 								'type',
 								array(
 									array('is', false, 'Is'),
 									array('is-not', $filter['type'] == 'is-not', 'Is not')
 								)
 							));
-							$item->appendChild($label);
 		
 							$label = Widget::Label(__('Value'));
 							$label->appendChild(Widget::Input(
@@ -389,7 +390,10 @@
 							$label->appendChild(Widget::Input(
 								'element-name', 'system:id', 'hidden'
 							));
-							$item->appendChild($label);
+							
+							$item->appendChild(Widget::Group(
+								$type_label, $label
+							));
 						}
 					}
 				}
@@ -406,22 +410,22 @@
 					array(
 						'system:id',
 						($section_active and in_array('system:id', $this->parameters()->{'parameter-output'})),
-						__('$ds-?-system-id')
+						__('$ds-?.system.id')
 					),
 					array(
 						'system:creation-date',
 						($section_active and in_array('system:creation-date', $this->parameters()->{'parameter-output'})),
-						__('$ds-?-system-creation-date')
+						__('$ds-?.system.creation-date')
 					),
 					array(
 						'system:modification-date',
 						($section_active and in_array('system:modification-date', $this->parameters()->{'parameter-output'})),
-						__('$ds-?-system-modification-date')
+						__('$ds-?.system.modification-date')
 					),
 					array(
 						'system:user',
 						($section_active and in_array('system:user', $this->parameters()->{'parameter-output'})),
-						__('$ds-?-system-user')
+						__('$ds-?.system.user')
 					)
 				);
 				$included_elements_options = array(
@@ -466,7 +470,7 @@
 							$options_parameter_output[] = array(
 								$field_handle,
 								($section_active and in_array($field_handle, $this->parameters()->{'parameter-output'})),
-								__('$ds-?-%s', array($field_handle))
+								__('$ds-?.%s', array($field_handle))
 							);
 						}
 

@@ -309,7 +309,12 @@
 			$element_name = $this->{'element-name'};
 			$classes = array();
 
-			$label = Widget::Label($this->{'label'});
+			$label = Widget::Label(
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
+					? $this->{'publish-label'} 
+					: $this->name)
+			);
+			
 			$optional = '';
 
 			if ($this->{'required'} != 'yes') {

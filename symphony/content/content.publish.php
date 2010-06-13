@@ -82,7 +82,7 @@
 			foreach($section->fields as $column){
 				if($column->{'show-column'} != 'yes') continue;
 
-				$label = $column->label;
+				$label = $column->name;
 
 				if($column->isSortable()) {
 
@@ -95,7 +95,7 @@
 						$anchor = Widget::Anchor($label, $link, array(
 							'title' => __('Sort by %1$s %2$s', array(
 								($section->{'publish-order-direction'} == 'desc' ? __('ascending') : __('descending')),
-								strtolower($column->label)
+								strtolower($label)
 							)),
 							'class' => 'active'
 						));
@@ -103,7 +103,7 @@
 					else {
 						$link .= '?pg='.$current_page.'&sort='.$column->{'element-name'}.'&order=asc'.$current_filter;
 						$anchor = Widget::Anchor($label, $link, array(
-							'title' => __('Sort by %1$s %2$s', array(__('ascending'), strtolower($column->label)))
+							'title' => __('Sort by %1$s %2$s', array(__('ascending'), strtolower($label)))
 						));
 					}
 
@@ -471,7 +471,11 @@
 			$this->entry->section = $callback['context']['section_handle'];
 			$this->appendSubheading($subheading);
 			$this->entry->findDefaultFieldData();
-			$this->Form->appendChild(Widget::Input('MAX_FILE_SIZE',Symphony::Configuration()->core()->symphony->{'maximum-upload-size'}, 'hidden'));
+			$this->Form->appendChild(Widget::Input(
+				'MAX_FILE_SIZE',
+				Symphony::Configuration()->core()->symphony->{'maximum-upload-size'}, 
+				'hidden'
+			));
 
 			// Check if there is a field to prepopulate
 			if (isset($_REQUEST['prepopulate']) && strlen(trim($_REQUEST['prepopulate'])) > 0) {
@@ -532,10 +536,17 @@
 
 				foreach ($data->fieldsets as $data) {
 					$fieldset = $this->createElement('fieldset');
-
-					$header = $this->createElement('h3', $data->name);
-					$fieldset->appendChild($header);
-
+					
+					if(isset($data->collapsed) && $data->collapsed == 'yes'){
+						$fieldset->setAttribute('class', 'collapsed');
+					}
+					
+					if(isset($data->name) && strlen(trim($data->name)) > 0){
+						$fieldset->appendChild(
+							$this->createElement('h3', $data->name)
+						);
+					}
+					
 					foreach ($data->fields as $handle) {
 						$field = $section_fields[$handle];
 

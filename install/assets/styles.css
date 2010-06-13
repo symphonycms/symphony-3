@@ -137,3 +137,14 @@ label.checkbox {
 .extended .group {
 	width: 480px;
 }
+.error {
+	margin-top:0;
+	margin-bottom:20px;
+}
+.error > div {
+	color: #eee;
+	font-weight:bold;
+	background: rgba(0,0,0, 0.7);
+	border-top:1px solid #999;
+	border-bottom:1px solid #444;
+}

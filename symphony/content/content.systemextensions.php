@@ -242,7 +242,10 @@
 				}
 				
 				## Nothing to show
-				if(empty($this->lists->status[Extension::STATUS_DISABLED]) && empty($this->lists->status[Extension::STATUS_NOT_INSTALLED]) && empty($this->lists->status[Extension::STATUS_NOT_INSTALLED])) {
+				if(
+					empty($this->lists->status[Extension::STATUS_DISABLED]) 
+					&& empty($this->lists->status[Extension::STATUS_NOT_INSTALLED])
+				){
 					$div = $this->createElement('div');
 					$div->setAttribute('class', 'tools');
 					$p = $this->createElement('p', __('All of your extensions are installed and enabled.'));
@@ -332,20 +335,22 @@
 
 					switch($this->lists->extensions[$handle]['status']){
 						case Extension::STATUS_ENABLED:
-							$td4 = Widget::TableData(Widget::Anchor(__('Uninstall'), '#', array('class' => 'button delete')));
-							$td4->appendChild(Widget::Anchor(__('Disable'), '#', array('class' => 'button')));
+							$td4 = Widget::TableData();
+							$td4->appendChild(Widget::Input("action[uninstall][{$handle}]", __('Uninstall'), 'submit', array('class' => 'button delete')));
+							$td4->appendChild(Widget::Input("action[disable][{$handle}]", __('Disable'), 'submit', array('class' => 'button')));
+							
 							break;
 
 						case Extension::STATUS_DISABLED:
-							$td4 = Widget::TableData(Widget::Anchor(__('Enable'), '#', array('class' => 'button create')));
+							$td4 = Widget::TableData(Widget::Input("action[enable][{$handle}]", __('Enable'), 'submit', array('class' => 'button create')));
 							break;
 
 						case Extension::STATUS_NOT_INSTALLED:
-							$td4 = Widget::TableData(Widget::Anchor(__('Install'), '#', array('class' => 'button create')));
+							$td4 = Widget::TableData(Widget::Input("action[enable][{$handle}]", __('Install'), 'submit', array('class' => 'button create')));
 							break;
 
 						case Extension::STATUS_REQUIRES_UPDATE:
-							$td4 = Widget::TableData(Widget::Anchor(__('Update'), '#', array('class' => 'button create')));
+							$td4 = Widget::TableData(Widget::Input("action[update][{$handle}]", __('Update'), 'submit', array('class' => 'button create')));
 					}
 
 					## Add a row to the body array, assigning each cell to the row
@@ -362,28 +367,51 @@
 		}
 
 		public function action(){
-			$checked  = array_keys($_POST['items']);
+
+			if(isset($_POST['items'])){
+				$checked = array_keys($_POST['items']);
+			}
 			
 			try {
-				if(isset($_POST['with-selected']) && is_array($checked) && !empty($checked)){
+				if(isset($_POST['action']['apply']) && isset($_POST['with-selected']) && is_array($checked) && !empty($checked)){
 					$action = $_POST['with-selected'];
 					
 					if(method_exists('Extension', $action)){
+
+						###
+						# Delegate: {name of the action} (enable|disable|uninstall)
+						# Description: Notifies of enabling, disabling or uninstalling of an Extension. Array of selected extensions is provided.
+						#              This can be modified.
+						Extension::notify($action, getCurrentPage(), array('extensions' => &$checked));
+						
 						foreach($checked as $handle){
-							###
-							# Delegate: {name of the action} (enable|disable|uninstall)
-							# Description: Notifies of enabling, disabling or uninstalling of an Extension. Array of selected extensions is provided.
-							#              This can be modified.
-							Extension::notify($action, getCurrentPage(), array('extensions' => &$checked));
-
 							call_user_func(array('Extension', $action), $handle);
-
 						}
 					}
 					
 					redirect(Administration::instance()->getCurrentPageURL());
 					
 				}
+				
+				elseif(isset($_POST['action'])){
+					$action = end(array_keys($_POST['action']));
+					$handle = end(array_keys($_POST['action'][$action]));
+
+					if(method_exists('Extension', $action)){
+						
+						###
+						# Delegate: {name of the action} (enable|disable|uninstall)
+						# Description: Notifies of enabling, disabling or uninstalling of an Extension. Extension handle is provided
+						#              This can be modified.
+						Extension::notify($action, getCurrentPage(), array('extensions' => &$handle));
+
+						call_user_func(array('Extension', $action), $handle);
+						
+						redirect(Administration::instance()->getCurrentPageURL());
+					}
+					
+				}
+				
 			}
 			
 			catch (ExtensionException $e) {
@@ -394,9 +422,11 @@
 					case 'enable':
 						$message = "%s could not be enabled. <a class='more'>Show more information.</a>";
 						break;
+						
 					case 'disable':
 						$message = "%s could not be disabled. <a class='more'>Show more information.</a>";
 						break;
+						
 					case 'uninstall':
 						$message = "%s could not be uninstalled. <a class='more'>Show more information.</a>";
 						break;

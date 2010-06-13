@@ -591,9 +591,13 @@
 			if(!file_put_contents($file, $data)){
 				return false;
 			}
-
-			@chmod($file, intval($perm, 8));
-
+			
+			try{
+				@chmod($file, intval($perm, 8));
+			}
+			// Just in case there is a warning that triggers an exception
+			catch(Exception $e){}
+			
 			return true;
 		}
 

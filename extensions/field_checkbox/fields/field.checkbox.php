@@ -65,12 +65,6 @@
 
 			$document = $wrapper->ownerDocument;
 
-			// Long Description
-			$label = Widget::Label(__('Long Description'));
-			$label->appendChild($document->createElement('em', __('Optional')));
-			$label->appendChild(Widget::Input('description', $this->{'description'}));
-			$wrapper->appendChild($label);
-
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
 
@@ -122,7 +116,7 @@
 			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
 
 			$label->appendChild($input);
-			$label->appendChild(new DOMText(($this->{'description'} != NULL ? $this->{'description'} : $this->{'label'})));
+			$label->appendChild(new DOMText((isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 ? $this->{'publish-label'} : $this->{'name'})));
 
 			if ($errors->valid()) {
 				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);

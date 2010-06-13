@@ -3,6 +3,10 @@
 -----------------------------------------------------------------------------*/
 	
 	.duplicator-widget {
+		background: #eeeeee;
+		border: 1px solid #bbbbbb;
+		-moz-border-radius: 5px;
+		-webkit-border-radius: 5px;
 		margin: 10px 0 0 0;
 		position: relative;
 	}
@@ -13,18 +17,22 @@
 	
 	.duplicator-widget > .controls {
 		background: #666666;
-		background: -moz-linear-gradient(#666666, #555555);
+		background: -moz-linear-gradient(#cccccc, #bbbbbb);
 		background: -webkit-gradient(
 			linear, left top, left bottom,
-			from(#666666),
-			to(#555555)
+			from(#cccccc),
+			to(#bbbbbb)
 		);
-		-moz-border-radius: 5px;
-		-webkit-border-radius: 5px;
+		border-bottom: 1px solid #aaaaaa;
+		border-top: 1px solid #dadada;
+		-moz-border-radius: 4px;
+		-webkit-border-radius: 4px;
 		height: 35px;
 		line-height: 33px;
 		list-style: none;
+		margin: 0 0 -1px 0;
 		position: relative;
+		z-index: 1;
 	}
 	.duplicator-widget.templates-visible > .controls,
 	.duplicator-widget.content-visible > .controls {
@@ -32,20 +40,22 @@
 		-moz-border-radius-bottomright: 0;
 		-webkit-border-bottom-left-radius: 0;
 		-webkit-border-bottom-right-radius: 0;
+		border-bottom-color: #999999;
+		margin-bottom: 0;
 	}
 	.duplicator-widget > .controls li {
 		bottom: 0;
-		color: #cccccc;
+		color: #444444;
 		cursor: pointer;
 		position: absolute;
 		top: 0;
 		text-decoration: none;
 	}
 	.duplicator-widget > .controls li:hover {
-		color: #eeeeee;
+		color: #000000;
 	}
 	.duplicator-widget > .controls li.disabled {
-		color: #aaaaaa;
+		color: #888888;
 		cursor: default;
 	}
 	.duplicator-widget > .controls .add {
@@ -68,23 +78,25 @@
 	
 	.duplicator-widget > .templates {
 		display: none;
-		background: #666666;
-		background: -moz-linear-gradient(#777777, #555555);
+		background: #888888;
+		background: -moz-linear-gradient(#666666, #777777 4%, #666666);
 		background: -webkit-gradient(
 			linear, left top, left bottom,
-			from(#777777),
-			to(#555555)
+			from(#666666),
+			to(#666666),
+			color-stop(0.04, #777777)
 		);
 		border: 1px solid #555555;
-		border-top-color: #888888;
 		-moz-border-radius-bottomleft: 5px;
 		-moz-border-radius-bottomright: 5px;
 		-webkit-border-bottom-left-radius: 5px;
 		-webkit-border-bottom-right-radius: 5px;
 		list-style: none;
+		margin: -1px;
 		overflow: hidden;
-		padding: 10px;
+		padding: 5px;
 		position: relative;
+		z-index: 3;
 	}
 	.duplicator-widget.templates-visible > .templates {
 		display: block;
@@ -131,29 +143,13 @@
 -----------------------------------------------------------------------------*/
 	
 	.duplicator-widget > .content {
-		background: #eeeeee;
-		border: 1px solid #bbbbbb;
-		border-top: none;
-		-moz-border-radius-bottomleft: 5px;
-		-moz-border-radius-bottomright: 5px;
-		-webkit-border-bottom-left-radius: 5px;
-		-webkit-border-bottom-right-radius: 5px;
-		display: none;
 		border-spacing: 0;
+		display: none;
 		overflow: hidden;
+		position: relative;
 		table-layout: fixed;
 		width: 100%;
-		
-		background: #666666;
-		background: -moz-linear-gradient(#555555, #666666);
-		background: -webkit-gradient(
-			linear, left top, left bottom,
-			from(#555555),
-			to(#666666)
-		);
-		border: 1px solid #555555;
-		border-top: none;
-		padding: 0 10px 10px 10px;
+		z-index: 2;
 	}
 	.duplicator-widget.content-visible > .content {
 		display: table;
@@ -164,36 +160,17 @@
 	}
 	
 	.duplicator-widget > .content > .tabs {
-		background: #cccccc;
-		background: -moz-linear-gradient(left, #cccccc 97%, #bbbbbb);
-		background: -webkit-gradient(
-			linear, left top, right top,
-			from(#cccccc),
-			to(#bbbbbb),
-			color-stop(0.97, #cccccc)
-		);
-		-moz-border-radius-bottomleft: 4px;
-		-webkit-border-bottom-left-radius: 4px;
 		list-style: none;
-		min-width: 130px;
-		padding: 0;
+		padding: 5px 0 5px 10px;
 		width: 20%;
-		
-		background: transparent;
 	}
 	.duplicator-widget > .content > .tabs:empty {
 		border: none;
 	}
 	.duplicator-widget > .content > .tabs > * {
-		background: hsla(0, 0%, 100%, 0.7);
-		background: -moz-linear-gradient(left, #cccccc, #bbbbbb 98%, #aaaaaa);
-		background: -webkit-gradient(
-			linear, left top, right top,
-			from(#cccccc),
-			to(#aaaaaa),
-			color-stop(0.98, #bbbbbb)
-		);
-		border: none;
+		background: hsla(0, 0%, 0%, 0.03);
+		border: 1px solid #cccccc;
+		border-right: none;
 		-moz-border-radius-bottomleft: 4px;
 		-moz-border-radius-topleft: 4px;
 		-webkit-border-bottom-left-radius: 4px;
@@ -201,35 +178,37 @@
 		color: #444444;
 		display: block;
 		line-height: 30px;
-		margin: 4px 0;
+		margin: 5px 0;
 		overflow: hidden;
 		position: relative;
 		text-indent: 10px;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	.duplicator-widget > .content > .tabs * {
+		cursor: move;
+	}
 	.duplicator-widget > .content > .tabs > :hover,
 	.duplicator-widget > .content > .tabs > .active {
-		background: #eeeeee;
-		background: -moz-linear-gradient(left, #ffffff, #eeeeee);
-		background: -webkit-gradient(
-			linear, left top, right top,
-			from(#ffffff),
-			to(#eeeeee)
-		);
+		background: #FBFBFB;
+		margin-right: -1px;
 	}
 	.duplicator-widget > .content > .tabs > .ordering {
 		font-weight: bold;
 	}
 	.duplicator-widget > .content > .tabs > * em {
-		margin: 0 0 0 1ex;
+		margin: 0;
 		opacity: 0.5;
+	}
+	.duplicator-widget > .content > .tabs > * em:before {
+		content: ' ';
 	}
 	.duplicator-widget > .content > .tabs > * .remove {
 		background: hsla(0, 0%, 0%, 0.3);
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
-		color: #ffffff;
+		color: #FBFBFB;
+		cursor: pointer;
 		display: block;
 		font-weight: bold;
 		height: 15px;
@@ -251,10 +230,12 @@
 	}
 	
 	.duplicator-widget > .content > .instances {
-		background: #eeeeee;
-		-moz-border-radius: 4px;
-		-webkit-border-radius: 4px;
-		-moz-box-shadow: 1px 1px 5px hsla(0, 0%, 0%, 0.5);
+		background: #FBFBFB;
+		border-left: 1px solid #bbbbbb;
+		-moz-box-shadow: -1px 0 5px hsla(0, 0%, 0%, 0.1);
+		-webkit-box-shadow: -1px 0 5px hsla(0, 0%, 0%, 0.1);
+		-moz-border-radius-bottomright: 4px;
+		-webkit-border-bottom-right-radius: 4px;
 		list-style: none;
 	}
 	.duplicator-widget > .content > .instances > * {
@@ -267,7 +248,7 @@
 	}
 	.duplicator-widget > .content > .instances > .active + .active,
 	.duplicator-widget > .content > .instances > .active ~ .active {
-		border-top: 1px solid #cccccc;
+		border-top: 1px solid #dddddd;
 	}
 	
 /*-------------------------------------------------------------------------------*/
