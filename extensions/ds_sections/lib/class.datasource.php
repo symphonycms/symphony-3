@@ -331,7 +331,6 @@
 						array('is-not', false, 'Is not')
 					)
 				));
-				$item->appendChild($type_label);
 				
 				$label = Widget::Label(__('Value'));
 				$label->appendChild(Widget::Input('value'));
@@ -351,7 +350,7 @@
 						$element_name = $field->{'element-name'};
 						$fields[$element_name] = $field;
 						
-						$item = $duplicator->createTemplate($field->label, $field->name());
+						$item = $duplicator->createTemplate($field->name, $field->name());
 						$field->displayDatasourceFilterPanel(
 							$item, null, null
 						);
@@ -372,17 +371,16 @@
 						}
 						
 						else if ($filter['element-name'] == 'system:id') {
-							$item = $duplicator->createTemplate(__('System ID'));
+							$item = $duplicator->createInstance(__('System ID'));
 							
-							$label = Widget::Label(__('Type'));
-							$label->appendChild(Widget::Select(
+							$type_label = Widget::Label(__('Type'));
+							$type_label->appendChild(Widget::Select(
 								'type',
 								array(
 									array('is', false, 'Is'),
 									array('is-not', $filter['type'] == 'is-not', 'Is not')
 								)
 							));
-							$item->appendChild($label);
 		
 							$label = Widget::Label(__('Value'));
 							$label->appendChild(Widget::Input(
@@ -392,7 +390,10 @@
 							$label->appendChild(Widget::Input(
 								'element-name', 'system:id', 'hidden'
 							));
-							$item->appendChild($label);
+							
+							$item->appendChild(Widget::Group(
+								$type_label, $label
+							));
 						}
 					}
 				}
