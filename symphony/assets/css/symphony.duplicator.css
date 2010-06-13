@@ -197,8 +197,11 @@
 		font-weight: bold;
 	}
 	.duplicator-widget > .content > .tabs > * em {
-		margin: 0 0 0 1ex;
+		margin: 0;
 		opacity: 0.5;
+	}
+	.duplicator-widget > .content > .tabs > * em:before {
+		content: ' ';
 	}
 	.duplicator-widget > .content > .tabs > * .remove {
 		background: hsla(0, 0%, 0%, 0.3);

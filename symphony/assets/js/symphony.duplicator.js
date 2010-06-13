@@ -40,6 +40,29 @@
 					.trigger('tab-refresh');
 				
 				object.addClass('content-visible');
+				
+				// Tab contains a name:
+				if (instance.find('input[name=name]').length) {
+					var type = name.find('em');
+					var input = instance.find('input[name=name]');
+					var rename = function() {
+						name.text(input.val());
+						tab.trigger('duplicator-tab-refresh');
+						name.append(type);
+					};
+					
+					if (type.length == 0) {
+						type = jQuery('<em />')
+							.text(name.text())
+							.appendTo(name);
+					}
+					
+					input
+						.bind('change', rename)
+						.bind('keyup', rename);
+					
+					rename();
+				}
 			})
 			
 			// Refresh:
