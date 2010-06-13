@@ -24,7 +24,10 @@
 			
 			$this->formatters = array();
 
-			$this->formatters = glob("{" . TEXTFORMATTERS . "/*.php," . EXTENSIONS . "/*/text-formatters/*.php}", GLOB_BRACE);
+			$this->formatters = array_merge(
+				glob(TEXTFORMATTERS . "/*.php"),
+				glob(EXTENSIONS . "/*/text-formatters/*.php")
+			);
 			
 			/*
 			foreach(new DirectoryIterator(EXTENSIONS) as $dir){
