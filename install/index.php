@@ -145,7 +145,6 @@
 			if(missing(array(
 				$settings['database']['database'],
 				$settings['database']['username'],
-				$settings['database']['password'],
 				$settings['database']['host'],
 				$settings['database']['port'],
 				$settings['database']['table-prefix']
