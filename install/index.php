@@ -247,7 +247,7 @@
 					foreach($folders as $f){
 						$path = realpath("../") . "/{$f}";
 						if(!is_dir($path) && !mkdir($path, $permission)){
-							throw new Exception('Could not create directory '.$f.'. TODO: Handle this by recording to the log and showing nicer error page.');
+							throw new Exception('Could not create directory '.$path.'. TODO: Handle this by recording to the log and showing nicer error page.');
 						}
 					}
 				
