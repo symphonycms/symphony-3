@@ -322,15 +322,16 @@
 				// System ID template:
 				$item = $duplicator->createTemplate(__('System ID'));
 				
-				$label = Widget::Label(__('Type'));
-				$label->appendChild(Widget::Select(
+				$type_label = Widget::Label(__('Type'));
+				$type_label->setAttribute('class', 'small');
+				$type_label->appendChild(Widget::Select(
 					'type',
 					array(
 						array('is', false, 'Is'),
 						array('is-not', false, 'Is not')
 					)
 				));
-				$item->appendChild($label);
+				$item->appendChild($type_label);
 				
 				$label = Widget::Label(__('Value'));
 				$label->appendChild(Widget::Input('value'));
@@ -338,7 +339,9 @@
 					'element-name', 'system:id', 'hidden'
 				));
 				
-				$item->appendChild($label);
+				$item->appendChild(Widget::Group(
+					$type_label, $label
+				));
 				
 				// Field templates:
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
@@ -406,22 +409,22 @@
 					array(
 						'system:id',
 						($section_active and in_array('system:id', $this->parameters()->{'parameter-output'})),
-						__('$ds-?-system-id')
+						__('$ds-?.system.id')
 					),
 					array(
 						'system:creation-date',
 						($section_active and in_array('system:creation-date', $this->parameters()->{'parameter-output'})),
-						__('$ds-?-system-creation-date')
+						__('$ds-?.system.creation-date')
 					),
 					array(
 						'system:modification-date',
 						($section_active and in_array('system:modification-date', $this->parameters()->{'parameter-output'})),
-						__('$ds-?-system-modification-date')
+						__('$ds-?.system.modification-date')
 					),
 					array(
 						'system:user',
 						($section_active and in_array('system:user', $this->parameters()->{'parameter-output'})),
-						__('$ds-?-system-user')
+						__('$ds-?.system.user')
 					)
 				);
 				$included_elements_options = array(
@@ -466,7 +469,7 @@
 							$options_parameter_output[] = array(
 								$field_handle,
 								($section_active and in_array($field_handle, $this->parameters()->{'parameter-output'})),
-								__('$ds-?-%s', array($field_handle))
+								__('$ds-?.%s', array($field_handle))
 							);
 						}
 
