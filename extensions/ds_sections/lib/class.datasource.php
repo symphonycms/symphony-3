@@ -322,15 +322,16 @@
 				// System ID template:
 				$item = $duplicator->createTemplate(__('System ID'));
 				
-				$label = Widget::Label(__('Type'));
-				$label->appendChild(Widget::Select(
+				$type_label = Widget::Label(__('Type'));
+				$type_label->setAttribute('class', 'small');
+				$type_label->appendChild(Widget::Select(
 					'type',
 					array(
 						array('is', false, 'Is'),
 						array('is-not', false, 'Is not')
 					)
 				));
-				$item->appendChild($label);
+				$item->appendChild($type_label);
 				
 				$label = Widget::Label(__('Value'));
 				$label->appendChild(Widget::Input('value'));
@@ -338,7 +339,9 @@
 					'element-name', 'system:id', 'hidden'
 				));
 				
-				$item->appendChild($label);
+				$item->appendChild(Widget::Group(
+					$type_label, $label
+				));
 				
 				// Field templates:
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
