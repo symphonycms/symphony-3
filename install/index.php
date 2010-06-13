@@ -1,4 +1,8 @@
 <?php
+	if(isset($_GET['info'])) {
+		phpinfo();
+		die();
+	}
 
 	set_include_path(get_include_path() . PATH_SEPARATOR . realpath('../symphony/lib/'));
 
