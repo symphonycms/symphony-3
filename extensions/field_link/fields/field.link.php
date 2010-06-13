@@ -449,7 +449,7 @@
 	-------------------------------------------------------------------------*/
 
 		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false){
-			return parent::loadDataFromDatabase($entry, $this->{'allow-multiple-selection'} == 'yes');
+			return parent::loadDataFromDatabase($entry, true); //$this->{'allow-multiple-selection'} == 'yes');
 			/*
 			$result = (object)array(
 				'relation_id' => null
@@ -653,7 +653,7 @@
 			}
 			
 			$result = Administration::instance()->Page->createDocumentFragment();
-			
+
 			foreach($data as $index => $d){
 				try{
 					$entry = Entry::loadFromID($d->relation_id);

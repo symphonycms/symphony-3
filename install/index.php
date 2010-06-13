@@ -1,4 +1,8 @@
 <?php
+	if(isset($_GET['info'])) {
+		phpinfo();
+		die();
+	}
 
 	set_include_path(get_include_path() . PATH_SEPARATOR . realpath('../symphony/lib/'));
 
@@ -141,7 +145,6 @@
 			if(missing(array(
 				$settings['database']['database'],
 				$settings['database']['username'],
-				$settings['database']['password'],
 				$settings['database']['host'],
 				$settings['database']['port'],
 				$settings['database']['table-prefix']
@@ -242,7 +245,7 @@
 					);
 				
 					foreach($folders as $f){
-						$path = realpath("../{$f}");
+						$path = realpath("../") . "/{$f}";
 						if(!is_dir($path) && !mkdir($path, $permission)){
 							throw new Exception('Could not create directory '.$path.'. TODO: Handle this by recording to the log and showing nicer error page.');
 						}
