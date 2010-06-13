@@ -185,11 +185,13 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	.duplicator-widget > .content > .tabs * {
+		cursor: move;
+	}
 	.duplicator-widget > .content > .tabs > :hover,
 	.duplicator-widget > .content > .tabs > .active {
 		background: #FBFBFB;
 		margin-right: -1px;
-		cursor: move;
 	}
 	.duplicator-widget > .content > .tabs > .ordering {
 		font-weight: bold;
@@ -203,6 +205,7 @@
 		-moz-border-radius: 5px;
 		-webkit-border-radius: 5px;
 		color: #FBFBFB;
+		cursor: pointer;
 		display: block;
 		font-weight: bold;
 		height: 15px;
