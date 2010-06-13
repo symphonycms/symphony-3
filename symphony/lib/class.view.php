@@ -21,7 +21,8 @@
 		// Only return folders, and only those that have a 'X.config.xml' file within. This characterises a View.
 		public function accept(){
 			if($this->getInnerIterator()->isDir() == false) return false;
-			preg_match('/\/?([^\/]+)$/', $this->getInnerIterator()->getPathname(), $match); //Find the view handle
+			preg_match('/\/?([^\\\\\/]+)$/', $this->getInnerIterator()->getPathname(), $match); //Find the view handle
+
 			return (file_exists(sprintf('%s/%s.config.xml', $this->getInnerIterator()->getPathname(), $match[1])));
 		}
 	}
@@ -92,9 +93,9 @@
 
 			$view = new self;
 
-			$view->path = trim($path, '/');
+			$view->path = trim($path, '\\/');
 
-			preg_match('/\/?([^\/]+)$/', $path, $match); //Find the view handle
+			preg_match('/\/?([^\\\\\/]+)$/', $path, $match); //Find the view handle
 			$view->handle = $match[1];
 
 			$pathname = sprintf('%s/%s/%s.config.xml', VIEWS, $view->path, $view->handle);
