@@ -249,7 +249,17 @@
 						break;
 
 					case 'delete-entries':
-						// TODO: Call EntryManager to delete Entrys where Section Handle = this one
+						$entries = Symphony::Database()->query(
+							sprintf(
+								"SELECT `id` FROM `tbl_entries` WHERE `section` IN ('%s')", 
+								implode("', '", $checked)
+							)
+						);
+						if($entries->length() > 0){
+							foreach($entries as $e){
+								Entry::delete($e->id);
+							}
+						}
 						break;
 				}
 			}
