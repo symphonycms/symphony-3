@@ -53,6 +53,10 @@
 			);
 		}
 
+		public function allowDatasourceParamOutput() {
+			return true;
+		}
+
 		public function canFilter() {
 			return true;
 		}
@@ -800,6 +804,10 @@
 			}
 			
 			return parent::prepareTableValue($dummy, $link);
+		}
+		
+		public function getParameterOutputValue(StdClass $data, Entry $entry = null) {
+			return rtrim($data->path, '/') . '/' . $data->file;
 		}
 	}
 
