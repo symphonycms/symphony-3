@@ -741,20 +741,25 @@
 		color: inherit;
 		font-size: inherit;
 	}
-	form label {
+	form label,
+	form .label {
 		display: block;
 		margin: 10px 0;
 	}
-	form label:first-child {
+	form label:first-child,
+	form .label:first-child {
 		margin-top: 0;
 	}
-	form label:last-child {
+	form label:last-child,
+	form .label:last-child {
 		margin-bottom: 0;
 	}
-	form .field label {
+	form .field label,
+	form .field .label {
 		margin: 10px 0;
 	}
-	form .field:first-child label {
+	form .field:first-child label,
+	form .field:first-child .label {
 		margin-top: 0;
 	}
 	form label em,
@@ -828,6 +833,7 @@
 		margin-top: 0;
 	}
 	form label:last-child,
+	form .label:last-child,
 	form .group:last-child,
 	form .label:last-child span {
 		margin-bottom: 0;
