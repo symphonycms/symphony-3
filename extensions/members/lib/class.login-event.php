@@ -342,6 +342,8 @@
 			}
 			
 			else {
+				$this->cookie->set('email', null);
+				$this->cookie->set('login', null);
 				$fields = $data['fields'];
 			}
 			
