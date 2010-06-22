@@ -1,0 +1,26 @@
+form > .actions .progress {
+	background: -moz-linear-gradient(#aaaaaa, #cccccc);
+	background: -webkit-gradient(
+		linear, left top, left bottom,
+		from(#aaaaaa),
+		to(#cccccc)
+	);
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	float: right;
+	margin: 0 20px;
+	overflow: hidden;
+	width: 15%;
+}
+form > .actions .progress > * {
+	background: -moz-linear-gradient(#5e84b1, #6e74a1);
+	background: -webkit-gradient(
+		linear, left top, left bottom,
+		from(#5e84b1),
+		to(#6e74a1)
+	);
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	height: 26px;
+	width: 0;
+}
