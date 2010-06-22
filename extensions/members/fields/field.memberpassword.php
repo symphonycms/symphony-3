@@ -46,7 +46,7 @@
 		}
 		
 		public function isSortable() {
-			return true;
+			return false;
 		}
 		
 	/*-------------------------------------------------------------------------
