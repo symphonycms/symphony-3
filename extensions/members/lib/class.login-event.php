@@ -31,9 +31,9 @@
 			if (is_null($data)) return;
 			
 			$this->parameters()->{'section'} = null;
+			$this->parameters()->{'create-cookie'} = false;
 			$this->parameters()->{'overrides'} = array();
 			$this->parameters()->{'defaults'} = array();
-			$this->parameters()->{'create-cookie'} = false;
 			
 			// Essentials:
 			$this->about()->name = $data['name'];
