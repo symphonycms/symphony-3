@@ -457,7 +457,7 @@
 			## 1. First do a cleanup of each dependency list, removing non-existant DS's and find 
 			##    the ones that have no dependencies, removing them from the list
 			foreach($dependency_list as $handle => $dependencies){	
-				$dependency_list[$handle] = array_intersect($all_dependencies, $dependencies);
+				$dependency_list[$handle] = array_intersect($all_dependencies, (array)$dependencies);
 
 				if(empty($dependency_list[$handle])){ 
 					unset($dependency_list[$handle]);
