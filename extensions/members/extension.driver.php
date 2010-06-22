@@ -1,6 +1,7 @@
 <?php
 	
 	require_once 'lib/class.login-event.php';
+	require_once 'lib/class.logout-event.php';
 	
 	class Extension_Members implements iExtension {
 		const PASSWORD_WEAK = 3;
@@ -33,7 +34,11 @@
 			return array(
 				(object)array(
 					'class'		=> 'Member_Login_Event',
-					'name'		=> __('Member Login')
+					'name'		=> __('Login')
+				),
+				(object)array(
+					'class'		=> 'Member_Logout_Event',
+					'name'		=> __('Logout')
 				)
 			);
 		}

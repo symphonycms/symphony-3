@@ -2,7 +2,7 @@
 	
 	require_once LIB . '/class.event.php';
 	
-	class Member_Login_Event extends Event {
+	class Member_Logout_Event extends Event {
 		protected $driver;
 		protected $cookie;
 		
@@ -18,11 +18,11 @@
 		}
 		
 		public function getType() {
-			return 'Members_Login_Event';
+			return 'Member_Logout_Event';
 		}
 		
 		public function getTemplate() {
-			return EXTENSIONS . '/members/templates/template.login-event.php';
+			return EXTENSIONS . '/members/templates/template.logout-event.php';
 		}
 		
 	/*-----------------------------------------------------------------------*/
@@ -31,7 +31,6 @@
 			if (is_null($data)) return;
 			
 			$this->parameters()->{'section'} = null;
-			$this->parameters()->{'create-cookie'} = false;
 			$this->parameters()->{'overrides'} = array();
 			$this->parameters()->{'defaults'} = array();
 			
@@ -110,17 +109,6 @@
 			
 			$label = Widget::Label(__('Section'));
 			$label->appendChild(Widget::Select('fields[section]', $options, array('id' => 'context')));
-			$fieldset->appendChild($label);
-			
-			$label = Widget::Label();
-			$input = Widget::Input('fields[create-cookie]', 'yes', 'checkbox');
-			
-			if ($this->parameters()->{'create-cookie'} == true) {
-				$input->setAttribute('checked', 'checked');
-			}
-			
-			$label->appendChild($input);
-			$label->appendChild(new DOMText(__('Keep user logged in with a cookie?')));
 			$fieldset->appendChild($label);
 			$left->appendChild($fieldset);
 			
@@ -236,10 +224,7 @@
 			// Cookie data:
 			if ($this->cookie->get('email') and $this->cookie->get('login')) return true;
 			
-			// Post data:
-			if (!isset($data['action'][$this->parameters()->{'root-element'}])) return false;
-			
-			return true;
+			return false;
 		}
 		
 		public function trigger(Register $parameter_output, array $data) {
@@ -252,7 +237,7 @@
 			$root = $result->documentElement;
 			
 			try {
-				$status = $this->login($errors, $parameter_output, $data);
+				$status = $this->logout($errors, $parameter_output, $data);
 				$root->setAttribute('result', 'success');
 			}
 			
@@ -303,7 +288,7 @@
 			}
 		}
 		
-		protected function login(MessageStack $errors, Register $parameter_output, array $data) {
+		protected function logout(MessageStack $errors, Register $parameter_output, array $data) {
 			$section = Section::loadFromHandle($this->parameters()->{'section'});
 			$wheres = array(); $joins = null;
 			
@@ -329,23 +314,11 @@
 				throw new Exception(__('Section does not contain required fields.'));
 			}
 			
-			if (!isset($this->cookie)) {
-				$this->cookie = new Cookie($this->parameters()->{'section'});
-			}
-			
-			// Simulate data from cookie:
-			if (empty($data) and $this->cookie->get('email') and $this->cookie->get('login')) {
-				$fields = array(
-					$field_email->{'element-name'}		=> $this->cookie->get('email'),
-					$field_password->{'element-name'}	=> $this->cookie->get('login')
-				);
-			}
-			
-			else {
-				$this->cookie->set('email', null);
-				$this->cookie->set('login', null);
-				$fields = $data['fields'];
-			}
+			// Build field data:
+			$fields = array(
+				$field_email->{'element-name'}		=> $this->cookie->get('email'),
+				$field_password->{'element-name'}	=> $this->cookie->get('login')
+			);
 			
 			// Apply default values:
 			foreach ($this->parameters()->{'defaults'} as $name => $value) {
@@ -458,11 +431,6 @@ WHERE
 			$code = $entry->data()->{$handle_password}->code;
 			$login = $this->driver->createToken($code, 'login');
 			
-			if ($this->parameters()->{'create-cookie'} == true) {
-				$this->cookie->set('email', $email);
-				$this->cookie->set('login', $login);
-			}
-			
 			$event_name =  $this->parameters()->{'root-element'};
 			$parameter_output->{"event-{$event_name}.system.id"} = $entry->id;
 			$parameter_output->{"event-{$event_name}.member.email"} = $email;
@@ -505,6 +473,10 @@ WHERE
 				'EntryPostCreate', '/frontend/',
 				array('entry' => $entry)
 			);
+			
+			// Remove cookie:
+			$this->cookie->set('email', null);
+			$this->cookie->set('login', null);
 		}
 	}
 	
