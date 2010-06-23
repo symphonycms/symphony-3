@@ -268,7 +268,7 @@
 				'this-year' => DateTimeObj::get('Y'),
 				'this-month' => DateTimeObj::get('m'),
 				'this-day' => DateTimeObj::get('d'),
-				'timezone' => DateTimeObj::get('P'),
+				'timezone' => date_default_timezone_get(),
 				'website-name' =>Symphony::Configuration()->core()->symphony->sitename,
 				'symphony-version' =>Symphony::Configuration()->core()->symphony->version,
 				'upload-limit' => min(
