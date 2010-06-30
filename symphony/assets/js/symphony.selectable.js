@@ -56,7 +56,13 @@
 			
 			// Start:
 			items.live('mousedown', function(event) {
-				if (event.button != (jQuery.browser.msie != undefined) || event.target.tagName.toLowerCase() == 'a') {
+				if (
+					event.button != (jQuery.browser.msie != undefined)
+					|| (
+						event.target.tagName.toLowerCase() == 'a'
+						|| event.target.tagName.toLowerCase() == 'input'
+					)
+				) {
 					items.removeClass('changing');
 					state = null;
 					return;
