@@ -1,0 +1,17 @@
+Checkbox Field
+------------------------------------
+
+Version: 2.0.0
+Author: Symphony Team (team@symphony-cms.com)
+Build Date: 18 June 2010
+Requirements: Symphony 3
+
+
+Installation
+-------------------------------------------------------------------------------
+
+1. Upload the 'field_number' folder in this archive to your Symphony 'extensions' folder.
+
+2. Enable it by selecting "Field: Number" and choosing "Enable" from the with-selected menu, then click Apply.
+
+3. You can now add the "Number" field to your sections.
