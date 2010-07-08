@@ -31,8 +31,7 @@
 		}
 
 		public function __viewIndex(){
-
-			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $this->_context['section_handle']));
+			$section = Section::loadFromHandle($this->_context['section_handle']);
 
 			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
 			$this->Form->setAttribute("class", $section->handle);
@@ -427,8 +426,7 @@
 		public function __form(Entry $existing=NULL){
 
 			$callback = Administration::instance()->getPageCallback();
-
-			$section = Section::load(sprintf('%s/%s.xml', SECTIONS, $callback['context']['section_handle']));
+			$section = Section::loadFromHandle($callback['context']['section_handle']);
 
 			// Check that a layout and fields exist
 			if(isset($section->fields)) {

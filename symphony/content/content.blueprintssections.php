@@ -273,7 +273,7 @@
 
 			if (isset($_POST['action']['save'])) {
 				$layout = (isset($_POST['layout']) ? $_POST['layout'] : null);
-				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
+				$section = Section::loadFromHandle($this->_context[1]);
 
 				if ($this->__save(null, null, $layout, $section) == true) {
 					redirect(ADMIN_URL . "/blueprints/sections/layout/{$this->section->handle}/:saved/");
@@ -302,7 +302,7 @@
 			else if (array_key_exists('save', $_POST['action'])) {
 				$essentials = $_POST['essentials'];
 				$fields = (isset($_POST['fields']) ? $_POST['fields'] : null);
-				$section = Section::load(SECTIONS . '/' . $this->_context[1] . '.xml');
+				$section = Section::loadFromHandle($this->_context[1]);
 
 				if ($this->__save($essentials, $fields, null, $section) == true) {
 					redirect(ADMIN_URL . "/blueprints/sections/edit/{$this->section->handle}/:saved/");
@@ -351,7 +351,7 @@
 
 		private static function __loadExistingSection($handle){
 			try{
-				return Section::load(SECTIONS . "/{$handle}.xml");
+				return Section::loadFromHandle($handle);
 			}
 			catch(SectionException $e){
 
