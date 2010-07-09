@@ -886,6 +886,8 @@
 							}
 
 							foreach($parameter_output->fields as $field => $existing_values){
+								if (!isset($e->data()->$field) or is_null($e->data()->$field)) continue;
+								
 								$o = $section->fetchFieldByHandle($field)->getParameterOutputValue(
 									$e->data()->$field, $e
 								);
