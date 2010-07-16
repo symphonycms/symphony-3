@@ -40,10 +40,12 @@
 			$list->setAttribute('section', $bits[0]);
 			$list->setAttribute('field', $bits[1]);
 			
-			foreach($data['linked-entries'] as $id){
-				$list->appendChild($wrapper->ownerDocument->createElement('item', $id));
+			if(is_null($mode) || $mode != 'entry-count-only'){
+				foreach($data['linked-entries'] as $id){
+					$list->appendChild($wrapper->ownerDocument->createElement('item', $id));
+				}
 			}
-
+			
 			$wrapper->appendChild($list);
 		}
 
@@ -148,20 +150,14 @@
 			$this->appendShowColumnCheckbox($options_list);
 			$wrapper->appendChild($options_list);
 
-/*
-			$options_list = $wrapper->ownerDocument->createElement('ul');
-			$options_list->setAttribute('class', 'options-list');
-
-			//$this->appendShowColumnCheckbox($options_list);
-			//$this->appendRequiredCheckbox($options_list);
-
-
-			$options_list->appendChild($label);
-			$wrapper->appendChild($options_list);
-*/
-
 		}
-
+		
+		public function fetchIncludableElements() {
+			return array(
+				array('handle' => $this->{'element-name'}, 'name' => $this->name, 'mode' => NULL),
+				array('handle' => $this->{'element-name'} . ': entry-count-only', 'name' => $this->name, 'mode' => 'Entry Count Only'),
+			);
+		}
 	}
 	
 	return 'fieldLinked_Entries';
