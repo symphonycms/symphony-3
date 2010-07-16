@@ -804,6 +804,28 @@
 
 		/***
 
+		Method: dependenciesSort
+		Description: Sort a tree of dependencies and return them in execution order.
+		Param: $dependencies Tree of dependnecies
+		Return: array
+
+		***/
+		public static function dependenciesSort(array $dependencies) {
+			self::$dependencies = $dependencies;
+			
+			uksort(self::$dependencies, array('self', 'dependenciesSortCallback'));
+			
+			return array_keys(self::$dependencies);
+		}
+		
+		protected static $dependencies;
+		
+		protected function dependenciesSortCallback($a, $b) {
+			return (in_array($b, self::$dependencies[$a]) ? 1 : -1);
+		}
+
+		/***
+
 		Method: countWords
 		Description: counts the number of words in a string
 		Param: $string - string to examine

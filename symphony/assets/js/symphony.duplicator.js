@@ -145,7 +145,7 @@
 					.siblings('.active')
 					.trigger('tab-deselect');
 			})
-			.live('orderable-completed', function() {
+			.live('orderable-ordered', function() {
 				var tab = $(this);
 				var object = tab.closest('.duplicator-widget');
 				
@@ -261,7 +261,6 @@
 			$('.duplicator-widget' + select.templates).remove();
 		});
 		
-	
 	/*-------------------------------------------------------------------------
 		Initialise
 	-------------------------------------------------------------------------*/

@@ -456,7 +456,7 @@
 					);
 					
 					$old[$field->guid] = (object)array(
-						'label'		=> $field->label,
+						'label'		=> $field->name,
 						'field'		=> $field
 					);
 				}
@@ -475,7 +475,7 @@
 				);
 				
 				$new[$field->guid] = (object)array(
-					'label'		=> $field->label,
+					'label'		=> $field->name,
 					'field'		=> $field
 				);
 			}

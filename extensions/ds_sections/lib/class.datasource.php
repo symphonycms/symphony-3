@@ -834,11 +834,15 @@
 							foreach($included_elements->system as $field){
 								switch($field){
 									case 'creation-date':
-										$entry->appendChild(General::createXMLDateObject($result, strtotime($e->creation_date), 'creation-date'));
+										$entry->appendChild(General::createXMLDateObject(
+											$result, DateTimeObj::fromGMT($e->creation_date), 'creation-date'
+										));
 										break;
 
 									case 'modification-date':
-										$entry->appendChild(General::createXMLDateObject($result, strtotime($e->modification_date), 'modification-date'));
+										$entry->appendChild(General::createXMLDateObject(
+											$result, DateTimeObj::fromGMT($e->modification_date), 'modification-date'
+										));
 										break;
 
 
@@ -868,11 +872,11 @@
 										break;
 
 									case 'creation-date':
-										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', strtotime($e->creation_date));
+										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::fromGMT($e->creation_date));
 										break;
 
 									case 'modification-date':
-										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', strtotime($e->modification_date));
+										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::fromGMT($e->modification_date));
 										break;
 
 									case 'user':
@@ -882,6 +886,8 @@
 							}
 
 							foreach($parameter_output->fields as $field => $existing_values){
+								if (!isset($e->data()->$field) or is_null($e->data()->$field)) continue;
+								
 								$o = $section->fetchFieldByHandle($field)->getParameterOutputValue(
 									$e->data()->$field, $e
 								);

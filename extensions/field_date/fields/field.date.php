@@ -118,7 +118,7 @@
 			// Empty entry:
 			else if (isset($data->value) && !is_null($data->value)) {
 				$timestamp = DateTimeObj::fromGMT($data->value);
-				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $timestamp, 'Australia/Brisbane');
+				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $timestamp);
 			}
 
 			$label = Widget::Label(

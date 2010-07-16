@@ -443,48 +443,6 @@
 		    }
 		    return(($a->priority() > $b->priority()) ? -1 : 1);
 		}
-		
-		private function __sortByDependencies(array $dependency_list){
-			
-			$all_dependencies = array();
-			$ordered_list = array();
-			
-			foreach($dependency_list as $handle => $dependencies){
-				$all_dependencies = array_merge((array)$dependencies, $all_dependencies);
-				$all_dependencies = array_unique($all_dependencies);
-			}
-
-			## 1. First do a cleanup of each dependency list, removing non-existant DS's and find 
-			##    the ones that have no dependencies, removing them from the list
-			foreach($dependency_list as $handle => $dependencies){	
-				$dependency_list[$handle] = array_intersect($all_dependencies, (array)$dependencies);
-
-				if(empty($dependency_list[$handle])){ 
-					unset($dependency_list[$handle]);
-					$ordered_list[] = $handle;
-				}
-			}
-			
-			## 2. Iterate over the remaining DS's. Find if all their dependencies are
-			##    in the $datasources_ordered array. Keep iterating until all DS's are in that list
-			##	  or there are circular dependencies (list doesn't change between iterations of the while loop)
-			do{
-				
-				$last_count = count($dependency_list);
-				
-				foreach($dependency_list as $handle => $dependencies){
-					if(General::in_array_all($dependencies, $ordered_list)){
-						$ordered_list[] = $handle;
-						unset($dependency_list[$handle]);
-					}		
-				}
-								
-			}while(!empty($dependency_list) && $last_count > count($dependency_list));
-			
-			if(!empty($dependency_list)) $ordered_list = array_merge($ordered_list, array_keys($dependency_list));
-
-			return $ordered_list;
-		}
 
 		public function render(Register $Parameters, XMLDocument &$Document=NULL, DocumentHeaders &$Headers=NULL){
 
@@ -569,7 +527,7 @@
 				$dependency_list[$handle] = $datasource_pool[$handle]->parameters()->dependencies;
 			}
 
-			$datasources_ordered = $this->__sortByDependencies($dependency_list);
+			$datasources_ordered = General::dependenciesSort($dependency_list);
 			
 			if (!empty($datasources_ordered)) {
 				foreach($datasources_ordered as $handle){
