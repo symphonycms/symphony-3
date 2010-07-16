@@ -184,7 +184,9 @@
 		}
 
 		public function fetchIncludableElements(){
-			return array($this->{'element-name'});
+			return array(
+				array('handle' => $this->{'element-name'}, 'name' => $this->name, 'mode' => NULL)
+			);
 		}
 
 		/*-------------------------------------------------------------------------
