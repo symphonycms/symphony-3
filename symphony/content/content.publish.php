@@ -221,7 +221,8 @@
 							else{
 								$value = $column->prepareTableValue(
 									$entry->data()->$field_handle,
-									($first == true ? $link : NULL)
+									($first == true ? $link : NULL),
+									$entry
 								);
 
 								$cells[] = Widget::TableData(
