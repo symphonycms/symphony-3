@@ -26,7 +26,27 @@
 				)
 			);
 		}
-		
+
+		public function appendFormattedElement(&$wrapper, $data, $mode = null){
+
+			if(!is_array($data) || empty($data) || !isset($data['linked-entries']) || empty($data['linked-entries'])){
+				return;
+			}
+			
+			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
+			$list->setAttribute('count', (string)max(0, (int)$data['count']));
+			
+			$bits = explode('::', $this->{'related-field'}, 2);
+			$list->setAttribute('section', $bits[0]);
+			$list->setAttribute('field', $bits[1]);
+			
+			foreach($data['linked-entries'] as $id){
+				$list->appendChild($wrapper->ownerDocument->createElement('item', $id));
+			}
+
+			$wrapper->appendChild($list);
+		}
+
 		private function findLinkedEntries($entry){
 			$bits = explode('::', $this->{'related-field'}, 2);
 			return Symphony::Database()->query(
@@ -54,6 +74,10 @@
 		}
 		
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
+			
+			// Not sure if we need a publish panel
+			return;
+			
 			$document = $wrapper->ownerDocument;
 			
 			$label = Widget::Label(
@@ -74,7 +98,7 @@
 			
 			$document = $wrapper->ownerDocument;
 			
-			$label = Widget::Label(__('Options'));
+			$label = Widget::Label(__('Linked Field'));
 			
 			
 			$options = array(
