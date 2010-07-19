@@ -433,17 +433,17 @@
 					array(
 						'system:creation-date',
 						($section_active and in_array('system:creation-date', $this->parameters()->{'included-elements'})),
-						__('system:creation-date')
+						__('System Creation Date')
 					),
 					array(
 						'system:modification-date',
 						($section_active and in_array('system:modification-date', $this->parameters()->{'included-elements'})),
-						__('system:modification-date')
+						__('System Modification Date')
 					),
 					array(
 						'system:user',
 						($section_active and in_array('system:user', $this->parameters()->{'included-elements'})),
-						__('system:user')
+						__('System User')
 					),
 					/*array(
 						'system:pagination',
@@ -475,11 +475,20 @@
 						}
 
 						if (is_array($modes)) foreach ($modes as $field_mode) {
-							$included_elements_options[] = array(
-								$field_mode,
-								($section_active and in_array($field_mode, $this->parameters()->{'included-elements'})),
-								$field_mode
-							);
+							if(is_array($field_mode)){
+								$included_elements_options[] = array(
+									$field_mode['handle'],
+									($section_active and in_array($field_mode['handle'], $this->parameters()->{'included-elements'})),
+									$field_mode['name'] . (isset($field_mode['mode']) && strlen(trim($field_mode['mode'])) > 0 ? sprintf(" (%s)", $field_mode['mode']) : NULL)
+								);
+							}
+							else{
+								$included_elements_options[] = array(
+									$field_mode,
+									($section_active and in_array($field_mode, $this->parameters()->{'included-elements'})),
+									$field_mode
+								);
+							}
 						}
 					}
 				}
@@ -498,7 +507,7 @@
 
 				$param_label->appendChild($select);
 
-				$include_label = Widget::Label(__('Included XML Elements'));
+				$include_label = Widget::Label(__('Included Fields'));
 
 				$select = Widget::Select('fields[included-elements][]', $included_elements_options);
 				$select->setAttribute('class', 'filtered');

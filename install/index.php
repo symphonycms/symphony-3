@@ -13,18 +13,18 @@
 	require_once('class.messagestack.php');
 	require_once('class.general.php');
 	require_once('class.dbc.php');
-	require_once('class.lang.php');	
+	require_once('class.lang.php');
 
 
 	$clean_path = rtrim($_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']), '/\\');
 	$clean_path = preg_replace(array('/\/{2,}/i', '/\/install$/i'), array('/', NULL), $clean_path);
 
-	define('DOMAIN', $clean_path); 
+	define('DOMAIN', $clean_path);
 	define('URL', 'http://' . $clean_path);
 	define('VERSION', '3.0.0beta');
-	
+
 	Lang::load(realpath('../symphony/lang') . '/lang.en.php', 'en', true);
-	
+
 	function createPanel(DOMElement &$wrapper, $heading, $tooltip, $error_message=NULL){
 		$div = $wrapper->ownerDocument->createElement('div');
 
@@ -35,13 +35,13 @@
 		$div->appendChild($help);
 
 		$panel = $wrapper->ownerDocument->createElement('div');
-		$panel->setAttribute('class', 'panel');	
+		$panel->setAttribute('class', 'panel');
 		$div->appendChild($panel);
-		
+
 		$wrapper->appendChild($div);
-		
+
 		if(!is_null($error_message)){
-			
+
 			$extended = $wrapper->ownerDocument->createElement('div');
 			$extended->setAttribute('class', 'extended error');
 			$panel->appendChild($extended);
@@ -49,23 +49,23 @@
 			$extended->appendChild($div);
 
 			$div->appendChild($wrapper->ownerDocument->createElement('p', $error_message));
-			
+
 			$panel->appendChild($extended);
 		}
-		
+
 		return $panel;
 	}
-	
+
 	function missing($value){
 		if(!is_array($value)) $value = (array)$value;
-		
+
 		foreach($value as $v){
 			if(strlen(trim($v)) == 0) return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	$settings = array(
 	  'website-preferences' => array(
 	    'name' => 'Symphony CMS',
@@ -98,44 +98,44 @@
 	    'email-address' => NULL,
 	  )
 	);
-	
+
 	$errors = new MessageStack;
-	
+
 	if(isset($_POST['action']['install'])){
-		
+
 		$settings = $_POST;
-		
+
 		// Website Preferences -------------------------------------------------------------------------------------------
-		
+
 			$settings['website-preferences'] = array_map('trim', $settings['website-preferences']);
-		
+
 			// Missing Sitename
 			if(missing(array($settings['website-preferences']['name']))){
 				$errors->append('website-preferences', 'Name is a required field.');
 			}
-			
+
 		// Server Preferences -------------------------------------------------------------------------------------------
-			
+
 			// Missing root path
 			elseif(missing(array($settings['server-preferences']['path']))){
 				$errors->append('server-preferences', 'Root Path is a required field.');
 			}
-		
+
 			// Root Path does not exist or is not writable
 			elseif(!is_dir($settings['server-preferences']['path']) || !is_writable($settings['server-preferences']['path'])){
 				$errors->append('server-preferences', 'Path specified does not exist, or is not writable. Please check permissions on that location.');
 			}
-		
+
 			// Root Path contains another install of Symphony
 			elseif(file_exists(sprintf('%s/manifest/core.xml', rtrim($settings['server-preferences']['path'], '/')))){
 				$errors->append('server-preferences', 'An installation of Symphony already exists at that location.');
 			}
-			
-		
+
+
 		// Database --------------------------------------------------------------------------------------------------
-		
+
 			$settings['database'] = array_map('trim', $settings['database']);
-			
+
 			// Missing Database
 			// Missing username
 			// Missing password
@@ -151,17 +151,17 @@
 			))){
 				$errors->append('database', 'Database, Username, Password, Host, Port and Table Prefix are all required fields.');
 			}
-		
+
 			// Database doesnt exist
 			// Username+Password combo invalid
 			// Invalid database host or port
 			// Prefix in use
-			
-			
+
+
 		// User ------------------------------------------------------------------------------------------------------
-		
+
 			$settings['user'] = array_map('trim', $settings['user']);
-		
+
 			// Missing username
 			// Missing password
 			// Missing first name
@@ -176,24 +176,24 @@
 			))){
 				$errors->append('user', 'Username, Password, First Name, Last Name and Email Address are all required fields.');
 			}
-		
+
 			// Invalid username
 			elseif(preg_match('/[\s]/i', $settings['user']['username'])){
 				$errors->append('user', 'Username is invalid.');
 			}
-			
+
 			// Passwords do not match
 			elseif($settings['user']['password'] != $settings['user']['confirm-password']){
 				$errors->append('user', 'Passwords do not match.');
 			}
-			
+
 			// Invalid Email address
 			elseif(!preg_match('/^\w(?:\.?[\w%+-]+)*@\w(?:[\w-]*\.)+?[a-z]{2,}$/i', $settings['user']['email-address'])){
 				$errors->append('user', 'Email Address is invalid.');
 			}
 
 		if($errors->length() == 0){
-			
+
 			/// Create a DB connection --------------------------------------------------------------------------
 				$db = new DBCMySQLProfiler;
 
@@ -201,7 +201,7 @@
 				$db->character_set = 'utf8';
 				$db->force_query_caching = false;
 				$db->prefix = $settings['database']['table-prefix'];
-			
+
 				$connection_string = sprintf(
 					'mysql://%s:%s@%s:%s/%s/',
 					$settings['database']['username'],
@@ -219,14 +219,14 @@
 				}
 
 			if($errors->length() == 0){
-				
+
 				$permission = intval($settings['server-preferences']['directory-permissions'], 8);
-				
+
 				/// Create the .htaccess ------------------------------------------------------------------
 					$rewrite_base = preg_replace('/\/install$/i', NULL, dirname($_SERVER['PHP_SELF']));
 
 					$htaccess = sprintf(
-						file_get_contents('assets/template.htaccess.txt'), 
+						file_get_contents('assets/template.htaccess.txt'),
 						empty($rewrite_base) ? '/' : $rewrite_base
 					);
 
@@ -234,26 +234,26 @@
 					if(!General::writeFile(sprintf('%s/.htaccess', rtrim($settings['server-preferences']['path'], '/')), $htaccess, $settings['server-preferences']['file-permissions'])){
 						throw new Exception('Could not write .htaccess file. TODO: Handle this by recording to the log and showing nicer error page.');
 					}
-				
-				
+
+
 				/// Create Folder Structures ---------------------------------------------------------------
-				
+
 					// These folders are necessary, and can be created if missing
 					$folders = array(
 						'workspace', 'workspace/views', 'workspace/utilities', 'workspace/sections', 'workspace/data-sources', 'workspace/events',
 						'manifest', 'manifest/conf', 'manifest/logs', 'manifest/templates', 'manifest/tmp', 'manifest/cache'
 					);
-				
+
 					foreach($folders as $f){
 						$path = realpath("../") . "/{$f}";
 						if(!is_dir($path) && !mkdir($path, $permission)){
 							throw new Exception('Could not create directory '.$path.'. TODO: Handle this by recording to the log and showing nicer error page.');
 						}
 					}
-				
+
 				/// Save the config ------------------------------------------------------------------------
 					$config_core = sprintf(
-						file_get_contents('assets/template.core.xml'), 
+						file_get_contents('assets/template.core.xml'),
 						VERSION,
 						$settings['website-preferences']['name'],
 						$settings['server-preferences']['file-permissions'],
@@ -262,9 +262,9 @@
 						$settings['date-time']['date-format'],
 						$settings['date-time']['region']
 					);
-			
+
 					$config_db = sprintf(
-						file_get_contents('assets/template.db.xml'), 
+						file_get_contents('assets/template.db.xml'),
 						$settings['database']['host'],
 						$settings['database']['port'],
 		 				$settings['database']['username'],
@@ -275,23 +275,23 @@
 
 					// Write the core config file
 					if(!General::writeFile(
-						sprintf('%s/manifest/conf/core.xml', rtrim($settings['server-preferences']['path'], '/')), 
-						$config_core, 
+						sprintf('%s/manifest/conf/core.xml', rtrim($settings['server-preferences']['path'], '/')),
+						$config_core,
 						$settings['server-preferences']['file-permissions']
 					)){
 						throw new Exception('Could not write manifest/conf/core.xml file. TODO: Handle this by recording to the log and showing nicer error page.');
 					}
-			
+
 					// Wite the core config file
 					if(!General::writeFile(
-						sprintf('%s/manifest/conf/db.xml', rtrim($settings['server-preferences']['path'], '/')), 
-						$config_db, 
+						sprintf('%s/manifest/conf/db.xml', rtrim($settings['server-preferences']['path'], '/')),
+						$config_db,
 						$settings['server-preferences']['file-permissions']
 					)){
 						throw new Exception('Could not write manifest/conf/db.xml file. TODO: Handle this by recording to the log and showing nicer error page.');
 					}
 			}
-			
+
 			/// Import the Database --------------------------------------------------------------------------------
 				if($errors->length() == 0){
 					try{
@@ -301,7 +301,7 @@
 						if(!is_array($queries) || empty($queries) || count($queries) <= 0){
 							throw new Exception('install/assets/install.sql file contained no queries.');
 						}
-						
+
 						foreach($queries as $sql){
 							$db->query($sql);
 						}
@@ -322,68 +322,68 @@
 						$errors->append('database', $e->getMessage());
 					}
 				}
-			
+
 			if($errors->length() == 0){
 				redirect(URL . '/symphony');
 			}
-			
+
 		}
 	}
-	
-	
+
+
 	$Document = new HTMLDocument('1.0', 'utf-8', 'html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"');
-	
+
 	$Document->Headers->append('Expires', 'Mon, 12 Dec 1982 06:14:00 GMT');
 	$Document->Headers->append('Last-Modified', gmdate('r'));
 	$Document->Headers->append('Cache-Control', 'no-cache, must-revalidate, max-age=0');
 	$Document->Headers->append('Pragma', 'no-cache');
-	
+
 	Widget::init($Document);
-	
+
 	$Document->insertNodeIntoHead($Document->createElement('title', 'Symphony Installation'));
-	
+
 	$meta = $Document->createElement('meta');
 	$meta->setAttribute('http-equiv', 'Content-Type');
 	$meta->setAttribute('content', 'text/html; charset=UTF-8');
 	$Document->insertNodeIntoHead($meta);
-	
+
 	$Document->insertNodeIntoHead($Document->createStylesheetElement('assets/styles.css'));
-	
+
 	$form = $Document->createElement('form');
 	$form->setAttribute('method', 'POST');
 	$form->setAttribute('action', '');
 	$Document->appendChild($form);
-		
+
 	$layout = $Document->createElement('div');
 	$layout->setAttribute('id', 'layout');
 	$form->appendChild($layout);
-	
+
 	// About panel ---------------------------------------------------------------------------------------------------
 	$div = $Document->createElement('div');
 	$layout->appendChild($div);
-	
+
 	$about = $Document->createElement('div');
 	$about->setAttribute('class', 'about');
 	$about->appendChild($Document->createElement('h1', 'You are Installing Symphony'));
 	$about->appendChild($Document->createElement('p', 'Version 3.0.0 alpha'));
 	$div->appendChild($about);
-	
+
 	// Website Preferences -------------------------------------------------------------------------------------------
 	$panel = createPanel($layout, 'Your Website', 'The essential details', $errors->{'website-preferences'});
-	
+
 	$label = Widget::Label('Website Name', NULL, array('class' => 'input'));
 	$input = Widget::Input('website-preferences[name]', $settings['website-preferences']['name']);
 	$label->appendChild($input);
 	$panel->appendChild($label);
-	
+
 	// Server Preferences -------------------------------------------------------------------------------------------
 	$panel = createPanel($layout, 'Your Server', 'Where to install and what permissions to use', $errors->{'server-preferences'});
-	
+
 	$label = Widget::Label('Root Path', NULL, array('class' => 'input'));
 	$input = Widget::Input('server-preferences[path]', $settings['server-preferences']['path']);
 	$label->appendChild($input);
 	$panel->appendChild($label);
-	
+
 	$extended = $Document->createElement('div');
 	$extended->setAttribute('class', 'extended');
 	$panel->appendChild($extended);
@@ -392,24 +392,28 @@
 	$group = $Document->createElement('div');
 	$group->setAttribute('class', 'group');
 	$div->appendChild($group);
-	
+
 	$label = Widget::Label('File Permissions', NULL, array('class' => 'select'));
-	$input = Widget::Select('server-preferences[file-permissions]', array(
-		array('0755', false, '0755'),
-		array('0777', $settings['server-preferences']['file-permissions'] == '0777', '0777')
-	));
+	$permission_options = array(
+		array('0644', $settings['server-preferences']['file-permissions'] == '0644', '0644'),
+		array('0664', $settings['server-preferences']['file-permissions'] == '0664', '0664'),
+		array('0666', $settings['server-preferences']['file-permissions'] == '0666', '0666'),
+	);
+	$input = Widget::Select('server-preferences[file-permissions]', $permission_options);
 	$label->appendChild($input);
 	$group->appendChild($label);
 
 	$label = Widget::Label('Directory Permissions', NULL, array('class' => 'select'));
-	$input = Widget::Select('server-preferences[directory-permissions]', array(
-		array('0755', false, '0755'),
-		array('0777', $settings['server-preferences']['directory-permissions'] == '0777', '0777')
-	));
+	$permission_options = array(
+		array('0755', $settings['server-preferences']['directory-permissions'] == '0755', '0755'),
+		array('0775', $settings['server-preferences']['directory-permissions'] == '0775', '0775'),
+		array('0777', $settings['server-preferences']['directory-permissions'] == '0777', '0777'),
+	);
+	$input = Widget::Select('server-preferences[directory-permissions]', $permission_options);
 	$label->appendChild($input);
 	$group->appendChild($label);
 
-	
+
 	// Date and Time -------------------------------------------------------------------------------------------------
 	$panel = createPanel($layout, 'Your Locale', 'Default region and date/time format', $errors->{'date-time'});
 
@@ -421,7 +425,7 @@
 	$input = Widget::Select('date-time[region]', $options);
 	$label->appendChild($input);
 	$panel->appendChild($label);
-	
+
 	$extended = $Document->createElement('div');
 	$extended->setAttribute('class', 'extended');
 	$panel->appendChild($extended);
@@ -446,8 +450,8 @@
 	$input = Widget::Select('date-time[date-format]', $options);
 	$label->appendChild($input);
 	$group->appendChild($label);
-	
-	
+
+
 	$time_formats = array(
 		'H:i:s',
 		'H:i',
@@ -472,7 +476,7 @@
 	$input = Widget::Input('database[database]', $settings['database']['database']);
 	$label->appendChild($input);
 	$panel->appendChild($label);
-	
+
 	$group = $Document->createElement('div');
 	$group->setAttribute('class', 'group');
 
@@ -480,14 +484,14 @@
 	$input = Widget::Input('database[username]', $settings['database']['username']);
 	$label->appendChild($input);
 	$group->appendChild($label);
-	
+
 	$label = Widget::Label('Password', NULL, array('class' => 'input'));
 	$input = Widget::Input('database[password]', $settings['database']['password'], 'password');
 	$label->appendChild($input);
-	$group->appendChild($label);	
-	
+	$group->appendChild($label);
+
 	$panel->appendChild($group);
-	
+
 	$extended = $Document->createElement('div');
 	$extended->setAttribute('class', 'extended');
 	$panel->appendChild($extended);
@@ -496,16 +500,16 @@
 	$group = $Document->createElement('div');
 	$group->setAttribute('class', 'group');
 	$div->appendChild($group);
-	
+
 	$label = Widget::Label('Host', NULL, array('class' => 'input'));
 	$input = Widget::Input('database[host]', $settings['database']['host']);
 	$label->appendChild($input);
 	$group->appendChild($label);
-	
+
 	$label = Widget::Label('Port', NULL, array('class' => 'input'));
 	$input = Widget::Input('database[port]', $settings['database']['port']);
 	$label->appendChild($input);
-	$group->appendChild($label);	
+	$group->appendChild($label);
 
 	$label = Widget::Label('Table Prefix', NULL, array('class' => 'input'));
 	$input = Widget::Input('database[table-prefix]', $settings['database']['table-prefix']);
@@ -522,16 +526,16 @@
 	$label->appendChild(new DOMText(' Use compatibility mode?'));
 	$div->appendChild($label);
 	$div->appendChild($Document->createElement('p', 'With compatibility mode enabled, Symphony will use the default character encoding of your database instead of overriding it with UTF-8 encoding.', array('class' => 'description')));
-	
-	
+
+
 	// User Information ----------------------------------------------------------------------------------------------
 	$panel = createPanel($layout, 'Your First User', 'Details for your first Symphony user', $errors->{'user'});
-	
+
 	$label = Widget::Label('Username', NULL, array('class' => 'input'));
 	$input = Widget::Input('user[username]', $settings['user']['username']);
 	$label->appendChild($input);
 	$panel->appendChild($label);
-	
+
 	$group = $Document->createElement('div');
 	$group->setAttribute('class', 'group');
 
@@ -539,14 +543,14 @@
 	$input = Widget::Input('user[password]', $settings['user']['password'], 'password');
 	$label->appendChild($input);
 	$group->appendChild($label);
-	
+
 	$label = Widget::Label('Confirm Password', NULL, array('class' => 'input'));
 	$input = Widget::Input('user[confirm-password]', $settings['user']['confirm-password'], 'password');
 	$label->appendChild($input);
-	$group->appendChild($label);	
-	
+	$group->appendChild($label);
+
 	$panel->appendChild($group);
-	
+
 	$extended = $Document->createElement('div');
 	$extended->setAttribute('class', 'extended');
 	$panel->appendChild($extended);
@@ -555,26 +559,26 @@
 	$group = $Document->createElement('div');
 	$group->setAttribute('class', 'group');
 	$div->appendChild($group);
-	
+
 	$label = Widget::Label('First Name', NULL, array('class' => 'input'));
 	$input = Widget::Input('user[first-name]', $settings['user']['first-name']);
 	$label->appendChild($input);
 	$group->appendChild($label);
-	
+
 	$label = Widget::Label('Last Name', NULL, array('class' => 'input'));
 	$input = Widget::Input('user[last-name]', $settings['user']['last-name']);
 	$label->appendChild($input);
 	$group->appendChild($label);
-		
+
 	$label = Widget::Label('Email Address', NULL, array('class' => 'input'));
 	$input = Widget::Input('user[email-address]', $settings['user']['email-address']);
 	$label->appendChild($input);
 	$div->appendChild($label);
-		
+
 	// Submit --------------------------------------------------------------------------------------------------------
 	$div = $Document->createElement('div');
-	$layout->appendChild($div);	
-	
+	$layout->appendChild($div);
+
 	$submit = $Document->createElement('div');
 	$submit->setAttribute('class', 'content submission');
 	$p = $Document->createElement('p');
@@ -582,12 +586,12 @@
 	$button->setAttribute('name', 'action[install]');
 	$p->appendChild($button);
 	$submit->appendChild($p);
-	$div->appendChild($submit);	
-	
+	$div->appendChild($submit);
+
 	$output = (string)$Document;
-	
+
 	$Document->Headers->append('Content-Length', strlen($output));
-	
+
 	$Document->Headers->render();
 	echo $output;
 	die();

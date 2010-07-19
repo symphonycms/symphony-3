@@ -488,8 +488,8 @@
 
 		public function fetchIncludableElements() {
 			return array(
-				$this->{'element-name'} . ': formatted',
-				$this->{'element-name'} . ': unformatted'
+				array('handle' => $this->{'element-name'} . ': formatted', 'name' => $this->name, 'mode' => "Formatted"),
+				array('handle' => $this->{'element-name'} . ': unformatted', 'name' => $this->name, 'mode' => "Unformatted")
 			);
 		}
 
