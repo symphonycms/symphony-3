@@ -203,7 +203,8 @@
 		public function initialiseDatabase(){
 			$details = (object)Symphony::Configuration()->db();
 
-			$db = new DBCMySQLProfiler;
+			//$db = new DBCMySQLProfiler;
+			$db = new DBCMySQL;
 
 			if($details->runtime_character_set_alter == 'yes'){
 				$db->character_encoding = $details->character_encoding;
