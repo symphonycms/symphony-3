@@ -315,6 +315,7 @@
 				}
 
 				$root->setAttribute('result', 'success');
+				$root->setAttribute('id', $entry->id);
 
 				$root->appendChild($result->createElement(
 					'message',
