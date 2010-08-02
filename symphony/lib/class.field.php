@@ -27,14 +27,16 @@
 			$this->fields = array();
 			$this->position = 0;
 
-			foreach(new DirectoryIterator(EXTENSIONS) as $dir){
-				if(!$dir->isDir() || $dir->isDot() || !is_dir($dir->getPathname() . '/fields')) continue;
+			$extensions = new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED);
 
-				foreach(new FieldFilterIterator($dir->getPathname() . '/fields') as $file){
+			foreach ($extensions as $extension) {
+				$path = Extension::getPathFromClass(get_class($extension));
+				if (!is_dir($path . '/fields')) continue;
+
+				foreach(new FieldFilterIterator($path . '/fields') as $file){
 					$this->fields[] = $file->getPathname();
 				}
 			}
-
 		}
 
 		public function length(){
@@ -111,11 +113,11 @@
 			if ($name == 'guid' and !isset($this->guid)) {
 				$this->guid = Field::createGUID($this);
 			}
-			
+
 			if (!isset($this->properties->$name)) {
 				return null;
 			}
-			
+
 			return $this->properties->$name;
 		}
 
@@ -123,7 +125,7 @@
 			if ($name == 'name') {
 				$this->properties->{'element-name'} = Lang::createHandle($value, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
 			}
-			
+
 			$this->properties->$name = $value;
 		}
 
@@ -302,14 +304,14 @@
 	//				if(is_file(EXTENSIONS . "/{$e}/fields/field.{$type}.php")) return EXTENSIONS . "/{$e}/fields";
 	//			}
 	//		}
-			
+
 			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
 				$path = Extension::getPathFromClass(get_class($e));
 				if(is_file("{$path}/fields/field.{$type}.php")){
 					return "{$path}/fields";
 				}
 			}
-	
+
 		    return false;
 	    }
 
@@ -425,7 +427,7 @@
 
 			$group = $document->createElement('div');
 			$group->setAttribute('class', 'group');
-			
+
 			$label = Widget::Label(__('Name'));
 			$label->setAttribute('class', 'field-name');
 			$label->appendChild(Widget::Input('name', $this->name));
@@ -435,8 +437,8 @@
 			}
 
 			$group->appendChild($label);
-			
-			
+
+
 			$label = Widget::Label(__('Publish Label'));
 			$label->appendChild($document->createElement('em', 'Optional'));
 			$label->appendChild(Widget::Input('publish-label', $this->{'publish-label'}));
@@ -446,7 +448,7 @@
 			}
 
 			$group->appendChild($label);
-						
+
 			$wrapper->appendChild($group);
 
 
@@ -530,7 +532,7 @@
 			if (is_null($label_value)){
 				$label_value = __('Validation Rule');
 			}
-			
+
 			$label = Widget::Label($label_value);
 			$document = $wrapper->ownerDocument;
 			$rules = ($type == 'upload' ? $upload : $validators);
@@ -557,23 +559,23 @@
 			$max_length = ($max_length ? $max_length : 75);
 
 			$value = (!is_null($data) ? strip_tags($data->value) : NULL);
-			
+
 			if ($max_length < strlen($value)) {
 				$lines = explode("\n", wordwrap($value, $max_length - 1, "\n"));
 				$value = array_shift($lines);
 				$value = rtrim($value, "\n\t !?.,:;");
 				$value .= '…';
 			}
-			
+
 			if ($max_length > 75) {
 				$value = wordwrap($value, 75, '<br />');
 			}
-			
+
 			if (strlen($value) == 0) $value = __('None');
-			
+
 			if (!is_null($link)) {
 				$link->setValue($value);
-				
+
 				return $link;
 			}
 
@@ -581,7 +583,7 @@
 		}
 
 		abstract public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $error, Entry $entry = null, $data = null);
-		
+
 		/*-------------------------------------------------------------------------
 			Input:
 		-------------------------------------------------------------------------*/
@@ -646,7 +648,7 @@
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			$data->entry_id = $entry->id;
 			if(!isset($data->id)) $data->id = NULL;
-			
+
 			try{
 				Symphony::Database()->insert(
 					sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
@@ -680,7 +682,7 @@
 		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL){
 			return $this->prepareTableValue($data);
 		}
-		
+
 		/*-------------------------------------------------------------------------
 			Filtering:
 		-------------------------------------------------------------------------*/
@@ -694,7 +696,7 @@
 				array('regex-search', $data->type == 'regex-search', 'Regex Search')
 			);
 		}
-		
+
 		public function processFilter($data) {
 			$defaults = (object)array(
 				'value'		=> '',
@@ -735,19 +737,19 @@
 				sprintf('value', $this->{'element-name'}),
 				$data->value
 			));
-			
+
 			$label->appendChild(Widget::Input(
 				'element-name', $this->{'element-name'}, 'hidden'
 			));
-			
+
 			$wrapper->appendChild(Widget::Group(
 				$type_label, $label
 			));
 		}
-		
+
 		public function buildJoinQuery(&$joins) {
 			$db = Symphony::Database();
-			
+
 			$table = $db->prepareQuery(sprintf(
 				'`tbl_data_%s_%s`', $this->section, $this->{'element-name'}, ++self::$key
 			));
@@ -758,21 +760,21 @@
 				"\nLEFT OUTER JOIN %s AS %s ON (e.id = %2\$s.entry_id)",
 				$table, $handle
 			);
-			
+
 			return $handle;
 		}
-		
+
 		public function buildFilterJoin(&$joins) {
 			return $this->buildJoinQuery($joins);
 		}
-		
+
 		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output) {
 			$filter = $this->processFilter($filter);
 			$filter_join = DataSource::FILTER_OR;
 			$db = Symphony::Database();
 
 			$values = DataSource::prepareFilterValue($filter->value, $parameter_output, $filter_join);
-			
+
 			if (!is_array($values)) $values = array();
 
 			// Exact matches:
@@ -812,7 +814,7 @@
 
 			else if ($filter->type == 'contains' or $filter->type == 'does-not-contain') {
 				$statements = array();
-				
+
 				if ($filter_join == DataSource::FILTER_OR) {
 					$handle = $this->buildFilterJoin($joins);
 				}
@@ -861,7 +863,7 @@
 
 			return true;
 		}
-		
+
 		public function buildDSFilterSQL() {
 			// TODO: Cleanup before release.
 			throw new Exception('Field->buildDSFilterSQL() is obsolete, use buildFilterQuery instead.');
@@ -870,7 +872,7 @@
 		/*-------------------------------------------------------------------------
 			Grouping:
 		-------------------------------------------------------------------------*/
-		
+
 		public function groupRecords($records){
 			throw new FieldException(
 				__('Data source output grouping is not supported by the <code>%s</code> field', array($this->handle))
@@ -880,7 +882,7 @@
 		/*-------------------------------------------------------------------------
 			Sorting:
 		-------------------------------------------------------------------------*/
-		
+
 		public function buildSortingJoin(&$joins) {
 			return $this->buildJoinQuery($joins);
 		}
@@ -889,12 +891,12 @@
 			$handle = $this->buildSortingJoin($joins);
 			$order = "{$handle}.value %1\$s";
 		}
-		
+
 		public function buildSortingSQL() {
 			// TODO: Cleanup before release.
 			throw new Exception('Field->buildSortingSQL() is obsolete, use buildSortingQuery instead.');
 		}
-		
+
 		/*-------------------------------------------------------------------------
 			Deprecated:
 		-------------------------------------------------------------------------
