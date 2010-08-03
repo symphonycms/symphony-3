@@ -187,7 +187,7 @@
 			if(!is_null($data->value) && strlen(trim($data->value)) > 0 && !self::__isValidDateString($data->value)){
 				$errors->append(
 					null, (object)array(
-					 	'message' => __("The date specified in '%s' is invalid.", array($this->label)),
+					 	'message' => __("The date specified in '%s' is invalid.", array($this->{'publish-label'})),
 						'code' => self::ERROR_INVALID
 					)
 				);

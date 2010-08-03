@@ -114,6 +114,10 @@
 				$this->guid = Field::createGUID($this);
 			}
 
+			if ($name == "publish-label") {
+				$this->{'publish-label'} = $this->properties->name;
+			}
+
 			if (!isset($this->properties->$name)) {
 				return null;
 			}
@@ -634,7 +638,7 @@
 			if ($this->required == 'yes' && (!isset($data->value) || strlen(trim($data->value)) == 0)){
 				$errors->append(
 					null, (object)array(
-					 	'message' => __("'%s' is a required field.", array($this->label)),
+					 	'message' => __("'%s' is a required field.", array($this->{'name'})),
 						'code' => self::ERROR_MISSING
 					)
 				);
@@ -931,7 +935,7 @@
 		}
 
 		public function getExampleFormMarkup(){
-			$label = Widget::Label($this->label);
+			$label = Widget::Label($this->{'publish-label'});
 			$label->appendChild(Widget::Input('fields['.$this->{'element-name'}.']'));
 
 			return $label;

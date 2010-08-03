@@ -408,7 +408,7 @@
 			if (!$this->applyValidationRules($data->value)) {
 				$errors->append(
 					null, (object)array(
-					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->label)),
+					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->name)),
 						'code' => self::ERROR_INVALID
 					)
 				);
@@ -420,7 +420,7 @@
 				$errors->append(
 					null, (object)array(
 					 	'message' => __("'%s' must be no longer than %s characters.", array(
-							$this->{'label'},
+							$this->{'name'},
 							$length
 						)),
 						'code' => self::ERROR_INVALID
