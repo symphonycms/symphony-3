@@ -1,5 +1,5 @@
 ### Symphony 3.0.x ###
-Options +FollowSymlinks
+Options +FollowSymlinks -Indexes
 
 <IfModule mod_rewrite.c>
 	
