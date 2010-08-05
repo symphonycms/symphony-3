@@ -650,7 +650,12 @@
 			//	If any one condtion returns true (that is, do not execute), the DS will not execute at all
 			if(is_array($this->parameters()->conditions)) {
 				foreach($this->parameters()->conditions as $condition) {
-					$c = Datasource::resolveParameter($condition['parameter'], $ParameterOutput);
+					if(preg_match('/:/', $condition['parameter'])) {
+						$c = Datasource::replaceParametersInString($condition['parameter'], $ParameterOutput);
+					}
+					else {
+						$c = Datasource::resolveParameter($condition['parameter'], $ParameterOutput);
+					}
 
 					// Is Empty
 					if($condition['logic'] == 'empty' && (is_null($c) || strlen($c) == 0)){
@@ -734,6 +739,9 @@
 					if($filter['element-name'] == 'system:id'){
 						$filter_value = $this->prepareFilterValue($filter['value'], $ParameterOutput);
 						$filter_value = array_map('intval', $filter_value);
+						
+						if(empty($filter_value)) continue;
+						
 						$where[] = sprintf(
 							"(e.id %s IN (%s))",
 							($filter['type'] == 'is-not' ? 'NOT' : NULL),
