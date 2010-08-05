@@ -165,7 +165,7 @@
 			if (!$this->applyValidationRules($data->value)) {
 				$errors->append(
 					null, (object)array(
-					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->{'name'})),
+					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->{'publish-label'})),
 						'code' => self::ERROR_INVALID
 					)
 				);

@@ -216,10 +216,7 @@
 		***/
 		public static function sendEmail($to_email, $from_email, $from_name, $subject, $message, array $additional_headers = array()) {
 			## Check for injection attacks (http://securephp.damonkohler.com/index.php/Email_Injection)
-			if ((eregi("\r", $from_email) || eregi("\n", $from_email))
-				|| (eregi("\r", $from_name) || eregi("\n", $from_name))){
-					return false;
-		   	}
+			if (preg_match('/(\\n|\\r)/', $from_email) || preg_match('/(\\n|\\r)/', $from_name)) return false;
 			####
 
 			$subject = self::encodeHeader($subject, 'UTF-8');
@@ -426,7 +423,7 @@
 
 			return $result;
 		}
-		
+
 		public static function var_export($expressions, $return=false, $indenting=0){
 			$result = var_export($expressions, $return);
 			if($indenting > 0){
@@ -435,7 +432,7 @@
 			}
 			return $result;
 		}
-		
+
 		/***
 
 		Method: getPostData
@@ -591,13 +588,13 @@
 			if(!file_put_contents($file, $data)){
 				return false;
 			}
-			
+
 			try{
 				@chmod($file, intval($perm, 8));
 			}
 			// Just in case there is a warning that triggers an exception
 			catch(Exception $e){}
-			
+
 			return true;
 		}
 
@@ -788,7 +785,7 @@
 		public static function fileSortR($f1, $f2){
 			return strcmp($f2['name'], $f1['name']);
 		}
-		
+
 		/***
 
 		Method: optionsSort
@@ -812,14 +809,14 @@
 		***/
 		public static function dependenciesSort(array $dependencies) {
 			self::$dependencies = $dependencies;
-			
+
 			uksort(self::$dependencies, array('self', 'dependenciesSortCallback'));
-			
+
 			return array_keys(self::$dependencies);
 		}
-		
+
 		protected static $dependencies;
-		
+
 		protected function dependenciesSortCallback($a, $b) {
 			return (in_array($b, self::$dependencies[$a]) ? 1 : -1);
 		}
@@ -969,7 +966,7 @@
 			}
 			return rmdir($path);
 		}
-		
+
 		public static function escapeCommas($string){
 			return preg_replace('/(?<!\\\\),/', "\\,", $string);
 		}
@@ -977,6 +974,6 @@
 		public static function removeEscapedCommas($string){
 			return preg_replace('/(?<!\\\\)\\\\,/', ',', $string);
 		}
-		
+
 
 	}

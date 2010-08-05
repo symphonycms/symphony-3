@@ -215,8 +215,8 @@
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
 			$label = Widget::Label(
-				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
-					? $this->{'publish-label'} 
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0
+					? $this->{'publish-label'}
 					: $this->name)
 			);
 			$label->appendChild(Widget::Select($fieldname, $options,
@@ -328,13 +328,13 @@
 
 			$wrapper->appendChild($list);
 		}
-		
+
 		public function getParameterOutputValue(array $data, Entry $entry=NULL){
 			$result = array();
 			foreach($data as $d){
 				$result[] = $this->prepareTableValue($d);
 			}
-			
+
 			return $result;
 		}
 
@@ -344,24 +344,24 @@
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
-			
+
 			$document = $wrapper->ownerDocument;
 			$existing_options = $this->getToggleStates();
-			
+
 			$div = $document->createElement('div');
 			$label = $document->xpath('.//label[last()]', $wrapper)->item(0);
 			$label->wrapWith($div);
-			
+
 			if (is_array($existing_options) && !empty($existing_options)) {
 				$optionlist = $document->createElement('ul');
 				$optionlist->setAttribute('class', 'tags');
-				
+
 				foreach ($existing_options as $option) {
 					$optionlist->appendChild(
 						$document->createElement('li', $option)
 					);
 				}
-				
+
 				$div->appendChild($optionlist);
 			}
 		}
@@ -448,7 +448,11 @@
 			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
+<<<<<<< HEAD
 			$label = Widget::Label($this->{'name'});
+=======
+			$label = Widget::Label($this->{'publish-label'});
+>>>>>>> cedcc471c52cc8591d93747d7cfbd5b0e2e0b0ee
 			$label->appendChild(Widget::Select($fieldname, $options,
 				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));

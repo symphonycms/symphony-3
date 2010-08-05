@@ -43,26 +43,26 @@
 				));
 			}
 		}
-		
+
 	/*-----------------------------------------------------------------------*/
-		
+
 		public function prepare(array $data = null) {
 			if (!is_null($data)) {
 				$this->about()->name = $data['name'];
-	
+
 				$this->about()->author->name = Administration::instance()->User->getFullName();
 				$this->about()->author->email = Administration::instance()->User->email;
-	
+
 				$this->parameters()->section = $data['section'];
-	
+
 				if(isset($data['output-id-on-save']) && $data['output-id-on-save'] == 'yes'){
 					$this->parameters()->{'output-id-on-save'} = true;
 				}
-	
+
 				if(isset($data['filters']) && is_array($data['filters']) || !empty($data['filters'])){
 					$this->parameters()->filters = $data['filters'];
 				}
-	
+
 				if(isset($data['defaults']) && is_array($data['defaults']) || !empty($data['defaults'])){
 					$defaults = array();
 					foreach($data['defaults']['field'] as $index => $field){
@@ -70,7 +70,7 @@
 					}
 					$this->parameters()->defaults = $defaults;
 				}
-	
+
 				if(isset($data['overrides']) && is_array($data['overrides']) || !empty($data['overrides'])){
 					$overrides = array();
 					foreach($data['overrides']['field'] as $index => $field){
@@ -80,7 +80,7 @@
 				}
 			}
 		}
-		
+
 		public function view(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'));
@@ -169,7 +169,7 @@
 			$column_3->appendChild($fieldset);
 			$layout->appendTo($wrapper);
 		}
-		
+
 		protected function appendDuplicator(SymphonyDOMElement $wrapper, Section $section, array $items = null) {
 			$document = $wrapper->ownerDocument;
 			$duplicator = new Duplicator(__('Add Item'));
@@ -250,18 +250,18 @@
 					$item->appendChild($label);
 				}
 			}
-			
+
 			$duplicator->appendTo($wrapper);
 		}
-		
+
 	/*-----------------------------------------------------------------------*/
-		
+
 		public function canTrigger(array $data) {
 			if (!isset($data['action'][$this->parameters()->{'root-element'}])) return false;
-			
+
 			return true;
 		}
-		
+
 		public function trigger(Register $ParameterOutput, array $postdata){
 			$result = new XMLDocument;
 			$result->appendChild($result->createElement($this->parameters()->{'root-element'}));
@@ -300,7 +300,7 @@
 
 			$errors = new MessageStack;
 			$status = Entry::save($entry, $errors);
-			
+
 			if($status == Entry::STATUS_OK){
 				###
 				# Delegate: EntryPostCreate
@@ -328,15 +328,15 @@
 				$root->appendChild($result->createElement(
 					'message', __('Entry encountered errors when saving.')
 				));
-				
+
 				if(!isset($postdata['fields']) || !is_array($postdata['fields'])) {
 					$postdata['fields'] = array();
 				}
-				
+
 				$element = $result->createElement('values');
 				$this->appendValues($element, $postdata['fields']);
 				$root->appendChild($element);
-				
+
 				$element = $result->createElement('errors');
 				$this->appendMessages($element, $errors);
 				$root->appendChild($element);
@@ -344,59 +344,59 @@
 
 			return $result;
 		}
-		
+
 		protected function appendValues(DOMElement $wrapper, array $values) {
 			$document = $wrapper->ownerDocument;
-			
+
 			foreach ($values as $key => $value) {
 				if (is_numeric($key)) {
 					$element = $document->createElement('item');
 				}
-				
+
 				else {
 					$element = $document->createElement($key);
 				}
-				
+
 				if (is_array($value) and !empty($value)) {
 					$this->appendValues($element, $value);
 				}
-				
+
 				else {
 					$element->setValue((string)$value);
 				}
-				
+
 				$wrapper->appendChild($element);
 			}
 		}
-		
+
 		protected function appendMessages(DOMElement $wrapper, MessageStack $messages) {
 			$document = $wrapper->ownerDocument;
-			
+
 			foreach ($messages as $key => $value) {
 				if (is_numeric($key)) {
 					$element = $document->createElement('item');
 				}
-				
+
 				else {
 					$element = $document->createElement($key);
 				}
-				
+
 				if ($value instanceof $messages and $value->valid()) {
 					$this->appendMessages($element, $value);
 				}
-				
+
 				else if ($value instanceof STDClass) {
 					$element->setValue($value->message);
 					$element->setAttribute('type', $value->code);
 				}
-				
+
 				else {
 					continue;
 				}
-				
+
 				$wrapper->appendChild($element);
 			}
 		}
 	}
-	
+
 ?>

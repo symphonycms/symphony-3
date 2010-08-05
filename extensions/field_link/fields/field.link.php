@@ -479,7 +479,7 @@
 			if ($this->required == 'yes' && empty($data)){
 				$errors->append(
 					null, (object)array(
-					 	'message' => __("'%s' is a required field.", array($this->label)),
+					 	'message' => __("'%s' is a required field.", array($this->{'publish-label'})),
 						'code' => self::ERROR_MISSING
 					)
 				);

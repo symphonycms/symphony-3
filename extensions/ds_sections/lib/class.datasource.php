@@ -584,7 +584,7 @@
 			//	If any one condtion returns true (that is, do not execute), the DS will not execute at all
 			if(is_array($this->parameters()->conditions)) {
 				foreach($this->parameters()->conditions as $condition) {
-					if (preg_match('/:/', $condition['parameter'])) {
+					if (strpos(':', $condition['parameter']) !== -1) {
 						$c = Datasource::replaceParametersInString($condition['parameter'], $parameter_output);
 					}
 					

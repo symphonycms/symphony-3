@@ -72,7 +72,7 @@
 		public function getExampleFormMarkup() {
 			$handle = $this->{'element-name'};
 
-			$label = Widget::Label($this->{'name'});
+			$label = Widget::Label($this->{'publish-label'});
 			$label->appendChild(Widget::Input('fields[{$handle}]', null, 'file'));
 
 			return $label;
@@ -466,7 +466,7 @@
 						null, (object)array(
 						 	'message' => __(
 						 		"'%s' is a required field.",
-						 		array($this->{'name'})
+						 		array($this->{'publish-label'})
 						 	),
 							'code' => self::ERROR_MISSING
 						)
@@ -506,7 +506,7 @@
 							null, (object)array(
 							 	'message' => __(
 									'File chosen in \'%s\' exceeds the maximum allowed upload size of %s specified by your host.',
-									array($this->{'name'}, $size)
+									array($this->{'publish-label'}, $size)
 							 	),
 								'code' => self::ERROR_INVALID
 							)
@@ -519,7 +519,7 @@
 							null, (object)array(
 							 	'message' => __(
 									'File chosen in \'%s\' exceeds the maximum allowed upload size of %s, specified by Symphony.',
-									array($this->{'name'}, $size)
+									array($this->{'publish-label'}, $size)
 							 	),
 								'code' => self::ERROR_INVALID
 							)
@@ -532,7 +532,7 @@
 							null, (object)array(
 							 	'message' => __(
 									'File chosen in \'%s\' was only partially uploaded due to an error.',
-									array($this->{'name'})
+									array($this->{'publish-label'})
 							 	),
 								'code' => self::ERROR_INVALID
 							)
@@ -544,7 +544,7 @@
 							null, (object)array(
 							 	'message' => __(
 									'Uploading \'%s\' failed. Could not write temporary file to disk.',
-									array($this->{'name'})
+									array($this->{'publish-label'})
 							 	),
 								'code' => self::ERROR_INVALID
 							)
@@ -556,7 +556,7 @@
 							null, (object)array(
 							 	'message' => __(
 									'Uploading \'%s\' failed. File upload stopped by extension.',
-									array($this->{'name'})
+									array($this->{'publish-label'})
 							 	),
 								'code' => self::ERROR_INVALID
 							)
@@ -575,7 +575,7 @@
 						null, (object)array(
 						 	'message' => __(
 								'File chosen in \'%s\' does not match allowable file types for that field.',
-								array($this->{'name'})
+								array($this->{'publish-label'})
 						 	),
 							'code' => self::ERROR_INVALID
 						)

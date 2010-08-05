@@ -225,7 +225,7 @@
 			if ($this->required == 'yes' && (!isset($data[0]->user_id) || strlen(trim($data[0]->user_id)) == 0)){
 				$errors->append(
 					null, (object)array(
-					 	'message' => __("'%s' is a required field.", array($this->label)),
+					 	'message' => __("'%s' is a required field.", array($this->{'publish-label'})),
 						'code' => self::ERROR_MISSING
 					)
 				);
