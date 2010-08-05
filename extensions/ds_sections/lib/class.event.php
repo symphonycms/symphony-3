@@ -25,7 +25,7 @@
 		public function getTemplate(){
 			return EXTENSIONS . '/ds_sections/templates/template.event.php';
 		}
-
+		
 		public function prepareDestinationColumnValue(){
 			$section = Section::loadFromHandle($this->_parameters->section);
 
@@ -132,7 +132,7 @@
 				'AppendEventFilter',
 				'/blueprints/events/',
 				array(
-					'selected'	=> $fields['filters'],
+					'selected'	=> $filters,
 					'options'	=> &$options
 				)
 			);
