@@ -587,8 +587,8 @@
 				Views will also need to update to ensure they still have references to the same
 				data-sources/sections
 			*/
-
-			return General::deleteFile(SECTIONS . '/' . $old_handle . '.xml');
+			
+			return General::deleteFile($section->path . '/' . $old_handle . '.xml');
 		}
 
 		public static function delete(Section $section) {
@@ -625,8 +625,8 @@
 				array($section->handle),
 				'`section` = "%s"'
 			);
-
-			if(General::deleteFile(SECTIONS . '/' . $section->handle . '.xml')) {
+			
+			if(General::deleteFile($section->path . '/' . $section->handle . '.xml')) {
 				//	Cleanup Datasources
 				foreach(new DataSourceIterator as $datasource) {
 					$ds = DataSource::load($datasource);

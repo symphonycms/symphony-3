@@ -487,9 +487,19 @@
 			if (!empty($events)) {
 				$postdata = General::getPostData();
 				$events_ordered = array();
+				$events_loaded = array();
 				
 				foreach($events as $handle){
-					$events_ordered[] = Event::loadFromHandle($handle);
+					if (in_array($handle, $events_loaded)) continue;
+					
+					if ($handle instanceof Event) {
+						$events_ordered[] = $handle;
+					}
+					
+					else {
+						$events_ordered[] = Event::loadFromHandle($handle);
+						$events_loaded[] = $handle;
+					}
 				}
 				
 				uasort($events_ordered, array($this, '__cbSortEventsByPriority'));
@@ -523,10 +533,21 @@
 			$all_dependencies = array();
 			
 			foreach($datasources as $handle){
-				$datasource_pool[$handle] = Datasource::loadFromHandle($handle);
-				$dependency_list[$handle] = $datasource_pool[$handle]->parameters()->dependencies;
+				if ($handle instanceof DataSource) {
+					$datasource = $handle;
+					$handle = $datasource->handle;
+					
+					$datasource_pool[$handle] = $datasource;
+					$dependency_list[$handle] = $datasource->parameters()->dependencies;
+				}
+				
+				else {
+					$datasource_pool[$handle] = Datasource::loadFromHandle($handle);
+					$dependency_list[$handle] = $datasource_pool[$handle]->parameters()->dependencies;
+					$datasources_loaded[] = $handle;
+				}
 			}
-
+			
 			$datasources_ordered = General::dependenciesSort($dependency_list);
 			
 			if (!empty($datasources_ordered)) {

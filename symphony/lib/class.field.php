@@ -656,10 +656,20 @@
 				return self::STATUS_OK;
 			}
 			catch(DatabaseException $e){
-
+				$errors->append(
+					null, (object)array(
+					 	'message' => $e->getMessage(),
+						'code' => $e->getDatabaseErrorCode()
+					)
+				);
 			}
 			catch(Exception $e){
-
+				$errors->append(
+					null, (object)array(
+					 	'message' => $e->getMessage(),
+						'code' => $e->getCode()
+					)
+				);
 			}
 			return self::STATUS_ERROR;
 		}

@@ -226,7 +226,7 @@
 
 			// Widget class needs a document in order to create elements
 			Widget::init($this->Page);
-
+			
 			####
 			# Delegate: AdminPagePreBuild
 			# Description: Immediately before building the admin page. Provided with the page and callback

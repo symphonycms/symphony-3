@@ -139,6 +139,8 @@
 		}
 
 		public static function destroy($id) {
+			Symphony::$Log->pushToLog("Session: Being destroyed now!", E_NOTICE, true);
+			
 			return Symphony::Database()->delete('tbl_sessions', array($id), "`session` = '%s'");
 		}
 

@@ -102,12 +102,18 @@
 			$entry = self::loadFromID($id);
 			$section = Section::loadFromHandle($entry->section);
 			
-			foreach($section->fields as $field){
-				Symphony::Database()->delete(
-					sprintf('tbl_data_%s_%s', $section->handle, $field->{'element-name'}), 
-					array($entry->id), 
-					'`entry_id` = %d'
-				);
+			try {
+				foreach($section->fields as $field){
+					Symphony::Database()->delete(
+						sprintf('tbl_data_%s_%s', $section->handle, $field->{'element-name'}), 
+						array($entry->id), 
+						'`entry_id` = %d'
+					);
+				}
+			}
+			
+			catch (Exception $e) {
+				// TODO: Do something about fields that don't implement this correctly.
 			}
 			
 			Symphony::Database()->delete('tbl_entries', array($entry->id), " `id` = %d LIMIT 1");

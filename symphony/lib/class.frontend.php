@@ -219,6 +219,7 @@
 		}
 		
 		public function display($url=NULL){
+			self::$Parameters = new Register;
 			
 			// Default headers. Can be overwritten later
 			//self::$Headers->append('HTTP/1.0 200 OK');
@@ -256,7 +257,6 @@
 			);
 
 			// SETTING UP PARAMETERS --------------------------
-			self::$Parameters = new Register;
 
 			$root_page = array_shift(explode('/', self::$view->parent()->path));
 			$current_path = explode(dirname($_SERVER['SCRIPT_NAME']), $_SERVER['REQUEST_URI'], 2);

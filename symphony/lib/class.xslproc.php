@@ -234,7 +234,7 @@
 
 			if(!self::hasErrors() && ($XSLDoc instanceof DOMDocument) && ($XMLDoc instanceof DOMDocument)){
 				$XSLProc = new XSLTProcessor;
-				if(!empty($register_functions)) $XSLProc->registerPHPFunctions($register_functions);
+				$XSLProc->registerPHPFunctions();
 				$XSLProc->importStyleSheet($XSLDoc);
 
 				if(is_array($parameters) && !empty($parameters)) $XSLProc->setParameter('', $parameters);

@@ -7,7 +7,7 @@
 		var state = null;
 		var start = function() {
 			state = {
-				item:		$(this).closest('.orderable-handle'),
+				item:		$(this).closest('.orderable-item'),
 				object:		$(this).closest('.orderable-widget'),
 				min:		null,
 				max:		null,
