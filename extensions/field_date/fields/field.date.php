@@ -109,7 +109,7 @@
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null){
 			$name = $this->{'element-name'};
 			$value = null;
-
+			
 			// New entry:
 			if (is_null($data) && $this->{'pre-populate'} == 'yes') {
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, null);
@@ -187,7 +187,7 @@
 			if(!is_null($data->value) && strlen(trim($data->value)) > 0 && !self::__isValidDateString($data->value)){
 				$errors->append(
 					null, (object)array(
-					 	'message' => __("The date specified in '%s' is invalid.", array($this->label)),
+					 	'message' => __("The date specified in '%s' is invalid.", array($this->{'name'})),
 						'code' => self::ERROR_INVALID
 					)
 				);
