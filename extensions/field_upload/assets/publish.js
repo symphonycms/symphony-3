@@ -8,10 +8,8 @@ jQuery(document).ready(function() {
 		if (file.length) {
 			var clear = jQuery('<a />')
 				.text('Change')
-				.addClass('action-change')
 				.prependTo(field.find('.label'));
 			var keep = jQuery('<a />')
-				.addClass('action-keep')
 				.text('Keep')
 				.prependTo(field.find('.label'))
 				.hide();
