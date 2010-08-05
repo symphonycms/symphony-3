@@ -208,7 +208,7 @@
 			}
 
 			foreach($states as $handle => $v){
-				$options[] = array($v, in_array($v, $selected), $v);
+				$options[] = array($handle, in_array($v, $selected), $v);
 			}
 
 			$fieldname = 'fields['.$this->{'element-name'}.']';
@@ -256,8 +256,18 @@
 					'handle' => null
 				);
 			//}
-
-			if(!is_null($data)){
+			
+			if (is_array($data)) {
+				$result->value = array();
+				$result->handle = array();
+				
+				foreach ($data as $value) {
+					$result->value[] = $value;
+					$result->handle[] = Lang::createHandle($value);
+				}
+			}
+			
+			else if (!is_null($data)){
 				$result->value = $data;
 				$result->handle = Lang::createHandle($data);
 			}
@@ -438,7 +448,7 @@
 			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
-			$label = Widget::Label($this->label);
+			$label = Widget::Label($this->{'name'});
 			$label->appendChild(Widget::Select($fieldname, $options,
 				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));
