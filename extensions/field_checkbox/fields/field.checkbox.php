@@ -111,7 +111,10 @@
 			}
 
 			else $value = ($data->value == 'yes' ? 'yes' : 'no');
-
+			
+			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'no', 'hidden');
+			$wrapper->appendChild($input);
+			
 			$label = Widget::Label();
 			$input = Widget::Input('fields['.$this->{'element-name'}.']', 'yes', 'checkbox', ($value == 'yes' ? array('checked' => 'checked') : array()));
 
@@ -130,13 +133,28 @@
 
 		public function processData($data, Entry $entry=NULL){
 			$states = array('on', 'yes');
-
-			if($this->{'required'} == 'yes' && !in_array(strtolower($data), $states)) {
-				$data = null;
+			
+			if (isset($entry->data()->{$this->{'element-name'}})) {
+				$result = $entry->data()->{$this->{'element-name'}};
 			}
-			else $data = (in_array(strtolower($data), $states)) ? 'yes' : 'no';
-
-   			return parent::processData($data, $entry);
+			
+			else {
+				$result = (object)array(
+					'value'	=> null
+				);
+			}
+			
+			if (!is_null($data)) {
+				if ($this->{'required'} == 'yes' && !in_array(strtolower($data), $states)) {
+					$result->value = null;
+				}
+				
+				else {
+					$result->value = (in_array(strtolower($data), $states)) ? 'yes' : 'no';
+				}
+			}
+			
+			return $result;
 		}
 
 		/*-------------------------------------------------------------------------
