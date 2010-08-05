@@ -303,6 +303,32 @@
 			}
 		}
 		
+		protected function readSession() {
+			$section = $this->parameters()->{'section'};
+			
+			if (!isset($_SESSION[$section]['token']) or !isset($_SESSION[$section]['email'])) {
+				return false;
+			}
+			
+			return (object)array(
+				'token'	=> $_SESSION[$section]['token'],
+				'email'	=> $_SESSION[$section]['email']
+			);
+		}
+		
+		protected function writeSession($token, $email) {
+			$section = $this->parameters()->{'section'};
+			
+			$_SESSION[$section]['token'] = $token;
+			$_SESSION[$section]['email'] = $email;
+		}
+		
+		protected function deleteSession() {
+			$section = $this->parameters()->{'section'};
+			
+			unset($_SESSION[$section]['token'], $_SESSION[$section]['email']);
+		}
+		
 		protected function login(MessageStack $errors, Register $parameter_output, array $data) {
 			$section = Section::loadFromHandle($this->parameters()->{'section'});
 			$wheres = array(); $joins = null;
@@ -329,21 +355,17 @@
 				throw new Exception(__('Section does not contain required fields.'));
 			}
 			
-			if (!isset($this->cookie)) {
-				$this->cookie = new Cookie($this->parameters()->{'section'});
-			}
-			
 			// Simulate data from cookie:
-			if (empty($data) and $this->cookie->get('email') and $this->cookie->get('login')) {
+			if (empty($data) and $this->readSession()) {
+				$session = $this->readSession();
 				$fields = array(
-					$field_email->{'element-name'}		=> $this->cookie->get('email'),
-					$field_password->{'element-name'}	=> $this->cookie->get('login')
+					$field_email->{'element-name'}		=> $session->email,
+					$field_password->{'element-name'}	=> $session->login
 				);
 			}
 			
 			else {
-				$this->cookie->set('email', null);
-				$this->cookie->set('login', null);
+				$this->deleteSession();
 				$fields = $data['fields'];
 			}
 			
@@ -459,8 +481,7 @@ WHERE
 			$login = $this->driver->createToken($code, 'login');
 			
 			if ($this->parameters()->{'create-cookie'} == true) {
-				$this->cookie->set('email', $email);
-				$this->cookie->set('login', $login);
+				$this->writeCookie($login, $email);
 			}
 			
 			$event_name =  $this->parameters()->{'root-element'};
