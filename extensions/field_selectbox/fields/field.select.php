@@ -448,11 +448,7 @@
 			$fieldname = 'fields['.$this->{'element-name'}.']';
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
-<<<<<<< HEAD
-			$label = Widget::Label($this->{'name'});
-=======
 			$label = Widget::Label($this->{'publish-label'});
->>>>>>> cedcc471c52cc8591d93747d7cfbd5b0e2e0b0ee
 			$label->appendChild(Widget::Select($fieldname, $options,
 				($this->{'allow-multiple-selection'} == 'yes') ? array('multiple' => 'multiple') : array()
 			));

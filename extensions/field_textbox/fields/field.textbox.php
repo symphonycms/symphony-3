@@ -408,7 +408,7 @@
 			if (!$this->applyValidationRules($data->value)) {
 				$errors->append(
 					null, (object)array(
-					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->name)),
+					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->{'publish-label'})),
 						'code' => self::ERROR_INVALID
 					)
 				);
@@ -420,8 +420,7 @@
 				$errors->append(
 					null, (object)array(
 					 	'message' => __("'%s' must be no longer than %s characters.", array(
-							$this->{'name'},
-							$length
+							$this->{'publish-label'}, $length
 						)),
 						'code' => self::ERROR_INVALID
 					)
@@ -435,19 +434,20 @@
 
 		public function applyFormatting($value) {
 			if (isset($this->{'text-formatter'}) && $this->{'text-formatter'} != TextFormatter::NONE) {
-
-				try{
+				try {
 					$formatter = TextFormatter::loadFromHandle($this->{'text-formatter'});
 					$result = $formatter->run($value);
 					$result = preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $result);
+					
 					return $result;
 				}
-				catch(Exception $e){
+				
+				catch (Exception $e) {
 					// Problem loading the formatter
 					// TODO: Decide is we should be handling this better.
 				}
 			}
-
+			
 			return General::sanitize($value);
 		}
 
