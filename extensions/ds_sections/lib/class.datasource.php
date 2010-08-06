@@ -767,13 +767,13 @@
 
 					// Do some pre-processing on the param output array
 					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
-						$parameter_output = (object)array('system' => array(), 'fields' => array());
+						$output_parameters = (object)array('system' => array(), 'fields' => array());
 						foreach($this->parameters()->{'parameter-output'} as $element){
 							if(preg_match('/^system:/i', $element)){
-								$parameter_output->system[preg_replace('/^system:/i', NULL, $element)] = array();
+								$output_parameters->system[preg_replace('/^system:/i', NULL, $element)] = array();
 							}
 							else{
-								$parameter_output->fields[$element] = array();
+								$output_parameters->fields[$element] = array();
 							}
 						}
 					}
@@ -819,27 +819,27 @@
 						}
 
 						if (is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})) {
-							foreach($parameter_output->system as $field => $existing_values){
+							foreach($output_parameters->system as $field => $existing_values){
 								switch($field){
 									case 'id':
-										$parameter_output->system[$field][] = $e->id;
+										$output_parameters->system[$field][] = $e->id;
 										break;
 
 									case 'creation-date':
-										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::fromGMT($e->creation_date));
+										$output_parameters->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::fromGMT($e->creation_date));
 										break;
 
 									case 'modification-date':
-										$parameter_output->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::fromGMT($e->modification_date));
+										$output_parameters->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::fromGMT($e->modification_date));
 										break;
 
 									case 'user':
-										$parameter_output->system[$field][] = $e->user_id;
+										$output_parameters->system[$field][] = $e->user_id;
 										break;
 								}
 							}
 
-							foreach ($parameter_output->fields as $field => $existing_values) {
+							foreach ($output_parameters->fields as $field => $existing_values) {
 								if (!isset($e->data()->$field) or is_null($e->data()->$field)) continue;
 
 								$o = $section->fetchFieldByHandle($field)->getParameterOutputValue(
@@ -847,10 +847,10 @@
 								);
 
 								if(is_array($o)){
-									$parameter_output->fields[$field] = array_merge($o, $parameter_output->fields[$field]);
+									$output_parameters->fields[$field] = array_merge($o, $output_parameters->fields[$field]);
 								}
 								else{
-									$parameter_output->fields[$field][]	= $o;
+									$output_parameters->fields[$field][]	= $o;
 								}
 
 							}
@@ -860,12 +860,12 @@
 
 					// Add in the param output values to the parameter_output object
 					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
-						foreach($parameter_output->system as $field => $values){
+						foreach($output_parameters->system as $field => $values){
 							$key = sprintf('ds-%s.system.%s', $this->parameters()->{'root-element'}, $field);
 							$parameter_output->$key = array_unique($values);
 						}
 
-						foreach($parameter_output->fields as $field => $values){
+						foreach($output_parameters->fields as $field => $values){
 							$key = sprintf('ds-%s.%s', $this->parameters()->{'root-element'}, $field);
 							$parameter_output->$key = array_unique($values);
 						}
