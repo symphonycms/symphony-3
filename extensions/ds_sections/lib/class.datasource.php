@@ -363,7 +363,7 @@
 						if (isset($fields[$filter['element-name']])) {
 							$element_name = $filter['element-name'];
 							$field = $fields[$element_name];
-							$item = $duplicator->createInstance($field->label, $field->name());
+							$item = $duplicator->createInstance($field->{'publish-label'}, $field->name());
 							
 							$field->displayDatasourceFilterPanel(
 								$item, $filter, $errors->$element_name
@@ -455,7 +455,7 @@
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
 					foreach ($section_data['fields'] as $field) {
 						$field_handle = $field->{'element-name'};
-						$field_label = $field->label;
+						$field_label = $field->{'publish-label'};
 						$modes = $field->fetchIncludableElements();
 
 						if ($field->isSortable()) {

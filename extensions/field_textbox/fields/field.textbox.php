@@ -502,6 +502,8 @@
 				$mode = 'formatted';
 				$value = trim($data->value_formatted);
 			}
+			
+			if(is_null($value)) return;
 
 			$result = $wrapper->ownerDocument->createElement($this->{'element-name'});
 

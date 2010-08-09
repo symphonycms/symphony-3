@@ -468,7 +468,7 @@
 		}
 
 		protected function __sortFields($a, $b) {
-			return strnatcasecmp($a->label, $b->label);
+			return strnatcasecmp($a->{'publish-label'}, $b->{'publish-label'});
 		}
 
 		protected function appendSyncAlert() {
@@ -570,21 +570,21 @@
 				
 				if (isset($sync->rename[$guid])) {
 					$cell->appendChild($this->createTextNode(
-						$data->new->label . ' '
+						$data->new->{'publish-label'} . ' '
 					));
 					
 					$span = $this->createElement('span');
 					$span->setAttribute('class', 'old');
 					$span->appendChild($this->createEntityReference('larr'));
 					$span->appendChild($this->createTextNode(
-						' ' . $data->old->label
+						' ' . $data->old->{'publish-label'}
 					));
 					
 					$cell->appendChild($span);
 				}
 				
 				else {
-					$cell->setValue($data->label);
+					$cell->setValue($data->{'publish-label'});
 				}
 				
 				$row->appendChild($cell);

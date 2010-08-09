@@ -180,7 +180,7 @@
 			$options = array(array('system:id', false, 'System ID'));
 
 			foreach($section->fields as $f){
-				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
+				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->{'publish-label'}));
 			}
 
 			$label->appendChild(Widget::Select('fields[overrides][field][]', $options));
@@ -195,7 +195,7 @@
 			$options = array(array('system:id', false, 'System ID'));
 
 			foreach ($section->fields as $f) {
-				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
+				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->{'publish-label'}));
 			}
 
 			$label->appendChild(Widget::Select('fields[defaults][field][]', $options));
@@ -215,7 +215,7 @@
 						$options[] = array(
 							General::sanitize($f->{'element-name'}),
 							$f->{'element-name'} == $field_name,
-							General::sanitize($f->label)
+							General::sanitize($f->{'publish-label'})
 						);
 					}
 
@@ -238,7 +238,7 @@
 						$options[] = array(
 							General::sanitize($f->{'element-name'}),
 							$f->{'element-name'} == $field_name,
-							General::sanitize($f->label)
+							General::sanitize($f->{'publish-label'})
 						);
 					}
 

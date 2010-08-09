@@ -124,7 +124,7 @@
 						$fields[] = array(
 							$section->handle . '::' .$field->{'element-name'},
 							($this->{'dynamic-options'} == $section->handle . '::' .$field->{'element-name'}),
-							$field->label
+							$field->{'publish-label'}
 						);
 					}
 				}
@@ -315,7 +315,7 @@
 		-------------------------------------------------------------------------*/
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
-			if (!is_array($data) or empty($data)) return;
+			if (!is_array($data) or empty($data) or is_null($data->value)) return;
 
 			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
 
