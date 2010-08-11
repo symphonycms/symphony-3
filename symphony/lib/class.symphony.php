@@ -161,6 +161,9 @@
 
 			Lang::loadAll(true);
 
+			// Ensure the cookie is always initialised
+			$this->Cookie->init();
+
 		}
 
 		public function lang(){
