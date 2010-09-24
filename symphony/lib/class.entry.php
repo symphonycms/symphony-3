@@ -1,6 +1,8 @@
 <?php
 
 	Class EntryResult extends DBCMySQLResult{
+		public $schema = array();
+
 		public function current(){
 			$record = parent::current();
 			$entry = new Entry;
@@ -19,11 +21,17 @@
 				throw new EntryException('The following error occurred during saving: ' . $e->getMessage());
 			}
 
-			foreach($section->fields as $field){
+			foreach ($section->fields as $field) {
+				if(!empty($this->schema) && !in_array($field->{'element-name'}, $this->schema)) continue;
+
 				$entry->data()->{$field->{'element-name'}} = $field->loadDataFromDatabase($entry);
 			}
 
 			return $entry;
+		}
+
+		public function setSchema(Array $schema = array()) {
+			$this->schema = $schema;
 		}
 	}
 
@@ -72,8 +80,14 @@
 			return $this->meta;
 		}
 
-		public static function loadFromID($id){
-			return Symphony::Database()->query("SELECT * FROM `tbl_entries` WHERE `id` = %d LIMIT 1", array($id), 'EntryResult')->current();
+		public static function loadFromID($id, $schema = array()){
+			$result = Symphony::Database()->query("SELECT * FROM `tbl_entries` WHERE `id` = %d LIMIT 1", array($id), 'EntryResult');
+
+			$result->setSchema($schema);
+
+			if (!$result->valid()) return null;
+
+			return $result->current();
 		}
 
 		public function setFieldDataFromFormArray(array $data){
@@ -92,27 +106,35 @@
 			foreach($section->fields as $field){
 				$field_handle = $field->{'element-name'};
 
+				//	The current behaviour is stupid, nulling fields if they are omitting from the form
+				//	as it breaks Frontend form submissions that don't have the complete set of fields for
+				//	that section.. The problem I forsee from my line here is that it will break image
+				//	upload fields when you try to remove a file from them (but not replace). I don't have
+				//	time to test, so for now, it's just gotta be known that you must put all yours field
+				//	in your frontend forms, or be prepared to have their values NULL'd ^BA.
+				//	if(!isset($data[$field_handle]) continue;
+
 				$result = $field->processData((!isset($data[$field_handle]) ? NULL : $data[$field_handle]), $this);
-				
+
 				$this->data()->$field_handle = $result;
 			}
 		}
-		
+
 		public static function delete($id){
 			$entry = self::loadFromID($id);
 			$section = Section::loadFromHandle($entry->section);
-			
+
 			foreach($section->fields as $field){
 				Symphony::Database()->delete(
-					sprintf('tbl_data_%s_%s', $section->handle, $field->{'element-name'}), 
-					array($entry->id), 
+					sprintf('tbl_data_%s_%s', $section->handle, $field->{'element-name'}),
+					array($entry->id),
 					'`entry_id` = %d'
 				);
 			}
-			
+
 			Symphony::Database()->delete('tbl_entries', array($entry->id), " `id` = %d LIMIT 1");
 		}
-		
+
 		public static function save(self $entry, MessageStack &$errors){
 
 			if(!isset($entry->section) || strlen(trim($entry->section)) == 0){
@@ -143,17 +165,17 @@
 
 			$entry->findDefaultFieldData();
 			$status = Field::STATUS_OK;
-			
+
 			// Check the data
 			foreach($section->fields as $field){
 				$field_data = $entry->data()->{$field->{'element-name'}};
 				$field_errors = new MessageStack;
 				$field_status = $field->validateData($field_errors, $entry, $field_data);
-				
+
 				if ($field_status != Field::STATUS_OK) {
 					$status = $field_status;
 				}
-				
+
 				$errors->append($field->{'element-name'}, $field_errors);
 			}
 
@@ -164,12 +186,12 @@
 
 				foreach ($section->fields as $field) {
 					if (!isset($entry->data()->{$field->{'element-name'}})) continue;
-					
+
 					$field_data = $entry->data()->{$field->{'element-name'}};
 					$field_errors = $errors->{$field->{'element-name'}};
-					
+
 					$status = $field->saveData($field_errors, $entry, $field_data);
-					
+
 					// Cannot continue if a field failed to save
 					if ($status != Field::STATUS_OK) break;
 				}
@@ -178,7 +200,7 @@
 			// Cleanup due to failure
 			if ($status != Field::STATUS_OK && $purge_meta_on_error == true){
 				Symphony::Database()->delete('tbl_entries', array(), " `id` = {$entry->id} LIMIT 1");
-				
+
 				return self::STATUS_ERROR;
 			}
 
@@ -187,11 +209,11 @@
 						This will arise if you enter a value in a field, save, then come back
 						and clear the field.
 			*/
-			
+
 			if ($status != Field::STATUS_OK) {
 				return self::STATUS_ERROR;
 			}
-			
+
 			return self::STATUS_OK;
 		}
 

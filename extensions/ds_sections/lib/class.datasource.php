@@ -25,7 +25,7 @@
 				'dependencies' => array(),
 			);
 		}
-		
+
 		public function getType() {
 			return 'SectionsDataSource';
 		}
@@ -51,9 +51,9 @@
 				));
 			}
 		}
-		
+
 	/*-----------------------------------------------------------------------*/
-		
+
 		public function prepare(array $data=NULL) {
 			if(!is_null($data)){
 				if(isset($data['about']['name'])) $this->about()->name = $data['about']['name'];
@@ -77,7 +77,7 @@
 				$this->parameters()->{'redirect-404-on-empty'} = (isset($data['redirect-404-on-empty']) && $data['redirect-404-on-empty'] == 'yes');
 				$this->parameters()->{'append-pagination'} = (isset($data['append-pagination']) && $data['append-pagination'] == 'yes');
 				$this->parameters()->{'append-sorting'} = (isset($data['append-sorting']) && $data['append-sorting'] == 'yes');
-				
+
 				/*
 				TODO: Are these going to be used?
 				$this->parameters()->{'append-associated-entry-count'} = (isset($data['append-associated-entry-count']) && $data['append-associated-entry-count'] == 'yes');
@@ -96,16 +96,16 @@
 				if(isset($data['parameter-output'])){
 					$this->parameters()->{'parameter-output'} = (array)$data['parameter-output'];
 				}
-				
+
 				// Calculate dependencies
 				$this->parameters()->{'dependencies'} = array();
 				if(preg_match_all('/\$ds-([^\s\/?*:;{},\\\\"\'\.]+)/i', serialize($this->parameters()), $matches) > 0){
 					$this->parameters()->{'dependencies'} = array_unique($matches[1]);
 				}
-				
+
 			}
 		}
-		
+
 		public function view(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			$page = Administration::instance()->Page;
 			$page->insertNodeIntoHead($page->createScriptElement(URL . '/extensions/ds_sections/assets/view.js'));
@@ -186,7 +186,7 @@
 			$fieldset->appendChild($p);
 		*/
 			$left->appendChild($fieldset);
-			
+
 		//	Sorting -----------------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Sorting'));
@@ -252,11 +252,11 @@
 		//	Output options ----------------------------------------------------
 
 			$fieldset = Widget::Fieldset(__('Output Options'));
-			
+
 			//$container_parameter_output = $page->createElement('div');
 			$context_content = $page->createElement('div');
 			$fieldset->appendChild($context_content);
-			
+
 			$fieldset->appendChild(Widget::Input('fields[append-pagination]', 'no', 'hidden'));
 
 			$label = Widget::Label(__('Append pagination data'));
@@ -268,7 +268,7 @@
 
 			$label->prependChild($input);
 			$fieldset->appendChild($label);
-			
+
 			$fieldset->appendChild(Widget::Input('fields[append-sorting]', 'no', 'hidden'));
 
 			$label = Widget::Label(__('Append sorting data'));
@@ -318,10 +318,10 @@
 				$fields = array();
 				$duplicator = new Duplicator(__('Add Filter'));
 				$duplicator->addClass('filtering-duplicator context context-' . $section_handle);
-				
+
 				// System ID template:
 				$item = $duplicator->createTemplate(__('System ID'));
-				
+
 				$type_label = Widget::Label(__('Type'));
 				$type_label->setAttribute('class', 'small');
 				$type_label->appendChild(Widget::Select(
@@ -331,32 +331,32 @@
 						array('is-not', false, 'Is not')
 					)
 				));
-				
+
 				$label = Widget::Label(__('Value'));
 				$label->appendChild(Widget::Input('value'));
 				$label->appendChild(Widget::Input(
 					'element-name', 'system:id', 'hidden'
 				));
-				
+
 				$item->appendChild(Widget::Group(
 					$type_label, $label
 				));
-				
+
 				// Field templates:
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
 					foreach ($section_data['fields'] as $field) {
 						if (!$field->canFilter()) continue;
-						
+
 						$element_name = $field->{'element-name'};
 						$fields[$element_name] = $field;
-						
+
 						$item = $duplicator->createTemplate($field->name, $field->name());
 						$field->displayDatasourceFilterPanel(
 							$item, null, null
 						);
 					}
 				}
-				
+
 				// Field isntances:
 				if (is_array($filter_data) && !empty($filter_data)) {
 					foreach ($filter_data as $filter) {
@@ -364,15 +364,15 @@
 							$element_name = $filter['element-name'];
 							$field = $fields[$element_name];
 							$item = $duplicator->createInstance($field->{'publish-label'}, $field->name());
-							
+
 							$field->displayDatasourceFilterPanel(
 								$item, $filter, $errors->$element_name
 							);
 						}
-						
+
 						else if ($filter['element-name'] == 'system:id') {
 							$item = $duplicator->createInstance(__('System ID'));
-							
+
 							$type_label = Widget::Label(__('Type'));
 							$type_label->appendChild(Widget::Select(
 								'type',
@@ -381,16 +381,16 @@
 									array('is-not', $filter['type'] == 'is-not', 'Is not')
 								)
 							));
-		
+
 							$label = Widget::Label(__('Value'));
 							$label->appendChild(Widget::Input(
 								"value", $filter['value']
 							));
-							
+
 							$label->appendChild(Widget::Input(
 								'element-name', 'system:id', 'hidden'
 							));
-							
+
 							$item->appendChild(Widget::Group(
 								$type_label, $label
 							));
@@ -514,31 +514,31 @@
 				$select->setAttribute('multiple', 'multiple');
 
 				$include_label->appendChild($select);
-				
+
 				$group = Widget::Group($param_label, $include_label);
 				$group->setAttribute('class', 'group context context-' . $section_handle);
-				
+
 				$context_content->parentNode->insertBefore($group, $context_content);
 			}
-			
+
 			$context_content->remove();
 		}
-		
+
 		protected function appendCondition(Duplicator $duplicator, $condition = array()) {
 			$document = $duplicator->ownerDocument;
-			
+
 			if (empty($condition)) {
 				$item = $duplicator->createTemplate(__('Don\'t Execute When'));
 			}
-			
+
 			else {
 				$item = $duplicator->createInstance(__('Don\'t Execute When'));
 			}
-			
+
 			if (!isset($condition['parameter'])) {
 				$condition['parameter'] = null;
 			}
-			
+
 			if (!isset($condition['logic'])) {
 				$condition['logic'] = 'empty';
 			}
@@ -572,10 +572,10 @@
 			if (strlen(trim($this->parameters()->page)) == 0 || (is_numeric($this->parameters()->page) && $this->parameters()->page < 1)) {
 				$errors->append('page', __('A page number must be set'));
 			}
-			
+
 			return parent::save($errors);
 		}
-		
+
 	/*-----------------------------------------------------------------------*/
 
 		/*public function canAppendAssociatedEntryCount() {
@@ -726,10 +726,13 @@
 				else{
 					$join = NULL;
 					$sort_field = $section->fetchFieldByHandle($this->parameters()->{'sort-field'});
-					$sort_field->buildSortingQuery($join, $order);
 
-					$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
-					$order = sprintf($order, $sort);
+					if($sort_field instanceof Field && $sort_field->isSortable() && method_exists($sort_field, "buildSortingQuery")) {
+						$sort_field->buildSortingQuery($join, $order);
+
+						$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
+						$order = sprintf($order, $sort);
+					}
 				}
 			}
 
@@ -738,10 +741,13 @@
 				foreach($this->parameters()->filters as $k => $filter){
 					if($filter['element-name'] == 'system:id'){
 						$filter_value = $this->prepareFilterValue($filter['value'], $ParameterOutput);
+
+						if(!is_array($filter_value)) continue;
+
 						$filter_value = array_map('intval', $filter_value);
-						
+
 						if(empty($filter_value)) continue;
-						
+
 						$where[] = sprintf(
 							"(e.id %s IN (%s))",
 							($filter['type'] == 'is-not' ? 'NOT' : NULL),
@@ -750,14 +756,16 @@
 					}
 					else{
 						$field = $section->fetchFieldByHandle($filter['element-name']);
-						$field->buildFilterQuery($filter, $joins, $where, $ParameterOutput);
+						if($field instanceof Field) {
+							$field->buildFilterQuery($filter, $joins, $where, $ParameterOutput);
+						}
 					}
 				}
 			}
-			
+
 			// Escape percent symbold:
 			$where = array_map(create_function('$string', 'return str_replace(\'%\', \'%%\', $string);'), $where);
-			
+
 			$query = sprintf(
 				'SELECT DISTINCT SQL_CALC_FOUND_ROWS e.*
 				FROM `tbl_entries` AS `e`
@@ -799,15 +807,16 @@
 					$root->appendChild($sorting);
 				}
 
+				$schema = array();
 				// Build Entry Records
-				if($entries->length() > 0){
-					
+				if($entries->valid()){
+
 					// Do some pre-processing on the include-elements.
 					if(is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 						$included_elements = (object)array('system' => array(), 'fields' => array());
 						foreach($this->parameters()->{'included-elements'} as $element){
 							$element_name = $mode = NULL;
-							
+
 							if(preg_match_all('/^([^:]+):\s*(.+)$/', $element, $matches, PREG_SET_ORDER)){
 								$element_name = $matches[0][1];
 								$mode = $matches[0][2];
@@ -815,13 +824,19 @@
 							else{
 								$element_name = $element;
 							}
-							
+
 							if($element_name == 'system'){
 								$included_elements->system[] = $mode;
 							}
 							else{
+								$field = $section->fetchFieldByHandle($element_name);
+
+								if(!$field instanceof Field) continue;
+
+								$schema[] = $element_name;
 								$included_elements->fields[] = array(
 									'element-name' => $element_name,
+									'instance' => $field,
 									'mode' => (!is_null($mode) > 0 ? trim($mode) : NULL)
 								);
 							}
@@ -836,11 +851,13 @@
 								$parameter_output->system[preg_replace('/^system:/i', NULL, $element)] = array();
 							}
 							else{
+								$schema[] = $element;
 								$parameter_output->fields[$element] = array();
 							}
 						}
 					}
-					
+
+					$entries->setSchema($schema);
 					foreach($entries as $e){
 						// If there are included elements, need an entry element.
 						if(is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
@@ -875,8 +892,8 @@
 							}
 
 							foreach($included_elements->fields as $field){
-								$section->fetchFieldByHandle($field['element-name'])->appendFormattedElement(
-									$entry, $e->data()->{$field['element-name']}, $field['mode'], $e
+								$field['instance']->appendFormattedElement(
+									$entry, $e->data()->{$field['element-name']}, false, $field['mode'], $e
 								);
 							}
 						}
@@ -904,18 +921,18 @@
 
 							foreach($parameter_output->fields as $field => $existing_values){
 								if (!isset($e->data()->$field) or is_null($e->data()->$field)) continue;
-								
+
 								$o = $section->fetchFieldByHandle($field)->getParameterOutputValue(
 									$e->data()->$field, $e
 								);
-								
+
 								if(is_array($o)){
 									$parameter_output->fields[$field] = array_merge($o, $parameter_output->fields[$field]);
 								}
 								else{
 									$parameter_output->fields[$field][]	= $o;
 								}
-								
+
 							}
 						}
 
@@ -925,12 +942,16 @@
 					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
 						foreach($parameter_output->system as $field => $values){
 							$key = sprintf('ds-%s.system.%s', $this->parameters()->{'root-element'}, $field);
-							$ParameterOutput->$key = array_unique($values);
+							$values = array_filter($values);
+
+							if(is_array($values) && !empty($values)) $ParameterOutput->$key = array_unique($values);
 						}
 
 						foreach($parameter_output->fields as $field => $values){
 							$key = sprintf('ds-%s.%s', $this->parameters()->{'root-element'}, $field);
-							$ParameterOutput->$key = array_unique($values);
+							$values = array_filter($values);
+
+							if(is_array($values) && !empty($values)) $ParameterOutput->$key = array_unique($values);
 						}
 					}
 				}
