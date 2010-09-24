@@ -56,6 +56,27 @@
 					</xsl:for-each>
 				</ul>
 			</div>
+			<h3>Parameters</h3>
+			<div class="panel">
+				<p>
+					<xsl:text>Parameter output for </xsl:text>
+					<code><xsl:value-of select='parameters/param[@key = "current-url"]/@value' /></code>
+				</p>
+				<ul>
+					<xsl:for-each select="parameters/param">
+						<li>
+							<xsl:if test="position() mod 2 = 0"><xsl:attribute name="class">odd</xsl:attribute></xsl:if>
+							<code>
+								<xsl:value-of select="@value"/>
+
+								<strong>
+									<xsl:value-of select="@key"/>
+								</strong>
+							</code>
+						</li>
+					</xsl:for-each>
+				</ul>
+			</div>
 		</body>
 	</html>
 </xsl:template>
