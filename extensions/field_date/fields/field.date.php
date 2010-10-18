@@ -6,7 +6,7 @@
 		const REGEXP = 1;
 		const RANGE = 3;
 		const ERROR = 4;
-		
+
 		protected $join_handle;
 
 		function __construct(){
@@ -57,7 +57,7 @@
 
 		protected static function __isValidDateString($string){
 			$string = trim($string);
-			
+
 			if(empty($string)) return false;
 
 			$timestamp = strtotime($string);
@@ -109,7 +109,7 @@
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null){
 			$name = $this->{'element-name'};
 			$value = null;
-			
+
 			// New entry:
 			if (is_null($data) && $this->{'pre-populate'} == 'yes') {
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, null);
@@ -117,13 +117,13 @@
 
 			// Empty entry:
 			else if (isset($data->value) && !is_null($data->value)) {
-				$timestamp = DateTimeObj::fromGMT($data->value);
+				$timestamp = DateTimeObj::toGMT($data->value);
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $timestamp);
 			}
 
 			$label = Widget::Label(
-				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
-					? $this->{'publish-label'} 
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0
+					? $this->{'publish-label'}
 					: $this->name),
 				Widget::Input("fields[{$name}]", $value), array(
 				'class' => 'date')
@@ -151,16 +151,16 @@
 					'value' => null
 				);
 			}
-			
+
 			if(is_null($data) || strlen(trim($data)) == 0){
-				
+
 				$result->value = NULL;
-				
+
 				if ($this->{'pre-populate'} == 'yes') {
 					$timestamp = strtotime(DateTimeObj::get('c', null));
 				}
 			}
-			
+
 			else{
 				$timestamp = strtotime($data);
 			}
@@ -168,11 +168,11 @@
 			if(!is_null($timestamp) && $timestamp !== false){
 				$result->value = DateTimeObj::getGMT('Y-m-d H:i:s', $timestamp);
 			}
-			
+
 			else{
 				$result->value = $data;
 			}
-			
+
 			return $result;
 		}
 
@@ -191,7 +191,7 @@
 						'code' => self::ERROR_INVALID
 					)
 				);
-				
+
 				return self::STATUS_ERROR;
 			}
 
@@ -201,32 +201,42 @@
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
-		
+
 		public function prepareTableValue(StdClass $data, SymphonyDOMElement $link=NULL) {
 			$value = null;
-			
+
 			if (isset($data->value) && !is_null($data->value)) {
-				$timestamp = DateTimeObj::fromGMT($data->value);
+				$timestamp = DateTimeObj::toGMT($data->value);
 				$value = DateTimeObj::get(__SYM_DATETIME_FORMAT__, $timestamp);
 			}
 
 			return parent::prepareTableValue((object)array('value' => $value), $link);
 		}
-		
-		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
+
+		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, Entry $entry=NULL) {
 			if (isset($data->value) && !is_null($data->value)) {
+				if ($mode == 'gmt') {
+					$timestamp = strtotime($data->value);
+				}
+
+				else {
+					$timestamp = DateTimeObj::toGMT($data->value);
+				}
+
 				$wrapper->appendChild(General::createXMLDateObject(
-					$wrapper->ownerDocument, DateTimeObj::fromGMT($data->value), $this->{'element-name'}
+					$wrapper->ownerDocument, $timestamp, $this->{'element-name'}
 				));
 			}
 		}
-		
+
 		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL){
-			$timestamp = DateTimeObj::fromGMT($data->value);
-			
+			if(is_null($d->value)) return;
+
+			$timestamp = DateTimeObj::toGMT($data->value);
+
      		return DateTimeObj::get('Y-m-d H:i:s', $timestamp);
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Filtering:
 	-------------------------------------------------------------------------*/
@@ -242,13 +252,41 @@
 			);
 		}
 
+		public function processFilter($data) {
+			$defaults = (object)array(
+				'value'		=> '',
+				'type'		=> 'is',
+				'gmt'		=> 'no'
+			);
+
+			if (empty($data)) {
+				$data = $defaults;
+			}
+
+			$data = (object)$data;
+
+			if (!isset($data->type)) {
+				$data->type = $defaults->type;
+			}
+
+			if (!isset($data->value)) {
+				$data->value = '';
+			}
+
+			if (!isset($data->gmt)) {
+				$data->gmt = 'no';
+			}
+
+			return $data;
+		}
+
 		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output = null) {
 			$filter = $this->processFilter($filter);
 			$db = Symphony::Database();
 			$statements = array();
-			
+
 			if (!is_array($values)) $values = array();
-			
+
 			// Exact matches:
 			switch ($filter->type) {
 				case 'is':						$operator = '='; break;
@@ -258,20 +296,29 @@
 				case 'later-than':				$operator = '<'; break;
 				case 'later-than-or-equal':		$operator = '<='; break;
 			}
-			
+
 			if (empty($this->last_handle)) {
 				$this->join_handle = $this->buildFilterJoin($joins);
 			}
-			
+
 			$handle = $this->join_handle;
-			
+
 			$value = DataSource::replaceParametersInString(
 				trim($filter->value), $parameter_output
 			);
-			$value = DateTimeObj::toGMT($value);
-			
+
+			if ($filter->gmt == 'yes') {
+				$value = strtotime($value);
+			}
+
+			else {
+				$value = DateTimeObj::fromGMT($value);
+			}
+
+			$value = date('Y-m-d H:i:s', $value);
+
 			$statements[] = $db->prepareQuery(
-				"%d {$operator} UNIX_TIMESTAMP({$handle}.value)",
+				"'%s' {$operator} {$handle}.value",
 				array($value)
 			);
 
@@ -286,7 +333,7 @@
 			}
 
 			$where[] = $statement;
-			
+
 			return true;
 		}
 

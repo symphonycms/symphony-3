@@ -83,7 +83,7 @@ var Symphony;
 			}
 		},
 		translate: function(strings) {
-			// Load translations synchronous
+			/* Load translations synchronous
 			$.ajax({
 				async: false,
 				type: 'GET',
@@ -94,6 +94,7 @@ var Symphony;
 					Symphony.Language.DICTIONARY = $.extend(Symphony.Language.DICTIONARY, result);
 				}
 			});
+			*/
 		}
 	};
 
@@ -538,75 +539,89 @@ var Symphony;
 	$(document).ready(function() {
 		var table = $('#views-list');
 		var rows = table.find('tbody tr');
-		var parents = [];
-
+		var depth = 0;
+		
 		// Insert toggle controls:
 		rows.each(function() {
 			var row = $(this);
-			var cell = row.find('td:first').addClass('toggle');
-
-			if (row.is('[id]')) {
-				var depth = 0;
-
-				$(parents).each(function(index, value) {
-					if (row.is('.' + value)) depth++;
-				});
-
-				if (depth) {
-					$('<span />')
-						.html('&#x21b5;')
-						.css('margin-left', ((depth - 1) * 20) + 'px')
+			var cell = row
+				.find('td:first')
+				.addClass('toggle');
+			
+			// Children:
+			if (this.className) {
+				var classes = this.className.split(' ');
+				var depth = classes.length - 1;
+				var parents = $('.' + classes.join(', .'));
+				
+				row.addClass('child');
+				row.data().depth = depth;
+				row.data().parents = parents;
+				
+				$('<span />')
+					.html('&#x21b5;')
+					.css('margin-left', (depth * 20) + 'px')
+					.prependTo(cell);
+			}
+			
+			// Parents:
+			else {
+				var children = $('.' + row.attr('id'));
+				
+				row.addClass('parent');
+				row.data().children = children;
+				
+				if (children.length) {
+					$('<a />')
+						.text('▼')
+						.addClass('hide')
 						.prependTo(cell);
 				}
-
-				if (table.find('tr.' + row.attr('id')).length) {
-					parents.push(row.attr('id'));
-
-					if (!depth) {
-						$('<a />')
-							.text('▼')
-							.addClass('hide')
-							.prependTo(cell);
-					}
-				}
 			}
-
+			
 			cell.wrapInner('<div />');
 		});
-
+		
 		$('#views-list td.toggle a, #views-list td.toggle + td span').live('mousedown', function() {
 			return false;
 		});
-
+		
 		$('#views-list td.toggle a').live('click', function() {
 			var link = $(this);
 			var row = link.parents('tr');
-			var children = table.find('tr.' + row.attr('id'));
-
+			var children = row.data().children;
+			
 			if (link.is('.hide')) {
 				link.text('▼').removeClass('hide').addClass('show');
-				children.hide().removeClass('selected');
+				children
+					.remove()
+					.removeClass('selected');
 			}
-
+			
 			else if (link.is('.show')) {
 				link.text('▼').removeClass('show').addClass('hide');
-				children.show();
+				children
+					.removeClass('selected')
+					.insertAfter(row);
+				
+				if (row.is('.selected')) {
+					children.addClass('selected');
+				}
 			}
 		});
-
+		
 		$('#views-list td.toggle + td span').live('click', function() {
 			$(this).parent().click();
-
+			
 			return false;
 		});
-
+		
 		// Collapse by default on long pages:
 		if (table.find('tbody tr').length > 17) {
 			$('#views-list tr[id] td.toggle a').click();
 		}
 	});
-
-
+	
 /*-----------------------------------------------------------------------------
 	rel[external]
 -----------------------------------------------------------------------------*/

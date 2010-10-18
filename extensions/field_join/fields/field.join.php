@@ -2,10 +2,9 @@
 
 	if (!defined('__IN_SYMPHONY__')) die('<h2>Symphony Error</h2><p>You cannot directly access this file</p>');
 
-	class FieldTextBox extends Field {
+	class FieldJoin extends Field {
 		const DISABLE_PROPOGATION = 1;
 
-		protected $sizes = array();
 		protected $filters = array();
 
 	/*-------------------------------------------------------------------------
@@ -15,26 +14,10 @@
 		public function __construct() {
 			parent::__construct();
 
-			$this->_name = 'Text Box';
-
-			// Set defaults:
-			$this->{'text-size'} = 'medium';
-
-			$this->sizes = array(
-				array('single', false, __('Single Line')),
-				array('small', false, __('Small Box')),
-				array('medium', false, __('Medium Box')),
-				array('large', false, __('Large Box')),
-				array('huge', false, __('Huge Box'))
-			);
-
+			//$this->_name = 'Join';
 			$this->filters = array(
 				'is'				=> 'Is',
-				'is-not'			=> 'Is not',
-				'contains'			=> 'Contains',
-				'does-not-contain'	=> 'Does not contain',
-				'boolean-search'	=> 'Boolean search',
-				'regex-search'		=> 'Regex search'
+				'is-not'			=> 'Is not'
 			);
 		}
 
@@ -44,14 +27,10 @@
 					CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
 						`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 						`entry_id` INT(11) UNSIGNED NOT NULL,
-						`handle` VARCHAR(255) DEFAULT NULL,
-						`value` TEXT DEFAULT NULL,
-						`value_formatted` TEXT DEFAULT NULL,
-						`word_count` INT(11) UNSIGNED DEFAULT NULL,
+						`joined_id` INT(11) UNSIGNED NOT NULL,
 						PRIMARY KEY (`id`),
 						KEY `entry_id` (`entry_id`),
-						FULLTEXT KEY `value` (`value`),
-						FULLTEXT KEY `value_formatted` (`value_formatted`)
+						KEY `joined_id` (`joined_id`)
 					) ENGINE=MyISAM;
 				",
 				$this->{'section'},
@@ -71,91 +50,12 @@
 			return true;
 		}
 
-		public function canPrePopulate() {
-			return true;
-		}
-
-		public function isSortable() {
-			return true;
-		}
-
 	/*-------------------------------------------------------------------------
 		Utilities:
 	-------------------------------------------------------------------------*/
 
-		public function createHandle($value, $entry_id) {
-			$handle = Lang::createHandle(strip_tags(html_entity_decode($value)));
-
-			if ($this->isHandleLocked($handle, $entry_id)) {
-				if ($this->isHandleFresh($handle, $value, $entry_id)) {
-					return $this->getCurrentHandle($entry_id);
-				}
-
-				else {
-					$count = 2;
-
- 					while ($this->isHandleLocked("{$handle}-{$count}", $entry_id)) $count++;
-
-					return "{$handle}-{$count}";
-				}
-			}
-
-			return $handle;
-		}
-
-		public function getCurrentHandle($entry_id) {
-			return Symphony::Database()->fetchVar('handle', 0, sprintf(
-				"
-					SELECT
-						f.handle
-					FROM
-						`tbl_entries_data_%s` AS f
-					WHERE
-						f.entry_id = '%s'
-					LIMIT 1
-				",
-				$this->{'id'}, $entry_id
-			));
-		}
-
-		public function isHandleLocked($handle, $entry_id) {
-			return (boolean)Symphony::Database()->query(
-				"
-					SELECT
-						f.id
-					FROM
-						`tbl_entries_data_%s` AS f
-					WHERE
-						f.handle = '%s'
-						%s
-					LIMIT 1
-				",
-				array(
-					$this->{'id'}, $handle,
-					(!is_null($entry_id) ? "AND f.entry_id != '{$entry_id}'" : '')
-				)
-			);
-		}
-
-		public function isHandleFresh($handle, $value, $entry_id) {
-			return (boolean)Symphony::Database()->fetchVar('id', 0, sprintf(
-				"
-					SELECT
-						f.id
-					FROM
-						`tbl_entries_data_%s` AS f
-					WHERE
-						f.entry_id = '%s'
-						AND f.value = '%s'
-					LIMIT 1
-				",
-				$this->{'id'}, $entry_id,
-				$this->cleanValue(General::sanitize($value))
-			));
-		}
-
-		protected function repairEntities($value) {
-			return preg_replace('/&(?!(#[0-9]+|#x[0-9a-f]+|amp|lt|gt);)/i', '&amp;', trim($value));
+		public function getAvailableSections() {
+			
 		}
 
 	/*-------------------------------------------------------------------------
@@ -163,101 +63,16 @@
 	-------------------------------------------------------------------------*/
 
 		public function findDefaultSettings(&$fields) {
-			$fields['column-length'] = 75;
-			$fields['text-size'] = 'medium';
-			$fields['text-length'] = 'none';
-			$fields['text-handle'] = 'yes';
-			$fields['text-cdata'] = 'no';
-		}
-
-		public function validateSettings(MessageStack $errors, $checkForDuplicates = true) {
-/*			if (trim((string)$this->{'text-length'}) == '') {
-				$errors->append('text-length', __('This is a required field.'));
-			}*/
-
-			if (trim((string)$this->{'column-length'}) == '') {
-				$errors->append('column-length', __('This is a required field.'));
-			}
-
-			return parent::validateSettings($errors, $checkForDuplicates);
+			$fields['joined-sections'] = array();
 		}
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			parent::displaySettingsPanel($wrapper, $errors);
-
+			
 			$document = $wrapper->ownerDocument;
-			$driver = Extension::load('field_textbox');
-			$driver->addSettingsHeaders($document);
-
-		/*---------------------------------------------------------------------
-			Expression
-		---------------------------------------------------------------------*/
-
-			$group = $document->createElement('div');
-			$group->setAttribute('class', 'group');
-
-			$values = $this->sizes;
-
-			foreach ($values as &$value) {
-				$value[1] = $value[0] == $this->{'text-size'};
-			}
-
-			$label = Widget::Label('Size');
-			$label->appendChild(Widget::Select('text-size', $values));
-
-			$group->appendChild($label);
-
-		/*---------------------------------------------------------------------
-			Text Formatter
-		---------------------------------------------------------------------*/
-
-			$this->appendFormatterSelect(
-				$group, $this->{'text-formatter'}, 'text-formatter'
-			);
-			$wrapper->appendChild($group);
-
-		/*---------------------------------------------------------------------
-			Validator
-		---------------------------------------------------------------------*/
-
-			$this->appendValidationSelect(
-				$wrapper, $this->{'text-validator'}, 'text-validator'
-			);
-
-		/*---------------------------------------------------------------------
-			Limiting
-		---------------------------------------------------------------------*/
-
-			$group = $document->createElement('div');
-			$group->setAttribute('class', 'group');
-
-			$label = Widget::Label(__('Limit'));
-			$label->appendChild($document->createElement('em', __('Number of characters')));
-			$input = Widget::Input('text-length', $this->{'text-length'});
-			$label->appendChild($input);
-
-			if ($errors->{'text-length'}) {
-				$label = Widget::wrapFormElementWithError($label, $errors->{'text-length'});
-			}
-
-			$group->appendChild($label);
-
-		/*---------------------------------------------------------------------
-			Show characters
-		---------------------------------------------------------------------*/
-
-			$label = Widget::Label(__('Preview'));
-			$label->appendChild($document->createElement('em', __('Number of characters')));
-			$input = Widget::Input('column-length', $this->{'column-length'});
-			$label->appendChild($input);
-
-			if ($errors->{'column-length'}) {
-				$label = Widget::wrapFormElementWithError($label, $errors->{'column-length'});
-			}
-
-			$group->appendChild($label);
-			$wrapper->appendChild($group);
-
+			$driver = Extension::load('field_join');
+			//$driver->addSettingsHeaders($document);
+			
 		/*---------------------------------------------------------------------
 			Options
 		---------------------------------------------------------------------*/
@@ -268,32 +83,8 @@
 			$this->appendShowColumnCheckbox($options_list);
 			$this->appendRequiredCheckbox($options_list);
 
-			$label = Widget::Label(__('Output with handles'));
-			$input = Widget::Input('text-handle', 'yes', 'checkbox');
-
-			if ($this->{'text-handle'} == 'yes') {
-				$input->setAttribute('checked', 'checked');
-			}
-
-			$label->prependChild($input);
-			$item = $document->createElement('li');
-			$item->appendChild($label);
-			$options_list->appendChild($item);
-
-			$label = Widget::Label(__('Output as CDATA'));
-			$input = Widget::Input("text-cdata", 'yes', 'checkbox');
-
-			if ($this->{'text-cdata'} == 'yes') {
-				$input->setAttribute('checked', 'checked');
-			}
-
-			$label->prependChild($input);
-			$item = $document->createElement('li');
-			$item->appendChild($label);
-			$options_list->appendChild($item);
-
 			$wrapper->appendChild($options_list);
-			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-textbox');
+			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-join');
 		}
 
 	/*-------------------------------------------------------------------------
@@ -617,5 +408,5 @@
 		}
 	}
 
-	return 'FieldTextBox';
+	return 'FieldJoin';
 

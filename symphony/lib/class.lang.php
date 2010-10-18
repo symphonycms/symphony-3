@@ -98,7 +98,7 @@
 
 			$include = sprintf($path, $lang);
 
-			if(file_exists($include)){
+			if(is_file($include)){
 				require($include);
 			}
 
@@ -145,14 +145,14 @@
 			// Load localisation file for the Symphony core
 			$file = Lang::findLanguagePath(Symphony::lang()) . '/lang.%s.php';
 			$path = sprintf($file, Symphony::lang());
-			if(file_exists($path)) {
+			if(is_file($path)) {
 				Lang::load($file, Symphony::lang(), true);
 			}
 
 			// Load localisation files for extensions
 			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
 				$path = Extension::getPathFromClass(get_class($extension)) . '/lang/lang.%s.php';
-				if(file_exists(sprintf($path, Symphony::lang()))){
+				if(is_file(sprintf($path, Symphony::lang()))){
 					Lang::add($path, Symphony::lang());
 				}
 			}
@@ -173,7 +173,7 @@
 		 */
 		public static function findLanguagePath($lang) {
 			$file = sprintf('/lang.%s.php', $lang);
-			if(!file_exists(LANG . $file)) {
+			if(!is_file(LANG . $file)) {
 				foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
 					$path = Extension::getPathFromClass(get_class($extension));
 					$handle = Extension::getHandleFromPath($path);
@@ -182,7 +182,7 @@
 					// Explicitly match localisation extensions
 					if(strpos($handle, 'lang_') === false) continue;
 					$path = EXTENSIONS . "/{$handle}/lang";
-					if(file_exists($path . $file)) {
+					if(is_file($path . $file)) {
 						return $path;
 					}
 				}

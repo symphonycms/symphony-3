@@ -1,23 +1,23 @@
 <?php
-	
+
 	require_once('class.errorhandler.php');
-	
+
 	Class DatabaseException extends Exception{
 		private $error;
-		
+
 		public function __construct($message, array $error=NULL){
 			parent::__construct($message);
 			$this->error = $error;
 		}
-		
+
 		public function getQuery(){
 			return (isset($this->error['query']) ? $this->error['query'] : NULL);
 		}
-		
+
 		public function getDatabaseErrorMessage(){
 			return (isset($this->error['message']) ? $this->error['message'] : $this->getMessage());
 		}
-		
+
 		public function getDatabaseErrorCode(){
 			return (isset($this->error['code']) ? $this->error['code'] : NULL);
 		}
@@ -68,7 +68,7 @@
 					$queries = $xml->createElement('query-log');
 
 					$query_log = array_reverse($query_log);
-					
+
 					foreach($query_log as $q){
 
 						$item = $xml->createElement('item', General::sanitize(trim($q->query)));
@@ -204,6 +204,7 @@
 			if(!is_resource($this->_result)) throw new DatabaseException("Not a valid MySQL Resource.");
 
 			$this->_length = (integer)mysql_num_rows($this->_result);
+
 			$this->resultOutput = self::RESULT_OBJECT;
 		}
 
@@ -213,7 +214,9 @@
 
 		public function current(){
 			// TODO: Finalise Exception Message
-			if($this->_length == 0) throw new DatabaseException('Cannot get current, no data returned.');
+			if ($this->_length == 0) {
+				throw new DatabaseException('Cannot get current, no data returned.');
+			}
 
 			if($this->_lastPosition != NULL && $this->position() != ($this->_lastPosition + 1)){
 				mysql_data_seek($this->_result, $this->position());
@@ -240,6 +243,8 @@
 
 	Class DBCMySQL extends Database{
 	    protected $log;
+		protected $query_caching = false;
+		protected static $queries = 0;
 
 	    protected function handleError($query) {
 			$message = @mysql_error();
@@ -281,9 +286,9 @@
 				// Inject values:
 				$query = vsprintf(trim($query), $values);
 			}
-			
-			if (isset($details->force_query_caching)) {
-				$query = preg_replace('/^SELECT\s+/i', 'SELECT SQL_'.(!$details->force_query_caching ? 'NO_' : NULL).'CACHE ', $query);
+
+			if (isset($this->query_caching)) {
+				$query = preg_replace('/^SELECT\s+/i', 'SELECT SQL_'.(!$this->query_caching ? 'NO_' : NULL).'CACHE ', $query);
 			}
 
 			return $query;
@@ -323,9 +328,14 @@
 
 	        $this->select($details->path);
 
+			if(Symphony::Configuration()->{'db'}()->{'disable-query-caching'} == "no") {
+				$this->query_caching = true;
+			}
+
 		    if(!is_null($this->character_encoding)) $this->query("SET CHARACTER SET '{$this->character_encoding}'");
 		    if(!is_null($this->character_set)) $this->query("SET NAMES '{$this->character_set}'");
 
+			$this->query("SET time_zone = '+00:00'");
 	    }
 
 	    public function close(){
@@ -364,12 +374,12 @@
 				$query .= ' ON DUPLICATE KEY UPDATE ' . implode(', ', $sets);
 			}
 
-			$this->query($query, $values);
+			$this->query($query, $values, null, false);
 
 			return mysql_insert_id($this->_connection);
 		}
 
-		public function update($table, array $fields, array $values=NULL, $where=NULL){
+		public function update($table, array $fields, array $values = null, $where = null) {
 			$sets = array(); $set_values = array();
 
 			foreach ($fields as $key => $value) {
@@ -385,35 +395,44 @@
 			if (!is_null($where)) {
 				$where = " WHERE {$where}";
 			}
-			
-			
-			$values = (is_array($values) && !empty($values) 
-				? array_merge($set_values, $values) 
+
+			$values = (is_array($values) && !empty($values)
+				? array_merge($set_values, $values)
 				: $set_values
 			);
 
-			$this->query("UPDATE `{$table}` SET " . implode(', ', $sets) . $where, $values);
-
+			$this->query("UPDATE `{$table}` SET " . implode(', ', $sets) . $where, $values, null, false);
 		}
 
-		public function delete($table, array $values=NULL, $where=NULL){
-			return $this->query("DELETE FROM `$table` WHERE {$where}", $values);
+		public function delete($table, array $values = null, $where = null) {
+			return $this->query("DELETE FROM `$table` WHERE {$where}", $values, null, false);
 		}
 
-		public function truncate($table){
-			return $this->query("TRUNCATE TABLE `{$table}`");
+		public function truncate($table) {
+			return $this->query("TRUNCATE TABLE `{$table}`", array(), null, false);
 		}
 
-	    public function query($query, array $values=NULL, $returnType='DBCMySQLResult'){
+	    public function query($query, array $values = null, $returnType = null, $buffer = true) {
 	        if (!$this->connected()) throw new DatabaseException('No Database Connection Found.');
-
+			
+			if (is_null($returnType)) {
+				$returnType = 'DBCMySQLResult';
+			}
+			
 			$query = $this->prepareQuery($query, $values);
-
 			$this->_last_query = $query;
+			
+			if ($buffer) {
+				$result = mysql_query($query, $this->_connection);
+			}
+			
+			else {
+				$result = mysql_unbuffered_query($query, $this->_connection);
+			}
 
-			$result = mysql_query($query, $this->_connection);
+			self::$queries++;
 
-			if ($result === FALSE) $this->handleError($query);
+			if ($result === false) $this->handleError($query);
 
 			if (!is_resource($result)) return $result;
 
@@ -464,7 +483,7 @@
 		private static function __precisionTimer($action = 'start', $start_time = null){
 			return precision_timer($action, $start_time);
 		}
-		
+
 		public function log(){
 			return self::$query_log;
 		}
@@ -512,11 +531,11 @@
 			$start = self::__precisionTimer();
 			$result = parent::query($query, $values, $returnType);
 			$query = preg_replace(array('/[\r\n]/', '/\s{2,}/'), ' ', $query);
-			
+
 			if(!is_array(self::$query_log)){
 				self::$query_log = array();
 			}
-			
+
 			self::$query_log[] = (object)array('query' => $query, 'time' => self::__precisionTimer('stop', $start));
 
 			return $result;

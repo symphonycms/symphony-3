@@ -264,7 +264,7 @@
 			foreach($section->fields as $field){
 				if($field->canToggleData() != true) continue;
 
-				$options[$index] = array('label' => __('Set %s', array($field->label)), 'options' => array());
+				$options[$index] = array('label' => __('Set %s', array($field->{'publish-label'})), 'options' => array());
 
 				foreach ($field->getToggleStates() as $value => $state) {
 					$options[$index]['options'][] = array('toggle::' . $field->{'element-name'} . '::' . $value, false, $state);

@@ -380,7 +380,7 @@
 		var in_text = false, in_document = false;
 		var source_document  = new DOMParser()
 			.parseFromString(source.text(), 'text/xml');
-		var input = jQuery('#search')
+		var input = jQuery('#search input')
 			.val('//*');
 		var output = jQuery('<div />')
 			.attr('id', 'output')

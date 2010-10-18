@@ -3,8 +3,6 @@ jQuery(document).ready(function() {
 	var unique_id = Date.now();
 	var input = jQuery('<input />')
 		.attr('type', 'hidden')
-		.attr('name', 'UPLOAD_IDENTIFIER')
-		.attr('value', unique_id)
 		.prependTo(jQuery('form'));
 	var indicator = jQuery('<div />')
 		.addClass('progress')
@@ -14,7 +12,7 @@ jQuery(document).ready(function() {
 	var update = function(waiting) {
 		jQuery.ajax({
 			async:		false,
-			url:		url + '/status.php?for=' + unique_id,
+			url:		url + '/status.php?for=' + input.val(),
 			success:	function(data) {
 				if (!data) {
 					if (waiting) setTimeout(function() { update(true); }, 1000);
@@ -33,6 +31,16 @@ jQuery(document).ready(function() {
 			}
 		});
 	};
+	
+	// Load method information:
+	jQuery.ajax({
+		url:		url + '/method.php',
+		success:	function(data) {
+			input
+				.attr('name', data.input_name)
+				.val(data.input_value);
+		}
+	});
 	
 	// Start upload:
 	jQuery('form').bind('submit', function() {

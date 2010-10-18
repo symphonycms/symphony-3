@@ -195,6 +195,10 @@
 			);
 		}
 
+		public function fetchDataKey() {
+			return 'entry_id';
+		}
+
 	/*-------------------------------------------------------------------------
 		Database Statements:
 	-------------------------------------------------------------------------*/
@@ -299,20 +303,20 @@
 			return $field;
 		}
 
+		protected static $find_cache = array();
+
 		protected static function __find($type){
+			if (array_key_exists($type, self::$find_cache)) {
+				return self::$find_cache[$type];
+			}
 
-	//		$extensions = ExtensionManager::instance()->listInstalledHandles();
-
-	//		if(is_array($extensions) && !empty($extensions)){
-	//			foreach($extensions as $e){
-	//				if(is_file(EXTENSIONS . "/{$e}/fields/field.{$type}.php")) return EXTENSIONS . "/{$e}/fields";
-	//			}
-	//		}
-
-			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
+			foreach (new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
 				$path = Extension::getPathFromClass(get_class($e));
+
 				if(is_file("{$path}/fields/field.{$type}.php")){
-					return "{$path}/fields";
+					self::$find_cache[$type] = "{$path}/fields";
+
+					return self::$find_cache[$type];
 				}
 			}
 
@@ -557,7 +561,7 @@
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
-		
+
 		public function prepareTableValue(StdClass $data=NULL, DOMElement $link=NULL, Entry $entry=NULL) {
 			$max_length = Symphony::Configuration()->core()->symphony->{'cell-truncation-length'};
 			$max_length = ($max_length ? $max_length : 75);
@@ -617,6 +621,30 @@
 			}
 		}
 
+		public function loadDataFromDatabaseEntries($section, $entry_ids){
+			try{
+				$rows = Symphony::Database()->query(
+					"SELECT * FROM `tbl_data_%s_%s` WHERE `entry_id` IN (%s) ORDER BY `id` ASC",
+					array(
+						$section,
+						$this->{'element-name'},
+						implode(',', $entry_ids)
+					)
+				);
+
+				$result = array();
+				foreach($rows as $r){
+					$result[] = $r;
+				}
+
+				return $result;
+			}
+			catch(DatabaseException $e){
+				return array();
+				// Oh oh....no data. oh well, have a smoke and then return
+			}
+		}
+
 		public function processData($data, Entry $entry=NULL){
 
 			if(isset($entry->data()->{$this->{'element-name'}})){
@@ -651,7 +679,7 @@
 		// fields like Select box or anything that allows mutliple values
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
 			$data->entry_id = $entry->id;
-			
+
 			if (!isset($data->id)) $data->id = NULL;
 
 			try {
@@ -662,7 +690,7 @@
 				);
 				return self::STATUS_OK;
 			}
-			
+
 			catch (DatabaseException $e) {
 				//	The great irony here is the the getMessage returns something a hell of a lot
 				//	more useful than the getDatabaseErrorMessage. ie.
@@ -691,6 +719,8 @@
 	-------------------------------------------------------------------------*/
 
 		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, Entry $entry=NULL) {
+			if (is_null($data->value)) return;
+
 			$wrapper->appendChild(
 				$wrapper->ownerDocument->createElement(
 					$this->{'element-name'},
@@ -700,6 +730,8 @@
 		}
 
 		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL){
+			if(is_null($data->value)) return;
+
 			return $this->prepareTableValue($data);
 		}
 
@@ -833,6 +865,11 @@
 				$where[] = $statement;
 			}
 			
+			else if ($filter->type == 'is-null') {
+				$handle = $this->buildFilterJoin($joins);
+				$where[] = $db->prepareQuery("{$handle}.value IS NULL");
+			}
+
 			else if ($filter->type == 'is-null') {
 				$handle = $this->buildFilterJoin($joins);
 				$where[] = $db->prepareQuery("{$handle}.value IS NULL");

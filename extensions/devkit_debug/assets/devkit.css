@@ -3,10 +3,25 @@
 ---------------------------------------------------------------------------------*/
 	
 	#search {
-		border: 1px solid #dddddd;
-		margin: -5px 0 0 0;
+		background: hsl(210, 0%, 15%);
+		border: 1px solid hsl(210, 0%, 25%);
+		margin: 0 0 20px 0;
+	}
+	#search input {
+		background: transparent;
+		color: hsl(210, 0%, 80%);
 		padding: 5px;
 		width: 100%;
+	}
+	
+/*---------------------------------------------------------------------------------
+	Sidebar
+---------------------------------------------------------------------------------*/
+	
+	#sidebar .states ul li:after {
+		content: attr(timestamp);
+		color: #aaaaaa;
+		float: right;
 	}
 	
 /*---------------------------------------------------------------------------------
@@ -50,9 +65,6 @@
 		padding: 0 20px;
 		position: fixed;
 		right: 270px;
-	}
-	#output + #content {
-		top: 41px;
 	}
 	
 	#source pre {

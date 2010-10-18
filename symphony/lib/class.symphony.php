@@ -160,6 +160,9 @@
 			Cache::setDriver(self::Configuration()->core()->{'cache-driver'});
 
 			Lang::loadAll(true);
+			
+			// HACK!
+			$this->Cookie->get('blah');
 
 		}
 
@@ -389,7 +392,7 @@
 				$this->Cookie->set('pass', $row->password);
 
 				Symphony::Database()->update(
-					'tbl_authors',
+					'tbl_users',
 					array('last_seen' => DateTimeObj::getGMT('Y-m-d H:i:s')),
 					array($this->_user_id),
 					"`id` = '%d'"

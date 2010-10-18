@@ -47,7 +47,7 @@
 		}
 
 		public function write($key, $data, $ttl=NULL){
-			$data = new CacheResult(trim($data), $key, time());
+			$data = new CacheResult($data, $key, time());
 			return self::$_connection->set($key, $data, MEMCACHE_COMPRESSED, $ttl);
 		}
 
@@ -79,7 +79,7 @@
 		}
 
 		public function write($key, $data, $ttl=NULL){
-			$data = new CacheResult(trim($data), $key, time());
+			$data = new CacheResult($data, $key, time());
 
 			return apc_store($key, $data, $ttl);
 		}
@@ -96,21 +96,52 @@
 
 	Final Class CacheDriverFile implements iCacheDriver{
 
-		public function read($key){
-			$cache_file = CACHE . '/' . md5($key) . '.cache';
-			return (file_exists($cache_file) ? self::__decompress(file_get_contents($cache_file)) : false);
+		public function read($key, $encode = true){
+			if($encode) {
+				$cache_file = CACHE . '/' . md5($key) . '.cache';
+			}
+			else {
+				$cache_file = CACHE . '/' . $key . '.cache';
+			}
+
+			if(file_exists($cache_file)) {
+				$data = self::__decompress(file_get_contents($cache_file));
+
+				if($data === false)	Cache::delete($key, $encode);
+
+				return $data;
+			}
+			else {
+				return false;
+			}
 		}
 
-		public function write($key, $data, $ttl=NULL){
-			if(!Mutex::acquire(md5($key), 2, TMP)) return;
-			$data = new CacheResult(trim($data), $key, time());
+		public function write($key, $data, $encode = true, $ttl=NULL){
+			if($encode) {
+				$ekey = md5($key);
+			}
+			else {
+				$ekey = $key;
+			}
 
-			file_put_contents(CACHE . '/' . md5($key) . '.cache', self::__compress($data));
-			Mutex::release(md5($key), TMP);
+			if(!Mutex::acquire($ekey, 2, TMP)) return;
+			$data = new CacheResult($data, $key, time());
+
+			$cache_file = CACHE . '/' . $ekey . '.cache';
+
+			file_put_contents($cache_file, self::__compress($data, $ttl));
+			Mutex::release($ekey, TMP);
 		}
 
-		public function delete($key){
-			if(file_exists(CACHE . '/' . md5($key) . '.cache')) unlink(CACHE . '/' . md5($key) . '.cache');
+		public function delete($key, $encode = true){
+			if($encode) {
+				$cache_file = CACHE . '/' . md5($key) . '.cache';
+			}
+			else {
+				$cache_file = CACHE . '/' . $key . '.cache';
+			}
+
+			if(file_exists($cache_file)) unlink($cache_file);
 		}
 
 		public function purge(){
@@ -133,7 +164,7 @@
 
 			if((integer)$serialize_bit == 1) $data = unserialize($data);
 
-			return $data;
+			return $data->data;
 		}
 
 		private static function __compress($data, $ttl=NULL){

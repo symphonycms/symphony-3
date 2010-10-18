@@ -25,7 +25,7 @@
 		public function getTemplate(){
 			return EXTENSIONS . '/ds_sections/templates/template.event.php';
 		}
-		
+
 		public function prepareDestinationColumnValue(){
 			$section = Section::loadFromHandle($this->_parameters->section);
 
@@ -180,7 +180,7 @@
 			$options = array(array('system:id', false, 'System ID'));
 
 			foreach($section->fields as $f){
-				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
+				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->{'publish-label'}));
 			}
 
 			$label->appendChild(Widget::Select('fields[overrides][field][]', $options));
@@ -195,7 +195,7 @@
 			$options = array(array('system:id', false, 'System ID'));
 
 			foreach ($section->fields as $f) {
-				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->label));
+				$options[] = array(General::sanitize($f->{'element-name'}), false, General::sanitize($f->{'publish-label'}));
 			}
 
 			$label->appendChild(Widget::Select('fields[defaults][field][]', $options));
@@ -215,7 +215,7 @@
 						$options[] = array(
 							General::sanitize($f->{'element-name'}),
 							$f->{'element-name'} == $field_name,
-							General::sanitize($f->label)
+							General::sanitize($f->{'publish-label'})
 						);
 					}
 
@@ -238,7 +238,7 @@
 						$options[] = array(
 							General::sanitize($f->{'element-name'}),
 							$f->{'element-name'} == $field_name,
-							General::sanitize($f->label)
+							General::sanitize($f->{'publish-label'})
 						);
 					}
 
@@ -267,6 +267,32 @@
 			$result->appendChild($result->createElement($this->parameters()->{'root-element'}));
 
 			$root = $result->documentElement;
+
+			// Apply default values:
+			foreach ($this->parameters()->{'defaults'} as $name => $value) {
+				if (!isset($postdata['fields'][$name])) {
+					$postdata['fields'][$name] = $value;
+				}
+
+				else if (is_string($postdata['fields'][$name]) and $postdata['fields'][$name] == '') {
+					$postdata['fields'][$name] = $value;
+				}
+
+				else if (is_array($postdata['fields'][$name]) and empty($postdata['fields'][$name])) {
+					$postdata['fields'][$name] = array($value);
+				}
+			}
+
+			// Apply override values:
+			foreach ($this->parameters()->{'overrides'} as $name => $value) {
+				if (is_array($postdata['fields'][$name])) {
+					$postdata['fields'][$name] = array($value);
+				}
+
+				else {
+					$postdata['fields'][$name] = $value;
+				}
+			}
 
 			if(isset($postdata['id'])){
 				$entry = Entry::loadFromID($postdata['id']);
@@ -333,14 +359,37 @@
 					$postdata['fields'] = array();
 				}
 
-				$element = $result->createElement('values');
-				$this->appendValues($element, $postdata['fields']);
-				$root->appendChild($element);
-
 				$element = $result->createElement('errors');
 				$this->appendMessages($element, $errors);
 				$root->appendChild($element);
 			}
+
+			$messages = new MessageStack;
+			###
+			# Delegate: EventPostSaveFilter
+			# Description: After saving entry from the front-end. This delegate will not force the Events to terminate if it populates the error
+			#              array reference. Provided with the event, message stack, postdata and entry object.
+			Extension::notify(
+				'EventPostSaveFilter', '/frontend/',
+				array(
+					'event' => $this,
+					'messages' => $messages,
+					'fields' => $postdata,
+					'entry' => $entry
+				)
+			);
+
+			if($messages->valid()) {
+				$filter = $result->createElement('filters');
+				$this->appendMessages($filter, $messages);
+				$root->appendChild($filter);
+			}
+
+			$element = $result->createElement('values');
+			$this->appendValues($element, (
+				is_array($postdata['fields']) ? $postdata['fields'] : array()
+			));
+			$root->appendChild($element);
 
 			return $result;
 		}

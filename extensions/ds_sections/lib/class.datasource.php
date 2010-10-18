@@ -96,7 +96,6 @@
 				if(preg_match_all('/\$ds-([^\s\/?*:;{},\\\\"\'\.]+)/i', serialize($this->parameters()), $matches) > 0){
 					$this->parameters()->{'dependencies'} = array_unique($matches[1]);
 				}
-
 			}
 		}
 
@@ -357,7 +356,7 @@
 						if (isset($fields[$filter['element-name']])) {
 							$element_name = $filter['element-name'];
 							$field = $fields[$element_name];
-							$item = $duplicator->createInstance($field->label, $field->name());
+							$item = $duplicator->createInstance($field->{'publish-label'}, $field->name());
 
 							$field->displayDatasourceFilterPanel(
 								$item, $filter, $errors->$element_name
@@ -449,7 +448,7 @@
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
 					foreach ($section_data['fields'] as $field) {
 						$field_handle = $field->{'element-name'};
-						$field_label = $field->label;
+						$field_label = $field->{'publish-label'};
 						$modes = $field->fetchIncludableElements();
 
 						if ($field->isSortable()) {
@@ -577,17 +576,21 @@
 
 			$result = new XMLDocument;
 			$result->appendChild($result->createElement($this->parameters()->{'root-element'}));
-
 			$root = $result->documentElement;
 
 			//	Conditions
 			//	If any one condtion returns true (that is, do not execute), the DS will not execute at all
-			if(is_array($this->parameters()->conditions)) {
+			if(is_array($this->parameters()->conditions) && !empty($this->parameters()->conditions)) {
 				foreach($this->parameters()->conditions as $condition) {
-					if (strpos(':', $condition['parameter']) !== -1) {
+
+					if (isset($dump)) {
+						$dump->append($condition, strpos(':', $condition['parameter']));
+					}
+
+					if (strpos(':', $condition['parameter']) !== false) {
 						$c = Datasource::replaceParametersInString($condition['parameter'], $parameter_output);
 					}
-					
+
 					else {
 						$c = Datasource::resolveParameter($condition['parameter'], $parameter_output);
 					}
@@ -614,10 +617,10 @@
 				$section = Section::loadFromHandle($this->parameters()->section);
 			}
 			catch(SectionException $e){
-
+				throw $e;
 			}
 			catch(Exception $e){
-
+				throw $e;
 			}
 
 			$pagination = (object)array(
@@ -640,6 +643,9 @@
 
 				$sort = (strtolower($this->parameters()->{'sort-order'}) == 'asc' ? 'ASC' : 'DESC');
 
+				// Set Default sort
+				$order = "e.id {$sort}";
+
 				// System Field
 				if(preg_match('/^system:/i', $this->parameters()->{'sort-field'})){
 					switch(preg_replace('/^system:/i', NULL, $this->parameters()->{'sort-field'})){
@@ -661,10 +667,13 @@
 				else{
 					$join = NULL;
 					$sort_field = $section->fetchFieldByHandle($this->parameters()->{'sort-field'});
-					$sort_field->buildSortingQuery($join, $order);
 
-					$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
-					$order = sprintf($order, $sort);
+					if($sort_field instanceof Field && $sort_field->isSortable() && method_exists($sort_field, "buildSortingQuery")) {
+						$sort_field->buildSortingQuery($join, $order);
+
+						$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
+						$order = sprintf($order, $sort);
+					}
 				}
 			}
 
@@ -673,9 +682,12 @@
 				foreach ($this->parameters()->filters as $k => $filter) {
 					if ($filter['element-name'] == 'system:id') {
 						$filter_value = $this->prepareFilterValue($filter['value'], $parameter_output);
+
+						if(!is_array($filter_value)) continue;
+
 						$filter_value = array_map('intval', $filter_value);
 
-						if (empty($filter_value)) continue;
+						if(empty($filter_value)) continue;
 
 						$where[] = sprintf(
 							"(e.id %s IN (%s))",
@@ -683,17 +695,57 @@
 							implode(',', $filter_value)
 						);
 					}
-					
+
 					else {
 						$field = $section->fetchFieldByHandle($filter['element-name']);
-						$field->buildFilterQuery($filter, $joins, $where, $parameter_output);
+						if($field instanceof Field) {
+							$field->buildFilterQuery($filter, $joins, $where, $parameter_output);
+						}
 					}
 				}
 			}
 
-			// Escape percent symbold:
+			// Escape percent symbol:
 			$where = array_map(create_function('$string', 'return str_replace(\'%\', \'%%\', $string);'), $where);
 
+			/*
+				NOT TESTED, UNOPTIMISED
+
+			//	Get unique tables and their alias and join
+			$tables = array();
+			$split = preg_split('/\s(LEFT OUTER JOIN)\s/', $joins, null, PREG_SPLIT_NO_EMPTY);
+			foreach($split as $table_join) {
+				preg_match_all('/`[a-z_]+\d?`\s/', $table_join, $matches);
+
+				if(!array_key_exists($matches[0][0], $tables)) {
+					$tables[$matches[0][0]] = array(
+						'alias' => $matches[0][1],
+						'join' => $table_join
+					);
+				}
+			}
+
+			//	Loop over the WHERE statements and subsitute the other alias with the first alias
+			//	we discovered for that table.
+			$o_where = array();
+			$o_joins = null;
+
+			foreach($tables as $tbl => $info) {
+				$search = preg_replace('/\d+`\s/', '', $info['alias']);
+
+				$o_joins .= 'LEFT OUTER JOIN ' . $info['join'] . PHP_EOL;
+
+				if(is_array($where) && !empty($where)) foreach($where as $statement) {
+					if(!$statement || !$search) continue;
+
+					if(strpos($statement, $search) !== false) {
+						$o_where[] = preg_replace('/' . $search . '\d+`/', trim($info['alias']), $statement);
+					}
+				}
+			}
+			*/
+			$o_where = $where;
+			$o_joins = $joins;
 			$query = sprintf(
 				'SELECT DISTINCT SQL_CALC_FOUND_ROWS e.*
 				FROM `tbl_entries` AS `e`
@@ -703,20 +755,23 @@
 				ORDER BY %4$s
 				LIMIT %5$d, %6$d',
 
-				$joins,
+				$o_joins,
 				$section->handle,
-				is_array($where) && !empty($where) ? 'AND (' . implode(($filter_operation_type == self::FILTER_AND ? ' AND ' : ' OR '), $where) . ')' : NULL,
+				is_array($o_where) && !empty($o_where) ? 'AND (' . implode(($filter_operation_type == self::FILTER_AND ? ' AND ' : ' OR '), $o_where) . ')' : NULL,
 				$order,
 				$pagination->{'record-start'},
 				$pagination->{'entries-per-page'}
 			);
 
+			//echo '<pre>', htmlentities($query); exit;
+
 			try{
 				$entries = Symphony::Database()->query($query, array(
 						$section->handle,
 						$section->{'publish-order-handle'}
-					), 'EntryResult'
+					), 'DatasourceResult'
 				);
+
 
 				if(isset($this->parameters()->{'append-pagination'}) && $this->parameters()->{'append-pagination'} === true){
 					$pagination->{'total-entries'} = (int)Symphony::Database()->query("SELECT FOUND_ROWS() AS `total`")->current()->total;
@@ -735,8 +790,12 @@
 					$root->appendChild($sorting);
 				}
 
+				// Output section details
+				$root->setAttribute('section', $section->handle);
+
+				$schema = array();
 				// Build Entry Records
-				if ($entries->length() > 0) {
+				if ($entries->valid()) {
 					// Do some pre-processing on the include-elements.
 					if (is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 						$included_elements = (object)array('system' => array(), 'fields' => array());
@@ -747,7 +806,7 @@
 								$element_name = $matches[0][1];
 								$mode = $matches[0][2];
 							}
-							
+
 							else {
 								$element_name = $element;
 							}
@@ -755,10 +814,16 @@
 							if ($element_name == 'system') {
 								$included_elements->system[] = $mode;
 							}
-							
+
 							else {
+								$field = $section->fetchFieldByHandle($element_name);
+
+								if(!$field instanceof Field) continue;
+
+								$schema[$element_name] = $field;
 								$included_elements->fields[] = array(
 									'element-name' => $element_name,
+									'instance' => $field,
 									'mode' => (!is_null($mode) > 0 ? trim($mode) : NULL)
 								);
 							}
@@ -773,13 +838,29 @@
 								$output_parameters->system[preg_replace('/^system:/i', NULL, $element)] = array();
 							}
 							else{
+								$field = $section->fetchFieldByHandle($element);
+
+								if(!$field instanceof Field) continue;
+
+								$schema[$element] = $field;
+
 								$output_parameters->fields[$element] = array();
 							}
 						}
 					}
 
-					// Output section details
-					$root->setAttribute('section', $section->handle);
+					$ids = array();
+					$data = array();
+					foreach($entries as $e) $ids[] = $e->id;
+
+					$schema = array_unique($schema);
+
+					foreach($schema as $field => $instance) {
+						$data[$field] = $instance->loadDataFromDatabaseEntries($section->handle, $ids);
+					}
+
+					$entries->setSchema($schema);
+					$entries->setData($data);
 
 					foreach($entries as $e){
 						// If there are included elements, need an entry element.
@@ -792,12 +873,12 @@
 								switch ($field) {
 									case 'creation-date':
 										$entry->appendChild(General::createXMLDateObject(
-											$result, DateTimeObj::fromGMT($e->creation_date), 'creation-date'
+											$result, DateTimeObj::toGMT($e->creation_date), 'creation-date'
 										));
 										break;
 									case 'modification-date':
 										$entry->appendChild(General::createXMLDateObject(
-											$result, DateTimeObj::fromGMT($e->modification_date), 'modification-date'
+											$result, DateTimeObj::toGMT($e->modification_date), 'modification-date'
 										));
 										break;
 									case 'user':
@@ -812,8 +893,8 @@
 							}
 
 							foreach ($included_elements->fields as $field) {
-									$section->fetchFieldByHandle($field['element-name'])->appendFormattedElement(
-									$entry, $e->data()->{$field['element-name']}, $field['mode'], $e
+								$field['instance']->appendFormattedElement(
+									$entry, $e->data()->{$field['element-name']}, false, $field['mode'], $e
 								);
 							}
 						}
@@ -826,11 +907,11 @@
 										break;
 
 									case 'creation-date':
-										$output_parameters->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::fromGMT($e->creation_date));
+										$output_parameters->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::toGMT($e->creation_date));
 										break;
 
 									case 'modification-date':
-										$output_parameters->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::fromGMT($e->modification_date));
+										$output_parameters->system[$field][] = DateTimeObj::get('Y-m-d H:i:s', DateTimeObj::toGMT($e->modification_date));
 										break;
 
 									case 'user':
@@ -841,16 +922,19 @@
 
 							foreach ($output_parameters->fields as $field => $existing_values) {
 								if (!isset($e->data()->$field) or is_null($e->data()->$field)) continue;
+								
+								if (is_null($e->data()->$field)) continue;
 
 								$o = $section->fetchFieldByHandle($field)->getParameterOutputValue(
-									$e->data()->$field, $e
+									(object)$e->data()->$field, $e
 								);
 
-								if(is_array($o)){
+								if (is_array($o)) {
 									$output_parameters->fields[$field] = array_merge($o, $output_parameters->fields[$field]);
 								}
-								else{
-									$output_parameters->fields[$field][]	= $o;
+								
+								else {
+									$output_parameters->fields[$field][] = $o;
 								}
 
 							}
@@ -862,12 +946,16 @@
 					if(is_array($this->parameters()->{'parameter-output'}) && !empty($this->parameters()->{'parameter-output'})){
 						foreach($output_parameters->system as $field => $values){
 							$key = sprintf('ds-%s.system.%s', $this->parameters()->{'root-element'}, $field);
-							$parameter_output->$key = array_unique($values);
+							$values = array_filter($values);
+
+							if(is_array($values) && !empty($values)) $parameter_output->$key = array_unique($values);
 						}
 
 						foreach($output_parameters->fields as $field => $values){
 							$key = sprintf('ds-%s.%s', $this->parameters()->{'root-element'}, $field);
-							$parameter_output->$key = array_unique($values);
+							$values = array_filter($values);
+
+							if(is_array($values) && !empty($values)) $parameter_output->$key = array_unique($values);
 						}
 					}
 				}
@@ -890,5 +978,62 @@
 			}
 
 			return $result;
+		}
+	}
+
+	Class DatasourceResult extends DBCMySQLResult {
+		public $schema = array();
+		public $data = array();
+
+		public function current(){
+			$record = parent::current();
+			$entry = new Entry;
+
+			foreach ($record as $key => $value) {
+				$entry->$key = $value;
+			}
+
+			if(empty($this->data)) return $entry;
+
+			// 	Load the section
+			try {
+				$section = Section::loadFromHandle($entry->section);
+			}
+
+			catch (SectionException $e) {
+				throw new EntryException('Section specified, "'.$entry->section.'", in Entry object is invalid.');
+			}
+
+			catch (Exception $e) {
+				throw new EntryException('The following error occurred: ' . $e->getMessage());
+			}
+
+			//	Loop over the section fields, and in they are in the desired schema, populate an entry_data
+			//	array with the information. This doesn't respect fields allow_multiple setting though, although
+			//	I don't even think that's a problem to be honest as that validation should be taking place at the
+			//	entry creation level, not when it's being read.
+			foreach ($section->fields as $field) {
+				if(!empty($this->schema) && !in_array($field->{'element-name'}, $this->schema)) continue;
+
+				$entry_data = array();
+
+				foreach($this->data[$field->{'element-name'}] as $key => $data) {
+					if($data->{$field->fetchDataKey()} != $entry->id) continue;
+
+					$entry_data[] = $data;
+				}
+
+				$entry->data()->{$field->{'element-name'}} = (count($entry_data) == 1) ? current($entry_data) : $entry_data;
+			}
+
+			return $entry;
+		}
+
+		public function setSchema(Array $schema = array()) {
+			$this->schema = array_keys($schema);
+		}
+
+		public function setData(Array $data = array()) {
+			$this->data = $data;
 		}
 	}

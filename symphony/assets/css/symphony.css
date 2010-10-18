@@ -520,15 +520,15 @@
 		background: #f3f3f3;
 		background: -moz-linear-gradient(
 			top,
-			hsla(0, 0%, 0%, 0.03),
-			hsla(0, 0%, 0%, 0.04)
+			hsla(0, 0%, 0%, 0.015),
+			hsla(0, 0%, 0%, 0.025)
 		);
 		background: -webkit-gradient(
 			linear,
 			left top,
 			left bottom,
-			from(hsla(0, 0%, 0%, 0.03)),
-			to(hsla(0, 0%, 0%, 0.04))
+			from(hsla(0, 0%, 0%, 0.015)),
+			to(hsla(0, 0%, 0%, 0.025))
 		);
 	}
 	table tbody tr td input[type=checkbox] {

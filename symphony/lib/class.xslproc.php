@@ -46,7 +46,7 @@
 							//throw new Exception("Fix XSLPROC Frontend doesn't have access to Page");
 
 							$this->line = $matches[0][3];
-							$this->file = VIEWS . '/' . Frontend::instance()->loadedView()->templatePathname();
+							$this->file = Frontend::instance()->loadedView()->pathname;
 							$bFoundFile = true;
 						}
 					}
@@ -93,7 +93,7 @@
 
 			$lines = $xml->createElement('nearby-lines');
 
-			$markdown .= "\t" . $e->getMessage() . "\n";
+			$markdown = "\t" . $e->getMessage() . "\n";
 			$markdown .= "\t" . $e->getFile() . " line " . $e->getLine() . "\n\n";
 
 			foreach($nearby_lines as $line_number => $string){
@@ -126,6 +126,31 @@
 			}
 
 			$root->appendChild($processing_errors);
+
+			if(Frontend::Parameters() instanceof Register) {
+				$params = Frontend::Parameters();
+
+				$parameters = $xml->createElement('parameters');
+
+				foreach($params as $key => $parameter){
+					$p = $xml->createElement('param');
+					$p->setAttribute('key', $key);
+					$p->setAttribute('value', (string)$parameter);
+
+					if(is_array($parameter->value) && count($parameter->value) > 1){
+						foreach($parameter->value as $v){
+							$p->appendChild(
+								$xml->createElement('item', (string)$v)
+							);
+						}
+					}
+
+					$parameters->appendChild($p);
+				}
+
+				$root->appendChild($parameters);
+			}
+
 
 			return parent::__transform($xml, 'exception.xslt.xsl');
 		}
@@ -245,6 +270,10 @@
 					$result = $XSLProc->{'transformTo'.($output==self::XML ? 'XML' : 'Doc')}($XMLDoc);
 					self::processLibXMLerrors(self::ERROR_XML);
 				}
+			}
+
+			if(is_null($result) && self::hasErrors()) {
+				throw new XSLProcException('Transformation Failed');
 			}
 
 			return $result;
