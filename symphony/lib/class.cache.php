@@ -103,9 +103,9 @@
 
 		public function write($key, $data, $ttl=NULL){
 			if(!Mutex::acquire(md5($key), 2, TMP)) return;
-			$data = new CacheResult(trim($data), $key, time());
+			$data = new CacheResult($data, $key, time());
 
-			file_put_contents(CACHE . '/' . md5($key) . '.cache', self::__compress($data));
+			file_put_contents(CACHE . '/' . md5($key) . '.cache', self::__compress($data, $ttl));
 			Mutex::release(md5($key), TMP);
 		}
 

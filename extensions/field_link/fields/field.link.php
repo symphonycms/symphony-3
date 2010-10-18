@@ -4,11 +4,11 @@
 		static protected $cacheRelations = array();
 		static protected $cacheFields = array();
 		static protected $cacheValues = array();
-		
+
 	/*-------------------------------------------------------------------------
 		Definition:
 	-------------------------------------------------------------------------*/
-		
+
 		public function __construct(){
 			parent::__construct();
 			$this->_name = __('Link');
@@ -16,7 +16,7 @@
 			// Set default
 			$this->{'limit'} = 20;
 		}
-		
+
 		public function create(){
 			return Symphony::Database()->query(sprintf(
 				"
@@ -33,12 +33,12 @@
 				$this->{'element-name'}
 			));
 		}
-		
+
 		public function update() {
 			// TODO: Remove this when table structure is table:
 			$this->create();
 		}
-		
+
 		public function canToggleData(){
 			return ($this->{'allow-multiple-selection'} == 'yes' ? false : true);
 		}
@@ -73,23 +73,23 @@
 
 		public function findOptions(array $existing_selection=NULL){
 			$values = array();
-			
+
 			foreach($this->{'related-fields'} as $key => $value){
 				list($section_handle, $field_handle) = $value;
-				
+
 				try{
 					$section = Section::loadFromHandle($section_handle);
 				}
 				catch(Exception $e){
 					continue;
 				}
-				
+
 				$group = array('name' => $section->name, 'section' => $section->handle, 'values' => array());
-				
+
 				$join = NULL;
 				$order = ' e.id DESC ';
 				if(isset($section->{'publish-order-handle'}) && strlen($section->{'publish-order-handle'}) > 0) {
-					
+
 					$sort_field = $section->fetchFieldByHandle($section->{'publish-order-handle'});
 					if($sort_field instanceof Field){
 						$sort_field->buildSortingQuery($join, $order);
@@ -98,7 +98,7 @@
 						$order = sprintf($order, $section->{'publish-order-direction'});
 					}
 				}
-				
+
 				$query = sprintf("
 					SELECT e.*
 					FROM `tbl_entries` AS e
@@ -108,28 +108,30 @@
 					LIMIT %d, %d",
 					$joins, $section->handle, $order, 0, $this->{'limit'}
 				);
-				
+
 				try{
 					$entries = Symphony::Database()->query(
 						$query,
 						array(),
 						'EntryResult'
 					);
-				
+
+					$entries->setSchema(array($field_handle));
+
 					foreach($entries as $e){
 						$group['values'][$e->id] = $section->fetchFieldByHandle($field_handle)->prepareTableValue(
 							$e->data()->$field_handle
 						);
 					}
-				
-				
+
+
 					$values[] = $group;
 				}
 				catch(DatabaseException $e){
-				
+
 				}
 			}
-			
+
 			return $values;
 		}
 /*
@@ -159,7 +161,7 @@
 
 			return $field_id;
 		}
-		
+
 		protected function __findPrimaryFieldValueFromRelationID($entry_id){
 			$field_id = $this->findFieldIDFromRelationID($entry_id);
 
@@ -215,7 +217,7 @@
 
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			parent::displaySettingsPanel($wrapper, $errors);
-			
+
 			$document = $wrapper->ownerDocument;
 			$label = Widget::Label(__('Options'));
 			$options = array();
@@ -242,13 +244,13 @@
 					);
 				}
 			}
-			
+
 			$label->appendChild(Widget::Select('related-fields][', $options, array('multiple' => 'multiple')));
 
 			if (isset($errors->{'related-fields'})) {
 				$label = Widget::wrapFormElementWithError($label, $errors->{'related-fields'});
 			}
-			
+
 			$wrapper->appendChild($label);
 
 			## Maximum entries
@@ -385,11 +387,11 @@
 
 			$label = Widget::Label($this->{'label'});
 			$label->appendChild(Widget::Select($fieldname, $options, ($this->{'allow-multiple-selection'} == 'yes' ? array('multiple' => 'multiple') : NULL)));
-			
+
 			if ($errors->valid()) {
 				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
 			}
-			
+
 			$wrapper->appendChild($label);
 		}
 */
@@ -401,7 +403,7 @@
 			$selected = array();
 			foreach($data as $d){
 				if(!($d instanceof StdClass) || !isset($d->relation_id)) continue;
-				
+
 				if(!is_array($d->relation_id)){
 					$selected[] = $d->relation_id;
 				}
@@ -412,7 +414,7 @@
 
 			$states = $this->findOptions($selected);
 			$options = array();
-			
+
 			if($this->{'required'} != 'yes') $options[] = array(NULL, false, NULL);
 
 			if(!empty($states)){
@@ -429,16 +431,16 @@
 			if($this->{'allow-multiple-selection'} == 'yes') $fieldname .= '[]';
 
 			$label = Widget::Label(
-				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
-					? $this->{'publish-label'} 
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0
+					? $this->{'publish-label'}
 					: $this->name)
 			);
 			$label->appendChild(Widget::Select($fieldname, $options, ($this->{'allow-multiple-selection'} == 'yes' ? array('multiple' => 'multiple') : array())));
-			
+
 			if ($errors->valid()) {
 				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
 			}
-			
+
 			$wrapper->appendChild($label);
 		}
 
@@ -452,7 +454,7 @@
 			$result = (object)array(
 				'relation_id' => null
 			);
-			
+
 			try{
 				$rows = Symphony::Database()->query(
 					"SELECT `relation_id` FROM `tbl_data_%s_%s` WHERE `entry_id` = %s ORDER BY `id` ASC",
@@ -462,7 +464,7 @@
 						$entry->id
 					)
 				);
-				
+
 				if($rows->length() > 0){
 					$result->relation_id = $rows->resultColumn('relation_id');
 				}
@@ -470,12 +472,12 @@
 			catch(DatabaseException $e){
 			}
 			var_dump($result); die();
-			
+
 			return $result;*/
 		}
 
 		public function validateData(MessageStack $errors, Entry $entry=NULL, $data=NULL){
-			
+
 			if ($this->required == 'yes' && empty($data)){
 				$errors->append(
 					null, (object)array(
@@ -493,21 +495,21 @@
 			//if(isset($entry->data()->{$this->{'element-name'}})){
 			//	$result = $entry->data()->{$this->{'element-name'}};
 			//}
-			
+
 			//else {
 				$result = NULL;
 			//}
-			
+
 			if (!is_null($data)){
 				$result = array();
-				
+
 				if(!is_array($data)) $data = array($data);
-				
+
 				foreach ($data as $id) {
 					if ($id instanceof StdClass) {
 						$result[] = $id;
 					}
-					
+
 					else {
 						$result[] = (object)array(
 							'relation_id' => $id
@@ -515,7 +517,7 @@
 					}
 				}
 			}
-			
+
 			return $result;
 		}
 
@@ -529,7 +531,7 @@
 				foreach($data['related-fields'] as $item){
 					$related_fields[$item] = preg_split('/::/', $item, 2, PREG_SPLIT_NO_EMPTY);;
 				}
-				
+
 				$this->{'related-fields'} = $related_fields;
 				unset($data['related-fields']);
 			}
@@ -552,9 +554,9 @@
 			foreach($xml as $property_name => $property_value){
 				$data[(string)$property_name] = (string)$property_value;
 			}
-			
+
 			$this->{'related-fields'} = $related_fields;
-			
+
 			// Set field GUID:
 			if (isset($xml->attributes()->guid) and trim((string)$xml->attributes()->guid) != '') {
 				$data['guid'] = (string)$xml->attributes()->guid;
@@ -564,21 +566,21 @@
 		}
 
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
-			
+
 			$table = sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'});
 			Symphony::Database()->delete($table, array($entry->id), '`entry_id` = %s');
-			
+
 			if(is_null($data)) return;
-			
+
 			foreach($data as $d){
-				
+
 				try{
-					
+
 					Symphony::Database()->insert(
 						$table,
 						array('relation_id' => $d->relation_id, 'id' => NULL, 'entry_id' => $entry->id)
 					);
-					
+
 				}
 				catch(DatabaseException $e){
 					return self::STATUS_ERROR;
@@ -596,32 +598,32 @@
 
 		public function appendFormattedElement(&$wrapper, $data, $mode = null){
 			//if(!($data instanceof StdClass) || empty($data)) return;
-			
+
 			$items = $this->processData($data);
-			
+
 			if(!is_array($items) || empty($items)){
 				return;
 			}
-			
+
 			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
-			
+
 			foreach($items as $data){
 				$entry = Entry::loadFromID($data->relation_id);
-				
+
 				foreach ($this->{'related-fields'} as $key => $value) {
 					$item = $wrapper->ownerDocument->createElement('item');
 					list($section_handle, $field_handle) = $value;
-					
+
 					if($section_handle != $entry->section) continue;
-					
+
 					$section = Section::loadFromHandle($entry->section);
 					$related_field = $section->fetchFieldByHandle($field_handle);
 					$related_field->appendFormattedElement($item, $entry->data()->$field_handle);
-					
+
 					$item->setAttribute('id', $data->relation_id);
 					$item->setAttribute('section-handle', $section_handle);
 					$item->setAttribute('section-name', $section->name);
-					
+
 					$list->appendChild($item);
 				}
 				/*
@@ -645,34 +647,34 @@
 		}
 
 		public function prepareTableValue($data, DOMElement $link=NULL){
-			
+
 			if(!is_array($data) || empty($data)){
 				return parent::prepareTableValue(NULL, $link);
 			}
-			
+
 			$result = Administration::instance()->Page->createDocumentFragment();
 
 			foreach($data as $index => $d){
 				try{
 					$entry = Entry::loadFromID($d->relation_id);
-			
+
 					foreach($this->{'related-fields'} as $key => $value){
 						list($section_handle, $field_handle) = $value;
-				
+
 						if($section_handle != $entry->meta()->section) continue;
-				
+
 						$section = Section::loadFromHandle($section_handle);
 						$field = $section->fetchFieldByHandle($field_handle);
-				
+
 						$value = $field->prepareTableValue($entry->data()->{$field_handle});
-				
+
 						// TODO: handle passing links
 						if($index > 0){
 							$result->appendChild(new DOMText(', '));
 						}
-				
+
 						$result->appendChild(Widget::anchor(
-							$value, 
+							$value,
 							sprintf('%s/publish/%s/edit/%d/', ADMIN_URL, $section_handle, $entry->meta()->id)
 						));
 
@@ -681,11 +683,11 @@
 				}
 				catch(Exception $e){}
 			}
-			
+
 			if(!$result->hasChildNodes()){
 				return parent::prepareTableValue(NULL, $link);
 			}
-			
+
 			return $result;
 
 		}
@@ -727,67 +729,67 @@
 	/*-------------------------------------------------------------------------
 		Filtering:
 	-------------------------------------------------------------------------*/
-		
+
 		public function getFilterTypes($data) {
 			$standard = parent::getFilterTypes($data);
 			$types = array();
-			
+
 			foreach ($standard as $current) if ($current[0] == 'is' or $current[0] == 'is-not') {
 				$types[] = $current;
 			}
-			
+
 			return $types;
 		}
-		
+
 		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output) {
 			$filter = $this->processFilter($filter);
 			$filter_join = DataSource::FILTER_OR;
 			$db = Symphony::Database();
-			
+
 			$values = DataSource::prepareFilterValue($filter->value, $parameter_output, $filter_join);
-			
+
 			if (!is_array($values)) $values = array();
-			
+
 			// Exact matches:
 			if ($filter->type == 'is' or $filter->type == 'is-not') {
 				$statements = array();
-				
+
 				if ($filter_join == DataSource::FILTER_OR) {
 					$handle = $this->buildFilterJoin($joins);
 				}
-				
+
 				foreach ($values as $index => $value) {
 					if ($filter_join != DataSource::FILTER_OR) {
 						$handle = $this->buildFilterJoin($joins);
 					}
-					
+
 					$statements[] = $db->prepareQuery(
 						"'%s' IN ({$handle}.relation_id)", array($value)
 					);
 				}
-				
+
 				if (empty($statements)) return true;
-				
+
 				if ($filter_join == DataSource::FILTER_OR) {
 					$statement = "(\n\t" . implode("\n\tOR ", $statements) . "\n)";
 				}
-				
+
 				else {
 					$statement = "(\n\t" . implode("\n\tAND ", $statements) . "\n)";
 				}
-				
+
 				if ($filter->type == 'is-not') {
 					$statement = 'NOT ' . $statement;
 				}
-				
+
 				$where[] = $statement;
 			}
 		}
-		
+
 		public function xbuildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL){
 			var_dump($this->getFilterTypes($filter));
 			var_dump($filter);
-			
+
 			exit;
 			self::$key++;
 
@@ -820,7 +822,7 @@
 			}
 
 			return true;
-		
+
 			// OLD CODE ------
 
 			$field_id = $this->{'id'};
@@ -891,7 +893,7 @@
 
 			return true;
 		}
-		
+
 	/*-------------------------------------------------------------------------
 		Grouping:
 	-------------------------------------------------------------------------*/
@@ -931,5 +933,5 @@
 			$order = "{$handle}.relation_id %1\$s";
 		}
 	}
-	
+
 	return 'fieldLink';

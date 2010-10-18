@@ -189,7 +189,7 @@
 
 		public function removeField($name){
 			foreach($this->fields as $index => $f){
-				if($f->label == $name || $f->{'element-name'} == $name){
+				if($f->{'publish-label'} == $name || $f->{'element-name'} == $name){
 					unset($this->fields[$index]);
 				}
 			}
@@ -491,7 +491,7 @@
 				if ($result->section->rename or $old[$guid]->field->{'element-name'} != $data->field->{'element-name'}) {
 					if ($old[$guid]->field->type == $data->field->type) {
 						$result->rename[$guid] = (object)array(
-							'label'		=> $data->label,
+							'label'		=> $data->{'publish-label'},
 							'old'		=> $old[$guid]->field,
 							'new'		=> $data->field
 						);
@@ -509,7 +509,7 @@
 				if ($old[$guid]->field != $data->field) {
 					if ($old[$guid]->field->type == $data->field->type) {
 						$result->update[$guid] = (object)array(
-							'label'		=> $data->label,
+							'label'		=> $data->{'publish-label'},
 							'old'		=> $old[$guid]->field,
 							'new'		=> $data->field
 						);

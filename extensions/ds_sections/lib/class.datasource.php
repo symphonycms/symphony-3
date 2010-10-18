@@ -357,7 +357,7 @@
 						if (isset($fields[$filter['element-name']])) {
 							$element_name = $filter['element-name'];
 							$field = $fields[$element_name];
-							$item = $duplicator->createInstance($field->label, $field->name());
+							$item = $duplicator->createInstance($field->{'publish-label'}, $field->name());
 
 							$field->displayDatasourceFilterPanel(
 								$item, $filter, $errors->$element_name
@@ -449,7 +449,7 @@
 				if (is_array($section_data['fields']) && !empty($section_data['fields'])) {
 					foreach ($section_data['fields'] as $field) {
 						$field_handle = $field->{'element-name'};
-						$field_label = $field->label;
+						$field_label = $field->{'publish-label'};
 						$modes = $field->fetchIncludableElements();
 
 						if ($field->isSortable()) {
@@ -661,10 +661,13 @@
 				else{
 					$join = NULL;
 					$sort_field = $section->fetchFieldByHandle($this->parameters()->{'sort-field'});
-					$sort_field->buildSortingQuery($join, $order);
 
-					$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
-					$order = sprintf($order, $sort);
+					if($sort_field instanceof Field && $sort_field->isSortable() && method_exists($sort_field, "buildSortingQuery")) {
+						$sort_field->buildSortingQuery($join, $order);
+
+						$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
+						$order = sprintf($order, $sort);
+					}
 				}
 			}
 
@@ -673,6 +676,9 @@
 				foreach ($this->parameters()->filters as $k => $filter) {
 					if ($filter['element-name'] == 'system:id') {
 						$filter_value = $this->prepareFilterValue($filter['value'], $parameter_output);
+						
+						if (!is_array($filter_value)) continue;
+						
 						$filter_value = array_map('intval', $filter_value);
 
 						if (empty($filter_value)) continue;
@@ -686,7 +692,10 @@
 					
 					else {
 						$field = $section->fetchFieldByHandle($filter['element-name']);
-						$field->buildFilterQuery($filter, $joins, $where, $parameter_output);
+						
+						if (!$field instanceof Field) continue;
+						
+						$field->buildFilterQuery($filter, $joins, $where, $ParameterOutput);
 					}
 				}
 			}
@@ -735,8 +744,10 @@
 					$root->appendChild($sorting);
 				}
 
+				$schema = array();
+				
 				// Build Entry Records
-				if ($entries->length() > 0) {
+				if ($entries->valid()) {
 					// Do some pre-processing on the include-elements.
 					if (is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})){
 						$included_elements = (object)array('system' => array(), 'fields' => array());
@@ -757,8 +768,14 @@
 							}
 							
 							else {
+								$field = $section->fetchFieldByHandle($element_name);
+
+								if (!$field instanceof Field) continue;
+
+								$schema[] = $element_name;
 								$included_elements->fields[] = array(
 									'element-name' => $element_name,
+									'instance' => $field,
 									'mode' => (!is_null($mode) > 0 ? trim($mode) : NULL)
 								);
 							}
@@ -772,18 +789,24 @@
 							if(preg_match('/^system:/i', $element)){
 								$output_parameters->system[preg_replace('/^system:/i', NULL, $element)] = array();
 							}
+							
 							else{
-								$output_parameters->fields[$element] = array();
+								$schema[] = $element;
+								$parameter_output->fields[$element] = array();
 							}
 						}
 					}
 
 					// Output section details
 					$root->setAttribute('section', $section->handle);
-
-					foreach($entries as $e){
+					$entries->setSchema($schema);
+					
+					foreach ($entries as $e) {
 						// If there are included elements, need an entry element.
-						if (is_array($this->parameters()->{'included-elements'}) && !empty($this->parameters()->{'included-elements'})) {
+						if (
+							is_array($this->parameters()->{'included-elements'})
+							&& !empty($this->parameters()->{'included-elements'})
+						) {
 							$entry = $result->createElement('entry');
 							$entry->setAttribute('id', $e->id);
 							$root->appendChild($entry);
@@ -811,9 +834,9 @@
 								}
 							}
 
-							foreach ($included_elements->fields as $field) {
-									$section->fetchFieldByHandle($field['element-name'])->appendFormattedElement(
-									$entry, $e->data()->{$field['element-name']}, $field['mode'], $e
+							foreach($included_elements->fields as $field){
+								$field['instance']->appendFormattedElement(
+									$entry, $e->data()->{$field['element-name']}, false, $field['mode'], $e
 								);
 							}
 						}
@@ -863,11 +886,17 @@
 						foreach($output_parameters->system as $field => $values){
 							$key = sprintf('ds-%s.system.%s', $this->parameters()->{'root-element'}, $field);
 							$parameter_output->$key = array_unique($values);
+							$values = array_filter($values);
+
+							if(is_array($values) && !empty($values)) $ParameterOutput->$key = array_unique($values);
 						}
 
 						foreach($output_parameters->fields as $field => $values){
 							$key = sprintf('ds-%s.%s', $this->parameters()->{'root-element'}, $field);
 							$parameter_output->$key = array_unique($values);
+							$values = array_filter($values);
+
+							if(is_array($values) && !empty($values)) $ParameterOutput->$key = array_unique($values);
 						}
 					}
 				}

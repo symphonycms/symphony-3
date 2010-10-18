@@ -10,8 +10,10 @@
 		}
 		
 		protected static function __nearbyLines($line, $file, $isString=false, $window=5, $normalise_tabs=true){
-			if($isString === false) $result = array_slice(file($file), max(0, ($line - 1) - $window), $window*2, true);
-			else $result = array_slice(preg_split('/[\r\n]+/', $file), max(0, ($line - 1) - $window), $window*2, true);
+			if ($isString === false && !is_null($file)) $file = file($file);
+			else $file = preg_split('/[\r\n]+/', $file);
+			
+			$result = array_slice($file, max(0, ($line - 1) - $window), $window * 2, true);
 
 			if($normalise_tabs == true && !empty($result)){
 				$length = NULL;
@@ -118,6 +120,30 @@
 				$trace->appendChild($item);	
 			}
 			$root->appendChild($trace);
+			
+			if(Frontend::Parameters() instanceof Register) {
+				$params = Frontend::Parameters();
+
+				$parameters = $xml->createElement('parameters');
+
+				foreach($params as $key => $parameter){
+					$p = $xml->createElement('param');
+					$p->setAttribute('key', $key);
+					$p->setAttribute('value', (string)$parameter);
+
+					if(is_array($parameter->value) && count($parameter->value) > 1){
+						foreach($parameter->value as $v){
+							$p->appendChild(
+								$xml->createElement('item', (string)$v)
+							);
+						}
+					}
+
+					$parameters->appendChild($p);
+				}
+
+				$root->appendChild($parameters);
+			}
 
 			if(is_object(Symphony::Database())){
 				
