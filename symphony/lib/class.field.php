@@ -711,6 +711,7 @@
 			return array(
 				array('is', false, 'Is'),
 				array('is-not', $data->type == 'is-not', 'Is not'),
+				array('is-null', $data->type == 'is-null', 'Is null'),
 				array('contains', $data->type == 'contains', 'Contains'),
 				array('does-not-contain', $data->type == 'does-not-contain', 'Does not Contain'),
 				array('regex-search', $data->type == 'regex-search', 'Regex Search')
@@ -804,7 +805,7 @@
 				if ($filter_join == DataSource::FILTER_OR) {
 					$handle = $this->buildFilterJoin($joins);
 				}
-
+				
 				foreach ($values as $index => $value) {
 					if ($filter_join != DataSource::FILTER_OR) {
 						$handle = $this->buildFilterJoin($joins);
@@ -830,6 +831,11 @@
 				}
 
 				$where[] = $statement;
+			}
+			
+			else if ($filter->type == 'is-null') {
+				$handle = $this->buildFilterJoin($joins);
+				$where[] = $db->prepareQuery("{$handle}.value IS NULL");
 			}
 
 			else if ($filter->type == 'contains' or $filter->type == 'does-not-contain') {
