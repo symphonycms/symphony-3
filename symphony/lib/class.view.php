@@ -1,8 +1,8 @@
 <?php
-	
+
 	require_once(LIB . '/class.event.php');
 	require_once(LIB . '/class.documentheaders.php');
-	
+
 	Class ViewException extends Exception {}
 
 	Class ViewFilterIterator extends FilterIterator{
@@ -23,7 +23,7 @@
 			if($this->getInnerIterator()->isDir() == false) return false;
 			preg_match('/\/?([^\\\\\/]+)$/', $this->getInnerIterator()->getPathname(), $match); //Find the view handle
 
-			return (file_exists(sprintf('%s/%s.config.xml', $this->getInnerIterator()->getPathname(), $match[1])));
+			return (is_file(sprintf('%s/%s.config.xml', $this->getInnerIterator()->getPathname(), $match[1])));
 		}
 	}
 
@@ -39,6 +39,7 @@
 
 		private $_about;
 		private $_path;
+		private $_pathname;
 		private $_parent;
 		private $_parameters;
 		private $_template;
@@ -46,7 +47,7 @@
 		private $_guid;
 
 		public function __construct(){
-			
+
 			$this->_about = new StdClass;
 			$this->_parameters = new StdClass;
 
@@ -64,26 +65,26 @@
 		}
 
 		public function __isset($name){
-			if(in_array($name, array('path', 'template', 'handle', 'guid'))){
+			if(in_array($name, array('path', 'template', 'handle', 'guid', 'pathname'))){
 				return isset($this->{"_{$name}"});
 			}
 			return isset($this->_about->$name);
 		}
 
 		public function __get($name){
-			if(in_array($name, array('path', 'template', 'handle', 'guid'))){
+			if(in_array($name, array('path', 'template', 'handle', 'guid', 'pathname'))){
 				return $this->{"_{$name}"};
 			}
-			
+
 			if (!isset($this->_about->$name)) {
 				return false;
 			}
-			
+
 			return $this->_about->$name;
 		}
 
 		public function __set($name, $value){
-			if(in_array($name, array('path', 'template', 'handle', 'guid'))){
+			if(in_array($name, array('path', 'template', 'handle', 'guid', 'pathname'))){
 				$this->{"_{$name}"} = $value;
 			}
 			else $this->_about->$name = $value;
@@ -100,7 +101,7 @@
 
 			$pathname = sprintf('%s/%s/%s.config.xml', VIEWS, $view->path, $view->handle);
 
-			if(!file_exists($pathname)){
+			if(!is_file($pathname)){
 				throw new ViewException(__('View, %s, could not be found.', array($pathname)), self::ERROR_VIEW_NOT_FOUND);
 			}
 
@@ -145,6 +146,7 @@
 
 			$template = sprintf('%s/%s/%s.xsl', VIEWS, $view->path, $view->handle);
 			if(file_exists($template) && is_readable($template)){
+				$view->pathname = $template;
 				$view->template = file_get_contents($template);
 			}
 
@@ -374,7 +376,7 @@
 
 			$root->appendChild($doc->createElement('title', General::sanitize($this->title)));
 			$root->appendChild($doc->createElement('content-type', $this->{'content-type'}));
-			
+
 			if(is_array($this->{'url-parameters'}) && count($this->{'url-parameters'}) > 0){
 				$url_parameters = $doc->createElement('url-parameters');
 				foreach($this->{'url-parameters'} as $p){
@@ -435,7 +437,7 @@
 
 			General::rmdirr(VIEWS . '/' . trim($path, '/'));
 
-		}	
+		}
 
 		private function __cbSortEventsByPriority($a, $b){
 			if ($a->priority() == $b->priority()) {
@@ -465,15 +467,15 @@
 
 			$events_wrapper = $Document->createElement('events');
 			$root->appendChild($events_wrapper);
-			
+
 			if (is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})) {
 				$events = $this->about()->{'events'};
 			}
-			
+
 			if (is_array($this->about()->{'data-sources'}) && !empty($this->about()->{'data-sources'})) {
 				$datasources = $this->about()->{'data-sources'};
 			}
-			
+
 			####
 			# Delegate: FrontendEventsAppend
 			# Description: Append additional Events.
@@ -483,39 +485,39 @@
 					'events'	=> &$events
 				)
 			);
-			
+
 			if (!empty($events)) {
 				$postdata = General::getPostData();
 				$events_ordered = array();
 				$events_loaded = array();
-				
+
 				foreach($events as $handle){
 					if (in_array($handle, $events_loaded)) continue;
-					
+
 					if ($handle instanceof Event) {
 						$events_ordered[] = $handle;
 					}
-					
+
 					else {
 						$events_ordered[] = Event::loadFromHandle($handle);
 						$events_loaded[] = $handle;
 					}
 				}
-				
+
 				uasort($events_ordered, array($this, '__cbSortEventsByPriority'));
-				
+
 				foreach($events_ordered as $e){
 					if (!$e->canTrigger($postdata)) continue;
-					
+
 					$fragment = $e->trigger($ParameterOutput, $postdata);
-					
+
 					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
 						$node = $Document->importNode($fragment->documentElement, true);
 						$events_wrapper->appendChild($node);
 					}
 				}
 			}
-			
+
 			####
 			# Delegate: FrontendDataSourceAppend
 			# Description: Append additional DataSources.
@@ -531,33 +533,33 @@
 			$dependency_list = array();
 			$datasources_ordered = array();
 			$all_dependencies = array();
-			
+
 			foreach($datasources as $handle){
 				if ($handle instanceof DataSource) {
 					$datasource = $handle;
 					$handle = $datasource->handle;
-					
+
 					$datasource_pool[$handle] = $datasource;
 					$dependency_list[$handle] = $datasource->parameters()->dependencies;
 				}
-				
+
 				else {
 					$datasource_pool[$handle] = Datasource::loadFromHandle($handle);
 					$dependency_list[$handle] = $datasource_pool[$handle]->parameters()->dependencies;
 					$datasources_loaded[] = $handle;
 				}
 			}
-			
+
 			$datasources_ordered = General::dependenciesSort($dependency_list);
-			
+
 			if (!empty($datasources_ordered)) {
 				foreach($datasources_ordered as $handle){
 					$ds = $datasource_pool[$handle];
-					
+
 					try {
 						$fragment = $ds->render($ParameterOutput);
 					}
-					
+
 					catch (FrontendPageNotFoundException $e) {
 						FrontendPageNotFoundExceptionHandler::render($e);
 					}
@@ -598,7 +600,7 @@
 					$element->appendChild($Document->createElement($key, (string)$parameter));
 				}
 			}
-			
+
 			$template = $this->template;
 
 			####
@@ -611,9 +613,9 @@
 					'template'	=> &$template
 				)
 			);
-			
+
 			$this->template = $template;
-			
+
 			// When the XSLT executes, it uses the CWD as set here
 			$cwd = getcwd();
 			chdir(WORKSPACE);
@@ -623,7 +625,7 @@
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');
 			}
-			
+
 			/*
 			header('Content-Type: text/plain; charset=utf-8');
 			$Document->formatOutput = true;

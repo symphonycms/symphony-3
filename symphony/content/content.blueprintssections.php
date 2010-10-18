@@ -584,7 +584,7 @@
 				}
 				
 				else {
-					$cell->setValue($data->{'publish-label'});
+					$cell->setValue($data->{'label'});
 				}
 				
 				$row->appendChild($cell);

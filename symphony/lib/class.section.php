@@ -229,7 +229,7 @@
 			$section->handle = preg_replace('/\.xml$/', NULL, basename($path));
 			$section->path = dirname($path);
 			
-			if(!file_exists($path)){
+			if(!is_file($path)){
 				throw new SectionException(__('Section `%s` could not be found.', array(basename($path))), self::ERROR_SECTION_NOT_FOUND);
 			}
 
@@ -326,9 +326,17 @@
 		public static function loadFromHandle($name){
 			return self::load(self::__find($name) . "/{$name}.xml");
 		}
-
+		
+		protected static $find_cache = array();
+		
 		protected static function __find($name) {
-		    if (is_file(SECTIONS . "/{$name}.xml")) return SECTIONS;
+			if (array_key_exists($name, self::$find_cache)) {
+				return self::$find_cache[$name];
+			}
+			
+		    if (is_file(SECTIONS . "/{$name}.xml")) {
+		    	return SECTIONS;
+		    }
 		    
 		    else {
 				foreach (new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension) {
@@ -337,7 +345,9 @@
 					
 					if (!is_file(EXTENSIONS . "/{$handle}/sections/{$name}.xml")) continue;
 					
-					return EXTENSIONS . "/{$handle}/sections";
+					self::$find_cache[$name] = EXTENSIONS . "/{$handle}/sections";
+					
+					return self::$find_cache[$name];
 				}
 	    	}
 
@@ -456,7 +466,7 @@
 					);
 					
 					$old[$field->guid] = (object)array(
-						'label'		=> $field->name,
+						'label'		=> $field->{'publish-label'},
 						'field'		=> $field
 					);
 				}
@@ -475,7 +485,7 @@
 				);
 				
 				$new[$field->guid] = (object)array(
-					'label'		=> $field->name,
+					'label'		=> $field->{'publish-label'},
 					'field'		=> $field
 				);
 			}
@@ -491,7 +501,7 @@
 				if ($result->section->rename or $old[$guid]->field->{'element-name'} != $data->field->{'element-name'}) {
 					if ($old[$guid]->field->type == $data->field->type) {
 						$result->rename[$guid] = (object)array(
-							'label'		=> $data->{'publish-label'},
+							'label'		=> $data->{'label'},
 							'old'		=> $old[$guid]->field,
 							'new'		=> $data->field
 						);
@@ -509,7 +519,7 @@
 				if ($old[$guid]->field != $data->field) {
 					if ($old[$guid]->field->type == $data->field->type) {
 						$result->update[$guid] = (object)array(
-							'label'		=> $data->{'publish-label'},
+							'label'		=> $data->{'label'},
 							'old'		=> $old[$guid]->field,
 							'new'		=> $data->field
 						);

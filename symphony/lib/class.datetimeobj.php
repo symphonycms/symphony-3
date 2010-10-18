@@ -35,7 +35,7 @@
 		*
 		* @param	$timestamp	string		A textual representation of a date.
 		*/
-		public function fromGMT($timestamp) {
+		public function toGMT($timestamp) {
 			$timestamp = date('Y-m-d H:i:s', strtotime($timestamp));
 
 			return strtotime($timestamp . ' GMT');
@@ -46,8 +46,8 @@
 		*
 		* @param	$timestamp	string		A textual representation of a date.
 		*/
-		public function toGMT($timestamp) {
-			$timezone = date_default_timezone_get();
+		public function fromGMT($timestamp) {
+			$timezone = @date_default_timezone_get();
 			$timestamp = strtotime($timestamp);
 
 			self::setDefaultTimezone('GMT');

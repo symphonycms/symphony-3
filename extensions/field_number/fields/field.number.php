@@ -16,7 +16,7 @@
 					  	PRIMARY KEY (`id`),
 					  	KEY `entry_id` (`entry_id`),
 					  	KEY `value` (`value`)
-					) TYPE=MyISAM;
+					) ENGINE=MyISAM;
 				",
 				$this->{'section'},
 				$this->{'element-name'},
@@ -106,7 +106,7 @@
 				return self::STATUS_ERROR;
 			}
 			
-			if (!isset($data->value)) return self::STATUS_OK;
+			if (!isset($data->value) || empty($data->value)) return self::STATUS_OK;
 			
 			if (!is_numeric($data->value)) {
 				$errors->append(
@@ -139,10 +139,9 @@
 		
 		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output = null) {
 			$filter = $this->processFilter($filter);
+			$filter_join = DataSource::FILTER_OR;
 			$db = Symphony::Database();
 			$statements = array();
-			
-			if (!is_array($values)) $values = array();
 			
 			// Exact matches:
 			switch ($filter->type) {

@@ -18,7 +18,7 @@
 			$this->_name = 'Text Box';
 
 			// Set defaults:
-			$this->{'size'} = 'medium';
+			$this->{'text-size'} = 'medium';
 
 			$this->sizes = array(
 				array('single', false, __('Single Line')),
@@ -52,7 +52,7 @@
 						KEY `entry_id` (`entry_id`),
 						FULLTEXT KEY `value` (`value`),
 						FULLTEXT KEY `value_formatted` (`value_formatted`)
-					)
+					) ENGINE=MyISAM;
 				",
 				$this->{'section'},
 				$this->{'element-name'}
@@ -310,11 +310,11 @@
 			$classes = array();
 
 			$label = Widget::Label(
-				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
-					? $this->{'publish-label'} 
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0
+					? $this->{'publish-label'}
 					: $this->name)
 			);
-			
+
 			$optional = '';
 
 			if ($this->{'required'} != 'yes') {
@@ -438,16 +438,16 @@
 					$formatter = TextFormatter::loadFromHandle($this->{'text-formatter'});
 					$result = $formatter->run($value);
 					$result = preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $result);
-					
+
 					return $result;
 				}
-				
+
 				catch (Exception $e) {
 					// Problem loading the formatter
 					// TODO: Decide is we should be handling this better.
 				}
 			}
-			
+
 			return General::sanitize($value);
 		}
 
@@ -473,12 +473,12 @@
 
 			if (!is_null($data)) {
 				$data = stripslashes($data);
-				
+
 				$result->handle = Lang::createHandle($data);
 				$result->value = $data;
 				$result->value_formatted = $this->applyFormatting($data);
 			}
-			
+
 			return $result;
 		}
 
@@ -493,7 +493,7 @@
 			);
 		}
 
-		public function appendFormattedElement(&$wrapper, $data, $mode = null) {
+		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, Entry $entry=NULL) {
 			if ($mode == 'unformatted') {
 				$value = trim($data->value);
 			}
@@ -502,8 +502,8 @@
 				$mode = 'formatted';
 				$value = trim($data->value_formatted);
 			}
-			
-			if(is_null($value)) return;
+
+			if(is_null($value) || empty($value)) return;
 
 			$result = $wrapper->ownerDocument->createElement($this->{'element-name'});
 
@@ -534,29 +534,29 @@
 
 			$wrapper->appendChild($result);
 		}
-		
-		public function getParameterOutputValue(StdClass $data, Entry $entry=NULL) {
+
+		public function getParameterOutputValue($data, Entry $entry=NULL) {
 			return $data->handle;
 		}
 
 	/*-------------------------------------------------------------------------
 		Filtering:
 	-------------------------------------------------------------------------*/
-		
+
 		public function getFilterTypes($data) {
 			$filters = parent::getFilterTypes($data);
 			$filters[] = array(
 				'boolean-search', $data->type == 'boolean-search', 'Boolean Search'
 			);
-			
+
 			return $filters;
 		}
-		
+
 		public function buildFilterQuery($filter, &$joins, array &$where, Register $parameter_output) {
 			$filter = $this->processFilter($filter);
 			$filter_join = DataSource::FILTER_OR;
 			$db = Symphony::Database();
-			
+
 			// Boolean searches:
 			if ($filter->type == 'boolean-search') {
 				$handle = $this->buildFilterJoin($joins);
@@ -564,21 +564,21 @@
 					trim($filter->value), $parameter_output
 				);
 				$mode = (preg_match('/^not(\W)/i', $value) ? '-' : '+');
-				
+
 				// Replace ' and ' with ' +':
 				$value = preg_replace('/(\W)and(\W)/i', '\\1+\\2', $value);
 				$value = preg_replace('/(^)and(\W)|(\W)and($)/i', '\\2\\3', $value);
 				$value = preg_replace('/(\W)not(\W)/i', '\\1-\\2', $value);
 				$value = preg_replace('/(^)not(\W)|(\W)not($)/i', '\\2\\3', $value);
 				$value = preg_replace('/([\+\-])\s*/', '\\1', $mode . $value);
-				
+
 				$statement = $db->prepareQuery("MATCH ({$handle}.value) AGAINST ('%s' IN BOOLEAN MODE)", array($value));
-				
+
 				$where[] = "(\n\t{$statement}\n)";
-				
+
 				return true;
 			}
-			
+
 			return parent::buildFilterQuery($filter, $joins, $where, $parameter_output);
 		}
 

@@ -348,6 +348,8 @@
 
 		***/
 		public static function realiseDirectory($path, $mode = '0755'){
+			if(is_dir($path)) return true;
+
 			return @mkdir($path, intval($mode, 8), true);
 		}
 
@@ -803,22 +805,37 @@
 
 		Method: dependenciesSort
 		Description: Sort a tree of dependencies and return them in execution order.
-		Param: $dependencies Tree of dependnecies
+		Param: $unsorted Tree of dependnecies
 		Return: array
 
 		***/
-		public static function dependenciesSort(array $dependencies) {
-			self::$dependencies = $dependencies;
+		public static function dependenciesSort(array $unsorted) {
+			$sorted = array();
 
-			uksort(self::$dependencies, array('self', 'dependenciesSortCallback'));
+			// Add data sources with dependencies:
+			while (!empty($unsorted)) {
+				// Add data sources in order:
+				foreach ($unsorted as $parent => $children) {
+					foreach ($children as $child) if (!(
+						$child == $parent
+						|| !array_key_exists($child, $unsorted)
+						|| in_array($child, $sorted)
+					)) continue 2;
 
-			return array_keys(self::$dependencies);
-		}
+					$sorted[] = $parent;
 
-		protected static $dependencies;
+					unset($unsorted[$parent], $parent);
+				}
 
-		protected function dependenciesSortCallback($a, $b) {
-			return (in_array($b, self::$dependencies[$a]) ? 1 : -1);
+				// Data source could not be put in order:
+				if (isset($parent)) {
+					$sorted[] = $parent;
+
+					unset($unsorted[$parent]);
+				}
+			}
+
+			return $sorted;
 		}
 
 		/***

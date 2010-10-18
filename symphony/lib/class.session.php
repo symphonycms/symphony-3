@@ -139,15 +139,18 @@
 		}
 
 		public static function destroy($id) {
-			Symphony::$Log->pushToLog("Session: Being destroyed now!", E_NOTICE, true);
+
+			#Symphony::$Log->pushToLog("Session: Being destroyed now!", E_NOTICE, true);
 			
 			return Symphony::Database()->delete('tbl_sessions', array($id), "`session` = '%s'");
 		}
 
 		public static function gc($max) {
-			Symphony::$Log->pushToLog("Session: Taking out the trash!", E_NOTICE, true);
+		
+			#Symphony::$Log->pushToLog("Session: Taking out the trash!", E_NOTICE, true);
 
 			return Symphony::Database()->delete('tbl_sessions', array(time() - $max), "`session_expires` <= '%s'");
 		}
+
 	}
 

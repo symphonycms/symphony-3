@@ -322,7 +322,6 @@
 		protected function getMetaInformation(Entry $entry, STDClass $data, $file) {
 
 			$meta = array(
-				'creation'	=> DateTimeObj::get('c', @filemtime($file)),
 				'type'		=> 'application/octet-stream'
 			);
 
@@ -331,17 +330,22 @@
 				$meta['type'] = $data->type;
 			}
 
-			// Get image meta information:
-			if (strlen(trim($file)) > 0 && $basic = @getimagesize($file)) {
-				$meta['type'] = $basic['mime'];
-				$meta['dimension'] = array(
-					'width'		=> $basic[0],
-					'height'	=> $basic[1]
-				);
-				$meta['bits-per-channel'] = (
-					isset($basic['bits'])
-					? $basic['bits'] : null
-				);
+			if(file_exists($file)) {
+
+				// Get image meta information:
+				if (strlen(trim($file)) > 0 && $basic = getimagesize($file)) {
+					$meta['type'] = $basic['mime'];
+					$meta['dimension'] = array(
+						'width'		=> $basic[0],
+						'height'	=> $basic[1]
+					);
+					$meta['bits-per-channel'] = (
+						isset($basic['bits'])
+						? $basic['bits'] : null
+					);
+				}
+
+				$meta['creation'] = DateTimeObj::get('c', filemtime($file));
 			}
 
 			###
@@ -644,17 +648,17 @@
 					$this->cleanupData($entry, $data, $data->existing);
 				}
 			}
-			
+
 			// Remove data that can't be saved:
 			unset($data->existing);
 			unset($data->error);
 			unset($data->tmp_name);
-			
+
 			// Make sure we save null values:
 			if (!isset($data->path)) {
 				$data->path = null;
 			}
-			
+
 			if (!isset($data->file)) {
 				$data->file = null;
 			}
@@ -670,7 +674,7 @@
 					'entry'	=> $entry
 				)
 			);
-			
+
 			try {
 				$data->meta = serialize($data->meta);
 
@@ -679,7 +683,7 @@
 					(array)$data,
 					Database::UPDATE_ON_DUPLICATE
 				);
-				
+
 				return self::STATUS_OK;
 			}
 

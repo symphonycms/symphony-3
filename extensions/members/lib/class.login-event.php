@@ -230,8 +230,10 @@
 		
 	/*-----------------------------------------------------------------------*/
 		
+		protected $root;
+		
 		public function canTrigger(array $data) {
-			$this->cookie = new Cookie($this->parameters()->{'section'});
+			$this->cookie = new Cookie($this->parameters()->{'section'}, 604800);
 			
 			// Cookie data:
 			if ($this->cookie->get('email') and $this->cookie->get('login')) return true;
@@ -252,6 +254,7 @@
 			$root = $result->documentElement;
 			
 			try {
+				$this->root = $root;
 				$status = $this->login($errors, $parameter_output, $data);
 				$root->setAttribute('result', 'success');
 			}

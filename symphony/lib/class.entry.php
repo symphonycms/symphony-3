@@ -1,24 +1,27 @@
 <?php
 
-	Class EntryResult extends DBCMySQLResult{
+	Class EntryResult extends DBCMySQLResult {
 		public $schema = array();
 
 		public function current(){
 			$record = parent::current();
 			$entry = new Entry;
-			foreach($record as $key => $value){
+
+			foreach ($record as $key => $value) {
 				$entry->$key = $value;
 			}
 
 			// Load the section
-			try{
+			try {
 				$section = Section::loadFromHandle($entry->section);
 			}
-			catch(SectionException $e){
+
+			catch (SectionException $e) {
 				throw new EntryException('Section specified, "'.$entry->section.'", in Entry object is invalid.');
 			}
-			catch(Exception $e){
-				throw new EntryException('The following error occurred during saving: ' . $e->getMessage());
+
+			catch (Exception $e) {
+				throw new EntryException('The following error occurred: ' . $e->getMessage());
 			}
 
 			foreach ($section->fields as $field) {
@@ -31,7 +34,7 @@
 		}
 
 		public function setSchema(Array $schema = array()) {
-			$this->schema = $schema;
+			$this->schema = array_keys($schema);
 		}
 	}
 
@@ -80,7 +83,7 @@
 			return $this->meta;
 		}
 
-		public static function loadFromID($id, $schema = array()){
+		public static function loadFromID($id, $schema = array()) {
 			$result = Symphony::Database()->query("SELECT * FROM `tbl_entries` WHERE `id` = %d LIMIT 1", array($id), 'EntryResult');
 
 			$result->setSchema($schema);
@@ -123,17 +126,17 @@
 		public static function delete($id){
 			$entry = self::loadFromID($id);
 			$section = Section::loadFromHandle($entry->section);
-			
+
 			try {
 				foreach($section->fields as $field){
 					Symphony::Database()->delete(
-						sprintf('tbl_data_%s_%s', $section->handle, $field->{'element-name'}), 
-						array($entry->id), 
+						sprintf('tbl_data_%s_%s', $section->handle, $field->{'element-name'}),
+						array($entry->id),
 						'`entry_id` = %d'
 					);
 				}
 			}
-			
+
 			catch (Exception $e) {
 				// TODO: Do something about fields that don't implement this correctly.
 			}

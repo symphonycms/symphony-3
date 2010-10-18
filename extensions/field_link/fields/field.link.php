@@ -223,12 +223,12 @@
 			$options = array();
 
 			foreach (new SectionIterator as $section) {
-				if(!is_array($section->fields) || $section->handle == $this->section) continue;
+				if(!is_array($section->fields)) continue;
 
 				$fields = array();
 
 				foreach($section->fields as $field) {
-					if($field->canPrePopulate()) {
+					if($field->canPrePopulate() and $field->{'element-name'} != $this->{'element-name'}) {
 						$fields[] = array(
 							$section->handle . '::' .$field->{'element-name'},
 							(isset($this->{'related-fields'}["{$section->handle}::" . $field->{'element-name'}])),
@@ -413,6 +413,7 @@
 			}
 
 			$states = $this->findOptions($selected);
+
 			$options = array();
 
 			if($this->{'required'} != 'yes') $options[] = array(NULL, false, NULL);
@@ -474,6 +475,46 @@
 			var_dump($result); die();
 
 			return $result;*/
+		}
+
+		public function loadDataFromDatabaseEntries($section, $entry_ids){
+			try {
+				$data = parent::loadDataFromDatabaseEntries($section, $entry_ids);
+				$result = array();
+				$ids = array();
+
+				foreach ($data as $entry) {
+					$ids[] = $entry->relation_id;
+				}
+
+				foreach ($this->{'related-fields'} as $related) {
+					$rows = Symphony::Database()->query("
+							SELECT `e`.*, r.entry_id AS `entry_id`, r.relation_id AS `relation_id`
+							FROM `tbl_data_%s_%s` AS `e`
+							LEFT OUTER JOIN `tbl_data_%s_%s` AS `r` ON (e.entry_id = r.relation_id)
+							WHERE e.entry_id IN (%s)
+							AND r.entry_id IN (%s)
+						",
+						array(
+							$related[0], $related[1],
+							$section, $this->{'element-name'},
+							implode(',', $ids),
+							implode(',', $entry_ids)
+						)
+					);
+					
+					foreach ($rows as $r) {
+						$r->relation_field = $related;
+						$result[] = $r;
+					}
+				}
+			}
+			
+			catch (DatabaseException $e) {
+				$result = array();
+			}
+			
+			return $result;
 		}
 
 		public function validateData(MessageStack $errors, Entry $entry=NULL, $data=NULL){
@@ -539,7 +580,6 @@
 			return parent::setPropertiesFromPostData($data);
 		}
 
-
 		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
 
 			$related_fields = array();
@@ -596,109 +636,133 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $mode = null){
-			//if(!($data instanceof StdClass) || empty($data)) return;
-
-			$items = $this->processData($data);
-
-			if(!is_array($items) || empty($items)){
-				return;
-			}
-
+		public function appendFormattedElement(DOMElement $wrapper, $data, $encode = false, $mode = null, Entry $entry = null) {
+			if (!isset($data)) return;
+			if (!is_array($data) || empty($data)) $data = array($data);
+			
+			$xpath = new DOMXPath($wrapper->ownerDocument);
 			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
-
-			foreach($items as $data){
-				$entry = Entry::loadFromID($data->relation_id);
-
-				foreach ($this->{'related-fields'} as $key => $value) {
-					$item = $wrapper->ownerDocument->createElement('item');
-					list($section_handle, $field_handle) = $value;
-
-					if($section_handle != $entry->section) continue;
-
-					$section = Section::loadFromHandle($entry->section);
-					$related_field = $section->fetchFieldByHandle($field_handle);
-					$related_field->appendFormattedElement($item, $entry->data()->$field_handle);
-
-					$item->setAttribute('id', $data->relation_id);
-					$item->setAttribute('section-handle', $section_handle);
-					$item->setAttribute('section-name', $section->name);
-
-					$list->appendChild($item);
+			$list->ownerDocument->formatOutput = true;
+			
+			$groups = array();
+			
+			foreach ($data as $item) {
+				if (!isset($item->relation_id) || is_null($item->relation_id)) continue;
+				
+				if (!isset($groups[$item->relation_id])) {
+					$groups[$item->relation_id] = array();
 				}
-				/*
-				die("hmm");
-				$primary_field = $this->__findPrimaryFieldValueFromRelationID($relation_id);
-
-				$value = $primary_field['value'];
-				if ($encode) $value = General::sanitize($value);
-
-				$item = new XMLElement('item');
-				$item->setAttribute('id', $relation_id);
-				$item->setAttribute('handle', Lang::createHandle($primary_field['value']));
-				$item->setAttribute('section-handle', $primary_field['section_handle']);
-				$item->setAttribute('section-name', General::sanitize($primary_field['section_name']));
-				$item->setValue(General::sanitize($value));
-
-				$list->appendChild($item);*/
+				
+				$groups[$item->relation_id][] = $item;
 			}
-
+			
+			foreach ($groups as $relations) {
+				foreach ($relations as $relation) {
+					list($section_handle, $field_handle) = $relation->relation_field;
+					
+					$item = $xpath->query('item[@id = ' . $relation->relation_id . ']', $list)->item(0);
+					
+					if (is_null($item)) {
+						$section = Section::loadFromHandle($section_handle);
+						$item = $wrapper->ownerDocument->createElement('item');
+						$item->setAttribute('id', $relation->relation_id);
+						$item->setAttribute('section-handle', $section_handle);
+						$item->setAttribute('section-name', $section->name);
+						
+						$list->appendChild($item);
+					}
+					
+					$related_field = $section->fetchFieldByHandle($field_handle);
+					$related_field->appendFormattedElement($item, $relation);
+				}
+			}
+			
 			$wrapper->appendChild($list);
 		}
 
-		public function prepareTableValue($data, DOMElement $link=NULL){
-
-			if(!is_array($data) || empty($data)){
-				return parent::prepareTableValue(NULL, $link);
+		public function prepareTableValue($data, DOMElement $link = null){
+			if (!is_array($data) || empty($data)) {
+				return parent::prepareTableValue(null, $link);
 			}
-
+			
 			$result = Administration::instance()->Page->createDocumentFragment();
-
-			foreach($data as $index => $d){
-				try{
-					$entry = Entry::loadFromID($d->relation_id);
-
-					foreach($this->{'related-fields'} as $key => $value){
-						list($section_handle, $field_handle) = $value;
-
-						if($section_handle != $entry->meta()->section) continue;
-
-						$section = Section::loadFromHandle($section_handle);
-						$field = $section->fetchFieldByHandle($field_handle);
-
-						$value = $field->prepareTableValue($entry->data()->{$field_handle});
-
-						// TODO: handle passing links
-						if($index > 0){
-							$result->appendChild(new DOMText(', '));
-						}
-
-						$result->appendChild(Widget::anchor(
-							$value,
-							sprintf('%s/publish/%s/edit/%d/', ADMIN_URL, $section_handle, $entry->meta()->id)
-						));
-
-						break;
+			$schema = array();
+			
+			foreach ($this->{'related-fields'} as $key => $value) {
+				list($section_handle, $field_handle) = $value;
+				
+				$schema[] = $field_handle;
+			}
+			
+			foreach ($data as $index => $d) try {
+				$entry = Entry::loadFromID($d->relation_id, $schema);
+				
+				if (!$entry instanceof Entry) continue;
+				
+				foreach ($this->{'related-fields'} as $key => $value) {
+					list($section_handle, $field_handle) = $value;
+					
+					if ($section_handle != $entry->meta()->section) continue;
+					
+					$section = Section::loadFromHandle($section_handle);
+					$field = $section->fetchFieldByHandle($field_handle);
+					$value = $field->prepareTableValue($entry->data()->{$field_handle});
+					
+					if ($index > 0) {
+						$result->appendChild(new DOMText(', '));
 					}
+					
+					if ($link instanceof DOMElement) {
+						if ($value instanceof DOMElement) {
+							$result->appendChild($value);
+						}
+						
+						else {
+							$result->appendChild(new DOMText($value));
+						}
+					}
+					
+					else {
+						$result->appendChild(Widget::anchor(
+							$value, sprintf(
+								'%s/publish/%s/edit/%d/',
+								ADMIN_URL, $section_handle, $entry->meta()->id
+							)
+						));
+					}
+					
+					break;
 				}
-				catch(Exception $e){}
 			}
-
-			if(!$result->hasChildNodes()){
-				return parent::prepareTableValue(NULL, $link);
+			
+			catch (Exception $e) {
+				
 			}
-
+			
+			if (!$result->hasChildNodes()) {
+				$result = parent::prepareTableValue(null, $link);
+			}
+			
+			if ($link instanceof DOMElement) {
+				$link->removeChildNodes();
+				$link->appendChild($result);
+				$result = $link;
+			}
+			
 			return $result;
 
 		}
 
-		public function getParameterOutputValue(array $data, Entry $entry=NULL){
+		public function getParameterOutputValue($data, Entry $entry=NULL){
+			if(!is_array($data)) $data = array($data);
+
 			$result = array();
-			if(!empty($data)){
-				foreach($data as $d){
-					$result[] = $d->relation_id;
-				}
+			if(!empty($data)) foreach($data as $d) {
+				if(is_null($d->relation_id)) continue;
+
+				$result[] = $d->relation_id;
 			}
+
 			return $result;
 		}
 
@@ -784,114 +848,6 @@
 
 				$where[] = $statement;
 			}
-		}
-
-		public function xbuildFilterQuery($filter, &$joins, array &$where, Register $ParameterOutput=NULL){
-			var_dump($this->getFilterTypes($filter));
-			var_dump($filter);
-
-			exit;
-			self::$key++;
-
-			$value = DataSource::prepareFilterValue($filter['value'], $ParameterOutput, $filterOperationType);
-
-			$joins .= sprintf('
-				LEFT OUTER JOIN `tbl_data_%2$s_%3$s` AS t%1$s ON (e.id = t%1$s.entry_id)
-			', self::$key, $this->section, $this->{'element-name'});
-
-			if ($filterOperationType == DataSource::FILTER_AND) {
-				$clause = NULL;
-				foreach ($value as $v) {
-					$clause .= sprintf(
-						" (t%1\$s.relation_id %2\$s '%3\$s') AND",
-						self::$key,
-						$filter['type'] == 'is-not' ? '<>' : '=',
-						$v
-					);
-				}
-				$where[] = sprintf("(%s)", preg_replace('/AND$/i', NULL, $clause));
-			}
-
-			else {
-				$where[] = sprintf(
-					"(t%1\$s.relation_id %2\$s IN ('%3\$s'))",
-					self::$key,
-					$filter['type'] == 'is-not' ? 'NOT' : NULL,
-					implode("', '", $value)
-				);
-			}
-
-			return true;
-
-			// OLD CODE ------
-
-			$field_id = $this->{'id'};
-
-			if(preg_match('/^sql:\s*/', $data[0], $matches)) {
-				$data = trim(array_pop(explode(':', $data[0], 2)));
-
-				if(strpos($data, "NOT NULL") !== false) {
-
-					$joins .= " LEFT JOIN
-									`tbl_entries_data_{$field_id}` AS `t{$field_id}`
-								ON (`e`.`id` = `t{$field_id}`.entry_id)";
-					$where .= " AND `t{$field_id}`.relation_id IS NOT NULL ";
-
-				} else if(strpos($data, "NULL") !== false) {
-
-					$joins .= " LEFT JOIN
-									`tbl_entries_data_{$field_id}` AS `t{$field_id}`
-								ON (`e`.`id` = `t{$field_id}`.entry_id)";
-					$where .= " AND `t{$field_id}`.relation_id IS NULL ";
-
-				}
-			}
-
-			else{
-				foreach($data as $key => &$value) {
-					// for now, I assume string values are the only possible handles.
-					// of course, this is not entirely true, but I find it good enough.
-					if(!is_numeric($value)){
-
-						$related_field_id = $this->{'related-field-id'};
-
-						if(is_array($related_field_id) && !empty($related_field_id)) {
-							$return = Symphony::Database()->fetchCol("id", sprintf(
-								"SELECT
-									`entry_id` as `id`
-								FROM
-									`tbl_entries_data_%d`
-								WHERE
-									`handle` = '%s'
-								LIMIT 1", $related_field_id[0], Lang::createHandle($value)
-							));
-
-							// Skipping returns wrong results when doing an AND operation, return 0 instead.
-							if(empty($return)){
-								$value = 0;
-							}
-
-							else{
-								$value = $return[0];
-							}
-						}
-
-					}
-				}
-
-				if($andOperation):
-					foreach($data as $key => $bit){
-						$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id$key` ON (`e`.`id` = `t$field_id$key`.entry_id) ";
-						$where .= " AND `t$field_id$key`.relation_id = '$bit' ";
-					}
-				else:
-					$joins .= " LEFT JOIN `tbl_entries_data_$field_id` AS `t$field_id` ON (`e`.`id` = `t$field_id`.entry_id) ";
-					$where .= " AND `t$field_id`.relation_id IN ('".@implode("', '", $data)."') ";
-				endif;
-
-			}
-
-			return true;
 		}
 
 	/*-------------------------------------------------------------------------

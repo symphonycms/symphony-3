@@ -110,8 +110,11 @@
 	
 	#content {
 		background: hsl(210, 0%, 10%);
+		height: 100%;
+		margin: 0 220px 0 0;
 		min-height: 100%;
 		padding: 20px;
+		position: relative;
 	}
 	#content iframe {
 		background: #ffffff;

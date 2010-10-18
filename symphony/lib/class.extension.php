@@ -248,7 +248,7 @@
 			}
 			
 			if(!isset(self::$loaded_extensions[$pathname])){
-				if(!file_exists(realpath($pathname) . '/extension.driver.php')){
+				if(!is_file(realpath($pathname) . '/extension.driver.php')){
 					throw new ExtensionException('No extension driver found at ' . $pathname);
 				}
 				
@@ -314,7 +314,7 @@
 				}
 				
 				foreach(new DirectoryIterator(EXTENSIONS) as $d){
-					if(!$d->isDir() || $d->isDot() || !file_exists($d->getPathname() . '/extension.driver.php')) continue;
+					if(!$d->isDir() || $d->isDot() || !is_file($d->getPathname() . '/extension.driver.php')) continue;
 					
 					$extension = Extension::load($d->getFileName());
 					

@@ -54,9 +54,9 @@
 			return true;
 		}
 
-		/*-------------------------------------------------------------------------
-			Utilities:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Utilities:
+	-------------------------------------------------------------------------*/
 
 		public function getToggleStates() {
 			$values = preg_split('/,\s*/i', $this->{'static-options'}, -1, PREG_SPLIT_NO_EMPTY);
@@ -89,9 +89,9 @@
 			if($result->valid()) $values = array_merge($values, $result->resultColumn('value'));
 		}
 
-		/*-------------------------------------------------------------------------
-			Settings:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Settings:
+	-------------------------------------------------------------------------*/
 
 		public function findDefaultSettings(array &$fields){
 			if(!isset($fields['allow-multiple-selection'])) $fields['allow-multiple-selection'] = 'no';
@@ -169,9 +169,9 @@
 			return parent::validateSettings($messages, $checkForDuplicates);
 		}
 
-		/*-------------------------------------------------------------------------
-			Publish:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Publish:
+	-------------------------------------------------------------------------*/
 
 		public function prepareTableValue($data, DOMElement $link=NULL){
 
@@ -236,9 +236,9 @@
 			return $data;
 		}
 
-		/*-------------------------------------------------------------------------
-			Input:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Input:
+	-------------------------------------------------------------------------*/
 
 		public function loadDataFromDatabase(Entry $entry, $expect_multiple = false) {
 			return parent::loadDataFromDatabase($entry, true);
@@ -256,17 +256,17 @@
 					'handle' => null
 				);
 			//}
-			
+
 			if (is_array($data)) {
 				$result->value = array();
 				$result->handle = array();
-				
+
 				foreach ($data as $value) {
 					$result->value[] = $value;
 					$result->handle[] = Lang::createHandle($value);
 				}
 			}
-			
+
 			else if (!is_null($data)){
 				$result->value = $data;
 				$result->handle = Lang::createHandle($data);
@@ -310,12 +310,14 @@
 			return Field::STATUS_OK;
 		}
 
-		/*-------------------------------------------------------------------------
-			Output:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Output:
+	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
-			if (!is_array($data) or empty($data) or is_null($data->value)) return;
+		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, Entry $entry=NULL) {
+			if (!is_array($data)) $data = array($data);
+
+			if (empty($data) or is_null($data[0]->value)) return;
 
 			$list = $wrapper->ownerDocument->createElement($this->{'element-name'});
 
@@ -329,18 +331,22 @@
 			$wrapper->appendChild($list);
 		}
 
-		public function getParameterOutputValue(array $data, Entry $entry=NULL){
+		public function getParameterOutputValue($data, Entry $entry=NULL){
+			if(!is_array($data)) $data = array($data);
+
 			$result = array();
-			foreach($data as $d){
-				$result[] = $this->prepareTableValue($d);
+			if(!empty($data)) foreach($data as $d) {
+				if(is_null($d->value)) continue;
+
+				$result[] = $d->value;
 			}
 
 			return $result;
 		}
 
-		/*-------------------------------------------------------------------------
-			Filtering:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Filtering:
+	-------------------------------------------------------------------------*/
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
@@ -366,9 +372,9 @@
 			}
 		}
 
-		/*-------------------------------------------------------------------------
-			Grouping:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Grouping:
+	-------------------------------------------------------------------------*/
 
 		public function groupRecords($records){
 
@@ -394,9 +400,9 @@
 			return $groups;
 		}
 
-		/*-------------------------------------------------------------------------
-			Possibly Deprecated:
-		-------------------------------------------------------------------------*/
+	/*-------------------------------------------------------------------------
+		Possibly Deprecated:
+	-------------------------------------------------------------------------*/
 
 		function fetchAssociatedEntrySearchValue($data){
 			if(!is_array($data)) return $data;

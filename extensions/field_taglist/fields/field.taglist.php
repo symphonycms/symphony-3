@@ -115,7 +115,7 @@
 						)
 					);
 				}
-				
+
 				catch (Exception $e) {
 					continue;
 				}
@@ -209,7 +209,7 @@
 
 			$wrapper->appendChild($options_list);
 		}
-		
+
 		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml){
 
 			$suggestion_list_source = array();
@@ -243,7 +243,7 @@
 
 			$this->setPropertiesFromPostData($data);
 		}
-		
+
 		public function setPropertiesFromPostData($data){
 			if(isset($data['suggestion-list-source'])){
 
@@ -300,8 +300,8 @@
 			}
 
 			$label = Widget::Label(
-				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0 
-					? $this->{'publish-label'} 
+				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0
+					? $this->{'publish-label'}
 					: $this->name)
 			);
 
@@ -401,7 +401,7 @@
 			return Field::STATUS_OK;
 		}
 
-		
+
 
 		/*-------------------------------------------------------------------------
 			Output:
@@ -443,16 +443,20 @@
 			return parent::loadDataFromDatabase($entry, true);
 		}
 
-		public function appendFormattedElement($wrapper, $data, $encode = false) {
-			if (!is_array($data) or empty($data) or is_null($data->value)) return;
+		public function appendFormattedElement(DOMElement $wrapper, $data, $encode=false, $mode=NULL, Entry $entry=NULL) {
+			if (!is_array($data)) $data = array($data);
+
+			if (empty($data) or is_null($data[0]->value)) return;
 
 			$document = $wrapper->ownerDocument;
 
 			$list = $document->createElement($this->{'element-name'});
-			
+
 			foreach($data as $tag){
+				if($encode) $tag->value = General::sanitize($tag->value);
+
 				$list->appendChild($document->createElement(
-					'item', General::sanitize($tag->value), array(
+					'item', $tag->value, array(
 						'handle' => $tag->handle
 					)
 				));
@@ -468,15 +472,15 @@
 
 		public function displayDatasourceFilterPanel(SymphonyDOMElement $wrapper, $data=NULL, MessageStack $errors=NULL){
 			parent::displayDatasourceFilterPanel($wrapper, $data, $errors);
-			
+
 			if (!is_null($this->{'suggestion-list-source'})) {
 				$document = $wrapper->ownerDocument;
 				$existing_options = $this->getToggleStates();
-				
+
 				$div = $document->createElement('div');
 				$label = $document->xpath('.//label[last()]', $wrapper)->item(0);
 				$label->wrapWith($div);
-				
+
 				$this->prepopulateSource($div);
 			}
 		}

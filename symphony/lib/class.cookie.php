@@ -25,7 +25,7 @@
 		
 		public function set($name, $value) {
 			if (!$this->_session) {
-				$this->init();
+				$this->__init();
 			}
 
 			$_SESSION[$this->_index][$name] = $value;
@@ -33,7 +33,7 @@
 		
 		public function get($name) {
 			if (!$this->_session) {
-				$this->init();
+				$this->__init();
 			}
 			
 			if (!isset($_SESSION[$this->_index][$name])) {
@@ -45,7 +45,7 @@
 		
 		public function expire() {
 			if (!$this->_session) {
-				$this->init();
+				$this->__init();
 			}
 
 			if(!is_array($_SESSION[$this->_index]) || empty($_SESSION[$this->_index])) return;
@@ -53,7 +53,7 @@
 			unset($_SESSION[$this->_index]);
 		}
 
-		public function init() {
+		private function __init() {
 			if ($this->_session) return $this->_session;
 
 			$this->_session = Session::start($this->_timeout, $this->_path, $this->_domain);

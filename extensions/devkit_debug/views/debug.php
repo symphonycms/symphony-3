@@ -22,15 +22,16 @@
 	}
 	
 	class DevKit_Debug extends DevKit {
-		protected $show = null;
-		protected $view = null;
-		protected $input = null;
-		protected $output = null;
-		protected $params = null;
-		protected $template = null;
-		protected $utilities = null;
-		protected $state = null;
-		protected $url = null;
+		protected $show;
+		protected $view;
+		protected $input;
+		protected $output;
+		protected $params;
+		protected $template;
+		protected $utilities;
+		protected $state;
+		protected $states;
+		protected $url;
 		
 		public function __construct(View $view) {
 			parent::__construct($view);
@@ -103,33 +104,54 @@
 			$this->template = $this->view->template;
 			$cache = Cache::instance();
 			
+			// Load previously saved states:
+			$this->states = $cache->read('debug-saved-states');
+			
+			if ($this->states === false || is_null($this->states)) {
+				$this->states = array();
+			}
+			
+			else {
+				$this->states = array_slice($this->states, -9);
+			}
+			
 			if (is_null($this->state)) {
 				try {
 					$this->output = $this->view->render($parameters, $document);
 				}
 				
 				catch (Exception $e) {
-					throw $e;
+					//throw $e;
 				}
+				
+				// Force sane headers:
+				header('content-type: text/html');
 				
 				$document->formatOutput = true;
 				$this->input = $document->saveXML();
 				$this->params = $parameters;
 				
 				// Save current state:
-				$this->state = substr(uniqid(), 8);
+				$state = substr((string)time(), -6);
+				$state = substr($state, 0, 2)
+					. strtr(substr($state, 2, 2), '0123456789', 'abcdefghij')
+					. substr($state, 4);
+				
 				$data = (object)array(
 					'input'		=> $this->input,
 					'output'	=> $this->output,
 					'params'	=> $this->params
 				);
 				
-				$cache->write($this->state, serialize($data), 604800);
+				$this->state = $state;
+				$this->states[$state] = time();
+				
+				$cache->write($this->state, $data, 604800);
+				$cache->write('debug-saved-states', $this->states, 604800);
 			}
 			
 			else {
 				$data = $cache->read($this->state);
-				$data = unserialize($data->data);
 				
 				$this->input = $data->input;
 				$this->output = $data->output;
@@ -187,8 +209,12 @@
 			$list = $this->document->createElement('ul');
 			$url = clone $this->url;
 			
-			$url->parameters()->debug = 'source';
-			$url->parameters()->{'debug-state'} = $this->state;
+			$url->parameters()->{'debug'} = 'source';
+			
+			if (isset($_GET['debug-state'])) {
+				$url->parameters()->{'debug-state'} = $this->state;
+			}
+			
 			$this->appendLink(
 				$list, __('View Source'),
 				(string)$url, ($this->show == 'source')
@@ -215,6 +241,7 @@
 			$fieldset->appendChild($list);
 			
 			$fieldset = Widget::Fieldset(__('Templates'));
+			$fieldset->addClass('templates');
 			$list = $this->document->createElement('ul');
 			
 			$url->parameters()->debug = 'template';
@@ -228,10 +255,11 @@
 			$fieldset->appendChild($list);
 			$sidebar->appendChild($fieldset);
 			
-			$fieldset = Widget::Fieldset(__('XPath Search'));
-			$search = Widget::Input('search');
-			$search->setAttribute('id', 'search');
-			$fieldset->appendChild($search);
+			$fieldset = Widget::Fieldset(__('Saved States'));
+			$fieldset->addClass('states');
+			
+			$this->appendStateLinks($fieldset, $this->states);
+			
 			$sidebar->appendChild($fieldset);
 			
 			return $sidebar;
@@ -239,7 +267,6 @@
 		
 		protected function appendUtilityLinks(DOMElement $wrapper, $utilities) {
 			$url = clone $this->url;
-			$url->parameters()->{'debug-state'} = $this->state;
 			$list = $this->document->createElement('ul');
 			
 			foreach ($utilities as $utility) {
@@ -254,6 +281,59 @@
 				if (!empty($utility->tree)) {
 					$this->appendUtilityLinks($item, $utility->tree);
 				}
+			}
+			
+			$wrapper->appendChild($list);
+			
+			return $list;
+		}
+		
+		protected function appendStateLinks(DOMElement $wrapper, $states) {
+			$url = clone $this->url;
+			$url->parameters()->{'debug'} = $this->show;
+			$list = $this->document->createElement('ul');
+			
+			uasort($states, function($a, $b) {
+				return $a < $b;
+			});
+			
+			foreach ($states as $state => $timestamp) {
+				$from = new DateTime();
+				$from->setTimestamp($timestamp);
+				$to = new DateTime();
+				$to->setTimestamp(time());
+				$interval = $from->diff($to);
+				
+				if ($interval->y) {
+					$timestamp = $interval->format(__('%y years ago'));
+				}
+				
+				else if ($interval->m) {
+					$timestamp = $interval->format(__('%m months ago'));
+				}
+				
+				else if ($interval->d) {
+					$timestamp = $interval->format(__('%d days ago'));
+				}
+				
+				else if ($interval->h) {
+					$timestamp = $interval->format(__('%h hours ago'));
+				}
+				
+				else if ($interval->i) {
+					$timestamp = $interval->format(__('%i minutes ago'));
+				}
+				
+				else {
+					$timestamp = __('just now');
+				}
+				
+				$url->parameters()->{'debug-state'} = $state;
+				$item = $this->appendLink(
+					$list, $state,
+					(string)$url, ($this->state == $state)
+				);
+				$item->setAttribute('timestamp', $timestamp);
 			}
 			
 			$wrapper->appendChild($list);
@@ -280,6 +360,12 @@
 			}
 			
 			else if ($this->show == 'source') {
+				$search = $this->document->createElement('div');
+				$search->setAttribute('id', 'search');
+				$input = Widget::Input('search');
+				$search->appendChild($input);
+				$content->appendChild($search);
+				
 				$this->appendSource($content, $this->input, 'xml');
 			}
 			
@@ -301,7 +387,7 @@
 			$container->setAttribute('id', 'params');
 			$table = $this->document->createElement('table');
 			
-			foreach ($this->params as $key => $value) {
+			if ($this->params instanceof Register) foreach ($this->params as $key => $value) {
 				$row = $this->document->createElement('tr');
 				
 				$cell = $this->document->createElement('th');

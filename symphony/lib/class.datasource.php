@@ -21,28 +21,28 @@
 
 		public function __construct(){
 			$this->position = 0;
-			
+
 			if (!empty(self::$datasources)) return;
-			
+
 			self::clearCachedFiles();
-			
+
 			foreach (new DataSourceFilterIterator(DATASOURCES) as $file) {
 				self::$datasources[] = $file->getPathname();
 			}
-			
+
 			$extensions = new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED);
-			
+
 			foreach ($extensions as $extension) {
 				$path = Extension::getPathFromClass(get_class($extension));
-				
+
 				if (!is_dir($path . '/data-sources')) continue;
-				
+
 				foreach (new DataSourceFilterIterator($path . '/data-sources') as $file) {
 					self::$datasources[] = $file->getPathname();
 				}
 			}
 		}
-		
+
 		public static function clearCachedFiles() {
 			self::$datasources = array();
 		}
@@ -130,14 +130,14 @@
 
 		    if(is_file(DATASOURCES . "/{$name}.php")) return DATASOURCES;
 		    else{
-				
+
 				foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension){
 					$path = Extension::getPathFromClass(get_class($extension));
 					$handle = Extension::getHandleFromPath($path);
-					
+
 					if(is_file(EXTENSIONS . "/{$handle}/data-sources/{$name}.php")) return EXTENSIONS . "/{$handle}/data-sources";
 				}
-				
+
 				/*
 				$extensions = ExtensionManager::instance()->listInstalledHandles();
 
@@ -166,7 +166,7 @@
 		public function getTemplate(){
 			return NULL;
 		}
-		
+
 		public function prepareSourceColumnValue() {
 			return Widget::TableData(__('None'), array('class' => 'inactive'));
 		}
@@ -260,7 +260,7 @@
 
 			return General::deleteFile(DATASOURCES . "/{$handle}.php");
 		}
-		
+
 		public function emptyXMLSet(DOMElement $root){
 			if(is_null($root)) {
 				throw new DataSourceException('No valid DOMDocument present');
@@ -273,13 +273,13 @@
 		}
 
 		public static function determineFilterType($string){
-		 	return (strpos($string, '+') !== false ? DataSource::FILTER_AND : DataSource::FILTER_OR);
+		 	return preg_match('/\s+\+\s+/', $string) ? DataSource::FILTER_AND : DataSource::FILTER_OR;
 		}
 
 		public static function prepareFilterValue($value, Register $ParameterOutput=NULL, &$filterOperationType=DataSource::FILTER_OR){
 
 			if(strlen(trim($value)) == 0) return NULL;
-			
+
 			if(is_array($value)) {
 				foreach($value as $k => $v) {
 					$value[$k] = self::prepareFilterValue($v, $ParameterOutput, $filterOperationType);
@@ -289,7 +289,7 @@
 				$value = self::replaceParametersInString($value, $ParameterOutput);
 
 				$filterOperationType = self::determineFilterType($value);
-				$pattern = ($filterOperationType == DataSource::FILTER_AND ? '\+' : '(?<!\\\\),');
+				$pattern = ($filterOperationType == DataSource::FILTER_AND ? '\s+\+\s+' : '(?<!\\\\),');
 
 				// This is where the filter value is split by commas or + symbol, denoting
 				// this as an OR or AND operation. Comma's have already been escaped
@@ -360,5 +360,4 @@
 
 			return null;
 		}
-
 	}

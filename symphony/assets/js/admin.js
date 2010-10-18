@@ -67,7 +67,7 @@ var Symphony;
 				}
 			},
 			translate: function(strings) {
-				// Load translations synchronous
+				/* Load translations synchronous
 				$.ajax({
 					async: false,
 					type: 'GET',
@@ -78,6 +78,7 @@ var Symphony;
 						Symphony.Language.DICTIONARY = $.extend(Symphony.Language.DICTIONARY, result);
 					}
 				});
+				*/
 			}
 		},
 		Message: {

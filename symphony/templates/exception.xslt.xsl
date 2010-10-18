@@ -12,7 +12,7 @@
 	<html>
 		<head>
 			<title>Symphony XSLT Error</title>
-			<link rel="stylesheet" type="text/css" media="screen" href="{$root}/symphony/assets/css/peripheral.css" /> 
+			<link rel="stylesheet" type="text/css" media="screen" href="{$root}/symphony/assets/css/peripheral.css" />
 		</head>
 		<body>
 			<h1>Symphony XSLT Error</h1>
@@ -40,6 +40,7 @@
 					</xsl:for-each>
 				</ul>
 			</div>
+
 			<h3>Processor Errors</h3>
 			<div class="panel">
 				<ul>
@@ -56,6 +57,7 @@
 					</xsl:for-each>
 				</ul>
 			</div>
+
 			<h3>Parameters</h3>
 			<div class="panel">
 				<p>
