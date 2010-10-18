@@ -620,11 +620,6 @@ var Symphony;
 		if (table.find('tbody tr').length > 17) {
 			$('#views-list tr[id] td.toggle a').click();
 		}
-		
-		// Remove children:
-		rows
-			.filter('.child')
-			.remove();
 	});
 	
 /*-----------------------------------------------------------------------------
