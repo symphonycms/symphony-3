@@ -14,7 +14,7 @@
 		public function __construct() {
 			parent::__construct();
 
-			//$this->_name = 'Join';
+			$this->_name = 'Join';
 			$this->filters = array(
 				'is'				=> 'Is',
 				'is-not'			=> 'Is not'
@@ -51,21 +51,29 @@
 		}
 
 	/*-------------------------------------------------------------------------
-		Utilities:
-	-------------------------------------------------------------------------*/
-
-		public function getAvailableSections() {
-			
-		}
-
-	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
-
-		public function findDefaultSettings(&$fields) {
-			$fields['joined-sections'] = array();
+		
+		public function loadSettingsFromSimpleXMLObject(SimpleXMLElement $xml) {
+			if (isset($xml->{'joinable-sections'})) {
+				$joinable = array();
+				
+				foreach ($xml->{'joinable-sections'}->item as $item) {
+					$joinable[] = (string)$item;
+				}
+				
+				unset($xml->{'joinable-sections'});
+				
+				$this->{'joinable-sections'} = $joinable;
+			}
+			
+			parent::loadSettingsFromSimpleXMLObject($xml);
 		}
-
+		
+		public function findDefaultSettings(&$fields) {
+			$fields['joinable-sections'] = array();
+		}
+		
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
 			parent::displaySettingsPanel($wrapper, $errors);
 			
@@ -74,40 +82,63 @@
 			//$driver->addSettingsHeaders($document);
 			
 		/*---------------------------------------------------------------------
+			Joinable Sections
+		---------------------------------------------------------------------*/
+			
+			$options = array();
+			
+			foreach (new SectionIterator as $section) {
+				if ($section->handle == $this->section) continue;
+				
+				$options[] = array(
+					$section->handle,
+					in_array($section->handle, $this->{'joinable-sections'}),
+					$section->name
+				);
+			}
+			
+			$label = Widget::Label(__('Joinable Sections'));
+			$select = Widget::Select('joinable-sections[]', $options);
+			$select->setAttribute('multiple', 'multiple');
+			$label->appendChild($select);
+			
+			$wrapper->appendChild($label);
+			
+		/*---------------------------------------------------------------------
 			Options
 		---------------------------------------------------------------------*/
-
+			
 			$options_list = $document->createElement('ul');
 			$options_list->setAttribute('class', 'options-list');
-
+			
 			$this->appendShowColumnCheckbox($options_list);
 			$this->appendRequiredCheckbox($options_list);
-
+			
 			$wrapper->appendChild($options_list);
 			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-join');
 		}
-
+		
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
-
+		
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry=NULL, $data=NULL) {
 			$document = $wrapper->ownerDocument;
 			$driver = Extension::load('field_textbox');
 			$driver->addPublishHeaders($document);
-
+			
 			$sortorder = $this->{'sortorder'};
 			$element_name = $this->{'element-name'};
 			$classes = array();
-
+			
 			$label = Widget::Label(
 				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0
 					? $this->{'publish-label'}
 					: $this->name)
 			);
-
+			
 			$optional = '';
-
+			
 			if ($this->{'required'} != 'yes') {
 				if ((integer)$this->{'text-length'} > 0) {
 					$optional = $document->createDocumentFragment();
@@ -115,20 +146,20 @@
 					$optional->appendChild($document->createEntityReference('ndash'));
 					$optional->appendChild($document->createTextNode(' ' . __('Optional')));
 				}
-
+				
 				else {
 					$optional = __('Optional');
 				}
 			}
-
+			
 			else if ((integer)$this->{'text-length'} > 0) {
 				$optional = __('$1 of $2 remaining');
 			}
-
+			
 			if ($optional) {
 				$label->appendChild($wrapper->ownerDocument->createElement('em', $optional));
 			}
-
+			
 			// Input box:
 			if ($this->{'text-size'} == 'single') {
 				$input = Widget::Input(
