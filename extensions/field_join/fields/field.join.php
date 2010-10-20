@@ -13,14 +13,14 @@
 
 		public function __construct() {
 			parent::__construct();
-
+			
 			$this->_name = 'Join';
 			$this->filters = array(
 				'is'				=> 'Is',
 				'is-not'			=> 'Is not'
 			);
 		}
-
+		
 		public function create() {
 			return Symphony::Database()->query(sprintf(
 				"
@@ -37,19 +37,38 @@
 				$this->{'element-name'}
 			));
 		}
-
+		
 		public function allowDatasourceOutputGrouping() {
 			return true;
 		}
-
+		
 		public function allowDatasourceParamOutput() {
 			return true;
 		}
-
+		
 		public function canFilter() {
 			return true;
 		}
-
+		
+		public function toDoc() {
+			$temp = $this->{'joinable-sections'};
+			$this->{'joinable-sections'} = array();
+			
+			$doc = parent::toDoc();
+			$doc->formatOutput = true;
+			$parent = $doc->xpath('/field/joinable-sections')->item(0);
+			
+			$this->{'joinable-sections'} = $temp;
+			
+			foreach ($this->{'joinable-sections'} as $section) {
+				$item = $doc->createElement('item');
+				$item->setValue($section);
+				$parent->appendChild($item);
+			}
+			
+			return $doc;
+	    }
+		
 	/*-------------------------------------------------------------------------
 		Settings:
 	-------------------------------------------------------------------------*/
@@ -98,7 +117,7 @@
 			}
 			
 			$label = Widget::Label(__('Joinable Sections'));
-			$select = Widget::Select('joinable-sections[]', $options);
+			$select = Widget::Select('joinable-sections][', $options);
 			$select->setAttribute('multiple', 'multiple');
 			$label->appendChild($select);
 			
@@ -124,94 +143,107 @@
 		
 		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry=NULL, $data=NULL) {
 			$document = $wrapper->ownerDocument;
-			$driver = Extension::load('field_textbox');
+			$driver = Extension::load('field_join');
 			$driver->addPublishHeaders($document);
 			
 			$sortorder = $this->{'sortorder'};
 			$element_name = $this->{'element-name'};
 			$classes = array();
 			
-			$label = Widget::Label(
-				(isset($this->{'publish-label'}) && strlen(trim($this->{'publish-label'})) > 0
-					? $this->{'publish-label'}
-					: $this->name)
-			);
+			$field = $document->createElement('div');
+			$field->setAttribute('class', 'label');
 			
-			$optional = '';
+			if ($optional) $field->appendChild($document->createElement(
+				'em', __('Optional')
+			));
 			
-			if ($this->{'required'} != 'yes') {
-				if ((integer)$this->{'text-length'} > 0) {
-					$optional = $document->createDocumentFragment();
-					$optional->appendChild($document->createTextNode(__('$1 of $2 remaining') . ' '));
-					$optional->appendChild($document->createEntityReference('ndash'));
-					$optional->appendChild($document->createTextNode(' ' . __('Optional')));
-				}
-				
-				else {
-					$optional = __('Optional');
-				}
-			}
-			
-			else if ((integer)$this->{'text-length'} > 0) {
-				$optional = __('$1 of $2 remaining');
-			}
-			
-			if ($optional) {
-				$label->appendChild($wrapper->ownerDocument->createElement('em', $optional));
-			}
-			
-			// Input box:
-			if ($this->{'text-size'} == 'single') {
-				$input = Widget::Input(
-					"fields[$element_name]", $data->value
-				);
-
-				###
-				# Delegate: ModifyTextBoxInlineFieldPublishWidget
-				# Description: Allows developers modify the textbox before it is rendered in the publish forms
-				$delegate = 'ModifyTextBoxInlineFieldPublishWidget';
-			}
-
-			// Text Box:
-			else {
-				$input = Widget::Textarea(
-					"fields[$element_name]", $data->value, array('rows' => 20, 'cols' => 50)
-				);
-
-				###
-				# Delegate: ModifyTextBoxFullFieldPublishWidget
-				# Description: Allows developers modify the textbox before it is rendered in the publish forms
-				$delegate = 'ModifyTextBoxFullFieldPublishWidget';
-			}
-
-			// Add classes:
-			$classes[] = 'size-' . $this->{'text-size'};
-
-			if ($this->{'text-formatter'} != 'none') {
-				$classes[] = $this->{'text-formatter'};
-			}
-
-			$input->setAttribute('class', implode(' ', $classes));
-			$input->setAttribute('length', (integer)$this->{'text-length'});
-
-			Extension::notify(
-				$delegate, '/administration/',
+			$sections = array();
+			$options = array(
 				array(
-					'field'		=> &$this,
-					'label'		=> &$label,
-					'input'		=> &$input
+					null, false, __('Choose a section to include...')
 				)
 			);
-
-			if (is_null($label)) return;
-
-			$label->appendChild($input);
-
-			if ($errors->valid()) {
-				$label = Widget::wrapFormElementWithError($label, $errors->current()->message);
+			
+			foreach ($this->{'joinable-sections'} as $handle) {
+				$section = Section::loadFromHandle($handle);
+				$sections[] = $section;
+				$options[] = array(
+					$handle, false, $section->name
+				);
 			}
-
-			$wrapper->appendChild($label);
+			
+			$select = Widget::Select("fields[{$element_name}]", $options);
+			$select->addClass('context-switch');
+			$field->appendChild($select);
+			
+			foreach ($sections as $section) {
+				$context = $document->createElement('div');
+				$context->addClass('context context-' . $section->handle);
+				$fields = array();
+				
+				foreach ($section->fields as $index => $instance) {
+					$fields[$instance->{'element-name'}] = $instance;
+				}
+				
+				$this->displayJoinedPublishPanel($context, $section, $fields);
+				$field->appendChild($context);
+			}
+			
+			$wrapper->appendChild($field);
+		}
+		
+		public function displayJoinedPublishPanel(SymphonyDOMElement $wrapper, Section $section, array $fields) {
+			$document = $wrapper->ownerDocument;
+			$layout = new Layout();
+			$entry = new Entry();
+			$errors = new MessageStack();
+			
+			foreach ($section->layout as $data) {
+				$column = $layout->createColumn($data->size);
+				
+				foreach ($data->fieldsets as $data) {
+					$fieldset = $document->createElement('fieldset');
+					
+					if (isset($data->collapsed) && $data->collapsed == 'yes') {
+						$fieldset->setAttribute('class', 'collapsed');
+					}
+					
+					if (isset($data->name) && strlen(trim($data->name)) > 0) {
+						$fieldset->appendChild(
+							$document->createElement('h3', $data->name)
+						);
+					}
+					
+					foreach ($data->fields as $handle) {
+						$field = $fields[$handle];
+	
+						if (!$field instanceof Field) continue;
+	
+						$div = $document->createElement('div', NULL, array(
+								'class' => trim(sprintf('field field-%s %s',
+									$field->handle(),
+									($field->required == 'yes' ? 'required' : '')
+								))
+							)
+						);
+	
+						$field->displayPublishPanel(
+							$div,
+							(isset($errors->{$field->{'element-name'}})
+								? $errors->{$field->{'element-name'}}
+								: new MessageStack),
+							$entry,
+							$entry->data()->{$field->{'element-name'}}
+						);
+	
+						$fieldset->appendChild($div);
+					}
+	
+					$column->appendChild($fieldset);
+				}
+			}
+			
+			$layout->appendTo($wrapper);
 		}
 
 	/*-------------------------------------------------------------------------
@@ -254,32 +286,6 @@
 			return self::STATUS_OK;
 		}
 
-		public function applyFormatting($value) {
-			if (isset($this->{'text-formatter'}) && $this->{'text-formatter'} != TextFormatter::NONE) {
-				try {
-					$formatter = TextFormatter::loadFromHandle($this->{'text-formatter'});
-					$result = $formatter->run($value);
-					$result = preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $result);
-
-					return $result;
-				}
-
-				catch (Exception $e) {
-					// Problem loading the formatter
-					// TODO: Decide is we should be handling this better.
-				}
-			}
-
-			return General::sanitize($value);
-		}
-
-		public function applyValidationRules($data) {
-			$rule = $this->{'text-validator'};
-
-			return ($rule ? General::validateString($data, $rule) : true);
-		}
-
-		// TODO: Fix the createHandle function
 		public function processData($data, Entry $entry = null) {
 			if (isset($entry->data()->{$this->{'element-name'}})) {
 				$result = $entry->data()->{$this->{'element-name'}};
@@ -289,7 +295,7 @@
 				$result = (object)array(
 					'handle'			=> null,
 					'value'				=> null,
-					'value_formatted'	=> null,
+					'value_formatted'	=> null
 				);
 			}
 
@@ -357,7 +363,7 @@
 			$wrapper->appendChild($result);
 		}
 
-		public function getParameterOutputValue($data, Entry $entry=NULL) {
+		public function getParameterOutputValue($data, Entry $entry = null) {
 			return $data->handle;
 		}
 
