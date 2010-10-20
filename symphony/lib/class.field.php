@@ -104,12 +104,15 @@
 			$this->_handle = (strtolower(get_class($this)) == 'field' ? 'field' : strtolower(substr(get_class($this), 5)));
 		}
 
-		public function __isset($name){
+		public function __isset($name) {
 			return isset($this->properties->$name);
 		}
+		
+		public function __unset($name) {
+			unset($this->properties->$name);
+		}
 
-		public function __get($name){
-
+		public function __get($name) {
 			if ($name == 'guid' and !isset($this->guid)) {
 				$this->guid = Field::createGUID($this);
 			}
@@ -125,7 +128,7 @@
 			return $this->properties->$name;
 		}
 
-		public function __set($name, $value){
+		public function __set($name, $value) {
 			if ($name == 'name') {
 				$this->properties->{'element-name'} = Lang::createHandle($value, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
 			}
