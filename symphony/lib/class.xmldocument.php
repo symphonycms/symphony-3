@@ -115,20 +115,25 @@
 
 		public function setValue($value) {
 			$this->removeChildNodes();
-
+			
 			//	TODO: Possibly might need to Remove existing Children before adding..
-			if($value instanceof DOMElement || $value instanceof DOMDocumentFragment) {
+			if ($value instanceof DOMElement || $value instanceof DOMDocumentFragment) {
 				$this->appendChild($value);
 			}
-
-			elseif(is_array($value) && !empty($value)) {
-				foreach($value as $v) {
-					$this->appendChild($v);
+			
+			else if (is_array($value) && !empty($value)) {
+				foreach ($value as $part) {
+					if ($part instanceof DOMElement || $part instanceof DOMDocumentFragment) {
+						$this->appendChild($part);
+					}
+					
+					else {
+						$this->appendChild(new DOMText($part));
+					}
 				}
 			}
-
-			elseif(!is_null($value) && is_string($value)) {
-				//$this->nodeValue = $value;
+			
+			else if (!is_null($value) && is_string($value)) {
 				$this->appendChild(new DOMText($value));
 			}
 		}
