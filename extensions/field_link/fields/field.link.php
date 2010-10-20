@@ -484,16 +484,23 @@
 				$ids = array();
 
 				foreach ($data as $entry) {
+					if (is_null($entry->relation_id)) continue;
+					
 					$ids[] = $entry->relation_id;
 				}
 
 				foreach ($this->{'related-fields'} as $related) {
 					$rows = Symphony::Database()->query("
-							SELECT `e`.*, r.entry_id AS `entry_id`, r.relation_id AS `relation_id`
-							FROM `tbl_data_%s_%s` AS `e`
-							LEFT OUTER JOIN `tbl_data_%s_%s` AS `r` ON (e.entry_id = r.relation_id)
-							WHERE e.entry_id IN (%s)
-							AND r.entry_id IN (%s)
+							SELECT
+								`e`.*, r.entry_id AS `entry_id`, r.relation_id AS `relation_id`
+							FROM
+								`tbl_data_%s_%s` AS `e`
+							LEFT OUTER JOIN
+								`tbl_data_%s_%s` AS `r` ON (e.entry_id = r.relation_id)
+							WHERE
+								e.entry_id IN (%s)
+							AND
+								r.entry_id IN (%s)
 						",
 						array(
 							$related[0], $related[1],
