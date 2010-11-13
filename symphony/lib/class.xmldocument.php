@@ -19,11 +19,11 @@
 
 		public function xpath($query, DOMNode $node = null){
 			$xpath = new DOMXPath($this);
-			
+
 			if ($node) {
 				return $xpath->query($query, $node);
 			}
-			
+
 			return $xpath->query($query);
 		}
 
@@ -78,19 +78,19 @@
 			$added = preg_split('%\s+%', $class, 0, PREG_SPLIT_NO_EMPTY);
 			$current = array_merge($current, $added);
 			$classes = implode(' ', $current);
-			
+
 			$this->setAttribute('class', $classes);
 		}
-		
+
 		public function removeClass($class) {
 			$classes = preg_split('%\s+%', $this->getAttribute('class'), 0, PREG_SPLIT_NO_EMPTY);
 			$removed = preg_split('%\s+%', $class, 0, PREG_SPLIT_NO_EMPTY);
 			$classes = array_diff($classes, $removed);
 			$classes = implode(' ', $classes);
-			
+
 			$this->setAttribute('class', $classes);
 		}
-		
+
 		public function prependChild(DOMNode $node) {
 			if (is_null($this->firstChild)) {
 				$this->appendChild($node);
@@ -103,7 +103,7 @@
 
 		public function setValue($value) {
 			$this->removeChildNodes();
-			
+
 			//	TODO: Possibly might need to Remove existing Children before adding..
 			if($value instanceof DOMElement || $value instanceof DOMDocumentFragment) {
 				$this->appendChild($value);
@@ -128,7 +128,7 @@
 				}
 			}
 		}
-		
+
 		public function removeChildNodes() {
 			while ($this->hasChildNodes() === true) {
 				$this->removeChild($this->firstChild);
@@ -138,7 +138,7 @@
 		public function remove() {
 			$this->parentNode->removeChild($this);
 		}
-		
+
 		public function wrapWith(DOMElement $wrapper) {
 			$this->parentNode->replaceChild($wrapper, $this);
 			$wrapper->appendChild($this);

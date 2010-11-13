@@ -2,132 +2,53 @@
 
 	require_once(LIB . '/class.administrationpage.php');
 	require_once(LIB . '/class.messagestack.php');
-	require_once(LIB . '/class.xslproc.php');
 	require_once(LIB . '/class.utility.php');
 	require_once(LIB . '/class.event.php');
 
 	class contentBlueprintsViews extends AdministrationPage {
 
 		public function __viewIndex() {
-			// This is the 'correct' way to append a string containing an entity
-			$title = $this->createElement('title');
-			$title->appendChild($this->createTextNode(__('Symphony') . ' '));
-			$title->appendChild($this->createEntityReference('ndash'));
-			$title->appendChild($this->createTextNode(' ' . __('Views')));
-			$this->insertNodeIntoHead($title);
-
-			$this->appendSubheading(__('Views'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL() . '/new/', array(
-					'title' => __('Create a new view'),
-					'class' => 'create button'
-				)
-			));
 
 			$iterator = new ViewIterator;
 
-			$aTableHead = array(
-				array(__('Title'), 'col'),
-				array(Widget::Acronym('URL', array('title' => __('Universal Resource Locator'))), 'col'),
-				array(Widget::Acronym('URL', array('title' => __('Universal Resource Locator')), __(' Parameters')), 'col'),
-				array(__('Type'), 'col')
-			);
+			$views_xml = $this->createElement('views');
 
-			$aTableBody = array();
-			$colspan = count($aTableHead);
+			foreach ($iterator as $v) {
+				$class = array();
 
-			if($iterator->length() <= 0) {
-				$aTableBody = array(Widget::TableRow(
-					array(
-						Widget::TableData(__('None found.'), array(
-								'class' => 'inactive',
-								'colspan' => $colspan
-							)
-						)
-					), array(
-						'class' => 'odd'
-					)
-				));
-			}
+				$page_title = $v->title;
 
-			else{
-				foreach ($iterator as $view) {
-					$class = array();
+				$page_url = sprintf('%s/%s/', URL, $v->path);
+				$page_edit_url = sprintf('%s/edit/%s/', Administration::instance()->getCurrentPageURL(), $v->path);
 
-					$page_title = $view->title;
+				$page_types = $v->types;
 
-					$page_url = sprintf('%s/%s/', URL, $view->path);
-					$page_edit_url = sprintf('%s/edit/%s/', Administration::instance()->getCurrentPageURL(), $view->path);
+				// Initialize <view> element
+				$view = $this->createElement('view');
 
-					$page_types = $view->types;
 
-					$link = Widget::Anchor($page_title, $page_edit_url, array('title' => $view->handle));
+				$view->appendChild($this->createElement('url',$page_url));
 
-					$col_title = Widget::TableData($link);
-					$col_title->appendChild(Widget::Input("items[{$view->path}]", null, 'checkbox'));
-
-					$col_url = Widget::TableData(Widget::Anchor(substr($page_url, strlen(URL)), $page_url));
-
-					if(is_array($view->{'url-parameters'}) && count($view->{'url-parameters'}) > 0){
-						$col_params = Widget::TableData(implode('/', $view->{'url-parameters'}));
-
-					} else {
-						$col_params = Widget::TableData(__('None'), array('class' => 'inactive'));
+				if(is_array($v->{'url-parameters'}) && count($v->{'url-parameters'}) > 0){
+					$params = $this->createElement('url-params');
+					foreach($v->{'url-parameters'} as $p){
+						$params->appendChild($this->createElement('item',$p));
 					}
-
-					if(!empty($page_types)) {
-						$col_types = Widget::TableData(implode(', ', $page_types));
-
-					} else {
-						$col_types = Widget::TableData(__('None'), array('class' => 'inactive'));
-					}
-
-					$col_toggle = Widget::TableData('', array('class' => 'toggle'));
-
-					$columns = array($col_title, $col_url, $col_params, $col_types);
-
-					$row = Widget::TableRow($columns);
-					$next = $view->parent();
-					$class = '';
-
-					while (!is_null($next)) {
-						$class .= ' view-' . $next->guid;
-
-						$next = $next->parent();
-					}
-
-					//if (is_null($view->parent())) {
-						$row->setAttribute('id', 'view-' . $view->guid);
-					//}
-
-					if (trim($class)) {
-						$row->setAttribute('class', trim($class));
-					}
-
-					$aTableBody[] = $row;
+					$view->appendChild($params);
 				}
+
+				if(is_array($page_types) && count($page_types) > 0){
+					$types = $this->createElement('types');
+					foreach($page_types as $t){
+						$types->appendChild($this->createElement('item',$t));
+					}
+					$view->appendChild($types);
+				}
+
+				$views_xml->appendChild($view);
 			}
 
-			$table = Widget::Table(
-				Widget::TableHead($aTableHead), null,
-				Widget::TableBody($aTableBody), array(
-					'id' => 'views-list'
-				)
-			);
-
-			$this->Form->appendChild($table);
-
-			$tableActions = $this->createElement('div');
-			$tableActions->setAttribute('class', 'actions');
-
-			$options = array(
-				array(null, false, __('With Selected...')),
-				array('delete', false, __('Delete'))
-			);
-
-			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
-
-			$this->Form->appendChild($tableActions);
+			return $views_xml;
 		}
 
 		public function __viewTemplate() {
@@ -174,7 +95,7 @@
 				__('Configuration')			=>	ADMIN_URL . '/blueprints/views/edit/' . $view_pathname . '/',
 				__('Template')				=>	Administration::instance()->getCurrentPageURL()
 			));
-			
+
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::LARGE);
 			$right = $layout->createColumn(Layout::SMALL);
@@ -221,7 +142,7 @@
 				$fieldset->appendChild($ul);
 				$right->appendChild($fieldset);
 			}
-			
+
 			$layout->appendTo($this->Form);
 
 			$div = $this->createElement('div');
@@ -234,7 +155,7 @@
 					)
 				)
 			);
-			
+
 			$this->Form->appendChild($div);
 		}
 
@@ -386,21 +307,21 @@
 
 			elseif($this->_context[0] == 'edit') {
 				$fields = (array)$existing->about();
-				
+
 				// Flatten the types array:
 				$fields['types'] = (
 					(isset($fields['types']) and is_array($fields['types']))
 						? implode(', ', $fields['types'])
 						: null
 				);
-				
+
 				// Flatten the url-parameters array:
 				$fields['url-parameters'] = (
 					(isset($fields['url-parameters']) and is_array($fields['url-parameters']))
 						? implode('/', $fields['url-parameters'])
 						: null
 				);
-				
+
 				$fields['parent'] = (
 					$existing->parent() instanceof View
 						? $existing->parent()->path
@@ -410,11 +331,11 @@
 			}
 
 			$title = null;
-			
+
 			if (isset($fields['title'])) {
 				$title = $fields['title'];
 			}
-			
+
 			if(strlen(trim($title)) == 0){
 				$title = ($existing instanceof View ? $existing->title : 'New View');
 			}
@@ -437,10 +358,10 @@
 					__('Configuration')		=>	Administration::instance()->getCurrentPageURL(),
 					__('Template')			=>	sprintf('%s/blueprints/views/template/%s/', ADMIN_URL, $view_pathname)
 				);
-				
+
 				$this->appendViewOptions($viewoptions);
 			}
-			
+
 			else {
 				$this->appendSubheading(($title ? $title : __('Untitled')));
 			}
@@ -566,7 +487,7 @@
 					$handle, in_array($handle, (array)$fields['events']), $event->about()->name
 				);
 			}
-			
+
 			$label->appendChild(Widget::Select('fields[events][]', $options, array('multiple' => 'multiple')));
 			$fieldset->appendChild($label);
 
@@ -583,12 +504,12 @@
 					$handle, in_array($handle, (array)$fields['data-sources']), $ds->about()->name
 				);
 			}
-			
+
 
 			$label->appendChild(Widget::Select('fields[data-sources][]', $options, array('multiple' => 'multiple')));
 			$fieldset->appendChild($label);
 			$right->appendChild($fieldset);
-			
+
 			$layout->appendTo($this->Form);
 
 		// Controls -----------------------------------------------------------
@@ -619,7 +540,7 @@
 			$this->Form->appendChild($div);
 
 		}
-		
+
 		public function __actionNew() {
 			$this->__actionEdit();
 		}
@@ -744,10 +665,10 @@
 				}
 			}
 
-			if($success == true){ 
+			if($success == true){
 				redirect($redirect);
 			}
-			
+
 			$this->alerts()->append(
 				__('An error occurred while attempting to delete selected views. <a class="more">Show trace information.</a>'),
 				AlertStack::ERROR,

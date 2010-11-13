@@ -1,40 +1,41 @@
 <?php
 
-	require_once(LIB . '/class.htmldocument.php');
+	require_once(LIB . '/class.xmldocument.php');
 	require_once(LIB . '/class.section.php');
 	require_once(LIB . '/class.layout.php');
 	require_once(LIB . '/class.alertstack.php');
 
-	Class AdministrationPage extends HTMLDocument{
+	Class AdministrationPage extends XMLDocument{
 		public $_navigation;
 		public $_context;
 		protected $_alerts;
-		
+
 		public function __construct(){
-			parent::__construct('1.0', 'utf-8', 'html');
+			parent::__construct('1.0', 'utf-8');
+			$this->formatOutput = true;
 			$this->alerts = new AlertStack;
 		}
 
-		public function setTitle($value, $position=null) {
+		/*public function setTitle($value, $position=null) {
 			$doc = new XMLDocument;
 			$doc->loadHTML("<title>{$value}</title>");
 			$node = $this->importNode($doc->xpath('//title')->item(0), true);
 			return $this->insertNodeIntoHead($node, $position);
-		}
+		}*/
 
 		public function Context(){
 			return $this->_context;
 		}
-		
+
 		public function minify(array $files, $output_pathname, $unlink_existing=true){
-			
+
 			if(file_exists($output_pathname) && $unlink_existing === true) unlink($output_pathname);
-			
+
 			foreach($files as $pathname){
 				if(!file_exists($pathname) || !is_readable($pathname)) throw new Exception("File '{$pathname}' could not be found, or is not readable.");
-				
+
 				$contents = file_get_contents($pathname);
-				
+
 				if(file_put_contents($output_pathname, $contents . "\n", FILE_APPEND) === false){
 					throw new Exception("Could not write to '{$output_pathname}.");
 				}
@@ -43,18 +44,18 @@
 
 		public function build($context = NULL){
 			$this->_context = $context;
-
+			/*
 			$meta = $this->createElement('meta');
 			$this->insertNodeIntoHead($meta);
 			$meta->setAttribute('http-equiv', 'Content-Type');
 			$meta->setAttribute('content', 'text/html; charset=UTF-8');
-			
+
 			$styles = array(
 				ADMIN_URL . '/assets/css/symphony.css',
 				ADMIN_URL . '/assets/css/symphony.duplicator.css',
 				ADMIN_URL . '/assets/css/symphony.layout.css'
 			);
-			
+
 			$scripts = array(
 				ADMIN_URL . '/assets/js/jquery.js',
 				ADMIN_URL . '/assets/js/jquery-ui.js',
@@ -66,10 +67,10 @@
 				ADMIN_URL . '/assets/js/symphony.selectable.js',
 				ADMIN_URL . '/assets/js/symphony.js'
 			);
-			
+
 			// Builds a super JS and CSS document
 			if(Symphony::Configuration()->core()->symphony->{'condense-scripts-and-stylesheets'} == 'yes'){
-				
+
 				if(file_exists(CACHE . '/admin-styles.css')){
 					$styles = array(URL . '/manifest/cache/admin-styles.css');
 				}
@@ -81,7 +82,7 @@
 					catch(Exception $e){
 					}
 				}
-				
+
 				if(file_exists(CACHE . '/admin-scripts.js')){
 					$scripts = array(URL . '/manifest/cache/admin-scripts.js');
 				}
@@ -94,22 +95,22 @@
 					}
 				}
 			}
-			
+
 			foreach($styles as $pathname){
 				$this->insertNodeIntoHead($this->createStylesheetElement($pathname));
 			}
-			
+
 			foreach($scripts as $pathname){
 				$this->insertNodeIntoHead($this->createScriptElement($pathname));
-			}
-			
+			}*/
+
 			###
 			# Delegate: InitaliseAdminPageHead
 			# Description: Allows developers to insert items into the page HEAD. Use $context['parent']->Page
 			#			   for access to the page object
-			Extension::notify('InitaliseAdminPageHead', '/administration/');
+			//Extension::notify('InitaliseAdminPageHead', '/administration/');
 
-			$this->Headers->append('Content-Type', 'text/html; charset=UTF-8');
+			//$this->Headers->append('Content-Type', 'text/html; charset=UTF-8');
 
 			$this->prepare();
 
@@ -117,21 +118,9 @@
 				$this->action();
 			}
 
-			## Build the form
-			$this->Form = $this->createElement('form');
-			$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL());
-			$this->Form->setAttribute('method', 'POST');
-			$this->Body->appendChild($this->Form);
-
-			$h1 = $this->createElement('h1');
-			$anchor = $this->createElement('a', Symphony::Configuration()->core()->symphony->sitename);
-			$anchor->setAttribute('href', rtrim(URL, '/') . '/');
-			$h1->appendChild($anchor);
-			$this->Form->appendChild($h1);
-
-			$this->appendSession();
-			$this->appendNavigation();
-			$this->view();
+			$xml = $this->view();
+			//$this->appendSession();
+			$xml->appendChild($this->appendNavigation());
 
 			###
 			# Delegate: AppendElementBelowView
@@ -140,18 +129,20 @@
 			Extension::notify('AppendElementBelowView', '/administration/');
 
 			$this->appendAlert();
+
+			return $xml;
 		}
 
 		public function view(){
-			$this->__switchboard();
+			return $this->__switchboard();
 		}
 
 		public function action(){
-			$this->__switchboard('action');
+			return $this->__switchboard('action');
 		}
 
 		public function prepare(){
-			$this->__switchboard('prepare');
+			return $this->__switchboard('prepare');
 		}
 
 		public function __switchboard($type='view'){
@@ -170,20 +161,20 @@
 
 				return false;
 			}
-			$this->$function();
+			return $this->$function();
 		}
 
 		public function alerts(){
 			return $this->alerts;
 		}
-		
+
 		public function appendAlert(){
 			###
 			# Delegate: AppendPageAlert
 			# Description: Allows for appending of alerts. Administration::instance()->Page->Alert is way to tell what
 			# is currently in the system
 			Extension::notify('AppendPageAlert', '/administration/');
-			
+
 			if ($this->alerts()->valid()) {
 				$this->alerts()->appendTo($this->Body);
 			}
@@ -232,8 +223,7 @@
 			# Global: Yes
 			Extension::notify('NavigationPreRender', '/administration/', array('navigation' => &$nav));
 
-			$xNav = $this->createElement('ul');
-			$xNav->setAttribute('id', 'nav');
+			$nav_xml = $this->createElement('navigation');
 
 			foreach($nav as $n){
 				$can_access = true;
@@ -242,12 +232,11 @@
 
 					if($can_access == true) {
 
-						$xGroup = $this->createElement('li', $n['name']);
-						$xGroup->setAttribute('id', 'nav-' . Lang::createHandle($n['name']));
-
-						if(isset($n['class']) && trim($n['name']) != '') $xGroup->setAttribute('class', $n['class']);
-
-						$xChildren = $this->createElement('ul');
+						$group_xml = $this->createElement('group');
+						$name = $this->createElement('name',$n['name']);
+						$name->setAttribute('handle',Lang::createHandle($n['name']));
+						$group_xml->appendChild($name);
+						$items_xml = $this->createElement('items');
 
 						$hasChildren = false;
 
@@ -260,11 +249,16 @@
 
 									if($can_access_child == true) {
 
-										$xChild = $this->createElement('li');
-										$xChild->appendChild(
-											Widget::Anchor($c['name'], ADMIN_URL . $c['link'])
+										$item = $this->createElement('item');
+										$item_name = $this->createElement('name', $c['name']);
+										$item_name->setAttribute('handle',$c['handle']);
+										$item->appendChild(
+											$item_name
 										);
-										$xChildren->appendChild($xChild);
+										$item->appendChild(
+											$this->createElement('link', $c['link'])
+										);
+										$items_xml->appendChild($item);
 										$hasChildren = true;
 
 									}
@@ -273,15 +267,15 @@
 							}
 
 							if($hasChildren){
-								$xGroup->appendChild($xChildren);
-								$xNav->appendChild($xGroup);
+								$group_xml->appendChild($items_xml);
+								$nav_xml->appendChild($group_xml);
 							}
 						}
 					}
 				}
 			}
 
-			$this->Form->appendChild($xNav);
+			return $nav_xml;
 		}
 
 		public function getNavigationArray(){
@@ -368,9 +362,9 @@
 //			$extensions = ExtensionManager::instance()->listInstalledHandles();
 
 			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
-				
+
 				if(!method_exists($e, 'fetchNavigation')) continue;
-				
+
 				$e_navigation = $e->fetchNavigation();
 
 				if(isset($e_navigation) && is_array($e_navigation) && !empty($e_navigation)){
@@ -532,12 +526,16 @@
 						'class' => (Administration::instance()->getCurrentPageURL() == rtrim($link, '/') ? 'active' : null)
 					))
 				);
-				
+
 				$list->appendChild($item);
 			}
-			
+
 			$div->appendChild($list);
 			$this->Form->appendChild($div);
+		}
+
+		public function __toString(){
+			return $this->saveXML();
 		}
 
 	}

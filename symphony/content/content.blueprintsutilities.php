@@ -90,7 +90,7 @@
 			$right = $layout->createColumn(Layout::SMALL);
 
 			$this->_existing_file = (isset($this->_context[1]) ? $this->_context[1] . '.xsl' : NULL);
-			
+
 			## Handle unknown context
 			if(!in_array($this->_context[0], array('new', 'edit'))) throw new AdministrationPageNotFoundException;
 
@@ -269,7 +269,7 @@
 		            if(General::right($fields['name'], 4) != '.xsl') $fields['name'] .= '.xsl';
 
 					$file = UTILITIES . '/' . $fields['name'];
-					
+
 					// TODO: Does it really need stripslashed? Funky.
 					$fields['template'] = stripslashes($fields['template']);
 
@@ -278,7 +278,7 @@
 						$this->errors->name = __('A Utility with that name already exists. Please choose another.');
 
 					elseif($this->_context[0] == 'new' && is_file($file)) $this->errors->name = __('A Utility with that name already exists. Please choose another.');
-					
+
 					##Write the file
 					elseif(!$write = General::writeFile($file, $fields['template'],Symphony::Configuration()->core()->symphony->{'file-write-mode'})) {
 						$this->alerts()->append(
