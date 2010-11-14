@@ -26,7 +26,6 @@
 
 	define_safe('CONTENT', 	SYMPHONY . '/content');
 
-	define_safe('ADMIN',	SYMPHONY . '/admin');
 	define_safe('TEMPLATES', SYMPHONY . '/templates');
 
 	define_safe('STARTTIME', precision_timer());

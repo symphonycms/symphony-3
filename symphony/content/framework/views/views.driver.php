@@ -1,11 +1,13 @@
 <?php
 
-	require_once(LIB . '/class.administrationpage.php');
-	require_once(LIB . '/class.messagestack.php');
+	$views_xml = $Document->createElement('views','Testing the views driver');
+	$data->appendChild($views_xml);
+
+	/*require_once(LIB . '/class.messagestack.php');
 	require_once(LIB . '/class.utility.php');
 	require_once(LIB . '/class.event.php');
 
-	class contentBlueprintsViews extends AdministrationPage {
+	class contentBlueprintsViews extends AdministrationView {
 
 		public function __viewIndex() {
 
@@ -563,9 +565,9 @@
 			elseif(array_key_exists('save', $_POST['action'])) {
 
 				$fields = $_POST['fields'];
-
-				$fields['types'] = preg_split('/\s*,\s*/', $fields['types'], -1, PREG_SPLIT_NO_EMPTY);
-
+*/
+//				$fields['types'] = preg_split('/\s*,\s*/', $fields['types'], -1, PREG_SPLIT_NO_EMPTY);
+/*
 				if(strlen(trim($fields['url-parameters'])) > 0){
 					$fields['url-parameters'] = preg_split('/\/+/', trim($fields['url-parameters'], '/'), -1, PREG_SPLIT_NO_EMPTY);
 				}
@@ -687,4 +689,4 @@
 				}
 			}
 		}
-	}
+	}*/

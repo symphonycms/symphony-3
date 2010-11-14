@@ -6,27 +6,38 @@
 
 	Class Renderer extends Symphony {
 
-		protected static $Document;
 		protected static $Headers;
 		protected static $Context;
+		protected static $Document;
+		protected static $Template;
 
-		private $data;
-		private $template;
+		protected $docroot;
 
+		/**
+		 * Construct a Renderer object
+		 */
 		public function __construct() {
 			parent::__construct();
-			self::$Headers = new DocumentHeaders;
 
+			// Initialize Headers
+			self::$Headers = new DocumentHeaders;
+			$this->setHeaders();
+
+			// Initialize XML
 			self::$Document = new XMLDocument;
 			self::$Document->appendChild(
-				self::$Document->createElement('data')
+				self::$Document->createElement('root')
 			);
 			Widget::init(self::$Document);
 
+			// Initialize Context object
 			self::$Context = new Register;
 			$this->initializeContext();
 		}
 
+		/**
+		 *
+		 */
 		public static function instance() {
 			if(!(self::$_instance instanceof Renderer))
 				self::$_instance = new self;
@@ -35,7 +46,7 @@
 		}
 
 		/**
-		 * Default headers. Can be overwritten later
+		 * Set default headers—can be overwritten later
 		 */
 		public function setHeaders() {
 			self::$Headers->append('Content-Type', 'text/xml;charset=utf-8');
@@ -49,19 +60,20 @@
 		 * Set the renderer's XSLT stylesheet
 		 */
 		public function setTemplate($xsl) {
-			$this->template = $xsl;
-		}
-
-		public function getDocument() {
-			return self::$Document;
+			self::$Template = $xsl;
 		}
 
 		/**
-		 * Universal contextual XML (formerly params)
+		 * Initialize contextual XML (formerly params)
 		 */
 		public function initializeContext() {
 
 			self::$Context->register(array(
+				'system'	=> array(
+					'site-name'				=> Symphony::Configuration()->core()->symphony->sitename,
+					'site-url' => URL,
+					'symphony-version'	=> Symphony::Configuration()->core()->symphony->version
+				),
 				'date'		=> array (
 					'today' 			=> DateTimeObj::get('Y-m-d'),
 					'current-time'		=> DateTimeObj::get('H:i'),
@@ -69,11 +81,6 @@
 					'this-month'		=> DateTimeObj::get('m'),
 					'this-day'			=> DateTimeObj::get('d'),
 					'timezone'			=> date_default_timezone_get()
-				),
-				'website'	=> array(
-					'name'				=> Symphony::Configuration()->core()->symphony->sitename,
-					'symphony-version'	=> Symphony::Configuration()->core()->symphony->version,
-					'url' => URL
 				)
 			));
 		}
@@ -81,7 +88,7 @@
 		/**
 		 * Add system XML and transform $Document
 		 */
-		public function getOutput() {
+		public function render() {
 
 			$root = self::$Document->documentElement;
 			$element = self::$Document->createElement('context');
@@ -100,7 +107,11 @@
 				}
 			}
 
-			$output = XSLProc::transform(self::$Document, $this->template, XSLProc::XML, array(), array());
+			// When the XSLT executes, it uses the CWD as set here
+			$cwd = getcwd();
+			chdir($this->docroot);
+			$output = XSLProc::transform(self::$Document->saveXML(), self::$Template, XSLProc::XML, array(), array());
+			chdir($cwd);
 
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');

@@ -1,6 +1,7 @@
 <?php
 
 	require_once(LIB . '/class.renderer.php');
+	require_once(LIB . '/class.frontendview.php');
 
 	Class FrontendPageNotFoundException extends SymphonyErrorPage{
 		public function __construct(View $page=NULL){
@@ -84,21 +85,21 @@
 		public function resolve($url=NULL){
 			try{
 				if(is_null($url)){
-					$views = View::findFromType('index');
+					$views = FrontendView::findFromType('index');
 					self::$view = array_shift($views);
 				}
 				else{
-					self::$view = View::loadFromURL($url);
+					self::$view = FrontendView::loadFromURL($url);
 				}
 
-				if(!(self::$view instanceof View)) throw new Exception('Page not found');
+				if(!(self::$view instanceof FrontendView)) throw new Exception('Page not found');
 
 				if(!Frontend::instance()->isLoggedIn() && in_array('admin', self::$view->types)){
 
-					$views = View::findFromType('403');
+					$views = FrontendView::findFromType('403');
 					self::$view = array_shift($views);
 
-					if(!(self::$view instanceof View)){
+					if(!(self::$view instanceof FrontendView)){
 						throw new SymphonyErrorPage(
 							__('Please <a href="%s">login</a> to view this page.', array(ADMIN_URL . '/login/')),
 							__('Forbidden'), NULL,
@@ -109,18 +110,16 @@
 			}
 
 			catch(Exception $e){
-				$views = View::findFromType('404');
+				$views = FrontendView::findFromType('404');
 				self::$view = array_shift($views);
 
-				if(!(self::$view instanceof View)){
+				if(!(self::$view instanceof FrontendView)){
 					throw new FrontendPageNotFoundException($url);
 				}
 			}
 		}
 
 		public function display($url=NULL){
-
-			$this->setHeaders();
 
 			####
 			# Delegate: FrontendPreInitialise
@@ -155,27 +154,28 @@
 			$current_path = explode(dirname($_SERVER['SCRIPT_NAME']), $_SERVER['REQUEST_URI'], 2);
 			$current_path = '/' . ltrim(end($current_path), '/');
 
-			$this->Context->register(array(
-				'upload-limit' => min(
-					ini_size_to_bytes(ini_get('upload_max_filesize')),
-					Symphony::Configuration()->core()->symphony->{'maximum-upload-size'}
-				),
-				'workspace' => URL . '/workspace',
-				'page-title' => self::$view->title,
-				'root-page' => (!is_null($root_page) ? $root_page : self::$view->handle),
-				'current-page' => self::$view->handle,
-				'current-path' => $current_path,
-				'parent-path' => '/' . self::$view->path,
-				'current-url' => URL . $current_path,
+			self::$Context->register(array(
+				'view'		=> array(
+					'title' => self::$view->title,
+					'handle' => self::$view->handle,
+					'path' => $current_path,
+					'current-url' => URL . $current_path,
+					'root-view' => (!is_null($root_page) ? $root_page : self::$view->handle),
+					'parent-path' => '/' . self::$view->path,
+					'upload-limit' => min(
+						ini_size_to_bytes(ini_get('upload_max_filesize')),
+						Symphony::Configuration()->core()->symphony->{'maximum-upload-size'}
+					)
+				)
 			));
 
 			if(isset(self::$view->{'url-parameters'}) && is_array(self::$view->{'url-parameters'})){
 				foreach(self::$view->{'url-parameters'} as $p){
-					self::$Parameters->$p = NULL;
+					self::$Context->$p = NULL;
 				}
 
 				foreach(self::$view->parameters() as $p => $v){
-					self::$Parameters->$p = str_replace(' ', '+', $v);
+					self::$Context->$p = str_replace(' ', '+', $v);
 				}
 
 			}
@@ -184,13 +184,13 @@
 				foreach($_GET as $key => $val){
 					if(in_array($key, array('symphony-page', 'debug', 'profile'))) continue;
 					// self::$Parameters->{"url-{$key}"} = $val; "url" is not prepended by $_GET params
-					self::$Parameters->{$key} = $val;
+					self::$Context->{$key} = $val;
 				}
 			}
 
 			if(is_array($_COOKIE[__SYM_COOKIE_PREFIX__]) && !empty($_COOKIE[__SYM_COOKIE_PREFIX__])){
 				foreach($_COOKIE[__SYM_COOKIE_PREFIX__] as $key => $val){
-					self::$Parameters->{"cookie-{$key}"} = $val;
+					self::$Context->{"cookie-{$key}"} = $val;
 				}
 			}
 
@@ -209,13 +209,13 @@
 				'/frontend/',
 				array(
 					'view' => &self::$view,
-					'parameters' => &self::$Parameters,
+					'parameters' => &self::$Context,
 					'document' => &self::$Document,
 					'headers' => &self::$Headers
 				)
 			);
 
-			$output = self::$view->render(self::$Parameters, self::$Document, self::$Headers);
+			$output = self::$view->render(self::$Context, self::$Document, self::$Headers);
 
 			####
 			# Delegate: FrontendPostRender

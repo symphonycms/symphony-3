@@ -2,6 +2,7 @@
 
 	require_once(LIB . '/class.renderer.php');
 	require_once(LIB . '/class.ajaxpage.php');
+	require_once(LIB . '/class.administrationview.php');
 
 	Class AdministrationPageNotFoundException extends SymphonyErrorPage{
 		public function __construct($page=NULL){
@@ -25,9 +26,10 @@
 		private $_currentPage;
 		private $_callback;
 		private $_template;
-		private $_theme = 'default';
 
-		public $Page;
+		protected static $view;
+
+		public $Actions;
 
 		public static function Headers() {
 			return self::$Headers;
@@ -42,6 +44,7 @@
 
 		public function __construct(){
 			parent::__construct();
+			$this->docroot = TEMPLATES . '/interface';
 		}
 
 		public function getPageCallback($page=NULL, $update=false){
@@ -161,10 +164,10 @@
 					$callback['context'] = preg_split('/\//', $bits[2], -1, PREG_SPLIT_NO_EMPTY);
 				}
 
-				$callback['classname'] = 'content' . $callback['driver'];
+				//$callback['classname'] = 'content' . $callback['driver'];
 				$callback['driver'] = strtolower($callback['driver']);
 
-				if(!is_file(CONTENT . '/content.' . $callback['driver'] . '.php')) return false;
+				//if(!is_file(CONTENT . '/content.' . $callback['driver'] . '.php')) return false;
 
 			}
 
@@ -178,48 +181,49 @@
 			return $this->_currentPage;
 		}
 
-		public function display($page){
-
-			$this->setHeaders();
-
-			$template = sprintf('%s/%s/templates/%s.xsl', ADMIN, $this->_theme,'layout');
-			if(file_exists($template) && is_readable($template)){
-				$this->setTemplate(file_get_contents($template));
-			}
+		public function resolve($url=NULL){
 
 			$this->isLoggedIn();
 
-			if(empty($page)){
+			if (!$this->isLoggedIn()) {
+				self::$view = AdministrationView::loadFromURL('/login');
+			}
 
-				if (!$this->isLoggedIn()) {
-					$page = '/login';
-				}
 
-				else {
+			try{
+				if(is_null($url)){
+
 					$section_handle = $this->User->default_section;
 
 					// Make sure section exists:
 					try {
 						$section = Section::loadFromHandle($section_handle);
-						redirect(ADMIN_URL . "/publish/{$section_handle}/");
+						self::$view = AdministrationView::loadFromURL('/publish/' . $section_handle);
 					}
 
 					catch (Exception $e) {
-						redirect(ADMIN_URL . '/blueprints/sections/');
+						self::$view = AdministrationView::loadFromURL('/blueprints/sections/');
 					}
+
+					$views = AdministrationView::findFromType('index');
+					self::$view = array_shift($views);
 				}
+				else{
+					self::$view = AdministrationView::loadFromURL($url);
+				}
+
+				if(!(self::$view instanceof AdministrationView)) throw new Exception('Page not found');
+
 			}
 
-			if(!$this->_callback = $this->getPageCallback($page)){
-				throw new AdministrationPageNotFoundException($page);
+			catch(Exception $e){
+				//catch the exception
+				print('Sorry could not load ' . $url);
 			}
+		}
 
-			include_once((isset($this->_callback['driverlocation'])
-				? $this->_callback['driverlocation']
-				: CONTENT) . '/content.' . $this->_callback['driver'] . '.php'
-			);
 
-			$this->Page = new $this->_callback['classname'];
+		public function display($url){
 
 			####
 			# Delegate: AdminPagePreBuild
@@ -227,27 +231,33 @@
 			# Global: Yes
 			Extension::notify('AdminPagePreBuild', '/administration/', array('page' => &$this->Page, 'callback' => &$this->_callback));
 
+			if(!(self::$view instanceof View)){
+				$this->resolve($url);
+			}
+
 			if(!$this->isLoggedIn() && $this->_callback['driver'] != 'login'){
 				if(is_callable(array($this->Page, 'handleFailedAuthorisation'))) $this->Page->handleFailedAuthorisation();
 				else{
 
 					include_once(CONTENT . '/content.login.php');
-					$this->Page = new contentLogin;
-					$xml = $this->Page->build();
+					//$this->Page = new contentLogin;
+					self::$view->buildOutput(self::$Document);
 
 				}
 			}
 
 			else{
-				$xml = $this->Page->build($this->_callback['context']);
+				self::$view->buildOutput(self::$Document);
 			}
 
-			$root = self::$Document->documentElement;
-			$xml = self::$Document->importNode($xml, true);
-			$root->appendChild($xml);
+			$this->_callback = $this->getPageCallback($url);
+			self::$Context->register(array(
+				'callback'		=> $this->_callback,
+			));
+
 
 			self::$Context->register(array(
-				'callback'		=> $this->_callback
+				'session'		=> self::instance()->User->fields(),
 			));
 
 			####
@@ -256,7 +266,7 @@
 			# Global: Yes
 			Extension::notify('AdminPagePreGenerate', '/administration/', array('page' => &$this->Page));
 
-			$output = $this->getOutput();
+			$output = $this->render();
 
 			####
 			# Delegate: AdminPagePostGenerate

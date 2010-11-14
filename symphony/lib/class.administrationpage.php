@@ -180,31 +180,6 @@
 			}
 		}
 
-		public function appendSession(){
-
-			$ul = $this->createElement('ul');
-			$ul->setAttribute('id', 'session');
-
-			$li = $this->createElement('li');
-			$li->appendChild(
-				Widget::Anchor(Administration::instance()->User->getFullName(), ADMIN_URL . '/system/users/edit/' . Administration::instance()->User->id . '/')
-			);
-			$ul->appendChild($li);
-
-			$li = $this->createElement('li');
-			$li->appendChild(
-				Widget::Anchor(__('Logout'), ADMIN_URL . '/logout/')
-			);
-			$ul->appendChild($li);
-
-			###
-			# Delegate: AddElementToFooter
-			# Description: Add new list elements to the footer
-			Extension::notify('AddElementToFooter', '/administration/', array('wrapper' => &$ul));
-
-			$this->Form->appendChild($ul);
-		}
-
 		public function appendSubheading($string, $link=NULL){
 			$h2 = $this->createElement('h2', $string);
 			if(!is_null($link)) $h2->appendChild($link);

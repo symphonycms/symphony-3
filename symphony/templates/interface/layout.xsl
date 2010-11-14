@@ -11,15 +11,15 @@
 <xsl:template match="/">
 	<html>
 		<head>
-			<link rel="stylesheet" href="/symphony/admin/default/styles/default.css" media="screen" type="text/css" />
+			<link rel="stylesheet" href="/symphony/assets/styles/default.css" media="screen" type="text/css" />
 
 			<!-- JavaScript -->
-			<script src="/symphony/admin/default/scripts/jquery.js" type="text/javascript"></script>
-			<script src="/symphony/admin/default/scripts/drawer.js" type="text/javascript"></script>
+			<script src="/symphony/assets/scripts/jquery.js" type="text/javascript"></script>
+			<script src="/symphony/assets/default/scripts/drawer.js" type="text/javascript"></script>
 		</head>
 		<body>
 			<div id="control">
-				<p id="sitename"><a href="http://3.core/">My Website</a></p>
+				<p id="sitename"><a href="">My Website</a></p>
 				<p id="powered">Symphony 3.0 alpha</p>
 
 				<xsl:apply-templates select="//navigation"/>
@@ -29,9 +29,7 @@
 				<p>All kinds of awesome stuff will go here</p>
 			</div>
 			<div id="view">
-				<pre><code>
-					<xsl:copy-of select="."/>
-				</code></pre>
+				<xsl:apply-templates select="." mode="view"/>
 			</div>
 		</body>
 	</html>
