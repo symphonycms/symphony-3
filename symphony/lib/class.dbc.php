@@ -305,6 +305,8 @@
 
 			$details = (object)parse_url($string);
 			$details->path = trim($details->path, '/');
+			
+			if(!isset($details->pass)) $details->pass = '';
 
 	        if(is_null($details->path)) throw new DatabaseException('MySQL database not selected');
 
