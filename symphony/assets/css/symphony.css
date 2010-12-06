@@ -445,8 +445,8 @@
 		);
 		background: #bbbbbb -webkit-gradient(
 			linear, left top, left bottom,
-			from(hsl(10, 80%, 60%)),
-			to(hsl(10, 60%, 50%))
+			from(hsla(0, 0%, 0%, 0)),
+			to(hsla(0, 0%, 0%, 0.15))
 		);
 		border-radius: 5px;
 		-moz-border-radius: 5px;
