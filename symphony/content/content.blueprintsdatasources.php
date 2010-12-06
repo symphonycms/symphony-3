@@ -62,7 +62,7 @@
 			$this->appendSubheading(__('Data Sources'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Create a new data source'),
-					'class' => 'create button'
+					'class' => 'button constructive'
 				)
 			));
 
@@ -178,7 +178,7 @@
 			);
 
 			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
+			$tableActions->appendChild(Widget::Submit('action[apply]', __('Apply')));
 
 			$this->Form->appendChild($tableActions);
 		}
@@ -361,9 +361,13 @@
 			$actions->setAttribute('class', 'actions');
 
 			$save = Widget::Submit(
-				'action[save]', ($this->editing) ? __('Save Changes') : __('Create Data Source'),
+				'action[save]',
+				$this->editing
+					? __('Save Changes')
+					: __('Create Data Source'),
 				array(
-					'accesskey' => 's'
+					'accesskey' => 's',
+					'class'		=> 'constructive'
 				)
 			);
 			if(!($this->datasource instanceof Datasource)){
@@ -376,7 +380,7 @@
 					Widget::Submit(
 						'action[delete]', __('Delete'),
 						array(
-							'class' => 'confirm delete',
+							'class' => 'confirm delete destructive',
 							'title' => __('Delete this data source')
 						)
 					)

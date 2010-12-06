@@ -13,7 +13,7 @@
 			$this->appendSubheading(__('Utilities'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Create a new utility'),
-					'class' => 'create button'
+					'class' => 'button constructive'
 				)
 			));
 
@@ -74,7 +74,7 @@
 			);
 
 			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
+			$tableActions->appendChild(Widget::Submit('action[apply]', __('Apply')));
 
 			$this->Form->appendChild($tableActions);
 		}
@@ -215,7 +215,8 @@
 				Widget::Submit(
 					'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create Utility')),
 					array(
-						'accesskey' => 's'
+						'accesskey' => 's',
+						'class'		=> 'constructive'
 					)
 				)
 			);
@@ -225,7 +226,7 @@
 					Widget::Submit(
 						'action[delete]', __('Delete'),
 						array(
-							'class' => 'confirm delete',
+							'class' => 'confirm delete destructive',
 							'title' => __('Delete this utility')
 						)
 					)

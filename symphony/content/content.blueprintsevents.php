@@ -54,7 +54,7 @@
 			$this->appendSubheading(__('Events'), Widget::Anchor(
 				__('Create New'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Create a new event'),
-					'class' => 'create button'
+					'class' => 'button constructive'
 				)
 			));
 			
@@ -167,7 +167,7 @@
 			);
 
 			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
+			$tableActions->appendChild(Widget::Submit('action[apply]', __('Apply')));
 
 			$this->Form->appendChild($tableActions);
 		}
@@ -391,7 +391,8 @@
 			$save = Widget::Submit(
 				'action[save]', ($this->editing) ? __('Save Changes') : __('Create Event'),
 				array(
-					'accesskey' => 's'
+					'accesskey' => 's',
+					'class'		=> 'constructive'
 				)
 			);
 			if(!($this->event instanceof Event)){
@@ -404,7 +405,7 @@
 					Widget::Submit(
 						'action[delete]', __('Delete'),
 						array(
-							'class' => 'confirm delete',
+							'class' => 'confirm delete destructive',
 							'title' => __('Delete this event')
 						)
 					)

@@ -14,7 +14,7 @@
 			$this->appendSubheading(__('Users'), Widget::Anchor(
 				__('Add a User'), Administration::instance()->getCurrentPageURL() . '/new/', array(
 					'title' => __('Add a new User'),
-					'class' => 'create button'
+					'class' => 'create button constructive'
 				)
 			));
 
@@ -91,7 +91,7 @@
 			);
 
 			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Input('action[apply]', 'Apply', 'submit'));
+			$tableActions->appendChild(Widget::Submit('action[apply]', 'Apply'));
 
 			$this->Form->appendChild($tableActions);
 
@@ -313,7 +313,8 @@
 				Widget::Submit(
 					'action[save]', ($this->_context[0] == 'edit' ? __('Save Changes') : __('Create User')),
 					array(
-						'accesskey' => 's'
+						'accesskey' => 's',
+						'class'		=> 'constructive'
 					)
 				)
 			);
@@ -323,7 +324,7 @@
 					Widget::Submit(
 						'action[delete]', __('Delete'),
 						array(
-							'class' => 'confirm delete',
+							'class' => 'confirm delete destructive',
 							'title' => __('Delete this user')
 						)
 					)

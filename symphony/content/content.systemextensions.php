@@ -153,7 +153,7 @@
 				);
 
 				$tableActions->appendChild(Widget::Select('with-selected', $options));
-				$tableActions->appendChild(Widget::Input('action[apply]', __('Apply'), 'submit'));
+				$tableActions->appendChild(Widget::Submit('action[apply]', __('Apply')));
 
 				$right->appendChild($tableActions);
 				
@@ -200,7 +200,7 @@
 					));
 					$p = $this->createElement('p', $message);
 					$install = $this->createElement('button', __('Install All'));
-					$install->setAttribute('class', 'create');
+					$install->setAttribute('class', 'constructive');
 					$view = Widget::Anchor(__('View Details'), sprintf('%sstatus/%s/', $path, Extension::STATUS_NOT_INSTALLED));
 					$view->setAttribute('class', 'button');
 				
@@ -226,9 +226,9 @@
 					));
 					$p = $this->createElement('p', $message);
 					$install = $this->createElement('button', __('Install All'));
-					$install->setAttribute('class', 'create');
+					$install->setAttribute('class', 'constructive');
 					$uninstall = $this->createElement('button', __('Uninstall All'));
-					$uninstall->setAttribute('class', 'delete');
+					$uninstall->setAttribute('class', 'destructive');
 					$view = Widget::Anchor(__('View Details'), sprintf('%sstatus/%s/', $path, Extension::STATUS_DISABLED));
 					$view->setAttribute('class', 'button');
 				
@@ -336,21 +336,40 @@
 					switch($this->lists->extensions[$handle]['status']){
 						case Extension::STATUS_ENABLED:
 							$td4 = Widget::TableData();
-							$td4->appendChild(Widget::Input("action[uninstall][{$handle}]", __('Uninstall'), 'submit', array('class' => 'button delete')));
-							$td4->appendChild(Widget::Input("action[disable][{$handle}]", __('Disable'), 'submit', array('class' => 'button')));
-							
+							$td4->appendChild(Widget::Submit(
+								"action[uninstall][{$handle}]", __('Uninstall'), array(
+									'class' => 'button destructive'
+								)
+							));
+							$td4->appendChild(Widget::Submit(
+								"action[disable][{$handle}]", __('Disable'), array(
+									'class' => 'button destructive'
+								)
+							));
 							break;
 
 						case Extension::STATUS_DISABLED:
-							$td4 = Widget::TableData(Widget::Input("action[enable][{$handle}]", __('Enable'), 'submit', array('class' => 'button create')));
+							$td4 = Widget::TableData(Widget::Submit(
+								"action[enable][{$handle}]", __('Enable'), array(
+									'class' => 'button constructive'
+								)
+							));
 							break;
 
 						case Extension::STATUS_NOT_INSTALLED:
-							$td4 = Widget::TableData(Widget::Input("action[enable][{$handle}]", __('Install'), 'submit', array('class' => 'button create')));
+							$td4 = Widget::TableData(Widget::Submit(
+								"action[enable][{$handle}]", __('Install'), array(
+									'class' => 'button constructive'
+								)
+							));
 							break;
 
 						case Extension::STATUS_REQUIRES_UPDATE:
-							$td4 = Widget::TableData(Widget::Input("action[update][{$handle}]", __('Update'), 'submit', array('class' => 'button create')));
+							$td4 = Widget::TableData(Widget::Submit(
+								"action[update][{$handle}]", __('Update'), array(
+									'class' => 'button constructive'
+								)
+							));
 					}
 
 					## Add a row to the body array, assigning each cell to the row

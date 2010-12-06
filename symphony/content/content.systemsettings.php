@@ -185,7 +185,10 @@
 			$div = $this->createElement('div');
 			$div->setAttribute('class', 'actions');
 
-			$attr = array('accesskey' => 's');
+			$attr = array(
+				'accesskey'	=> 's',
+				'class'		=> 'constructive'
+			);
 			
 			if(!is_writable(CONF)) $attr['disabled'] = 'disabled';
 			
@@ -262,7 +265,8 @@
 				Widget::Submit(
 					'action[save]', __('Save Changes'),
 					array(
-						'accesskey' => 's'
+						'accesskey' => 's',
+						'class'		=> 'constructive'
 					)
 				)
 			);
