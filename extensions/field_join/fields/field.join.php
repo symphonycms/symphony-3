@@ -141,62 +141,97 @@
 		Publish:
 	-------------------------------------------------------------------------*/
 		
-		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry=NULL, $data=NULL) {
+		public function displayPublishPanel(SymphonyDOMElement $wrapper, MessageStack $errors, Entry $entry = null, $data = null) {
+			$joined = null;
 			$document = $wrapper->ownerDocument;
+			$xpath = new DOMXPath($document);
 			$driver = Extension::load('field_join');
 			$driver->addPublishHeaders($document);
 			
 			$sortorder = $this->{'sortorder'};
 			$element_name = $this->{'element-name'};
-			$classes = array();
 			
-			$field = $document->createElement('div');
-			$field->setAttribute('class', 'label');
+			$wrapper->setAttribute('data-label', $this->{'publish-label'});
 			
-			$field->appendChild($document->createElement(
-				'span', $this->{'publish-label'}
-			));
-			
-			$sections = array();
-			$options = array();
-			
-			if ($this->{'required'} != 'yes') $options[] = array(
-				null, false, __('Choose a section...')
-			);
-			
-			foreach ($this->{'joinable-sections'} as $handle) {
-				$section = Section::loadFromHandle($handle);
-				$sections[] = $section;
-				$options[] = array(
-					$handle, false, $section->name
-				);
+			if ($this->{'required'} != 'yes') {
+				$wrapper->setAttribute('data-optional', __('Choose a section...'));
 			}
 			
-			$select = Widget::Select("fields[{$element_name}]", $options);
-			$select->addClass('context-switch');
-			$field->appendChild($select);
+			if (isset($data->joined_id)) {
+				$joined = Entry::loadFromId($data->joined_id);
+			}
 			
-			foreach ($sections as $section) {
+			// Use existing entry:
+			if ($joined instanceof Entry) {
+				$section = Section::loadFromHandle($joined->section);
 				$context = $document->createElement('div');
-				$context->addClass('context context-' . $section->handle);
+				$context->setAttribute('data-handle', $section->handle);
+				$context->setAttribute('data-name', $section->name);
+				$context->addClass('context');
 				$fields = array();
 				
 				foreach ($section->fields as $index => $instance) {
 					$fields[$instance->{'element-name'}] = $instance;
 				}
 				
-				$this->displayJoinedPublishPanel($context, $section, $fields);
-				$field->appendChild($context);
+				$this->displayJoinedPublishPanel($context, $section, $fields, $errors, $joined);
+				
+				// Replace field names:
+				foreach ($xpath->query('.//*[starts-with(@name, "fields[")]', $context) as $node) {
+					$name = $node->getAttribute('name');
+					$name = sprintf(
+						'fields[%s][%s]%s',
+						$this->{'element-name'},
+						$section->handle,
+						preg_replace('%^fields%', null, $name)
+					);
+					$node->setAttribute('name', $name);
+				}
+				
+				$wrapper->appendChild($context);
 			}
 			
-			$wrapper->appendChild($field);
+			// Build contexts:
+			else foreach ($this->{'joinable-sections'} as $handle) {
+				try {
+					$section = Section::loadFromHandle($handle);
+				}
+				
+				catch (Exception $e) {
+					continue;
+				}
+				
+				$context = $document->createElement('div');
+				$context->setAttribute('data-handle', $section->handle);
+				$context->setAttribute('data-name', $section->name);
+				$context->addClass('context');
+				$fields = array();
+				
+				foreach ($section->fields as $index => $instance) {
+					$fields[$instance->{'element-name'}] = $instance;
+				}
+				
+				$this->displayJoinedPublishPanel($context, $section, $fields, $errors, new Entry());
+				
+				// Replace field names:
+				foreach ($xpath->query('.//*[starts-with(@name, "fields[")]', $context) as $node) {
+					$name = $node->getAttribute('name');
+					$name = sprintf(
+						'fields[%s][%s]%s',
+						$this->{'element-name'},
+						$section->handle,
+						preg_replace('%^fields%', null, $name)
+					);
+					$node->setAttribute('name', $name);
+				}
+				
+				$wrapper->appendChild($context);
+			}
 		}
 		
-		public function displayJoinedPublishPanel(SymphonyDOMElement $wrapper, Section $section, array $fields) {
+		public function displayJoinedPublishPanel(SymphonyDOMElement $wrapper, Section $section, array $fields, MessageStack $errors, Entry $entry) {
 			$document = $wrapper->ownerDocument;
 			$layout = new Layout();
-			$entry = new Entry();
-			$errors = new MessageStack();
 			
 			foreach ($section->layout as $data) {
 				$column = $layout->createColumn($data->size);
@@ -216,9 +251,9 @@
 					
 					foreach ($data->fields as $handle) {
 						$field = $fields[$handle];
-	
+						
 						if (!$field instanceof Field) continue;
-	
+						
 						$div = $document->createElement('div', NULL, array(
 								'class' => trim(sprintf('field field-%s %s',
 									$field->handle(),
@@ -251,65 +286,117 @@
 	-------------------------------------------------------------------------*/
 
 		public function validateData(MessageStack $errors, Entry $entry, $data = null) {
-			$length = (integer)$this->{'text-length'};
-
-			if(self::STATUS_OK != parent::validateData($errors, $entry, $data)) {
-				return self::STATUS_ERROR;
+			$status = self::STATUS_OK;
+			
+			foreach ($data as $section_handle => $fields) {
+				$section = Section::loadFromHandle($section_handle);
+				$result[$section_handle] = array();
+				
+				foreach ($fields as $field_handle => $value) {
+					$field = $section->fetchFieldByHandle($field_handle);
+					$field_errors = new MessageStack();
+					$field_status = $field->validateData($field_errors, $entry, $value);
+					$errors->append($field_handle, $field_errors);
+					
+					if ($field_status != self::STATUS_OK) {
+						$status = self::STATUS_ERROR;
+					}
+				}
 			}
-
-			if (!isset($data->value)) return self::STATUS_OK;
-
-			if (!$this->applyValidationRules($data->value)) {
-				$errors->append(
-					null, (object)array(
-					 	'message' => __("'%s' contains invalid data. Please check the contents.", array($this->{'publish-label'})),
-						'code' => self::ERROR_INVALID
-					)
-				);
-
-				return self::STATUS_ERROR;
-			}
-
-			if ($length > 0 and $length < strlen($data->value)) {
-				$errors->append(
-					null, (object)array(
-					 	'message' => __("'%s' must be no longer than %s characters.", array(
-							$this->{'publish-label'}, $length
-						)),
-						'code' => self::ERROR_INVALID
-					)
-				);
-
-				return self::STATUS_ERROR;
-			}
-
-			return self::STATUS_OK;
+			
+			return $status;
 		}
 
 		public function processData($data, Entry $entry = null) {
-			if (isset($entry->data()->{$this->{'element-name'}})) {
-				$result = $entry->data()->{$this->{'element-name'}};
+			$result = array();
+			
+			if (!is_array($data)) return $result;
+			
+			foreach ($data as $section_handle => $fields) {
+				$section = Section::loadFromHandle($section_handle);
+				$result[$section_handle] = array();
+				
+				foreach ($fields as $field_handle => $value) {
+					$field = $section->fetchFieldByHandle($field_handle);
+					$result[$section_handle][$field_handle] = $field->processData($value, $entry);
+				}
+				
+				break;
 			}
-
-			else {
-				$result = (object)array(
-					'handle'			=> null,
-					'value'				=> null,
-					'value_formatted'	=> null
-				);
-			}
-
-			if (!is_null($data)) {
-				$data = stripslashes($data);
-
-				$result->handle = Lang::createHandle($data);
-				$result->value = $data;
-				$result->value_formatted = $this->applyFormatting($data);
-			}
-
+			
 			return $result;
 		}
-
+		
+		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
+			$row = (object)array(
+				'entry_id'		=> $entry->id,
+				'joined_id'		=> null
+			);
+			$section_handle = key($data);
+			$fields = current($data);
+			$joined = new Entry();
+			$joined->section = $section_handle;
+			
+			// Find the current user ID or just any ID at all:
+			if (isset(Administration::instance()->User) && Administration::instance()->User instanceof User) {
+				$joined->user_id = Administration::instance()->User->id;
+			}
+			
+			else if (isset(Frontend::instance()->User) && Frontend::instance()->User instanceof User) {
+				$joined->user_id = Frontend::instance()->User->id;
+			}
+			
+			else {
+				$joined->user_id = (integer)Symphony::Database()->query(
+					"SELECT `id` FROM `tbl_users` ORDER BY `id` ASC LIMIT 1"
+				)->current()->id;
+			}
+			
+			// Set entry data:
+			foreach ($fields as $field_handle => $value) {
+				$joined->data()->{$field_handle} = $value;
+			}
+			
+			$status = Entry::save($joined, $errors);
+			$row->joined_id = $joined->id;
+			
+			if ($status != Entry::STATUS_OK) return $status;
+			
+			try {
+				Symphony::Database()->insert(
+					sprintf('tbl_data_%s_%s', $entry->section, $this->{'element-name'}),
+					(array)$row,
+					Database::UPDATE_ON_DUPLICATE
+				);
+				
+				return self::STATUS_OK;
+			}
+			
+			catch (DatabaseException $e) {
+				//	The great irony here is the the getMessage returns something a hell of a lot
+				//	more useful than the getDatabaseErrorMessage. ie.
+				//	getMessage: MySQL Error (1048): Column 'value' cannot be null in query {$query}
+				//	getDatabaseErrorMessage: Column 'value' cannot be null
+				$errors->append(
+					null, (object)array(
+					 	'message' => $e->getMessage(),
+						'code' => $e->getDatabaseErrorCode()
+					)
+				);
+			}
+			
+			catch (Exception $e) {
+				$errors->append(
+					null, (object)array(
+					 	'message' => $e->getMessage(),
+						'code' => $e->getCode()
+					)
+				);
+			}
+			
+			return self::STATUS_ERROR;
+		}
+		
 	/*-------------------------------------------------------------------------
 		Output:
 	-------------------------------------------------------------------------*/
