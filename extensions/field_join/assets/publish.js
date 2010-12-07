@@ -13,6 +13,7 @@ jQuery(document).ready(function() {
 			// Load data attributes:
 			field.data().label = field.attr('data-label');
 			field.data().optional = field.attr('data-optional');
+			field.data().show_header = field.attr('data-show-header');
 			
 			// Create box header:
 			var header = $('<h2 />')
@@ -39,6 +40,16 @@ jQuery(document).ready(function() {
 					.val(handle)
 					.appendTo(select);
 			});
+			
+			// Disable if there's nothing:
+			if (select.children().length <= 1) {
+				select.hide();
+			}
+			
+			// Header should be hidden:
+			if (field.data().show_header != 'yes') {
+				header.hide();
+			}
 		});
 	
 	// Toggle contexts:

@@ -2,12 +2,12 @@
 	background: #fcfcfc;
 	border-top: 1px dotted #dddddd;
 	border-top-color: hsla(0, 0%, 0%, 0.2);
-	padding: 15px 0 10px 0;
+	padding: 30px 0 10px 0;
 }
-
-.section-join-box .context-switch {
+.section-join-box > h2 {
+	margin-top: -10px;
+	padding-top: 0;
 }
-
 .section-join-box .columns {
 	margin: 0;
 }

@@ -91,6 +91,7 @@
 		
 		public function findDefaultSettings(&$fields) {
 			$fields['joinable-sections'] = array();
+			$fields['show-header'] = 'no';
 		}
 		
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
@@ -132,6 +133,18 @@
 			
 			$this->appendShowColumnCheckbox($options_list);
 			$this->appendRequiredCheckbox($options_list);
+
+			$label = Widget::Label(__('Show header'));
+			$input = Widget::Input('show-header', 'yes', 'checkbox');
+
+			if ($this->{'show-header'} == 'yes') {
+				$input->setAttribute('checked', 'checked');
+			}
+
+			$label->prependChild($input);
+			$item = $document->createElement('li');
+			$item->appendChild($label);
+			$options_list->appendChild($item);
 			
 			$wrapper->appendChild($options_list);
 			$wrapper->setAttribute('class', $wrapper->getAttribute('class') . ' field-join');
@@ -152,10 +165,13 @@
 			$element_name = $this->{'element-name'};
 			
 			$wrapper->setAttribute('data-label', $this->{'publish-label'});
+			$wrapper->setAttribute('data-show-header', $this->{'show-header'});
 			
 			if ($this->{'required'} != 'yes') {
 				$wrapper->setAttribute('data-optional', __('Choose a section...'));
 			}
+			
+			//var_dump($data); exit;
 			
 			if (isset($data->joined_id)) {
 				$joined = Entry::loadFromId($data->joined_id);
@@ -182,7 +198,7 @@
 					$name = sprintf(
 						'fields[%s][%s]%s',
 						$this->{'element-name'},
-						$section->handle,
+						$joined->id,
 						preg_replace('%^fields%', null, $name)
 					);
 					$node->setAttribute('name', $name);
@@ -205,13 +221,23 @@
 				$context->setAttribute('data-handle', $section->handle);
 				$context->setAttribute('data-name', $section->name);
 				$context->addClass('context');
-				$fields = array();
-				
-				foreach ($section->fields as $index => $instance) {
-					$fields[$instance->{'element-name'}] = $instance;
+				$fields = $values = array();
+				$joined = new Entry();
+				//var_dump($data);
+				if (isset($data[$section->handle])) {
+					$values = $data[$section->handle];
 				}
 				
-				$this->displayJoinedPublishPanel($context, $section, $fields, $errors, new Entry());
+				foreach ($section->fields as $index => $instance) {
+					$handle = $instance->{'element-name'};
+					$fields[$handle] = $instance;
+					
+					if (isset($values[$handle])) {
+						$joined->data()->{$handle} = $values[$handle];
+					}
+				}
+				
+				$this->displayJoinedPublishPanel($context, $section, $fields, $errors, $joined);
 				
 				// Replace field names:
 				foreach ($xpath->query('.//*[starts-with(@name, "fields[")]', $context) as $node) {
@@ -261,7 +287,7 @@
 								))
 							)
 						);
-	
+						
 						$field->displayPublishPanel(
 							$div,
 							(isset($errors->{$field->{'element-name'}})
@@ -288,9 +314,15 @@
 		public function validateData(MessageStack $errors, Entry $entry, $data = null) {
 			$status = self::STATUS_OK;
 			
-			foreach ($data as $section_handle => $fields) {
-				$section = Section::loadFromHandle($section_handle);
-				$result[$section_handle] = array();
+			foreach ($data as $key => $fields) {
+				if (is_numeric($key)) {
+					$joined = Entry::loadFromId($key);
+					$section = Section::loadFromHandle($joined->section);
+				}
+				
+				else {
+					$section = Section::loadFromHandle($key);
+				}
 				
 				foreach ($fields as $field_handle => $value) {
 					$field = $section->fetchFieldByHandle($field_handle);
@@ -312,13 +344,20 @@
 			
 			if (!is_array($data)) return $result;
 			
-			foreach ($data as $section_handle => $fields) {
-				$section = Section::loadFromHandle($section_handle);
-				$result[$section_handle] = array();
+			foreach ($data as $key => $fields) {
+				if (is_numeric($key)) {
+					$joined = Entry::loadFromId($key);
+					$section = Section::loadFromHandle($joined->section);
+				}
+				
+				else {
+					$section = Section::loadFromHandle($key);
+					$result[$key] = array();
+				}
 				
 				foreach ($fields as $field_handle => $value) {
 					$field = $section->fetchFieldByHandle($field_handle);
-					$result[$section_handle][$field_handle] = $field->processData($value, $entry);
+					$result[$key][$field_handle] = $field->processData($value, $entry);
 				}
 				
 				break;
@@ -328,12 +367,19 @@
 		}
 		
 		public function saveData(MessageStack $errors, Entry $entry, $data = null) {
-			$row = (object)array(
-				'entry_id'		=> $entry->id,
-				'joined_id'		=> null
-			);
-			$section_handle = key($data);
+			$key = key($data);
 			$fields = current($data);
+			
+			if (is_numeric($key)) {
+				$joined = Entry::loadFromId($key);
+				$section_handle = $joined->section;
+				Entry::delete($key);
+			}
+			
+			else {
+				$section_handle = $key;
+			}
+			
 			$joined = new Entry();
 			$joined->section = $section_handle;
 			
@@ -357,10 +403,16 @@
 				$joined->data()->{$field_handle} = $value;
 			}
 			
+			//echo '<pre>'; var_dump($section_handle); exit;
+			
 			$status = Entry::save($joined, $errors);
-			$row->joined_id = $joined->id;
 			
 			if ($status != Entry::STATUS_OK) return $status;
+			
+			$row = (object)array(
+				'entry_id'		=> $entry->id,
+				'joined_id'		=> $joined->id
+			);
 			
 			try {
 				Symphony::Database()->insert(
@@ -373,10 +425,6 @@
 			}
 			
 			catch (DatabaseException $e) {
-				//	The great irony here is the the getMessage returns something a hell of a lot
-				//	more useful than the getDatabaseErrorMessage. ie.
-				//	getMessage: MySQL Error (1048): Column 'value' cannot be null in query {$query}
-				//	getDatabaseErrorMessage: Column 'value' cannot be null
 				$errors->append(
 					null, (object)array(
 					 	'message' => $e->getMessage(),
