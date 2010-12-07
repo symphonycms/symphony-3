@@ -372,11 +372,11 @@
 	}
 	#layout > .small,
 	.columns > .small {
-		width: 30%;
+		width: 32.3%;
 	}
 	#layout > .large,
 	.columns > .large {
-		width: 70%;
+		width: 67.7%;
 	}
 
 	#layout.type-lll > .column,

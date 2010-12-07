@@ -4,6 +4,9 @@
 	border-top-color: hsla(0, 0%, 0%, 0.2);
 	padding: 30px 0 10px 0;
 }
+.section-join-box:nth-child(2n+1) {
+	background: #ffffff;
+}
 .section-join-box > h2 {
 	margin-top: -10px;
 	padding-top: 0;

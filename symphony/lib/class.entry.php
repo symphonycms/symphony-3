@@ -128,6 +128,7 @@
 			$section = Section::loadFromHandle($entry->section);
 
 			try {
+				// TODO: Pass this onto fields so that they can override. Very important for recursive deletion.
 				foreach($section->fields as $field){
 					Symphony::Database()->delete(
 						sprintf('tbl_data_%s_%s', $section->handle, $field->{'element-name'}),

@@ -91,7 +91,7 @@
 		
 		public function findDefaultSettings(&$fields) {
 			$fields['joinable-sections'] = array();
-			$fields['show-header'] = 'no';
+			$fields['show-header'] = 'yes';
 		}
 		
 		public function displaySettingsPanel(SymphonyDOMElement $wrapper, MessageStack $errors) {
