@@ -117,8 +117,8 @@
 				$this->guid = Field::createGUID($this);
 			}
 			
-			if ($name == "publish-label" && !isset($this->{'publish-label'})) {
-				$this->{'publish-label'} = $this->properties->name;
+			if ($name == 'publish-label' && ($this->properties->{$name} == '' || !isset($this->{$name}))) {
+				$this->{$name} = $this->properties->name;
 			}
 			
 			if (!isset($this->properties->$name)) {
