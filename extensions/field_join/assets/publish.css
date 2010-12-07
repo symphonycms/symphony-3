@@ -1,13 +1,13 @@
 .field-join-box {
+	background: #fcfcfc;
 	border-top: 1px dotted #dddddd;
 	border-top-color: hsla(0, 0%, 0%, 0.2);
-	padding: 20px 30px 10px 30px;
+	padding: 5px 0 0 0;
 }
 
 .field-join-box .context-switch {
-	margin: 0 0 10px 0;
 }
 
 .field-join-box .columns {
-	margin: 0 -30px;
+	margin: 0;
 }

@@ -153,15 +153,15 @@
 			$field = $document->createElement('div');
 			$field->setAttribute('class', 'label');
 			
-			if ($optional) $field->appendChild($document->createElement(
-				'em', __('Optional')
+			$field->appendChild($document->createElement(
+				'span', $this->{'publish-label'}
 			));
 			
 			$sections = array();
-			$options = array(
-				array(
-					null, false, __('Choose a section to include...')
-				)
+			$options = array();
+			
+			if ($this->{'required'} != 'yes') $options[] = array(
+				null, false, __('Choose a section...')
 			);
 			
 			foreach ($this->{'joinable-sections'} as $handle) {
