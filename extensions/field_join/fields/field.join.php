@@ -306,6 +306,26 @@
 			
 			$layout->appendTo($wrapper);
 		}
+		
+		public function prepareTableValue(StdClass $data = null, DOMElement $link = null, Entry $entry = null) {
+			$result = (object)array(
+				'value'	=> null
+			);
+			
+			if (isset($data->joined_id)) {
+				try {
+					$joined = Entry::loadFromId($data->joined_id);
+					$section = Section::loadFromHandle($joined->section);
+					$result->value = $section->name;
+				}
+				
+				catch (Exception $e) {
+					// Keep the null value set above.
+				}
+			}
+			
+			return parent::prepareTableValue($result, $link, $entry);
+		}
 
 	/*-------------------------------------------------------------------------
 		Input:
