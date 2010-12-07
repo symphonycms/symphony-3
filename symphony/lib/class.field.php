@@ -116,15 +116,15 @@
 			if ($name == 'guid' and !isset($this->guid)) {
 				$this->guid = Field::createGUID($this);
 			}
-
-			if ($name == "publish-label") {
+			
+			if ($name == "publish-label" && !isset($this->{'publish-label'})) {
 				$this->{'publish-label'} = $this->properties->name;
 			}
-
+			
 			if (!isset($this->properties->$name)) {
 				return null;
 			}
-
+			
 			return $this->properties->$name;
 		}
 
