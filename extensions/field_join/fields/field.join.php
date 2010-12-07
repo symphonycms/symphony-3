@@ -307,16 +307,64 @@
 			$layout->appendTo($wrapper);
 		}
 		
-		public function prepareTableValue(StdClass $data = null, DOMElement $link = null, Entry $entry = null) {
+		public function prepareTableValue(StdClass $data = null, DOMElement $wrapper = null, Entry $entry = null) {
 			$result = (object)array(
 				'value'	=> null
 			);
 			
 			if (isset($data->joined_id)) {
 				try {
+					$document = $wrapper->ownerDocument;
+					$driver = Extension::load('field_join');
+					$driver->addPublishHeaders($document);
+					
 					$joined = Entry::loadFromId($data->joined_id);
 					$section = Section::loadFromHandle($joined->section);
-					$result->value = $section->name;
+					
+					$wrapper->addClass('field-join');
+					$wrapper->setValue($section->name);
+					
+					/*
+					$more = $document->createElement('span');
+					$more->addClass('more');
+					$more->setValue(__('More'));
+					$wrapper->appendChild($more);
+					
+					// Build data array:
+					$content = $document->createElement('div');
+					$more->appendChild($content);
+					
+					foreach ($section->layout as $column) {
+						foreach ($column->fieldsets as $fieldset) {
+							$group = $document->createElement('div');
+							$group->addClass('list');
+							$content->appendChild($group);
+							
+							if ($fieldset->name) $group->appendChild(
+								$document->createElement('h5', $fieldset->name)
+							);
+							
+							$list = $document->createElement('dl');
+							$group->appendChild($list);
+							
+							foreach ($fieldset->fields as $field_handle) {
+								$field = $section->fetchFieldByHandle($field_handle);
+								
+								$title = $document->createElement('dt', $field->{'publish-label'});
+								$list->appendChild($title);
+								$item = $document->createElement('dd');
+								$list->appendChild($item);
+								
+								$value = $field->prepareTableValue(
+									$joined->data()->{$field_handle},
+									$item, $joined
+								);
+							}
+						}
+					}
+					*/
+					
+					return $wrapper;
 				}
 				
 				catch (Exception $e) {

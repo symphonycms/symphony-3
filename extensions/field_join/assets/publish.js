@@ -1,13 +1,20 @@
 jQuery(document).ready(function() {
 	var $ = jQuery;
 	
-	// Initialise:
-	$('.field-join')
+	// Initialise fields:
+	$('div.field-join')
 		.each(function() {
+			if (!$('.section-join-box').length) {
+				$('<div />')
+					.addClass('section-join-box')
+					.insertAfter('form > .columns');
+			}
+			
 			var field = $(this).remove();
 			var box = $('<div />')
-				.addClass('section-join-box')
-				.insertAfter('form > .columns');
+				.show()
+				.addClass('sub-box')
+				.appendTo('.section-join-box');
 			var contexts = field.children('.context');
 			
 			// Load data attributes:
@@ -53,10 +60,10 @@ jQuery(document).ready(function() {
 		});
 	
 	// Toggle contexts:
-	$('.section-join-box > h2 select')
+	$('.section-join-box > .sub-box > h2 select')
 		.live('change', function() {
 			$(this)
-				.closest('.section-join-box')
+				.closest('.sub-box')
 				.find('.context')
 				.hide()
 				.filter('[data-handle = ' + $(this).val() + ']')
@@ -64,14 +71,6 @@ jQuery(document).ready(function() {
 		})
 		
 		.trigger('change');
-	
-	// Disable switching on change:
-	$('.section-join-box .context')
-		.live('change', function() {
-			$(this)
-				.siblings('.context-switch')
-				.attr('disabled', 'disabled');
-		});
 	
 	// Remove unused section:
 	$('form')

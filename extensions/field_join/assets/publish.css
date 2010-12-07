@@ -1,13 +1,21 @@
 .section-join-box {
-	background: #fcfcfc;
-	border-top: 1px dotted #dddddd;
-	border-top-color: hsla(0, 0%, 0%, 0.2);
+	background: #fafafa;
+	border-bottom: 1px solid #dddddd;
+	border-top: 1px solid #cccccc;
+	box-shadow: 0 3px 4px hsla(0, 0%, 0%, 0.1) inset;
+	-moz-box-shadow: 0 3px 4px hsla(0, 0%, 0%, 0.1) inset;
+	-webkit-box-shadow: 0 3px 4px hsla(0, 0%, 0%, 0.1) inset;
+}
+.section-join-box + .actions {
+	border-top: none;
+}
+.section-join-box > .sub-box {
 	padding: 30px 0 10px 0;
 }
-.section-join-box:nth-child(2n+1) {
-	background: #ffffff;
+.section-join-box > .sub-box + .sub-box {
+	border-top: 1px solid #eeeeee;
 }
-.section-join-box > h2 {
+.section-join-box > .sub-box > h2 {
 	margin-top: -10px;
 	padding-top: 0;
 }
