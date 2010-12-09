@@ -140,7 +140,8 @@
 
 			$template = sprintf('%s/%s/%s.xsl', VIEWS, $view->path, $view->handle);
 			if(file_exists($template) && is_readable($template)){
-				Frontend::instance()->template = file_get_contents($template);
+				Frontend::instance()->setTemplate(file_get_contents($template));
+				//print_r(file_get_contents($template));die();
 			}
 
 			return $view;
@@ -416,6 +417,8 @@
 		}
 
 		public function buildOutput(XMLDocument &$Document=NULL){
+
+			$ParameterOutput = new Register;
 
 			if(is_null($Document)){
 				$Document = new XMLDocument;

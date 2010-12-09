@@ -106,7 +106,6 @@
 					$element->appendChild(self::$Document->createElement($key, (string)$item));
 				}
 			}
-
 			// When the XSLT executes, it uses the CWD as set here
 			$cwd = getcwd();
 			chdir($this->docroot);
@@ -116,7 +115,6 @@
 			if(XSLProc::hasErrors()){
 				throw new XSLProcException('Transformation Failed');
 			}
-
 			return $output;
 
 		}

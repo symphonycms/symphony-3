@@ -107,6 +107,7 @@
 						);
 					}
 				}
+				$this->docroot = VIEWS . '/' . self::$view->path;
 			}
 
 			catch(Exception $e){
@@ -215,7 +216,10 @@
 				)
 			);
 
-			$output = self::$view->render(self::$Context, self::$Document, self::$Headers);
+			self::$view->buildOutput(self::$Document);
+
+			//$output = self::$view->render(self::$Context, self::$Document, self::$Headers);
+			$output = $this->render();
 
 			####
 			# Delegate: FrontendPostRender
