@@ -141,7 +141,6 @@
 			$template = sprintf('%s/%s/%s.xsl', VIEWS, $view->path, $view->handle);
 			if(file_exists($template) && is_readable($template)){
 				Frontend::instance()->setTemplate(file_get_contents($template));
-				//print_r(file_get_contents($template));die();
 			}
 
 			return $view;
@@ -529,7 +528,7 @@
 			# Global: Yes
 			Extension::notify('FrontendParamsPostResolve', '/frontend/', array('params' => $Parameters));
 
-			$template = $this->template;
+			// $template = $this->template;
 
 			####
 			# Delegate: FrontendTemplatePreRender

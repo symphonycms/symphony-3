@@ -219,7 +219,7 @@
 			self::$view->buildOutput(self::$Document);
 
 			//$output = self::$view->render(self::$Context, self::$Document, self::$Headers);
-			$output = $this->render();
+			$output = self::render();
 
 			####
 			# Delegate: FrontendPostRender
@@ -234,7 +234,7 @@
 				)
 			);
 
-			self::Headers()->render();
+			//self::Headers()->render();
 
 			return $output;
 

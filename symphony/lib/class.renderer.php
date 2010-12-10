@@ -107,6 +107,7 @@
 				}
 			}
 			// When the XSLT executes, it uses the CWD as set here
+
 			$cwd = getcwd();
 			chdir($this->docroot);
 			$output = XSLProc::transform(self::$Document->saveXML(), self::$Template, XSLProc::XML, array(), array());
