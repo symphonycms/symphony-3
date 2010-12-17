@@ -8,27 +8,29 @@
 	encoding="UTF-8"
 	indent="yes" />
 
-<xsl:template match="/">
+<xsl:template match="root">
 	<html>
 		<head>
-			<link rel="stylesheet" href="/symphony/assets/styles/default.css" media="screen" type="text/css" />
+			<link rel="stylesheet" href="/symphony/assets/styles/admin.css" media="screen" type="text/css" />
 
 			<!-- JavaScript -->
 			<script src="/symphony/assets/scripts/jquery.js" type="text/javascript"></script>
-			<script src="/symphony/assets/default/scripts/drawer.js" type="text/javascript"></script>
+			<script src="/symphony/assets/scripts/drawer.js" type="text/javascript"></script>
 		</head>
 		<body>
 			<div id="control">
 				<p id="sitename"><a href="">My Website</a></p>
 				<p id="powered">Symphony 3.0 alpha</p>
 
-				<xsl:apply-templates select="//navigation"/>
+				<xsl:apply-templates select="navigation"/>
 			</div>
 			<div id="drawer">
 				<h2>About this Shit</h2>
 				<p>All kinds of awesome stuff will go here</p>
 			</div>
 			<div id="view">
+				<h1><xsl:value-of select="context/view/title"/></h1>
+				<xsl:apply-templates select="actions"/>
 				<xsl:apply-templates select="." mode="view"/>
 			</div>
 		</body>
@@ -43,16 +45,17 @@
 
 <xsl:template match="navigation/group/items/item">
 	<li id="{name/@handle}">
-		<a href="/{../name/@handle}/{link}">
+		<a href="/symphony{link}">
 			<xsl:value-of select="name"/>
 		</a>
-		<a href="{../name/@handle}/{link}/new/" class="quick create">New</a>
+		<a href="/symphony{link}/new/" class="quick create">New</a>
 	</li>
 </xsl:template>
 
 <xsl:template match="navigation/group">
 	<li id="{name/@handle}">
-		<xsl:value-of select="name"/>
+		<!-- Temporarily wrap in SPAN just so it'll nest neatly :P -->
+		<span><xsl:value-of select="name"/></span>
 		<a href="#" class="toggle">
 			<xsl:text>&#9662;</xsl:text>
 		</a>
@@ -61,6 +64,18 @@
 				<xsl:apply-templates select="items/item"/>
 			</ul>
 		</xsl:if>
+	</li>
+</xsl:template>
+
+<xsl:template match="actions">
+	<ul id="actions">
+		<xsl:apply-templates select="action"/>
+	</ul>
+</xsl:template>
+
+<xsl:template match="actions/action">
+	<li>
+		<a href="{callback}" class="{type}"><xsl:value-of select="name"/></a>
 	</li>
 </xsl:template>
 

@@ -1,6 +1,54 @@
 <?php
 
-	require_once(LIB . '/class.administrationpage.php');
+	/**
+	* EventsDriver class...
+	*/
+
+	Class EventsDriver {
+
+		public $url;
+		public $view;
+
+		public function __construct() {
+			$this->view = Controller::instance()->View;
+			$this->url = Controller::instance()->url;
+
+			$this->setTitle();
+		}
+
+		public function setTitle() {
+			$this->view->title = __('Events');
+		}
+
+		public function registerActions() {
+
+			$actions = array(
+				array(
+					'name'		=> __('Create New'),
+					'type'		=> 'new',
+					'callback'	=> $url . '/new'
+				),
+				array(
+					'name'		=> __('Filter'),
+					'type'		=> 'tool'
+				)
+			);
+
+			foreach($actions as $action) {
+				$this->view->registerAction($action);
+			}
+		}
+
+		public function registerDrawer() {
+			// Do stuff
+		}
+
+		public function buildDataXML($data) {
+
+		}
+	}
+
+	/*require_once(LIB . '/class.administrationpage.php');
 	require_once(LIB . '/class.event.php');
 
 	Class contentBlueprintsEvents extends AdministrationPage{
@@ -14,9 +62,9 @@
 		protected $status;
 		protected $type;
 		protected $types;
-		
+
 		protected static $_loaded_views;
-		
+
 		public function __construct(){
 			parent::__construct();
 
@@ -25,19 +73,19 @@
 			$this->editing = $this->failed = false;
 			$this->event = $this->handle = $this->status = $this->type = NULL;
 			$this->types = array();
-			
+
 			foreach (new ExtensionIterator(ExtensionIterator::FLAG_TYPE, array('Event')) as $extension) {
 				$path = Extension::getPathFromClass(get_class($extension));
 				$handle = Extension::getHandleFromPath($path);
-				
+
 				if (Extension::status($handle) != Extension::STATUS_ENABLED) continue;
 				if (!method_exists($extension, 'getEventTypes')) continue;
-				
+
 				foreach ($extension->getEventTypes() as $type) {
 					$this->types[$type->class] = $type;
 				}
 			}
-			
+
 			if(empty($this->types)){
 				$this->alerts()->append(
 					__(
@@ -57,8 +105,8 @@
 					'class' => 'create button'
 				)
 			));
-			
-			
+
+
 			$eTableHead = array(
 				array(__('Name'), 'col'),
 				array(__('Destination'), 'col'),
@@ -139,11 +187,11 @@
 					if (is_null($event->getType())) {
 						$col_type = Widget::TableData(__('Unknown'), array('class' => 'inactive'));
 					}
-					
+
 					else{
 						$col_type = Widget::TableData($this->types[$event->getType()]->name);
 					}
-					
+
 					$eTableBody[] = Widget::TableRow(
 						array($col_name, $col_destination, $col_type, $col_views)
 					);
@@ -179,7 +227,7 @@
 
 			parent::build($context);
 		}
-		
+
 		protected function __prepareForm() {
 
 			$this->editing = isset($this->_context[1]);
@@ -190,7 +238,7 @@
 				if (is_null($this->type)){
 					$this->type = Symphony::Configuration()->core()->{'default-event-type'};
 				}
-				
+
 				// Should the default type or the selected type no longer be valid, choose the first available one instead
 				if(!in_array($this->type, array_keys($this->types))){
 					$this->type = current(array_keys($this->types));
@@ -198,14 +246,14 @@
 
 				foreach ($this->types as $type) {
 					if ($type->class != $this->type) continue;
-					
+
 					$this->event = new $type->class;
 					$this->event->prepare(
 						isset($_POST['fields'])
 							? $_POST['fields']
 							: NULL
 					);
-					
+
 					break;
 				}
 			}
@@ -221,13 +269,13 @@
 
 				$this->event = Event::loadFromHandle($this->handle);
 				$this->type = $this->event->getType();
-				
+
 				$this->event->prepare(
 					isset($_POST['fields'])
 						? $_POST['fields']
 						: NULL
 				);
-				
+
 				if (!$this->event->allowEditorToParse()) {
 					redirect(ADMIN_URL . '/blueprints/events/info/' . $this->handle . '/');
 				}
@@ -267,7 +315,7 @@
 
 						Symphony::Database()->update($page, 'tbl_pages', "`id` = '".$page['id']."'");
 					}
-				}*/
+				}*
 			}
 
 			if($success) redirect($redirect);
@@ -278,7 +326,7 @@
 			if ($this->editing && array_key_exists('delete', $_POST['action'])) {
 				$this->__actionDelete(array($this->handle), ADMIN_URL . '/blueprints/events/');
 			}
-			
+
 			// Saving
 			try{
 				$pathname = $this->event->save($this->errors);
@@ -369,18 +417,18 @@
 			else{
 				$header = $this->xpath('//h2')->item(0);
 				$options = array();
-				
+
 				foreach ($this->types as $type) {
 					$options[] = array($type->class, ($this->type == $type->class), $type->name);
 				}
-				
+
 				usort($options, 'General::optionsSort');
 				$select = Widget::Select('type', $options);
-				
+
 				$header->prependChild($select);
 				$header->prependChild(new DOMText(__('New')));
 			}
-			
+
 			if($this->event instanceof Event){
 				$this->event->view($this->Form, $this->errors);
 			}
@@ -494,8 +542,7 @@
 				$dl->appendChild($dd);
 			}
 			$fieldset->appendChild($dl);
-			*/
+			*
 
 		}
-	}
-
+	}*/

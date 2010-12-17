@@ -1,13 +1,16 @@
 <?php
 
-	require_once(LIB . '/class.frontend.php');
+	/**
+	 * The FrontendView class
+	 */
+
+	require_once(LIB . '/class.xmldocument.php');
 	require_once(LIB . '/class.event.php');
 
-	Class FrontendView extends View {
+	Class FrontendView extends SymphonyView {
 
 		const ERROR_DOES_NOT_ACCEPT_PARAMETERS = 2;
 		const ERROR_TOO_MANY_PARAMETERS = 3;
-
 		const ERROR_MISSING_OR_INVALID_FIELDS = 4;
 		const ERROR_FAILED_TO_WRITE = 5;
 
@@ -15,25 +18,80 @@
 		private $_path;
 		private $_parent;
 		private $_parameters;
-		private $_template;
 		private $_handle;
 		private $_guid;
 
-		public $location;
-
 		public function __construct(){
-			$this->_about = new StdClass;
-			$this->_parameters = new StdClass;
 
-			$this->_path = $this->_parent = $this->_template = $this->_handle = $this->_guid = NULL;
-			$this->types = array();
+			// Set root location
 			$this->location = VIEWS;
+
+			// Initialize View
+			$this->initialize();
+
 		}
 
+		/**
+		* Perform initial checks and load requested view
+		*
+		* @param string $url
+		*  URL path of requested view
+		*/
+		public function load($url=NULL){
+			try{
+				if(is_null($url)){
+					$views = $this->findFromType('index');
+					$view = array_shift($views);
+					$this->loadFromPath($view->path);
+				}
+				else{
+					$this->parseURL($url);
+				}
+
+				// TODO Fix this
+				//if(!($this instanceof FrontendView)) throw new Exception('Page not found');
+
+				if(!Controller::instance()->isLoggedIn() && in_array('admin', self::$view->types)){
+
+					$views = $this->findFromType('403');
+					$view = array_shift($views);
+					$this->loadFromPath($view->path);
+
+					if(!($this instanceof FrontendView)){
+						throw new SymphonyErrorPage(
+							__('Please <a href="%s">login</a> to view this page.', array(ADMIN_URL . '/login/')),
+							__('Forbidden'), NULL,
+							array('HTTP/1.0 403 Forbidden')
+						);
+					}
+				}
+			}
+
+			catch(Exception $e){
+				$views = $this->findFromType('404');
+				$view = array_shift($views);
+				$this->loadFromPath($view->path);
+
+				if(!(self::$view instanceof FrontendView)){
+					throw new FrontendPageNotFoundException($url);
+				}
+			}
+		}
+
+		/**
+		 * Accessor function for the view's data as contained in the XML config
+		 *
+		 * @return array
+		 */
 		public function about(){
 			return $this->_about;
 		}
 
+		/**
+		 * Accessor function for the view's parameters (change to context)
+		 *
+		 * @return I don't know
+		 */
 		public function parameters(){
 			return $this->_parameters;
 		}
@@ -64,29 +122,14 @@
 			else $this->_about->$name = $value;
 		}
 
-		public function loadFromURL($path){
-			$parts = preg_split('/\//', $path, -1, PREG_SPLIT_NO_EMPTY);
-			$view = NULL;
-
-			while(!empty($parts)){
-
-				$p = array_shift($parts);
-
-				if(!is_dir($this->location . $view . "/{$p}")){
-					array_unshift($parts, $p);
-					break;
-				}
-
-				$view = $view . "/{$p}";
-
-			}
-
-			return $this->loadFromPath($view, (!empty($parts) ? $parts : NULL));
-		}
-
 		public function loadFromPath($path, array $params=NULL){
 
-			$view = new self;
+			if($this instanceof FrontendView) {
+				$view = $this;
+			}
+			else {
+				$view = Controller::instance()->View;
+			}
 
 			$view->path = trim($path, '\\/');
 
@@ -140,14 +183,31 @@
 
 			$template = sprintf('%s/%s/%s.xsl', VIEWS, $view->path, $view->handle);
 			if(file_exists($template) && is_readable($template)){
-				Frontend::instance()->setTemplate(file_get_contents($template));
+				$view->stylesheet = file_get_contents($template);
 			}
 
-			return $view;
+			$view->getViewContext();
+		}
+
+		public function getViewContext() {
+			$this->context->register(array(
+				'view'		=> array(
+					'title'			=> $this->title,
+					'handle'		=> $this->handle,
+					'path'			=> $this->path,
+					'current-url'	=> URL . '/' . $this->path,
+					'root-view'		=> (!is_null($root_page) ? $root_page : $this->handle),
+					'parent-path'	=> '/' . $this->path,
+					'upload-limit'	=> min(
+						ini_size_to_bytes(ini_get('upload_max_filesize')),
+						Symphony::Configuration()->core()->symphony->{'maximum-upload-size'}
+					)
+				)
+			));
 		}
 
 		public function setParameter($name, $value){
-			$this->_parameters->$name = $value;
+			$this->context->register(array($name => $value));
 		}
 
 		public static function loadFromFieldsArray($fields){
@@ -164,8 +224,10 @@
 		public static function findFromType($type){
 			$views = array();
 			foreach(new ViewIterator as $v){
-				if(@in_array($type, $v->types)){
-					$views[$v->guid] = $v;
+				if(is_array($v->types)){
+					if(@in_array($type, $v->types)){
+						$views[$v->guid] = $v;
+					}
 				}
 			}
 			return $views;
@@ -415,18 +477,17 @@
 		    return(($a->priority() > $b->priority()) ? -1 : 1);
 		}
 
-		public function buildOutput(XMLDocument &$Document=NULL){
+		public function buildOutput(){
 
 			$ParameterOutput = new Register;
 
-			if(is_null($Document)){
-				$Document = new XMLDocument;
-			}
+			$root = $this->document->documentElement;
 
-			$root = $Document->documentElement;
+			$this->buildContextXML($root);
+
 			$datasources = $events = array();
 
-			$events_wrapper = $Document->createElement('events');
+			$events_wrapper = $this->document->createElement('events');
 			$root->appendChild($events_wrapper);
 
 			if (is_array($this->about()->{'events'}) && !empty($this->about()->{'events'})) {
@@ -463,7 +524,7 @@
 					$fragment = $e->trigger($ParameterOutput, $postdata);
 
 					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
-						$node = $Document->importNode($fragment->documentElement, true);
+						$node = $this->document->importNode($fragment->documentElement, true);
 						$events_wrapper->appendChild($node);
 					}
 				}
@@ -492,7 +553,7 @@
 
 			$datasources_ordered = General::dependenciesSort($dependency_list);
 
-			$data = $Document->createElement('data');
+			$data = $this->document->createElement('data');
 
 			if (!empty($datasources_ordered)) {
 				foreach($datasources_ordered as $handle){
@@ -507,7 +568,7 @@
 					}
 
 					if($fragment instanceof DOMDocument && !is_null($fragment->documentElement)){
-						$node = $Document->importNode($fragment->documentElement, true);
+						$node = $this->document->importNode($fragment->documentElement, true);
 						$data->appendChild($node);
 					}
 
@@ -516,6 +577,7 @@
 
 			$root->appendChild($data);
 
+/*
 			if($ParameterOutput->length() > 0){
 				foreach($ParameterOutput as $p){
 					$Parameters->{$p->key} = $p->value;
@@ -528,7 +590,6 @@
 			# Global: Yes
 			Extension::notify('FrontendParamsPostResolve', '/frontend/', array('params' => $Parameters));
 
-			// $template = $this->template;
 
 			####
 			# Delegate: FrontendTemplatePreRender
@@ -540,8 +601,8 @@
 					'template'	=> &$template
 				)
 			);
-
-			return $output;
+*/
+			return $this->transform();
 		}
 
 	}

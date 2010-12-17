@@ -4,8 +4,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 <xsl:import href="layout.xsl"/>
 
-<xsl:template match="/" mode="view">
-	<pre><xsl:copy-of select="."/></pre>
+<xsl:template match="root" mode="view">
+	<xsl:copy-of select="."/>
 </xsl:template>
 
 </xsl:stylesheet>

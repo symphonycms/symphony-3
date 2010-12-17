@@ -1,5 +1,54 @@
 <?php
 
+	/**
+	* SectionsDriver class...
+	*/
+
+	Class SectionsDriver {
+
+		public $url;
+		public $view;
+
+		public function __construct() {
+			$this->view = Controller::instance()->View;
+			$this->url = Controller::instance()->url;
+
+			$this->setTitle();
+		}
+
+		public function setTitle() {
+			$this->view->title = __('Sections');
+		}
+
+		public function registerActions() {
+
+			$actions = array(
+				array(
+					'name'		=> __('Create New'),
+					'type'		=> 'new',
+					'callback'	=> $url . '/new'
+				),
+				array(
+					'name'		=> __('Filter'),
+					'type'		=> 'tool'
+				)
+			);
+
+			foreach($actions as $action) {
+				$this->view->registerAction($action);
+			}
+		}
+
+		public function registerDrawer() {
+			// Do stuff
+		}
+
+		public function buildDataXML($data) {
+
+		}
+	}
+
+	/*
 	require_once(LIB . '/class.administrationpage.php');
 	require_once(LIB . '/class.messagestack.php');
  	require_once(LIB . '/class.section.php');
@@ -170,7 +219,7 @@
 			try {
 				$callback = Administration::instance()->getPageCallback();
 				$current_page = $callback['pageroot'] . $callback['context'][0] . '/';
-				
+
 				###
 				# Delegate: SectionPreSave
 				Extension::notify(
@@ -179,7 +228,7 @@
 						'section' => &$this->section, 'errors' => &$this->errors
 					)
 				);
-				
+
 				Section::save($this->section, $this->errors);
 
 				###
@@ -194,7 +243,7 @@
 				// Rename section:
 				if ($old_handle !== false) {
 					Section::rename($this->section, $old_handle);
-					
+
 					###
 					# Delegate: SectionPostRename
 					Extension::notify(
@@ -203,11 +252,11 @@
 							'section' => &$this->section, 'old-handle' => $old_handle, 'errors' => &$this->errors
 						)
 					);
-					
+
 				}
-				
+
 				Section::synchronise($this->section);
-				
+
 				return true;
 			}
 
@@ -251,7 +300,7 @@
 					case 'delete-entries':
 						$entries = Symphony::Database()->query(
 							sprintf(
-								"SELECT `id` FROM `tbl_entries` WHERE `section` IN ('%s')", 
+								"SELECT `id` FROM `tbl_entries` WHERE `section` IN ('%s')",
 								implode("', '", $checked)
 							)
 						);
@@ -312,14 +361,14 @@
 
 		public function __actionDelete(array $sections, $redirect) {
 			$success = true;
-			
+
 			$callback = Administration::instance()->getPageCallback();
 			$current_page = $callback['pageroot'] . (isset($callback['context'][0]) && $callback['context'][0] != 'index' ? $callback['context'][0] . '/' : NULL);
-			
+
 			foreach($sections as $handle){
 				try{
 					Section::delete(Section::loadFromHandle($handle));
-					
+
 					###
 					# Delegate: SectionPostDelete
 					Extension::notify(
@@ -328,7 +377,7 @@
 							'handle' => $handle,
 						)
 					);
-					
+
 				}
 				catch(SectionException $e){
 					$success = false;
@@ -473,9 +522,9 @@
 
 		protected function appendSyncAlert() {
 			$sync = Section::syncroniseStatistics($this->section);
-			
+
 			if ($sync->synced === true) return;
-			
+
 			$table_fields = array();
 			$table_actions = array();
 			$table_totals = array();
@@ -486,7 +535,7 @@
 			// Find all fields:
 			foreach ($sync as $name => $action) if (is_array($action)) {
 				$table_actions[$name] = count($action);
-				
+
 				foreach ($action as $guid => $data) {
 					$table_fields[$guid] = $data;
 				}
@@ -505,31 +554,31 @@
 			foreach ($table_actions as $action => $count) {
 				$row->appendChild($this->createElement('th', __(ucwords($action))));
 			}
-			
+
 			$table->appendChild($row);
-			
+
 			$row = $this->createElement('tr');
 			$cell = $this->createElement('th');
-			
+
 			if ($sync->section->rename) {
 				$cell->appendChild($this->createTextNode(
 					$sync->section->new->name . ' '
 				));
-				
+
 				$span = $this->createElement('span');
 				$span->setAttribute('class', 'old');
 				$span->appendChild($this->createEntityReference('larr'));
 				$span->appendChild($this->createTextNode(
 					' ' . $sync->section->old->name
 				));
-				
+
 				$cell->appendChild($span);
 				$row->appendChild($cell);
-				
+
 				foreach ($table_actions as $action => $count) {
 					$cell = $this->createElement('td', __('No'));
 					$cell->setAttribute('class', 'no');
-					
+
 					if ($action == 'rename') {
 						$cell->setValue(__('Yes'));
 						$cell->setAttribute('class', 'yes');
@@ -538,15 +587,15 @@
 					$row->appendChild($cell);
 				}
 			}
-			
+
 			else {
 				$cell->setValue($sync->section->new->name);
 				$row->appendChild($cell);
-				
+
 				foreach ($table_actions as $action => $count) {
 					$cell = $this->createElement('td', __('No'));
 					$cell->setAttribute('class', 'no');
-					
+
 					if ($action == 'create' and $sync->section->create) {
 						$cell->setValue(__('Yes'));
 						$cell->setAttribute('class', 'yes');
@@ -560,39 +609,39 @@
 					$row->appendChild($cell);
 				}
 			}
-			
+
 			$table->appendChild($row);
-			
+
 			// Body:
 			foreach ($table_fields as $guid => $data) {
 				$row = $this->createElement('tr');
 				$cell = $this->createElement('th');
-				
+
 				if (isset($sync->rename[$guid])) {
 					$cell->appendChild($this->createTextNode(
 						$data->new->label . ' '
 					));
-					
+
 					$span = $this->createElement('span');
 					$span->setAttribute('class', 'old');
 					$span->appendChild($this->createEntityReference('larr'));
 					$span->appendChild($this->createTextNode(
 						' ' . $data->old->label
 					));
-					
+
 					$cell->appendChild($span);
 				}
-				
+
 				else {
 					$cell->setValue($data->label);
 				}
-				
+
 				$row->appendChild($cell);
-				
+
 				foreach ($table_actions as $action => $count) {
 					$cell = $this->createElement('td', __('No'));
 					$cell->setAttribute('class', 'no');
-					
+
 					if (array_key_exists($guid, $sync->{$action})) {
 						$cell->setValue(__('Yes'));
 						$cell->setAttribute('class', 'yes');
@@ -754,7 +803,7 @@
 		private function __form(Section $existing = null){
 			// Status message:
 			$callback = Administration::instance()->getPageCallback();
-			
+
 			if (isset($callback['flag']) && !is_null($callback['flag'])) {
 				switch($callback['flag']){
 					case 'saved':
@@ -856,7 +905,7 @@
 			$h3 = $this->createElement('h3', __('Fields'));
 			$h3->setAttribute('class', 'label');
 			$div->appendChild($h3);
-			
+
 			$duplicator = new Duplicator(__('Add Field'));
 			$duplicator->setAttribute('id', 'section-duplicator');
 			$fields = $this->section->fields;
@@ -879,7 +928,7 @@
 				foreach ($defaults as $key => $value) {
 					$field->$key = $value;
 				}
-				
+
 				$item = $duplicator->createTemplate($field->name());
 				$field->displaySettingsPanel($item, new MessageStack);
 			}
@@ -894,7 +943,7 @@
 				else {
 					$messages = new MessageStack;
 				}
-				
+
 				$item = $duplicator->createInstance($field->name, $field->name());
 				$field->displaySettingsPanel($item, $messages);
 			}
@@ -929,4 +978,4 @@
 
 			$this->Form->appendChild($div);
 		}
-	}
+	}*/

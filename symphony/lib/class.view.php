@@ -4,19 +4,151 @@
 
 	Class ViewException extends Exception {}
 
-	Abstract Class View{
+	/**
+	* Thought process: Views could stay simple and generic to allow for other
+	* kinds of views (i.e. non XML/XSLT-powered). Not sure if this makes any
+	* sense at all, but I figured I'd try it.
+	*/
+	Class View {
 
 		const ERROR_VIEW_NOT_FOUND = 0;
 		const ERROR_FAILED_TO_LOAD = 1;
 
-		abstract function buildOutput(XMLDocument &$Document);
+		/**
+		 * Set default headers — can be overwritten by individual view
+		 */
+		public function setHeaders() {
+			$this->headers->append('Content-Type', 'text/xml;charset=utf-8');
+			$this->headers->append('Expires', 'Mon, 12 Dec 1982 06:14:00 GMT');
+			$this->headers->append('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT');
+			$this->headers->append('Cache-Control', 'no-cache, must-revalidate, max-age=0');
+			$this->headers->append('Pragma', 'no-cache');
+		}
 
-		abstract function loadFromURL($path);
+	}
 
-		abstract function loadFromPath($path, array $params);
+	/**
+	* Considering the above, I decided to add SymphonyView as a class of
+	* view that assumes XML/XSLT and assumes a certain kind of view hierarchy.
+	* Includes methods and properties common to all XML/XSLT-powered views
+	* (both frontend and administration)
+	*/
+	Class SymphonyView extends View {
 
-		public function templatePathname(){
-			return sprintf('%s/%s.xsl', $this->path, $this->handle);
+		public $context;
+		public $document;
+		public $handle;
+		public $headers;
+		public $location;
+		public $params;
+		public $path;
+		public $stylesheet;
+
+		/**
+		* Initializes objects and properties common to all SymphonyView
+		* objects
+		*/
+		public function initialize() {
+
+			// Initialize headers
+			$this->headers = new DocumentHeaders;
+			$this->setHeaders();
+
+			// Initialize context
+			$this->context = new Register;
+
+			// Initialize XML
+			$this->document = new XMLDocument;
+			$this->document->appendChild(
+				$this->document->createElement('root')
+			);
+			Widget::init($this->document);
+		}
+
+		/**
+		* Parses the URL to figure out what View to load
+		*/
+		public function parseURL($path) {
+			$parts = preg_split('/\//', $path, -1, PREG_SPLIT_NO_EMPTY);
+			$view = NULL;
+			while(!empty($parts)){
+
+				$p = array_shift($parts);
+
+				if(!is_dir($this->location . $view . "/{$p}")){
+					array_unshift($parts, $p);
+					break;
+				}
+
+				$view = $view . "/{$p}";
+
+			}
+			return $this->loadFromPath($view, (!empty($parts) ? $parts : NULL));
+		}
+
+		/**
+		* Builds the context XML and prepends it to $this->document's root
+		*/
+		public function buildContextXML($root) {
+
+			$element = $this->document->createElement('context');
+			$root->prependChild($element);
+
+			foreach($this->context as $key => $item){
+				if(is_array($item->value) && count($item->value) > 1){
+					$p = $this->document->createElement($key);
+					foreach($item->value as $k => $v){
+						$p->appendChild($this->document->createElement((string)$k, (string)$v));
+					}
+					$element->appendChild($p);
+				}
+				else{
+					$element->appendChild($this->document->createElement($key, (string)$item));
+				}
+			}
+		}
+
+		/**
+		* Performs an XSLT transformation on a SymphonyView's $document using its
+		* $stylesheet.
+		*
+		* @param string $directory
+		*  Base directory to perform the transformation in
+		*
+		* @return string containing result of transformation
+		*/
+		public function transform($directory=NULL) {
+
+			// Set directory for performing the transformation
+			// This is for XSLT import/include I believe.
+			// Defaults to root views dir (/workspace/views/ or
+			// /symphony/content/). Can be overridden if called
+			// with $directory param.
+			if(is_null($directory)) {
+				$dir = $this->location;
+			}
+			else {
+				$dir = $directory;
+			}
+
+			// Get current directory
+			$cwd = getcwd();
+
+			// Move to tranformation directory
+			chdir($dir);
+
+			// Perform transformation
+			$output = XSLProc::transform($this->document->saveXML(), $this->stylesheet, XSLProc::XML, array(), array());
+
+			// Move back to original directory
+			chdir($cwd);
+
+			if(XSLProc::hasErrors()){
+				throw new XSLProcException('Transformation Failed');
+			}
+
+			// Return result of transformation
+			return $output;
 		}
 
 	}
@@ -41,9 +173,9 @@
 			$path = str_replace(VIEWS, NULL, $this->_iterator->current()->getPathname());
 
 			if(!($this->_current instanceof self) || $this->_current->path != $path){
-				$this->_current = FrontendView::loadFromPath($path);
+				$this->_current = new FrontendView();
+				$this->_current->loadFromPath($path);
 			}
-
 			return $this->_current;
 		}
 

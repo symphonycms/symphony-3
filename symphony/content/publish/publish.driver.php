@@ -1,5 +1,58 @@
 <?php
 
+	/**
+	* PublishDriver class...
+	*/
+
+	Class PublishDriver {
+
+		public $url;
+		public $view;
+		public $section;
+
+		public function __construct() {
+			$this->view = Controller::instance()->View;
+			$this->url = Controller::instance()->url;
+
+			// Probably a neater way to store and fetch the section handle
+			$this->section = Section::loadFromHandle($this->view->params[0]);
+
+			$this->setTitle();
+		}
+
+		public function setTitle() {
+			$this->view->title = __($this->section->__get('name'));
+		}
+
+		public function registerActions() {
+
+			$actions = array(
+				array(
+					'name'		=> __('Create New'),
+					'type'		=> 'new',
+					'callback'	=> $url . '/new'
+				),
+				array(
+					'name'		=> __('Filter'),
+					'type'		=> 'tool'
+				)
+			);
+
+			foreach($actions as $action) {
+				$this->view->registerAction($action);
+			}
+		}
+
+		public function registerDrawer() {
+			// Do stuff
+		}
+
+		public function buildDataXML($data) {
+
+		}
+	}
+
+	/*
 	require_once(LIB . '/class.administrationpage.php');
 
 	Class contentPublish extends AdministrationPage{
@@ -63,7 +116,7 @@
 
 				redirect(Administration::instance()->getCurrentPageURL());
 			}
-			
+
 			$this->appendSubheading(
 				$section->name,
 				Widget::Anchor(
@@ -118,12 +171,12 @@
 				$renderOnlyEntryIDColumn = true;
 				$aTableHead[] = array('ID', 'col');
 			}
-			
+
 			/*
 			**	Pagination, get the total number of entries and work out
 			**	how many pages exist using the Symphony config
 			**	TODO: Work with Ordering
-			*/
+			*
 			try {
 				$entry_count = Symphony::Database()->query(
 					"SELECT COUNT(id) as `count` FROM `tbl_entries` WHERE `section` = '%s'", array($section->handle)
@@ -160,9 +213,9 @@
 
 				$joins .= sprintf($join, $sort_field->section, $sort_field->{'element-name'});
 				$order = sprintf($order, $section->{'publish-order-direction'});
-				
+
 				// TODO: Implement filtering
-				
+
 				$query = sprintf("
 					SELECT e.*
 					FROM `tbl_entries` AS e
@@ -380,7 +433,7 @@
 			}
 		}
 
-		/* TODO: Remove once create/edit form becomes one and the same */
+		/* TODO: Remove once create/edit form becomes one and the same
 		private function __wrapFieldWithDiv(Field $field, Entry $entry=NULL){
 			$div = $this->createElement('div', NULL, array(
 					'class' => sprintf('field field-%s %s %s',
@@ -472,7 +525,7 @@
 			$this->entry->findDefaultFieldData();
 			$this->Form->appendChild(Widget::Input(
 				'MAX_FILE_SIZE',
-				Symphony::Configuration()->core()->symphony->{'maximum-upload-size'}, 
+				Symphony::Configuration()->core()->symphony->{'maximum-upload-size'},
 				'hidden'
 			));
 
@@ -535,17 +588,17 @@
 
 				foreach ($data->fieldsets as $data) {
 					$fieldset = $this->createElement('fieldset');
-					
+
 					if(isset($data->collapsed) && $data->collapsed == 'yes'){
 						$fieldset->setAttribute('class', 'collapsed');
 					}
-					
+
 					if(isset($data->name) && strlen(trim($data->name)) > 0){
 						$fieldset->appendChild(
 							$this->createElement('h3', $data->name)
 						);
 					}
-					
+
 					foreach ($data->fields as $handle) {
 						$field = $section_fields[$handle];
 
@@ -806,6 +859,4 @@
 
 		}
 
-	}
-
-
+	}*/

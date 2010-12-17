@@ -16,35 +16,35 @@
 			return false;
 		}
 	}
-	
+
 	Class SectionIterator implements Iterator{
 		private static $sections;
 		private $position;
 
 		public function __construct(){
 			$this->position = 0;
-			
+
 			if (!empty(self::$sections)) return;
-			
+
 			self::clearCachedFiles();
-			
+
 			foreach (new SectionFilterIterator(SECTIONS) as $file) {
 				self::$sections[] = $file->getPathname();
 			}
-			
+
 			$extensions = new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED);
-			
+
 			foreach ($extensions as $extension) {
 				$path = Extension::getPathFromClass(get_class($extension));
-				
+
 				if (!is_dir($path . '/sections')) continue;
-				
+
 				foreach (new SectionFilterIterator($path . '/sections') as $file) {
 					self::$sections[] = $file->getPathname();
 				}
 			}
 		}
-		
+
 		public static function clearCachedFiles() {
 			self::$sections = array();
 		}
@@ -126,7 +126,7 @@
 			if ($name == 'name') {
 				$this->parameters->handle = Lang::createHandle($value, '-', false, true, array('/^[^:_a-z]+/i' => NULL, '/[^:_a-z0-9\.-]/i' => NULL));
 			}
-			
+
 			$this->parameters->$name = $value;
 		}
 
@@ -223,12 +223,12 @@
 			if (isset(self::$sections[$path]) and self::$sections[$path] instanceof Section) {
 				return self::$sections[$path];
 			}
-			
+
 			$section = new self;
 
 			$section->handle = preg_replace('/\.xml$/', NULL, basename($path));
 			$section->path = dirname($path);
-			
+
 			if(!file_exists($path)){
 				throw new SectionException(__('Section `%s` could not be found.', array(basename($path))), self::ERROR_SECTION_NOT_FOUND);
 			}
@@ -275,7 +275,7 @@
 						);
 
 						foreach ($column->fieldset as $fieldset) {
-							
+
 							if (isset($fieldset->name) or trim((string)$fieldset->name) == '') {
 								$name = (string)$fieldset->name;
 							}
@@ -317,9 +317,9 @@
 			if (isset($doc->attributes()->guid)) {
 				$section->guid = (string)$doc->attributes()->guid;
 			}
-			
+
 			self::$sections[$path] = $section;
-			
+
 			return $section;
 		}
 
@@ -329,14 +329,14 @@
 
 		protected static function __find($name) {
 		    if (is_file(SECTIONS . "/{$name}.xml")) return SECTIONS;
-		    
+
 		    else {
 				foreach (new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $extension) {
 					$path = Extension::getPathFromClass(get_class($extension));
 					$handle = Extension::getHandleFromPath($path);
-					
+
 					if (!is_file(EXTENSIONS . "/{$handle}/sections/{$name}.xml")) continue;
-					
+
 					return EXTENSIONS . "/{$handle}/sections";
 				}
 	    	}
@@ -385,7 +385,7 @@
 			if ($simulate) return true;
 
 			$section->sanitizeLayout();
-			
+
 			return file_put_contents($pathname, (string)$section);
 		}
 
@@ -454,7 +454,7 @@
 					$field->loadSettingsFromSimpleXMLObject(
 						simplexml_import_dom($node)
 					);
-					
+
 					$old[$field->guid] = (object)array(
 						'label'		=> $field->name,
 						'field'		=> $field
@@ -473,7 +473,7 @@
 				$field->loadSettingsFromSimpleXMLObject(
 					simplexml_import_dom($node)
 				);
-				
+
 				$new[$field->guid] = (object)array(
 					'label'		=> $field->name,
 					'field'		=> $field

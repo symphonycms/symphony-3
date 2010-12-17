@@ -45,8 +45,12 @@
 						elseif(preg_match_all('/([^:]+): (.+) line (\d+)/i', $e->message, $matches, PREG_SET_ORDER)){
 							//throw new Exception("Fix XSLPROC Frontend doesn't have access to Page");
 
-							$this->line = $matches[0][3];
-							$this->file = VIEWS . '/' . Frontend::instance()->loadedView()->templatePathname();
+							$view = Controller::instance()->loadedView();
+
+							$template_file = sprintf('%s/%s.xsl', $view->path, $view->handle);
+
+							$this->line = 0;//$matches[0][3];
+							$this->file = VIEWS . '/' . $template_file;
 							$bFoundFile = true;
 						}
 					}
