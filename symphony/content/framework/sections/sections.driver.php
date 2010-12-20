@@ -4,13 +4,18 @@
 	* SectionsDriver class...
 	*/
 
+	// Temporary to suppress error. TODO remove this
+	require_once(LIB . '/class.layout.php');
+
 	Class SectionsDriver {
 
+		public $document;
 		public $url;
 		public $view;
 
 		public function __construct() {
 			$this->view = Controller::instance()->View;
+			$this->document = $this->view->document;
 			$this->url = Controller::instance()->url;
 
 			$this->setTitle();
@@ -45,6 +50,57 @@
 
 		public function buildDataXML($data) {
 
+			$sections = new SectionIterator;
+
+			$sections_xml = $this->document->createElement('sections');
+
+			foreach ($sections as $s) {
+
+				$section = $this->document->createElement('section');
+
+				$entry_count = 0;
+				$result = Symphony::Database()->query(
+					"
+						SELECT
+							count(*) AS `count`
+						FROM
+							`tbl_entries` AS e
+						WHERE
+							e.section = '%s'
+					",
+					array($s->handle)
+				);
+
+				if ($result->valid()) {
+					$entry_count = (integer)$result->current()->count;
+				}
+
+				$section->setAttribute('entries',$entry_count);
+
+				$name = $this->document->createElement(
+					'name',
+					$s->name
+				);
+
+				$name->setAttribute('handle', $s->handle);
+
+				$section->appendChild($name);
+
+				$section->appendChild($this->document->createElement(
+					'navigation-group',
+					$s->{'navigation-group'}
+				));
+
+				$section->appendChild($this->document->createElement(
+					'status',
+					(Section::syncroniseStatistics($s)->synced ? 'Synced' : 'Not Synced')
+				));
+
+				$sections_xml->appendChild($section);
+			}
+
+			$data->appendChild($sections_xml);
+
 		}
 	}
 
@@ -59,15 +115,6 @@
 		private $section;
 
 		public function __viewIndex(){
-
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Sections'))));
-
-			$this->appendSubheading(__('Sections'), Widget::Anchor(
-				__('Create New'), Administration::instance()->getCurrentPageURL().'/new/', array(
-					'title' => __('Create a new section'),
-					'class' => 'create button'
-				)
-			));
 
 		    $sections = new SectionIterator;
 

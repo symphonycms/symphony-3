@@ -30,14 +30,16 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:template match="views/view">
 	<tr id="view-{@guid}">
 		<td>
-			<a title="{title}" href="{/root/context/site-url}/symphony/framework/views/edit/{handle}">
+			<a title="{title}" href="{/root/context/site-url}/symphony/framework/views/edit/{title/@handle}">
 				<xsl:value-of select="title"/>
 			</a>
-			<input name="items[{handle}]" type="checkbox"/>
+			<input name="items[{title/@handle}]" type="checkbox"/>
 		</td>
 		<td>
-			<a href="{url}">
-				<xsl:value-of select="url"/>
+			<a href="{/root/context/system/site-url}/{path}">
+				<xsl:value-of select="/root/context/system/site-url"/>
+				<xsl:text>/</xsl:text>
+				<xsl:value-of select="path"/>
 			</a>
 		</td>
 		<td>

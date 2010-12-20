@@ -76,22 +76,22 @@
 				// Set the guid attribute
 				$view->setAttribute('guid',$v->guid);
 
-				// Append the view's <title>
-				$view->appendChild($this->document->createElement(
+				// Create the <title>
+				$title = $this->document->createElement(
 					'title',
 					$v->title
-				));
+				);
 
-				// Append the view's <handle>
-				$view->appendChild($this->document->createElement(
-					'handle',
-					$v->path
-				));
+				// Set the title's handle attribute
+				$title->setAttribute('handle', Lang::createHandle($v->title));
+
+				// Append the title
+				$view->appendChild($title);
 
 				// Append the view's <url>
 				$view->appendChild($this->document->createElement(
-					'url',
-					sprintf('%s/%s/', URL, $v->path)
+					'path',
+					$v->path
 				));
 
 				// Append the <url-params>
