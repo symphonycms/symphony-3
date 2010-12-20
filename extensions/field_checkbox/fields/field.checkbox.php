@@ -11,7 +11,7 @@
 				CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
 					`id` int(11) unsigned NOT NULL auto_increment,
 					`entry_id` int(11) unsigned NOT NULL,
-					`value` enum('yes','no') NOT NULL default '%s',
+					`value` enum("yes", "no") NOT NULL default "%s",
 					PRIMARY KEY  (`id`),
 					KEY `entry_id` (`entry_id`),
 					KEY `value` (`value`)
