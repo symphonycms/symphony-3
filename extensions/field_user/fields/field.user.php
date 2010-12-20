@@ -7,20 +7,18 @@
 		}
 
 		public function create(){
-			return Symphony::Database()->query(
-				sprintf(
-					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` int(11) unsigned NOT NULL auto_increment,
-						`entry_id` int(11) unsigned NOT NULL,
-						`user_id` int(11) unsigned NOT NULL,
-						PRIMARY KEY  (`id`),
-						KEY `entry_id` (`entry_id`),
-						KEY `user_id` (`user_id`)
-					)',
-					$this->section,
-					$this->{'element-name'}
-				)
-			);
+			return Symphony::Database()->query(sprintf('
+				CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+					`id` int(11) unsigned NOT NULL auto_increment,
+					`entry_id` int(11) unsigned NOT NULL,
+					`user_id` int(11) unsigned NOT NULL,
+					PRIMARY KEY  (`id`),
+					KEY `entry_id` (`entry_id`),
+					KEY `user_id` (`user_id`)
+				) ENGINE=MyISAM;',
+				$this->section,
+				$this->{'element-name'}
+			));
 		}
 
 		public function isSortable(){
