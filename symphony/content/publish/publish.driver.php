@@ -6,12 +6,14 @@
 
 	Class PublishDriver {
 
+		public $document;
 		public $url;
 		public $view;
 		public $section;
 
 		public function __construct() {
 			$this->view = Controller::instance()->View;
+			$this->document = $this->view->document;
 			$this->url = Controller::instance()->url;
 
 			// Probably a neater way to store and fetch the section handle
@@ -49,6 +51,124 @@
 
 		public function buildDataXML($data) {
 
+			$section_xml = $this->document->createElement('section');
+			$section_xml->setAttribute('handle', $this->section->handle);
+
+			$filter = $filter_value = $where = $joins = NULL;
+
+			$current_page = (isset($_REQUEST['pg']) && is_numeric($_REQUEST['pg']) ? max(1, intval($_REQUEST['pg'])) : 1);
+			$current_filter = ($filter ? "&filter=$field_handle:$filter_value" : '');
+
+			if(isset($_REQUEST['sort']) && is_string($_REQUEST['sort'])){
+				$sort = $_REQUEST['sort'];
+				$order = ($_REQUEST['order'] ? strtolower($_REQUEST['order']) : 'asc');
+
+				if($this->section->{'publish-order-handle'} != $sort || $this->section->{'publish-order-direction'} != $order) {
+					$this->section->{'publish-order-handle'} = $sort;
+					$this->section->{'publish-order-direction'} = $order;
+
+					$errors = new MessageStack;
+					Section::save($this->section, $errors);
+					redirect($url. $current_filter);
+				}
+			}
+			elseif(isset($_REQUEST['unsort'])){
+				$section->{'publish-order-handle'} = null;
+				$section->{'publish-order-direction'} = null;
+
+				$errors = new MessageStack;
+				Section::save($section, $errors);
+
+				redirect($URL);
+			}
+
+			$fields_xml = $this->document->createElement('fields');
+
+			foreach($this->section->fields as $column){
+
+				if($column->{'show-column'} == 'yes') {
+					$field = $this->document->createElement(
+						'field',
+						$column->name
+					);
+					$field->setAttribute('handle', $column->{'element-name'});
+					$fields_xml->appendChild($field);
+				};
+
+			}
+
+			$section_xml->appendChild($fields_xml);
+
+			try {
+				$entry_count = Symphony::Database()->query(
+					"SELECT COUNT(id) as `count` FROM `tbl_entries` WHERE `section` = '%s'", array($section->handle)
+				)->current()->count;
+			}
+			catch (DatabaseException $ex) {
+
+			}
+
+			$pagination_xml = $this->document->createElement('pagination');
+
+			$pagination_xml->appendChild($this->document->createElement(
+				'total-entries',
+				$entry_count
+			));
+
+			$pagination_xml->appendChild($this->document->createElement(
+				'per-page',
+				Symphony::Configuration()->core()->symphony->{'pagination-maximum-rows'}
+			));
+
+			$pagination_xml->appendChild($this->document->createElement(
+				'total-pages',
+				ceil($entry_count / Symphony::Configuration()->core()->symphony->{'pagination-maximum-rows'})
+			));
+
+			$pagination_xml->appendChild($this->document->createElement(
+				'current-page',
+				$current_page
+			));
+
+			$section_xml->appendChild($pagination_xml);
+
+			// Simplified/messy entry fetching
+			$entries = Symphony::Database()->query(
+					"SELECT * FROM `tbl_entries` WHERE `section` = '%s' ORDER BY `id` ASC",
+					array(
+						$this->section->handle
+					), 'EntryResult'
+				);
+
+			$entries_xml = $this->document->createElement('entries');
+
+			foreach($entries as $entry){
+
+				$entry_xml = $this->document->createElement('entry');
+
+				$entry_xml->setAttribute('id', $entry->id);
+
+				$fields_xml = $this->document->createElement('fields');
+
+				foreach($this->section->fields as $column){
+					if($column->{'show-column'} != 'yes') continue;
+
+					$field_handle = $column->{'element-name'};
+
+					$fields_xml->appendChild($this->document->createElement(
+						$field_handle,
+						$entry->data()->$field_handle->value
+					));
+				}
+
+				$entry_xml->appendChild($fields_xml);
+				$entries_xml->appendChild($entry_xml);
+			}
+
+			$section_xml->appendChild($entries_xml);
+
+			$data->appendChild($section_xml);
+
 		}
 	}
 
@@ -84,93 +204,6 @@
 		}
 
 		public function __viewIndex(){
-			$section = Section::loadFromHandle($this->_context['section_handle']);
-
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), $section->name)));
-			$this->Form->setAttribute("class", $section->handle);
-
-			$filter = $filter_value = $where = $joins = NULL;
-
-			$current_page = (isset($_REQUEST['pg']) && is_numeric($_REQUEST['pg']) ? max(1, intval($_REQUEST['pg'])) : 1);
-			$current_filter = ($filter ? "&filter=$field_handle:$filter_value" : '');
-
-			if(isset($_REQUEST['sort']) && is_string($_REQUEST['sort'])){
-				$sort = $_REQUEST['sort'];
-				$order = ($_REQUEST['order'] ? strtolower($_REQUEST['order']) : 'asc');
-
-				if($section->{'publish-order-handle'} != $sort || $section->{'publish-order-direction'} != $order) {
-					$section->{'publish-order-handle'} = $sort;
-					$section->{'publish-order-direction'} = $order;
-
-					$errors = new MessageStack;
-					Section::save($section, $errors);
-					redirect(Administration::instance()->getCurrentPageURL(). $current_filter);
-				}
-			}
-			elseif(isset($_REQUEST['unsort'])){
-				$section->{'publish-order-handle'} = null;
-				$section->{'publish-order-direction'} = null;
-
-				$errors = new MessageStack;
-				Section::save($section, $errors);
-
-				redirect(Administration::instance()->getCurrentPageURL());
-			}
-
-			$this->appendSubheading(
-				$section->name,
-				Widget::Anchor(
-					__('Create New'),
-					sprintf('%s/new/%s', Administration::instance()->getCurrentPageURL(), ($filter ? "?prepopulate[{$filter}]={$filter_value}" : NULL)), array(
-						'title' => __('Create a new entry'),
-						'class' => 'create button'
-					)
-				)
-			);
-
-			$aTableHead = array();
-			$renderOnlyEntryIDColumn = false;
-
-			foreach($section->fields as $column){
-				if($column->{'show-column'} != 'yes') continue;
-
-				$label = $column->name;
-
-				if($column->isSortable()) {
-
-					$link = Administration::instance()->getCurrentPageURL();
-
-					if($column->{'element-name'} == $section->{'publish-order-handle'}) {
-						$link .= '?pg=' . $current_page . '&sort=' . $column->{'element-name'};
-						$link .= '&order=' . ($section->{'publish-order-direction'} == 'desc' ? 'asc' : 'desc') . $current_filter;
-
-						$anchor = Widget::Anchor($label, $link, array(
-							'title' => __('Sort by %1$s %2$s', array(
-								($section->{'publish-order-direction'} == 'desc' ? __('ascending') : __('descending')),
-								strtolower($label)
-							)),
-							'class' => 'active'
-						));
-					}
-					else {
-						$link .= '?pg='.$current_page.'&sort='.$column->{'element-name'}.'&order=asc'.$current_filter;
-						$anchor = Widget::Anchor($label, $link, array(
-							'title' => __('Sort by %1$s %2$s', array(__('ascending'), strtolower($label)))
-						));
-					}
-
-					$aTableHead[] = array($anchor, 'col');
-				}
-
-				else {
-					$aTableHead[] = array($label, 'col');
-				}
-			}
-
-			if(count($aTableHead) <= 0){
-				$renderOnlyEntryIDColumn = true;
-				$aTableHead[] = array('ID', 'col');
-			}
 
 			/*
 			**	Pagination, get the total number of entries and work out

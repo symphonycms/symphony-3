@@ -96,9 +96,14 @@
 					'this-month'		=> DateTimeObj::get('m'),
 					'this-day'			=> DateTimeObj::get('d'),
 					'timezone'			=> date_default_timezone_get()
-				),
-				'session'	=> self::instance()->User->fields()
+				)
 			));
+
+			if ($this->User) {
+				$this->View->context->register(array(
+					'session'	=> self::instance()->User->fields()
+				));
+			}
 		}
 
 		/**

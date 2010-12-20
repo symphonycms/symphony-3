@@ -1,6 +1,92 @@
 <?php
 
-	require_once(LIB . '/class.administrationpage.php');
+	/**
+	* LoginDriver class...
+	*/
+
+	Class LoginDriver {
+
+		public $document;
+		public $url;
+		public $view;
+		public $section;
+
+		public function __construct() {
+			$this->view = Controller::instance()->View;
+			$this->document = $this->view->document;
+			$this->url = Controller::instance()->url;
+
+			$this->setTitle();
+		}
+
+		public function setTitle() {
+			$this->view->title = __('Login');
+		}
+
+		public function registerActions() {
+
+			$actions = array(
+				array(
+					'name'		=> __('Create New'),
+					'type'		=> 'new',
+					'callback'	=> $url . '/new'
+				),
+				array(
+					'name'		=> __('Filter'),
+					'type'		=> 'tool'
+				)
+			);
+
+			foreach($actions as $action) {
+				$this->view->registerAction($action);
+			}
+		}
+
+		public function registerDrawer() {
+			// Do stuff
+		}
+
+		public function processRequests() {
+
+			if(isset($_POST['action'])){
+
+				$actionParts = array_keys($_POST['action']);
+				$action = end($actionParts);
+
+				##Login Attempted
+				if($action == 'login') {
+
+					if(!isset($_POST['username']) || strlen(trim($_POST['username'])) == 0){
+						$this->invalid_credentials = true;
+						$this->missing_username = true;
+					}
+
+					if(!isset($_POST['password']) || strlen(trim($_POST['password'])) == 0){
+						$this->invalid_credentials = true;
+						$this->missing_password = true;
+					}
+
+					elseif(!Controller::instance()->login($_POST['username'], $_POST['password'])) {
+
+						$this->invalid_credentials = true;
+					}
+
+					else{
+
+						if(isset($_POST['redirect'])) redirect(URL . str_replace(parse_url(URL, PHP_URL_PATH), NULL, $_POST['redirect']));
+
+						redirect(ADMIN_URL . '/');
+					}
+				}
+			}
+		}
+
+		public function buildDataXML($data) {
+
+		}
+	}
+
+	/*require_once(LIB . '/class.administrationpage.php');
 
 	Class contentLogin extends AdministrationPage{
 
@@ -9,19 +95,6 @@
 
 		function build($context=NULL){
 			$this->invalid_credentials = false;
-
-			$this->Headers->append('Content-Type', 'text/html; charset=UTF-8');
-
-			$this->Html->setAttribute('lang', Symphony::lang());
-
-			$meta = $this->createElement('meta');
-			$this->insertNodeIntoHead($meta);
-			$meta->setAttribute('http-equiv', 'Content-Type');
-			$meta->setAttribute('content', 'text/html; charset=UTF-8');
-
-			$this->insertNodeIntoHead($this->createStylesheetElement(ADMIN_URL . '/assets/css/peripheral.css'));
-
-			parent::setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Login'))));
 
 			## Build the form
 			$this->Form = $this->createElement('form');
@@ -41,7 +114,7 @@
 
 		function view(){
 			Widget::init($this);
-			
+
 			$emergency = false;
 			if(isset($this->_context[0]) && in_array(strlen($this->_context[0]), array(6, 8))){
 				$emergency = $this->__loginFromToken($this->_context[0]);
@@ -50,7 +123,7 @@
 			if(!$emergency && Administration::instance()->isLoggedIn()) redirect(ADMIN_URL . '/');
 
 			$fieldset = $this->createElement('fieldset');
-			
+
 			if($this->_context[0] == 'retrieve-password'):
 
 				if(isset($this->_email_sent) && $this->_email_sent){
@@ -95,7 +168,7 @@
 				$label->appendChild(Widget::Input('password-confirmation', NULL, 'password'));
 				$fieldset->appendChild($label);
 				$this->Form->appendChild($fieldset);
-				
+
 				if($this->_mismatchedPassword){
 					$div = $this->createElement('div', NULL, array('class' => 'invalid'));
 					$div->appendChild($this->createElement('p', __('The supplied password was rejected. Make sure it is not empty and that password matches password confirmation.')));
@@ -118,28 +191,28 @@
 				$label->appendChild(Widget::Input('password', NULL, 'password'));
 				$fieldset->appendChild($label);
 				$this->Form->appendChild($fieldset);
-				
+
 				$p = $this->createElement('p', NULL);
 				$p->appendChild(
 						Widget::Anchor(__('Forgot your password?'), ADMIN_URL . '/login/retrieve-password/')
 					);
 				$fieldset->appendChild($p);
-				
+
 				if($this->invalid_credentials){
 					$div = $this->createElement('div', NULL, array('class' => 'invalid'));
-					
+
 					if($this->missing_username == true){
 						$p = $this->createElement('p', __('Username is required and cannot be left blank. '));
 					}
-					
+
 					elseif($this->missing_password == true){
 						$p = $this->createElement('p', __('Password is required and cannot be left blank. '));
 					}
-					
+
 					else{
 						$p = $this->createElement('p', __('The username and password combination you provided is incorrect. '));
 					}
-					
+
 					$p->appendChild(
 						Widget::Anchor(__('Retrieve password?'), ADMIN_URL . '/login/retrieve-password/')
 					);
@@ -181,7 +254,7 @@
 						$this->invalid_credentials = true;
 						$this->missing_username = true;
 					}
-					
+
 					if(!isset($_POST['password']) || strlen(trim($_POST['password'])) == 0){
 						$this->invalid_credentials = true;
 						$this->missing_password = true;
@@ -358,5 +431,4 @@
 
 		}
 
-	}
-
+	}*/

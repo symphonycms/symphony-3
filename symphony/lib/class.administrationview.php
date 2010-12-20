@@ -63,33 +63,35 @@
 				$this->parseURL('/login');
 			}
 
-			try{
-				if(is_null($url)){
+			else {
+				try{
+					if(is_null($url)){
 
-					// Get user's default section
-					$section_handle = Controller::instance()->User->default_section;
+						// Get user's default section
+						$section_handle = Controller::instance()->User->default_section;
 
-					// If the section exists, load publish view
-					try {
-						$section = Section::loadFromHandle($section_handle);
-						$this->parseURL('/publish/' . $section_handle);
+						// If the section exists, load publish view
+						try {
+							$section = Section::loadFromHandle($section_handle);
+							$this->parseURL('/publish/' . $section_handle);
+						}
+						catch (Exception $e) {
+							$this->parseURL('/blueprints/sections/');
+						}
 					}
-					catch (Exception $e) {
-						$this->parseURL('/blueprints/sections/');
+					else{
+						$this->parseURL($url);
 					}
+
+					// TODO: Fix this
+					if(!($this instanceof AdministrationView)) throw new Exception('View not found');
+
 				}
-				else{
-					$this->parseURL($url);
+
+				catch(Exception $e){
+					//catch the exception
+					print('Sorry could not load ' . $url);
 				}
-
-				// TODO: Fix this
-				if(!($this instanceof AdministrationView)) throw new Exception('Page not found');
-
-			}
-
-			catch(Exception $e){
-				//catch the exception
-				print('Sorry could not load ' . $url);
 			}
 		}
 
@@ -517,6 +519,11 @@
 		* @return string Result of transformation
 		*/
 		public function buildOutput() {
+
+			// Cover for an oversight. Rethink this.
+			if($_SERVER['REQUEST_METHOD'] == 'POST') {
+				$this->driver->processRequests();
+			}
 
 			// Set up the root XML element
 			$root = $this->document->documentElement;
