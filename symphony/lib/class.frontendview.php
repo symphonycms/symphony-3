@@ -18,7 +18,6 @@
 		private $_path;
 		private $_parent;
 		private $_parameters;
-		private $_handle;
 		private $_guid;
 
 		public function __construct(){

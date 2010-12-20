@@ -4,22 +4,35 @@
 	* ViewsDriver class...
 	*/
 
+	require_once(LIB . '/class.frontendview.php');
+
 	Class ViewsDriver {
 
+		public $document;
 		public $url;
 		public $view;
 
+		/**
+		* Instantiates the driver object
+		*/
 		public function __construct() {
 			$this->view = Controller::instance()->View;
+			$this->document = $this->view->document;
 			$this->url = Controller::instance()->url;
 
 			$this->setTitle();
 		}
 
+		/**
+		* Maybe a more elegant way to handle this?
+		*/
 		public function setTitle() {
 			$this->view->title = __('Views');
 		}
 
+		/**
+		* Each driver registers its own actions with the View.
+		*/
 		public function registerActions() {
 
 			$actions = array(
@@ -39,12 +52,70 @@
 			}
 		}
 
+		/**
+		* Driver also registers contents to be placed in the drawer
+		*/
 		public function registerDrawer() {
 			// Do stuff
 		}
 
+		/**
+		* This is the meat and potatoes method where the driver builds
+		* its content
+		*/
 		public function buildDataXML($data) {
 
+			// Create the <views> container element
+			$views_xml = $this->document->createElement('views');
+
+			foreach (new ViewIterator() as $v) {
+
+				// Create the <view> element
+				$view = $this->document->createElement('view');
+
+				// Set the guid attribute
+				$view->setAttribute('guid',$v->guid);
+
+				// Append the view's <title>
+				$view->appendChild($this->document->createElement(
+					'title',
+					$v->title
+				));
+
+				// Append the view's <handle>
+				$view->appendChild($this->document->createElement(
+					'handle',
+					$v->path
+				));
+
+				// Append the view's <url>
+				$view->appendChild($this->document->createElement(
+					'url',
+					sprintf('%s/%s/', URL, $v->path)
+				));
+
+				// Append the <url-params>
+				if(is_array($v->{'url-parameters'}) && count($v->{'url-parameters'}) > 0) {
+					$params_xml = $this->document->createElement('url-params');
+					foreach($v->{'url-parameters'} as $p){
+						$params_xml->appendChild($this->document->createElement('item',$p));
+					}
+					$view->appendChild($params_xml);
+				}
+
+				// Append the view's <types>
+				if(is_array($v->types) && count($v->types) > 0) {
+					$types_xml = $this->document->createElement('types');
+					foreach($v->types as $t){
+						$types_xml->appendChild($this->document->createElement('item',$t));
+					}
+					$view->appendChild($types_xml);
+				}
+
+				$views_xml->appendChild($view);
+			}
+
+			$data->appendChild($views_xml);
 		}
 	}
 
@@ -53,50 +124,6 @@
 	require_once(LIB . '/class.event.php');
 
 	class contentBlueprintsViews extends AdministrationView {
-
-		public function __viewIndex() {
-
-			$iterator = new ViewIterator;
-
-			$views_xml = $this->createElement('views');
-
-			foreach ($iterator as $v) {
-				$class = array();
-
-				$page_title = $v->title;
-
-				$page_url = sprintf('%s/%s/', URL, $v->path);
-				$page_edit_url = sprintf('%s/edit/%s/', Administration::instance()->getCurrentPageURL(), $v->path);
-
-				$page_types = $v->types;
-
-				// Initialize <view> element
-				$view = $this->createElement('view');
-
-
-				$view->appendChild($this->createElement('url',$page_url));
-
-				if(is_array($v->{'url-parameters'}) && count($v->{'url-parameters'}) > 0){
-					$params = $this->createElement('url-params');
-					foreach($v->{'url-parameters'} as $p){
-						$params->appendChild($this->createElement('item',$p));
-					}
-					$view->appendChild($params);
-				}
-
-				if(is_array($page_types) && count($page_types) > 0){
-					$types = $this->createElement('types');
-					foreach($page_types as $t){
-						$types->appendChild($this->createElement('item',$t));
-					}
-					$view->appendChild($types);
-				}
-
-				$views_xml->appendChild($view);
-			}
-
-			return $views_xml;
-		}
 
 		public function __viewTemplate() {
 

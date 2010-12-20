@@ -130,6 +130,8 @@
 			require_once($driver_file);
 
 			// Set the view's driver object
+			// TODO These drivers are kind of repetetive at the moment. There's probably
+			// a much smarter way to do this
 			$this->driver = new $driver_class();
 
 			// Determine path to the template file
@@ -156,6 +158,8 @@
 		public function getViewContext() {
 
 			// This needs to get fixed up
+			// Path stuff needs to get parsed better so we can build breadcrumbs, etc.
+			// Params should be split up
 			$this->context->register(array(
 				'view'	=> array(
 					'title'			=> $this->title,
@@ -183,16 +187,22 @@
 		*/
 		public function buildActionsXML($root) {
 
-		/*
-			array(
+			/*  SAMPLE $actions array:
+
 				array(
-					'name'	=> 'Create New',
-					'type'	=> 'new',
-					'callback'	=> $this->path . '/new'
-				),
-				array(),
-			);
-		*/
+					array(
+						'name'	=> 'Create New',
+						'type'	=> 'new',
+						'callback'	=> $this->path . '/new'
+					),
+					array(
+						'name'	=> 'Etc'
+					),
+				);
+
+				Need to think this through a little better (ability to
+				set classes, IDs, and other kinds of stuff)
+			*/
 			$actions = $this->document->createElement('actions');
 
 			foreach($this->actions as $node) {
@@ -217,6 +227,9 @@
 
 		}
 
+		/**
+		* Copied method
+		*/
 		private static function __navigationFindGroupIndex($nav, $name){
 			foreach($nav as $index => $item){
 				if($item['name'] == $name) return $index;
@@ -224,6 +237,9 @@
 			return false;
 		}
 
+		/**
+		* Copied method... TODO cleanup
+		*/
 		protected function initializeNavigation(){
 
 			$this->navigation = array();
@@ -378,15 +394,10 @@
 									$this->navigation[$group_index]['children'][] = $child;
 								}
 
-
 								break;
-
 						}
-
 					}
-
 				}
-
 			}
 
 			$found = $this->__findActiveNavigationGroup($this->path);
@@ -399,6 +410,9 @@
 
 		}
 
+		/**
+		* Copied method...
+		*/
 		protected function __findLocationIndexFromName($name){
 			foreach($this->navigation as $index => $group){
 				if($group['name'] == $name){
@@ -409,6 +423,9 @@
 			return false;
 		}
 
+		/**
+		* Copied method... TODO cleanup
+		*/
 		protected function __findActiveNavigationGroup($pageroot, $pattern=false){
 
 			foreach($this->navigation as $index => $contents){
@@ -435,6 +452,7 @@
 
 		/**
 		* Build the navigation XML and append it to the root element
+		* Copied method -- TODO cleanup
 		*/
 		public function buildNavigationXML($root){
 
