@@ -38,7 +38,7 @@
 			$actions = array(
 				array(
 					'name'		=> __('Create New'),
-					'type'		=> 'new',
+					'type'		=> 'constructive',
 					'callback'	=> $url . '/new'
 				),
 				array(

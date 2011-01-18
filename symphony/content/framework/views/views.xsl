@@ -6,7 +6,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <!--
 	HTML5
 -->
-	<xsl:template match="root">
+	<xsl:template match="/root">
 		<html>
 			<head>
 				<link rel="stylesheet" href="{$admin-url}/html5/admin.css" media="screen" type="text/css" />
@@ -36,10 +36,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 				</aside>
 				<section>
 					<header>
-						<h1>
-							<xsl:value-of select="context/view/title" />
-						</h1>
-						
+						<xsl:apply-templates select="." mode="breadcrumb" />
 						<xsl:apply-templates select="actions" />
 					</header>
 					
@@ -50,10 +47,31 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	</xsl:template>
 	
 <!--
+	Breadcrumb
+-->
+	<xsl:template match="root" mode="breadcrumb">
+		<nav class="breadcrumb">
+			<ol>
+				<li>
+					<a href="">
+						<xsl:value-of select="context/view/title" />
+					</a>
+				</li>
+				<li>
+					<a href="">This is a test</a>
+				</li>
+				<li>
+					Editing some entry
+				</li>
+			</ol>
+		</nav>
+	</xsl:template>
+	
+<!--
 	Actions
 -->
 	<xsl:template match="actions">
-		<nav>
+		<nav class="controls">
 			<ul>
 				<xsl:apply-templates select="action"/>
 			</ul>
