@@ -297,7 +297,6 @@
 			}
 
 			foreach(new SectionIterator as $s){
-
 				$group_index = self::__navigationFindGroupIndex($this->navigation, $s->{'navigation-group'});
 
 				if($group_index === false){
@@ -319,106 +318,14 @@
 					'visible' => ($s->{'hidden-from-publish-menu'} == 'no' ? 'yes' : 'no')
 				);
 			}
-
-//			$extensions = ExtensionManager::instance()->listInstalledHandles();
-
-			foreach(new ExtensionIterator(ExtensionIterator::FLAG_STATUS, Extension::STATUS_ENABLED) as $e){
-
-				if(!method_exists($e, 'fetchNavigation')) continue;
-
-				$e_navigation = $e->fetchNavigation();
-
-				if(isset($e_navigation) && is_array($e_navigation) && !empty($e_navigation)){
-
-					foreach($e_navigation as $item){
-
-						$type = (isset($item['children']) ? Extension::NAVIGATION_GROUP : Extension::NAVIGATION_CHILD);
-
-						switch($type){
-
-							case Extension::NAVIGATION_GROUP:
-
-								$index = General::array_find_available_index($nav, $item['location']);
-
-								$this->navigation[$index] = array(
-									'name' => $item['name'],
-									'index' => $index,
-									'children' => array(),
-									'limit' => (!is_null($item['limit']) ? $item['limit'] : NULL)
-								);
-
-								foreach($item['children'] as $child){
-
-									if(!isset($child['relative']) || $child['relative'] == true){
-										$link = '/extension/' . Extension::getHandleFromPath(Extension::getPathFromClass(get_class($e))) . '/' . ltrim($child['link'], '/');
-									}
-									else{
-										$link = '/' . ltrim($child['link'], '/');
-									}
-
-									$this->navigation[$index]['children'][] = array(
-
-										'link' => $link,
-										'name' => $child['name'],
-										'visible' => ($child['visible'] == 'no' ? 'no' : 'yes'),
-										'limit' => (!is_null($child['limit']) ? $child['limit'] : NULL)
-									);
-								}
-
-								break;
-
-							case Extension::NAVIGATION_CHILD:
-
-								if(!isset($item['relative']) || $item['relative'] == true){
-									$link = '/extension/' . Extension::getHandleFromPath(Extension::getPathFromClass(get_class($e))) . '/' . ltrim($item['link'], '/');
-								}
-								else{
-									$link = '/' . ltrim($item['link'], '/');
-								}
-
-								if(!is_numeric($item['location'])){
-									// is a navigation group
-									$group_name = $item['location'];
-									$group_index = $this->__findLocationIndexFromName($nav, $item['location']);
-								} else {
-									// is a legacy numeric index
-									$group_index = $item['location'];
-								}
-
-								$child = array(
-									'link' => $link,
-									'name' => $item['name'],
-									'visible' => ($item['visible'] == 'no' ? 'no' : 'yes'),
-									'limit' => (!is_null($item['limit']) ? $item['limit'] : NULL)
-								);
-
-								if ($group_index === false) {
-									// add new navigation group
-									$this->navigation[] = array(
-										'name' => $group_name,
-										'index' => $group_index,
-										'children' => array($child),
-										'limit' => (!is_null($item['limit']) ? $item['limit'] : NULL)
-									);
-								} else {
-									// add new location by index
-									$this->navigation[$group_index]['children'][] = $child;
-								}
-
-								break;
-						}
-					}
-				}
-			}
-
+			
 			$found = $this->__findActiveNavigationGroup($this->path);
-
+			
 			## Normal searches failed. Use a regular expression using the page root. This is less
 			## efficent and should never really get invoked unless something weird is going on
 			if(!$found) $this->__findActiveNavigationGroup('/^' . str_replace('/', '\/', $this->path) . '/i', true);
-
+			
 			ksort($this->navigation);
-
 		}
 
 		/**
