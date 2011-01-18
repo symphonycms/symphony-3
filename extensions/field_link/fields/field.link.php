@@ -18,17 +18,15 @@
 		}
 
 		public function create(){
-			return Symphony::Database()->query(sprintf(
-				"
-					CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` int(11) unsigned NOT NULL auto_increment,
-						`entry_id` int(11) unsigned NOT NULL,
-						`relation_id` int(11) unsigned DEFAULT NULL,
-						PRIMARY KEY	 (`id`),
-						KEY `entry_id` (`entry_id`),
-						KEY `relation_id` (`relation_id`)
-					)
-				",
+			return Symphony::Database()->query(sprintf('
+				CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+					`id` int(11) unsigned NOT NULL auto_increment,
+					`entry_id` int(11) unsigned NOT NULL,
+					`relation_id` int(11) unsigned DEFAULT NULL,
+					PRIMARY KEY	 (`id`),
+					KEY `entry_id` (`entry_id`),
+					KEY `relation_id` (`relation_id`)
+				) ENGINE=MyISAM;',
 				$this->{'section'},
 				$this->{'element-name'}
 			));

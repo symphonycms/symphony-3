@@ -15,20 +15,18 @@
 		}
 
 		public function create(){
-			return Symphony::Database()->query(
-				sprintf(
-					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` int(11) unsigned NOT NULL auto_increment,
-						`entry_id` int(11) unsigned NOT NULL,
-						`value` DATETIME default NULL,
-						PRIMARY KEY  (`id`),
-						KEY `entry_id` (`entry_id`),
-						KEY `value` (`value`)
-					)',
-					$this->section,
-					$this->{'element-name'}
-				)
-			);
+			return Symphony::Database()->query(sprintf('
+				CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+					`id` int(11) unsigned NOT NULL auto_increment,
+					`entry_id` int(11) unsigned NOT NULL,
+					`value` DATETIME default NULL,
+					PRIMARY KEY  (`id`),
+					KEY `entry_id` (`entry_id`),
+					KEY `value` (`value`)
+				) ENGINE=MyISAM;',
+				$this->section,
+				$this->{'element-name'}
+			));
 		}
 
 		function allowDatasourceOutputGrouping(){

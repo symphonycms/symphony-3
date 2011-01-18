@@ -30,27 +30,25 @@
 		}
 
 		public function create(){
-			return Symphony::Database()->query(
-				sprintf(
-					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-						`entry_id` int(11) unsigned NOT NULL,
-						`name` text DEFAULT NULL,
-						`path` text DEFAULT NULL,
-						`file` text DEFAULT NULL,
-						`size` int(11) unsigned DEFAULT NULL,
-						`type` varchar(255) DEFAULT NULL,
-						`meta` text DEFAULT NULL,
-						PRIMARY KEY (`id`),
-						UNIQUE KEY `entry_id` (`entry_id`),
-						FULLTEXT KEY `name` (`name`),
-						FULLTEXT KEY `path` (`path`),
-						FULLTEXT KEY `file` (`file`)
-					)',
-					$this->section,
-					$this->{'element-name'}
-				)
-			);
+			return Symphony::Database()->query(sprintf('
+				CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+					`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+					`entry_id` int(11) unsigned NOT NULL,
+					`name` text DEFAULT NULL,
+					`path` text DEFAULT NULL,
+					`file` text DEFAULT NULL,
+					`size` int(11) unsigned DEFAULT NULL,
+					`type` varchar(255) DEFAULT NULL,
+					`meta` text DEFAULT NULL,
+					PRIMARY KEY (`id`),
+					UNIQUE KEY `entry_id` (`entry_id`),
+					FULLTEXT KEY `name` (`name`),
+					FULLTEXT KEY `path` (`path`),
+					FULLTEXT KEY `file` (`file`)
+				) ENGINE=MyISAM;',
+				$this->section,
+				$this->{'element-name'}
+			));
 		}
 
 		public function allowDatasourceParamOutput() {
