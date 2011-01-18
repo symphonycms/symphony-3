@@ -10,7 +10,7 @@
 	
 	<xsl:variable name="site-url" select="/root/context/system/site-url" />
 	<xsl:variable name="admin-url" select="/root/context/system/admin-url" />
-
+	
 	<xsl:template match="root">
 		<html>
 			<head>
@@ -83,7 +83,7 @@
 	
 	<xsl:template match="navigation/group/item[@visible = 'yes']">
 		<li id="{name/@handle}">
-			<a href="{$admin-url}/{link}">
+			<a href="{$admin-url}/{@link}">
 				<xsl:if test="@active = 'yes' or .//item/@active = 'yes'">
 					<xsl:attribute name="class">current</xsl:attribute>
 				</xsl:if>
@@ -96,7 +96,7 @@
 	</xsl:template>
 	
 	<xsl:template match="navigation/group/item/item[@visible = 'yes']">
-		<a href="{$admin-url}/{link}" class="quick create">
+		<a href="{$admin-url}/{@link}" class="quick create">
 			<xsl:value-of select="@name"/>
 		</a>
 	</xsl:template>
