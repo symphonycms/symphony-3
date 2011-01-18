@@ -1,45 +1,50 @@
 <navigation>
-	<group name="Content" type="sections" align="left">
-		
+	<group name="Content" type="sections">
+
 	</group>
-	<group name="Blueprints" index="200" type="links" align="right">
+	<group name="Framework" index="200" type="links">
 		<children>
-			<item link="/blueprints/views/" name="Views" />
-			<item link="/blueprints/views/new/" name="Views New" visible="no" />
-			<item link="/blueprints/views/edit/" name="Views Edit" visible="no" />
+			<item link="/framework/views/" name="Views" />
+			<item link="/framework/views/new/" name="Views New" visible="no" />
+			<item link="/framework/views/edit/" name="Views Edit" visible="no" />
 
-			<item link="/blueprints/sections/" name="Sections" />
-			<item link="/blueprints/sections/new/" name="Section New" visible="no" />
-			<item link="/blueprints/sections/edit/" name="Section Edit" visible="no" />
+			<item link="/framework/sections/" name="Sections" />
+			<item link="/framework/sections/new/" name="Section New" visible="no" />
+			<item link="/framework/sections/edit/" name="Section Edit" visible="no" />
 
-			<item link="/blueprints/datasources/" name="Data Sources" />
-			<item link="/blueprints/datasources/new/" name="Data Sources New" visible="no" />
-			<item link="/blueprints/datasources/edit/" name="Data Sources Edit" visible="no" />			
-			<item link="/blueprints/datasources/info/" name="Data Sources Info" visible="no" />
-			
-			<item link="/blueprints/events/" name="Events" />
-			<item link="/blueprints/events/new/" name="Event New" visible="no" />
-			<item link="/blueprints/events/edit/" name="Event Edit" visible="no" />
-			<item link="/blueprints/events/info/" name="Event Info" visible="no" />
-			
-			<item link="/blueprints/utilities/" name="Utilities" />
-			<item link="/blueprints/utilities/new/" name="Utility New" visible="no" />
-			<item link="/blueprints/utilities/edit/" name="Utility Edit" visible="no" />
+			<item link="/framework/datasources/" name="Data Sources" />
+			<item link="/framework/datasources/new/" name="Data Sources New" visible="no" />
+			<item link="/framework/datasources/edit/" name="Data Sources Edit" visible="no" />
+			<item link="/framework/datasources/info/" name="Data Sources Info" visible="no" />
+
+			<item link="/framework/events/" name="Events" />
+			<item link="/framework/events/new/" name="Event New" visible="no" />
+			<item link="/framework/events/edit/" name="Event Edit" visible="no" />
+			<item link="/framework/events/info/" name="Event Info" visible="no" />
+
+			<item link="/framework/utilities/" name="XSLT Utilities" />
+			<item link="/framework/utilities/new/" name="Utility New" visible="no" />
+			<item link="/framework/utilities/edit/" name="Utility Edit" visible="no" />
 		</children>
 	</group>
 
-	<group name="System" index="100" type="links" align="right">
+	<group name="Users" index="300" type="links">
 		<children>
-			<item link="/system/users/" name="Users" />
-			<item link="/system/users/edit/" name="User Edit" visible="no" />
-			<item link="/system/users/new/" name="User New" visible="no"  />
-			
+			<item link="/users/" name="Accounts" />
+			<item link="/users/roles/" name="Roles" />
+			<item link="/users/edit/" name="User Edit" visible="no" />
+			<item link="/users/new/" name="User New" visible="no"  />
+		</children>
+	</group>
+
+	<group name="System" index="400" type="links">
+		<children>
 			<item link="/system/settings/" name="Settings" />
-			
+
 			<item link="/system/extensions/" name="Extensions" />
-			
+
 			<item link="/system/actions/" visible="no" name="File Actions" />
-			<item link="/system/log/" visible="no" name="Activity Log" />					
+			<item link="/system/log/" visible="no" name="Activity Log" />
 		</children>
 	</group>
 </navigation>
