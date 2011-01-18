@@ -24,11 +24,6 @@
 		public $drawer = array();
 
 		/**
-		* Array containing the admin nav
-		*/
-		public $navigation = array();
-
-		/**
 		* String containing the view's title
 		*/
 		public $title;
@@ -158,9 +153,6 @@
 			// (website name, user info, etc). Here we have the view register its
 			// own context info (handle, params, path, and so on)
 			$this->getViewContext();
-
-			// Initialize the navigation
-			$this->initializeNavigation();
 		}
 
 		/**
@@ -237,196 +229,105 @@
 		public function buildDrawerXML($root) {
 
 		}
-
-		/**
-		* Copied method
-		*/
-		private static function __navigationFindGroupIndex($nav, $name){
-			foreach($nav as $index => $item){
-				if($item['name'] == $name) return $index;
-			}
-			return false;
-		}
-
-		/**
-		* Copied method... TODO cleanup
-		*/
-		protected function initializeNavigation(){
-
-			$this->navigation = array();
-
-			$xml = simplexml_load_file(ASSETS . '/navigation.xml');
-
-			foreach($xml->xpath('/navigation/group') as $n){
-
-				$index = (string)$n->attributes()->index;
-				$children = $n->xpath('children/item');
-				$content = $n->attributes();
-
-				if(isset($this->navigation[$index])){
-					do{
-						$index++;
-					}while(isset($nav[$index]));
-				}
-
-				$this->navigation[$index] = array(
-					'name' => __(strval($content->name)),
-					'index' => $index,
-					'children' => array()
-				);
-
-				if(strlen(trim((string)$content->limit)) > 0){
-					$this->navigation[$index]['limit'] = (string)$content->limit;
-				}
-
-				if(count($children) > 0){
-					foreach($children as $child){
-						$limit = (string)$child->attributes()->limit;
-
-						$item = array(
-							'link' => (string)$child->attributes()->link,
-							'name' => __(strval($child->attributes()->name)),
-							'visible' => ((string)$child->attributes()->visible == 'no' ? 'no' : 'yes'),
-						);
-
-						if(strlen(trim($limit)) > 0) $item['limit'] = $limit;
-
-						$this->navigation[$index]['children'][] = $item;
-					}
-				}
-			}
-
-			foreach(new SectionIterator as $s){
-				$group_index = self::__navigationFindGroupIndex($this->navigation, $s->{'navigation-group'});
-
-				if($group_index === false){
-					$group_index = General::array_find_available_index($this->navigation, 0);
-
-					$this->navigation[$group_index] = array(
-						'name' => $s->{'navigation-group'},
-						'index' => $group_index,
-						'children' => array(),
-						'limit' => NULL
-					);
-				}
-
-				$this->navigation[$group_index]['children'][] = array(
-					'link' => 'publish/' . $s->handle,
-					'name' => $s->name,
-					'type' => 'section',
-					'section' => array('id' => $s->guid, 'handle' => $s->handle),
-					'visible' => ($s->{'hidden-from-publish-menu'} == 'no' ? 'yes' : 'no')
-				);
-			}
-			
-			$found = $this->__findActiveNavigationGroup($this->path);
-			
-			## Normal searches failed. Use a regular expression using the page root. This is less
-			## efficent and should never really get invoked unless something weird is going on
-			if(!$found) $this->__findActiveNavigationGroup('/^' . str_replace('/', '\/', $this->path) . '/i', true);
-			
-			ksort($this->navigation);
-		}
-
-		/**
-		* Copied method...
-		*/
-		protected function __findLocationIndexFromName($name){
-			foreach($this->navigation as $index => $group){
-				if($group['name'] == $name){
-					return $index;
-				}
-			}
-
-			return false;
-		}
-
-		/**
-		* Copied method... TODO cleanup
-		*/
-		protected function __findActiveNavigationGroup($pageroot, $pattern=false){
-
-			foreach($this->navigation as $index => $contents){
-				if(is_array($contents['children']) && !empty($contents['children'])){
-					foreach($contents['children'] as $item){
-
-						if($pattern && preg_match($pageroot, $item['link'])){
-							$this->navigation[$index]['class'] = 'active';
-							return true;
-						}
-
-						elseif($item['link'] == $pageroot){
-							$this->navigation[$index]['class'] = 'active';
-							return true;
-						}
-
-					}
-				}
-			}
-
-			return false;
-
-		}
-
+		
 		/**
 		* Build the navigation XML and append it to the root element
 		* Copied method -- TODO cleanup
 		*/
-		public function buildNavigationXML($root){
-
-			$nav_xml = $this->document->createElement('navigation');
-
-			foreach($this->navigation as $n){
-				$can_access = true;
-
-				if(!isset($n['visible']) or $n['visible'] != 'no'){
-
-					if($can_access == true) {
-
-						$group_xml = $this->document->createElement('group');
-						$name = $this->document->createElement('name',$n['name']);
-						$name->setAttribute('handle',Lang::createHandle($n['name']));
-						$group_xml->appendChild($name);
-						$items_xml = $this->document->createElement('items');
-
-						$hasChildren = false;
-
-						if(is_array($n['children']) && !empty($n['children'])){
-							foreach($n['children'] as $c){
-
-								$can_access_child = true;
-
-								if($c['visible'] != 'no'){
-
-									if($can_access_child == true) {
-
-										$item = $this->document->createElement('item');
-										$item_name = $this->document->createElement('name', $c['name']);
-										$item_name->setAttribute('handle',Lang::createHandle($c['name']));
-										$item->appendChild(
-											$item_name
-										);
-										$item->appendChild(
-											$this->document->createElement('link', $c['link'])
-										);
-										$items_xml->appendChild($item);
-										$hasChildren = true;
-
-									}
-								}
-
-							}
-
-							if($hasChildren){
-								$group_xml->appendChild($items_xml);
-								$nav_xml->appendChild($group_xml);
-							}
-						}
-					}
-				}
+		public function buildNavigationXML($root) {
+			$xpath = new DOMXPath($this->document);
+			$template = new XMLDocument();
+			$template->preserveWhiteSpace = false;
+			$template->load(TEMPLATES . '/navigation.xml');
+			$navigation = $this->document->importNode(
+				$template->documentElement, true
+			);
+			$first_child = $navigation->firstChild;
+			
+			// Force visible to be set:
+			foreach ($xpath->query('group//item[not(@visible)]', $navigation) as $item) {
+				$item->setAttribute('visible', 'yes');
 			}
-
-			$root->appendChild($nav_xml);
+			
+			// Set all items as inactive:
+			foreach ($xpath->query('group//item', $navigation) as $item) {
+				$item->setAttribute('active', 'no');
+			}
+			
+			// Add section navigation:
+			foreach (new SectionIterator as $section) {
+				// Find the navigation group:
+				$group = $xpath->query(
+					sprintf(
+						'group[@name = "%s"]',
+						htmlentities($section->{'navigation-group'})
+					),
+					$navigation
+				);
+				$group = $group->item(0);
+				
+				if (is_null($group)) {
+					$group = $this->document->createElement('group');
+					$group->setAttribute('name', $section->{'navigation-group'});
+					$group->setAttribute('type', 'sections');
+					$first_child->parentNode->insertBefore($group, $first_child);
+				}
+				
+				$item = $this->document->createElement('item');
+				$item->setAttribute('link', 'publish/' . $section->handle);
+				$item->setAttribute('name', $section->name);
+				$item->setAttribute('type', 'section');
+				$item->setAttribute('visible', (
+					$section->{'hidden-from-publish-menu'} == 'no'
+					? 'yes' : 'no'
+				));
+				$item->setAttribute('active', 'no');
+				$group->appendChild($item);
+				
+				// New link:
+				$sub_item = clone $item;
+				$sub_item->setAttribute('link', 'publish/' . $section->handle . '/new');
+				$sub_item->setAttribute('name', __('New'));
+				$item->appendChild($sub_item);
+				
+				// Edit link:
+				$sub_item = clone $sub_item;
+				$sub_item->setAttribute('link', 'publish/' . $section->handle . '/edit');
+				$sub_item->setAttribute('name', __('Edit'));
+				$sub_item->setAttribute('visible', 'no');
+				$item->appendChild($sub_item);
+			}
+			
+			// Remove empty groups:
+			foreach ($xpath->query('group[not(item)]', $navigation) as $group) {
+				$group->parentNode->removeChild($group);
+			}
+			
+			// Assign handles to all groups:
+			foreach ($xpath->query('group[not(@handle)]', $navigation) as $group) {
+				$group->setAttribute('handle', Lang::createHandle(
+					$group->getAttribute('name')
+				));
+			}
+			
+			// Find active page:
+			$active = $xpath->query(
+				sprintf(
+					'group//item[@link = "%s"]',
+					htmlentities($this->path)
+				),
+				$navigation
+			);
+			$active = $active->item(0);
+			
+			if ($active instanceof DOMElement) {
+				$active->setAttribute('active', 'yes');
+			}
+			
+			//$this->document->formatOutput = true;
+			//echo '<pre>', htmlentities($this->document->saveXML($navigation)); exit;
+			
+			$root->appendChild($navigation);
 		}
 
 		/**

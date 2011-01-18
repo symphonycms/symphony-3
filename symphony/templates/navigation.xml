@@ -1,0 +1,36 @@
+<navigation>
+	<group name="Framework">
+		<item link="framework/views" name="Views">
+			<item link="framework/views/new" name="New" />
+			<item link="framework/views/edit" name="Edit" visible="no" />
+		</item>
+		<item link="framework/sections" name="Sections">
+			<item link="framework/sections/new" name="New" />
+			<item link="framework/sections/edit" name="Edit" visible="no" />
+		</item>
+		<item link="framework/datasources" name="Data Sources">
+			<item link="framework/datasources/new" name="New" />
+			<item link="framework/datasources/edit" name="Edit" visible="no" />
+			<item link="framework/datasources/info" name="Info" visible="no" />
+		</item>
+		<item link="framework/events" name="Events">
+			<item link="framework/events/new" name="New" />
+			<item link="framework/events/edit" name="Edit" visible="no" />
+			<item link="framework/events/info" name="Info" visible="no" />
+		</item>
+		<item link="framework/utilities" name="XSLT Utilities">
+			<item link="framework/utilities/new" name="New" />
+			<item link="framework/utilities/edit" name="Edit" visible="no" />
+		</item>
+	</group>
+	<group name="Users">
+		<item link="users/" name="Accounts" />
+		<item link="users/roles" name="Roles" />
+		<item link="users/edit" name="User Edit" visible="no" />
+		<item link="users/new" name="User New" visible="no"  />
+	</group>
+	<group name="System">
+		<item link="system/settings" name="Settings" />
+		<item link="system/extensions" name="Extensions" />
+	</group>
+</navigation>

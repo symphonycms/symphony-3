@@ -40,38 +40,6 @@
 		</html>
 	</xsl:template>
 	
-	<xsl:template match="navigation">
-		<ul id="nav">
-			<xsl:apply-templates select="group"/>
-		</ul>
-	</xsl:template>
-	
-	<xsl:template match="navigation/group/items/item">
-		<li id="{name/@handle}">
-			<a href="{$admin-url}/{link}">
-				<xsl:value-of select="name"/>
-			</a>
-			<a href="{$admin-url}/{link}/new/" class="quick create">New</a>
-		</li>
-	</xsl:template>
-	
-	<xsl:template match="navigation/group">
-		<li id="{name/@handle}">
-			<!-- Temporarily wrap in SPAN just so it'll nest neatly :P -->
-			<span>
-				<xsl:value-of select="name"/>
-			</span>
-			<a href="#" class="toggle">
-				<xsl:text>&#9662;</xsl:text>
-			</a>
-			<xsl:if test="items">
-				<ul>
-					<xsl:apply-templates select="items/item"/>
-				</ul>
-			</xsl:if>
-		</li>
-	</xsl:template>
-	
 	<xsl:template match="actions">
 		<ul id="actions">
 			<xsl:apply-templates select="action"/>
@@ -82,5 +50,54 @@
 		<li>
 			<a href="{callback}" class="{type}"><xsl:value-of select="name"/></a>
 		</li>
+	</xsl:template>
+	
+<!--
+	Navigation
+-->
+	<xsl:template match="navigation">
+		<ul id="nav">
+			<xsl:apply-templates select="group"/>
+		</ul>
+	</xsl:template>
+	
+	<xsl:template match="navigation/group">
+		<li id="{@handle}" data-group-handle="{@handle}">
+			<!-- Temporarily wrap in SPAN just so it'll nest neatly :P -->
+			<span>
+				<xsl:value-of select="@name"/>
+			</span>
+			<a href="#" class="toggle">
+				<xsl:text>&#9662;</xsl:text>
+			</a>
+			
+			<xsl:if test="item[@visible = 'yes']">
+				<ul>
+					<xsl:apply-templates select="item" />
+				</ul>
+			</xsl:if>
+		</li>
+	</xsl:template>
+	
+	<xsl:template match="navigation/group//item" />
+	
+	<xsl:template match="navigation/group/item[@visible = 'yes']">
+		<li id="{name/@handle}">
+			<a href="{$admin-url}/{link}">
+				<xsl:if test="@active = 'yes' or .//item/@active = 'yes'">
+					<xsl:attribute name="class">current</xsl:attribute>
+				</xsl:if>
+				
+				<xsl:value-of select="@name"/>
+			</a>
+			
+			<xsl:apply-templates select="item" />
+		</li>
+	</xsl:template>
+	
+	<xsl:template match="navigation/group/item/item[@visible = 'yes']">
+		<a href="{$admin-url}/{link}" class="quick create">
+			<xsl:value-of select="@name"/>
+		</a>
 	</xsl:template>
 </xsl:stylesheet>
