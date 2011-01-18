@@ -14,11 +14,11 @@
 	<xsl:template match="root">
 		<html>
 			<head>
-				<link rel="stylesheet" href="/symphony/assets/styles/admin.css" media="screen" type="text/css" />
+				<link rel="stylesheet" href="{$admin-url}/assets/styles/admin.css" media="screen" type="text/css" />
 	
 				<!-- JavaScript -->
-				<script src="/symphony/assets/scripts/jquery.js" type="text/javascript"></script>
-				<script src="/symphony/assets/scripts/drawer.js" type="text/javascript"></script>
+				<script src="{$admin-url}/assets/scripts/jquery.js" type="text/javascript"></script>
+				<script src="{$admin-url}/assets/scripts/drawer.js" type="text/javascript"></script>
 			</head>
 			<body>
 				<div id="control">
