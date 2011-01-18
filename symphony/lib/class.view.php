@@ -63,24 +63,35 @@
 
 		/**
 		* Parses the URL to figure out what View to load
+		* 
+		* @param	$path		string	View path including URL parameters to attempt to find
+		* @param	$expression string	Expression used to match the view driver/conf file. Use printf syntax.
 		*/
-		public function parseURL($path) {
+		public function parseURL($path, $expression = '%s.conf.xml') {
 			$parts = preg_split('/\//', $path, -1, PREG_SPLIT_NO_EMPTY);
 			$view = null;
 			
 			while (!empty($parts)) {
-				$p = array_shift($parts);
-
-				if (!is_dir($this->location . $view . '/' . $p)) {
-					array_unshift($parts, $p);
+				$part = array_shift($parts);
+				$file = sprintf(
+					'%s%s/%s/' . $expression,
+					$this->location, $view, $part, $part
+				);
+				
+				if (!is_file($file)) {
+					array_unshift($parts, $part);
 					
 					break;
 				}
 
-				$view = $view . "/{$p}";
+				$view = $view . "/{$part}";
 			}
 			
-			return $this->loadFromPath($view, (!empty($parts) ? $parts : NULL));
+			if (is_null($view)) {
+				throw new ViewException(__('View, %s, could not be found.', array($path)), self::ERROR_VIEW_NOT_FOUND);
+			}
+			
+			return $this->loadFromPath($view, (!empty($parts) ? $parts : null));
 		}
 
 		/**
@@ -144,8 +155,15 @@
 			// Move back to original directory
 			chdir($cwd);
 
-			if (XSLProc::hasErrors()) {
+			if (XSLProc::hasErrors() && !isset($_REQUEST['debug'])) {
 				throw new XSLProcException('Transformation Failed');
+			}
+			
+			// HACK: Simple debug output:
+			if (isset($_REQUEST['debug'])) {
+				$this->document->formatOutput = true;
+				
+				echo '<pre>', htmlentities($this->document->saveXML()); exit;
 			}
 
 			// Return result of transformation

@@ -18,7 +18,7 @@
 
 			// Probably a neater way to store and fetch the section handle
 			$this->section = Section::loadFromHandle($this->view->params[0]);
-
+			
 			$this->setTitle();
 		}
 

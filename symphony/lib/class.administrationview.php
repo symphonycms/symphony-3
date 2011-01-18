@@ -26,7 +26,7 @@
 		/**
 		* Array containing the admin nav
 		*/
-		public $navigation;
+		public $navigation = array();
 
 		/**
 		* String containing the view's title
@@ -39,13 +39,11 @@
 		* the headers, context object, and document.
 		*/
 		public function __construct() {
-
 			// Set root location
 			$this->location = CONTENT;
 
 			// Initialize View (in class.view.php)
 			$this->initialize();
-
 		}
 
 		/**
@@ -54,8 +52,7 @@
 		* @param string $url
 		*  URL path of requested view
 		*/
-		public function load($url=NULL){
-
+		public function load($url = null) {
 			// Check for login
 			Controller::instance()->isLoggedIn();
 
@@ -64,9 +61,8 @@
 			}
 
 			else {
-				try{
-					if(is_null($url)){
-
+				try {
+					if (is_null($url)) {
 						// Get user's default section
 						$section_handle = Controller::instance()->User->default_section;
 
@@ -75,26 +71,40 @@
 							$section = Section::loadFromHandle($section_handle);
 							$this->parseURL('/publish/' . $section_handle);
 						}
+						
 						catch (Exception $e) {
 							$this->parseURL('/blueprints/sections/');
 						}
 					}
-					else{
+					
+					else {
 						$this->parseURL($url);
 					}
 
 					// TODO: Fix this
-					if(!($this instanceof AdministrationView)) throw new Exception('View not found');
-
+					if (!($this instanceof AdministrationView)) {
+						throw new Exception('View not found');
+					}
 				}
 
-				catch(Exception $e){
+				catch (Exception $e) {
+					throw $e;
 					//catch the exception
 					print('Sorry could not load ' . $url);
 				}
 			}
 		}
-
+		
+		/**
+		* Parses the URL to figure out what View to load
+		* 
+		* @param	$path		string	View path including URL parameters to attempt to find
+		* @param	$expression string	Expression used to match the view driver/conf file. Use printf syntax.
+		*/
+		public function parseURL($path, $expression = '%s.driver.php') {
+			return parent::parseURL($path, $expression);
+		}
+		
 		/**
 		* Use data passed from parseURL() to locate the view driver and
 		* template.
@@ -105,24 +115,23 @@
 		* @param array $params
 		*  URL parameters to be passed to View
 		*/
-		public function loadFromPath($path, array $params=NULL) {
-
-			// Set the view's path
+		public function loadFromPath($path, array $params = null) {
+			// Setup basic view info:
 			$this->path = trim($path, '\\/');
-
-			// Set the view's params
 			$this->params = $params;
-
-			// Set the view handle
-			preg_match('/\/?([^\\\\\/]+)$/', $path, $match);
-			$this->handle = $match[1];
-
+			$this->handle = preg_replace('~^.*/~', null, $this->path);
+			
 			// Determine path to driver file
-			$driver_file = sprintf('%s/%s/%s.driver.php', $this->location, $this->path, $this->handle);
-
+			$driver_file = sprintf(
+				'%s/%s/%s.driver.php',
+				$this->location,
+				$this->path,
+				$this->handle
+			);
+			
 			// Make sure the driver file exists
-			if(!file_exists($driver_file)){
-				throw new ViewException(__('View, %s, could not be found.', array($this->driver)), self::ERROR_VIEW_NOT_FOUND);
+			if (!file_exists($driver_file)) {
+				throw new ViewException(__('View, %s, could not be found.', array($this->path)), self::ERROR_VIEW_NOT_FOUND);
 			}
 
 			// Determine the driver's Classname
@@ -141,7 +150,7 @@
 
 			// Set the view's template if it exists
 			// TODO this probably needs to be rethought
-			if(file_exists($template_file) && is_readable($template_file)){
+			if (file_exists($template_file) && is_readable($template_file)) {
 				$this->stylesheet = file_get_contents($template_file);
 			}
 
@@ -177,7 +186,7 @@
 		* Method for registering actions with the page
 		*/
 		public function registerAction(array $action) {
-			if(is_array($action) && !empty($action)) {
+			if (is_array($action) && !empty($action)) {
 				array_push($this->actions, $action);
 			}
 		}
@@ -303,7 +312,7 @@
 				}
 
 				$this->navigation[$group_index]['children'][] = array(
-					'link' => '/publish/' . $s->handle . '/',
+					'link' => 'publish/' . $s->handle,
 					'name' => $s->name,
 					'type' => 'section',
 					'section' => array('id' => $s->guid, 'handle' => $s->handle),

@@ -9,8 +9,7 @@
 	require_once(LIB . '/class.view.php');
 	require_once(LIB . '/class.context.php');
 
-	Class Controller extends Symphony {
-
+	class Controller extends Symphony {
 		/**
 		* A view object
 		*/
@@ -25,9 +24,10 @@
 		* Checks if an instance already exists, etc.
 		*/
 		public static function instance() {
-			if(!(self::$_instance instanceof Controller)) {
+			if (!(self::$_instance instanceof Controller)) {
 				self::$_instance = new self;
 			}
+			
 			return self::$_instance;
 		}
 
@@ -42,31 +42,30 @@
 		* Parses URL and resolves
 		*/
 		public function createView() {
-
 			// Set Symphony renderer based on URL
 			$renderer = (isset($_GET['symphony-renderer'])
 				? $_GET['symphony-renderer']
 				: 'frontend');
 
-			$path = NULL;
+			$path = null;
 
 			// Is this for access to real non-Symphony files and dirs?
-			if(file_exists(realpath($renderer))){
+			if (file_exists(realpath($renderer))) {
 				$path = realpath($renderer);
 
 				// Ensure the renderer is child of DOCROOT. Closes potential
 				// security hole
-				if(substr($path, 0, strlen(DOCROOT)) != DOCROOT){
+				if (substr($path, 0, strlen(DOCROOT)) != DOCROOT) {
 					$path = NULL;
 				}
 			}
 
 			// Set path to renderer
-			elseif(file_exists(LIB . "/class.{$renderer}view.php")){
+			else if (file_exists(LIB . "/class.{$renderer}view.php")) {
 				$path = LIB . "/class.{$renderer}view.php";
 			}
 
-			if(is_null($path)){
+			if (is_null($path)) {
 				throw new Exception('Invalid Symphony renderer specified.');
 			}
 
@@ -75,6 +74,7 @@
 
 			// Instantiate the view object
 			$classname = ucfirst($renderer) . 'View';
+			
 			return new $classname();
 		}
 
@@ -82,11 +82,11 @@
 		 * Initialize contextual XML (formerly params)
 		 */
 		public function initializeContext() {
-
 			$this->View->context->register(array(
 				'system'	=> array(
 					'site-name'			=> Symphony::Configuration()->core()->symphony->sitename,
-					'site-url' => URL,
+					'site-url'			=> URL,
+					'admin-url'			=> URL . '/symphony',
 					'symphony-version'	=> Symphony::Configuration()->core()->symphony->version
 				),
 				'date'		=> array (
@@ -110,7 +110,6 @@
 		* Fields requests, routes them to appropriate View, returns output
 		*/
 		public function renderView() {
-
 			// Set URL
 			$this->url = getCurrentPage();
 
