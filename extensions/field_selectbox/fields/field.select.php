@@ -7,22 +7,20 @@
 		}
 
 		public function create(){
-			return Symphony::Database()->query(
-				sprintf(
-					'CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` int(11) unsigned NOT NULL auto_increment,
-						`entry_id` int(11) unsigned NOT NULL,
-						`handle` varchar(255) default NULL,
-						`value` varchar(255) default NULL,
-						PRIMARY KEY  (`id`),
-						KEY `entry_id` (`entry_id`),
-						KEY `handle` (`handle`),
-						KEY `value` (`value`)
-					)',
-					$this->section,
-					$this->{'element-name'}
-				)
-			);
+			return Symphony::Database()->query(sprintf('
+				CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+					`id` int(11) unsigned NOT NULL auto_increment,
+					`entry_id` int(11) unsigned NOT NULL,
+					`handle` varchar(255) default NULL,
+					`value` varchar(255) default NULL,
+					PRIMARY KEY  (`id`),
+					KEY `entry_id` (`entry_id`),
+					KEY `handle` (`handle`),
+					KEY `value` (`value`)
+				) ENGINE=MyISAM;',
+				$this->section,
+				$this->{'element-name'}
+			));
 		}
 
 		public function canToggleData(){

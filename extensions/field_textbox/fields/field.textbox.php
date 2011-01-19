@@ -39,21 +39,19 @@
 		}
 
 		public function create() {
-			return Symphony::Database()->query(sprintf(
-				"
-					CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
-						`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-						`entry_id` INT(11) UNSIGNED NOT NULL,
-						`handle` VARCHAR(255) DEFAULT NULL,
-						`value` TEXT DEFAULT NULL,
-						`value_formatted` TEXT DEFAULT NULL,
-						`word_count` INT(11) UNSIGNED DEFAULT NULL,
-						PRIMARY KEY (`id`),
-						KEY `entry_id` (`entry_id`),
-						FULLTEXT KEY `value` (`value`),
-						FULLTEXT KEY `value_formatted` (`value_formatted`)
-					) ENGINE=MyISAM;
-				",
+			return Symphony::Database()->query(sprintf('
+				CREATE TABLE IF NOT EXISTS `tbl_data_%s_%s` (
+					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+					`entry_id` INT(11) UNSIGNED NOT NULL,
+					`handle` VARCHAR(255) DEFAULT NULL,
+					`value` TEXT DEFAULT NULL,
+					`value_formatted` TEXT DEFAULT NULL,
+					`word_count` INT(11) UNSIGNED DEFAULT NULL,
+					PRIMARY KEY (`id`),
+					KEY `entry_id` (`entry_id`),
+					FULLTEXT KEY `value` (`value`),
+					FULLTEXT KEY `value_formatted` (`value_formatted`)
+				) ENGINE=MyISAM;',
 				$this->{'section'},
 				$this->{'element-name'}
 			));

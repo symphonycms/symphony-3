@@ -35,7 +35,7 @@
 
 	define_safe('HTTPS', getenv('HTTPS'));
 	define_safe('HTTP_HOST', getenv('HTTP_HOST'));
-	define_safe('REMOTE_ADDR', getenv('REMOTE_ADDR')); 
+	define_safe('REMOTE_ADDR', getenv('REMOTE_ADDR'));
 	define_safe('HTTP_USER_AGENT', getenv('HTTP_USER_AGENT'));
 
 	define_safe('__SECURE__', (HTTPS == 'on'));

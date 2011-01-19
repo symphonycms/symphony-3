@@ -1,18 +1,66 @@
 <?php
 
-	require_once(LIB . '/class.administrationpage.php');
+	/**
+	* ExtensionsDriver class...
+	*/
+
+	Class ExtensionsDriver {
+
+		public $url;
+		public $view;
+
+		public function __construct() {
+			$this->view = Controller::instance()->View;
+			$this->url = Controller::instance()->url;
+
+			$this->setTitle();
+		}
+
+		public function setTitle() {
+			$this->view->title = __('Extensions');
+		}
+
+		public function registerActions() {
+
+			$actions = array(
+				array(
+					'name'		=> __('Create New'),
+					'type'		=> 'new',
+					'callback'	=> $url . '/new'
+				),
+				array(
+					'name'		=> __('Filter'),
+					'type'		=> 'tool'
+				)
+			);
+
+			foreach($actions as $action) {
+				$this->view->registerAction($action);
+			}
+		}
+
+		public function registerDrawer() {
+			// Do stuff
+		}
+
+		public function buildDataXML($data) {
+
+		}
+	}
+
+	/*require_once(LIB . '/class.administrationpage.php');
 
 	Class contentSystemExtensions extends AdministrationPage{
-	
+
 		protected $lists;
-		
+
 		protected static $status_translation = array(
 			Extension::STATUS_ENABLED => 'Enabled',
 			Extension::STATUS_DISABLED => 'Disabled',
 			Extension::STATUS_NOT_INSTALLED => 'Not Installed',
 			Extension::STATUS_REQUIRES_UPDATE => 'Requires Update',
 		);
-		
+
 		public function view(){
 
 			$this->lists = (object)array(
@@ -21,14 +69,14 @@
 					Extension::STATUS_DISABLED => array(),
 					Extension::STATUS_NOT_INSTALLED => array(),
 					Extension::STATUS_REQUIRES_UPDATE => array(),
-					
+
 				),
 				'type' => array(),
 				'extensions' => array()
 			);
-			
+
 		## Setup page
-		
+
 			$filter = ($this->_context[0] == 'type' || $this->_context[0] == 'status' ? $this->_context[0] : NULL);
 			$value = (isset($this->_context[1]) ? $this->_context[1] : NULL);
 
@@ -37,25 +85,25 @@
 
 			$path = ADMIN_URL . '/system/extensions/';
 			$this->Form->setAttribute('action', Administration::instance()->getCurrentPageURL());
-			
+
 		## Define layout
-			
+
 			$layout = new Layout();
 			$left = $layout->createColumn(Layout::SMALL);
 			$left->setAttribute('class', 'column small filters');
 			$right = $layout->createColumn(Layout::LARGE);
-			
+
 		## Process extensions and build lists
-		
+
 			foreach(new ExtensionIterator as $extension){
-				
+
 				$pathname = Extension::getPathFromClass(get_class($extension));
 				$handle = Extension::getHandleFromPath($pathname);
 				$status = Extension::status($handle);
-				
+
 				// List of extensions
 				$this->lists->extensions[$handle] = array('object' => $extension, 'path' => $path, 'handle' => $handle, 'status' => $status);
-				
+
 				// List of extension handles grouped by status
 				if(!is_array($this->lists->status[$status])) $this->lists->status[$status] = array();
 				$this->lists->status[$status][] = $handle;
@@ -66,82 +114,82 @@
 						if(!isset($this->lists->type[$t])){
 							$this->lists->type[$t] = array();
 						}
-						
+
 						$this->lists->type[$t][] = $handle;
 					}
 				}
 			}
 
 		## Build status filter menu
-		
+
 			$h4 = $this->createElement('h4', __('Filter by Status'));
 			$left->appendChild($h4);
-			
+
 			$ul = $this->createElement('ul');
-			
+
 			## Main status overview
 			$li = $this->createElement('li', Widget::Anchor(__('Overview'), $path));
 			if(is_null($filter)){
 				$li->setAttribute('class', 'active');
 			}
 			$ul->appendChild($li);
-			
+
 			foreach($this->lists->status as $status => $extensions) {
 				if(!empty($extensions)){
 					$li = $this->createElement('li', Widget::Anchor(self::$status_translation[$status], "{$path}status/{$status}"));
 					if($value == $status){
 						$li->setAttribute('class', 'active');
 					}
-					
+
 					$count = $this->createElement('span', (string)count($extensions));
 
 					$li->appendChild($count);
-				
+
 					$ul->appendChild($li);
 				}
 			}
-	
+
 			$left->appendChild($ul);
-			
+
 		## Build type filter menu
-		
+
 			$h4 = $this->createElement('h4', __('Filter by Type'));
 			$left->appendChild($h4);
-			
+
 			$ul = $this->createElement('ul');
-			
+
 			foreach($this->lists->type as $type => $extensions) {
 				if(!empty($extensions)){
 					$li = $this->createElement('li', Widget::Anchor(ucwords($type), "{$path}type/{$type}"));
 					if($value == $type){
 						$li->setAttribute('class', 'active');
 					}
-					
+
 					$count = $this->createElement('span', (string)count($extensions));
 
 					$li->appendChild($count);
-				
+
 					$ul->appendChild($li);
 				}
 			}
-			
+
 			$left->appendChild($ul);
-			
+
 		## If a filter and value are specified...
 			if(!is_null($filter) && !is_null($value)){
-			
+
 			## If there are extensions in the list, build the table
 				if(isset($this->lists->{$filter}[$value])){
 					$right->appendChild($this->buildTable($this->lists->{$filter}[$value]));
-				} 
+				}
 				else{
 					## Otherwise pass an empty array so we get the
 					## 'No Records Found' message
 					$right->appendChild($this->buildTable());
 				}
-				
+
 			## and append table actions
-			
+
 				$tableActions = $this->createElement('div');
 				$tableActions->setAttribute('class', 'actions');
 
@@ -156,17 +204,17 @@
 				$tableActions->appendChild(Widget::Submit('action[apply]', __('Apply')));
 
 				$right->appendChild($tableActions);
-				
+
 		## Otherwise, build the overview
-		
-			} 
-			
+
+			}
+
 			else{
-				
+
 				## Requires Update
 				if(!empty($this->lists->status[Extension::STATUS_REQUIRES_UPDATE])) {
 					$count = count($this->lists->status[Extension::STATUS_REQUIRES_UPDATE]);
-				
+
 					$div = $this->createElement('div');
 					$div->setAttribute('class', 'tools');
 					$h4 = $this->createElement('h4', __('Updates'));
@@ -178,18 +226,18 @@
 					$p = $this->createElement('p', $message);
 					$view = Widget::Anchor(__('View Details'), sprintf('%sstatus/%s/', $path, Extension::STATUS_REQUIRES_UPDATE));
 					$view->setAttribute('class', 'button');
-				
+
 					$div->appendChild($view);
 					$div->appendChild($h4);
 					$div->appendChild($p);
-				
+
 					$right->appendChild($div);
 				}
-				
+
 				## Not Installed
 				if(!empty($this->lists->status[Extension::STATUS_NOT_INSTALLED])) {
 					$count = count($this->lists->status[Extension::STATUS_NOT_INSTALLED]);
-				
+
 					$div = $this->createElement('div');
 					$div->setAttribute('class', 'tools');
 					$h4 = $this->createElement('h4', __('Not Installed'));
@@ -203,19 +251,19 @@
 					$install->setAttribute('class', 'constructive');
 					$view = Widget::Anchor(__('View Details'), sprintf('%sstatus/%s/', $path, Extension::STATUS_NOT_INSTALLED));
 					$view->setAttribute('class', 'button');
-				
+
 					$div->appendChild($install);
 					$div->appendChild($view);
 					$div->appendChild($h4);
 					$div->appendChild($p);
-				
+
 					$right->appendChild($div);
 				}
-				
+
 				## Disabled
 				if(!empty($this->lists->status[Extension::STATUS_DISABLED])) {
 					$count = count($this->lists->status[Extension::STATUS_DISABLED]);
-				
+
 					$div = $this->createElement('div');
 					$div->setAttribute('class', 'tools');
 					$h4 = $this->createElement('h4', __('Disabled'));
@@ -231,37 +279,37 @@
 					$uninstall->setAttribute('class', 'destructive');
 					$view = Widget::Anchor(__('View Details'), sprintf('%sstatus/%s/', $path, Extension::STATUS_DISABLED));
 					$view->setAttribute('class', 'button');
-				
+
 					$div->appendChild($install);
 					$div->appendChild($uninstall);
 					$div->appendChild($view);
 					$div->appendChild($h4);
 					$div->appendChild($p);
-				
+
 					$right->appendChild($div);
 				}
-				
+
 				## Nothing to show
 				if(
-					empty($this->lists->status[Extension::STATUS_DISABLED]) 
+					empty($this->lists->status[Extension::STATUS_DISABLED])
 					&& empty($this->lists->status[Extension::STATUS_NOT_INSTALLED])
 				){
 					$div = $this->createElement('div');
 					$div->setAttribute('class', 'tools');
 					$p = $this->createElement('p', __('All of your extensions are installed and enabled.'));
 					$view = $this->createElement('button', __('View Details'));
-				
+
 					$div->appendChild($view);
 					$div->appendChild($p);
-				
+
 					$right->appendChild($div);
 				}
 			}
-		
+
 			$layout->appendTo($this->Form);
 
 		}
-		
+
 		private function buildTable(array $extensions=NULL, $prefixes=false){
 
 			$aTableHead = array(
@@ -289,11 +337,11 @@
 			}
 
 			else{
-			
+
 				foreach($extensions as $handle){
 
 					$about = $this->lists->extensions[$handle]['object']->about();
-					
+
 					$fragment = $this->createDocumentFragment();
 
 					if(!empty($about->{'table-link'}) && $this->lists->extensions[$handle]['status'] == Extension::STATUS_ENABLED) {
@@ -336,16 +384,9 @@
 					switch($this->lists->extensions[$handle]['status']){
 						case Extension::STATUS_ENABLED:
 							$td4 = Widget::TableData();
-							$td4->appendChild(Widget::Submit(
-								"action[uninstall][{$handle}]", __('Uninstall'), array(
-									'class' => 'button destructive'
-								)
-							));
-							$td4->appendChild(Widget::Submit(
-								"action[disable][{$handle}]", __('Disable'), array(
-									'class' => 'button destructive'
-								)
-							));
+							$td4->appendChild(Widget::Input("action[uninstall][{$handle}]", __('Uninstall'), 'submit', array('class' => 'button delete')));
+							$td4->appendChild(Widget::Input("action[disable][{$handle}]", __('Disable'), 'submit', array('class' => 'button')));
+
 							break;
 
 						case Extension::STATUS_DISABLED:
@@ -379,7 +420,7 @@
 					);
 				}
 			}
-			
+
 			$table = Widget::Table(Widget::TableHead($aTableHead), NULL, Widget::TableBody($aTableBody));
 
 			return $table;
@@ -390,11 +431,11 @@
 			if(isset($_POST['items'])){
 				$checked = array_keys($_POST['items']);
 			}
-			
+
 			try {
 				if(isset($_POST['action']['apply']) && isset($_POST['with-selected']) && is_array($checked) && !empty($checked)){
 					$action = $_POST['with-selected'];
-					
+
 					if(method_exists('Extension', $action)){
 
 						###
@@ -402,22 +443,22 @@
 						# Description: Notifies of enabling, disabling or uninstalling of an Extension. Array of selected extensions is provided.
 						#              This can be modified.
 						Extension::notify($action, getCurrentPage(), array('extensions' => &$checked));
-						
+
 						foreach($checked as $handle){
 							call_user_func(array('Extension', $action), $handle);
 						}
 					}
-					
+
 					redirect(Administration::instance()->getCurrentPageURL());
-					
+
 				}
-				
+
 				elseif(isset($_POST['action'])){
 					$action = end(array_keys($_POST['action']));
 					$handle = end(array_keys($_POST['action'][$action]));
 
 					if(method_exists('Extension', $action)){
-						
+
 						###
 						# Delegate: {name of the action} (enable|disable|uninstall)
 						# Description: Notifies of enabling, disabling or uninstalling of an Extension. Extension handle is provided
@@ -425,32 +466,32 @@
 						Extension::notify($action, getCurrentPage(), array('extensions' => &$handle));
 
 						call_user_func(array('Extension', $action), $handle);
-						
+
 						redirect(Administration::instance()->getCurrentPageURL());
 					}
-					
+
 				}
-				
+
 			}
-			
+
 			catch (ExtensionException $e) {
 				$extension = Extension::load($handle);
 				$about = $extension->about();
-				
+
 				switch ($action) {
 					case 'enable':
 						$message = "%s could not be enabled. <a class='more'>Show more information.</a>";
 						break;
-						
+
 					case 'disable':
 						$message = "%s could not be disabled. <a class='more'>Show more information.</a>";
 						break;
-						
+
 					case 'uninstall':
 						$message = "%s could not be uninstalled. <a class='more'>Show more information.</a>";
 						break;
 				}
-				
+
 				$this->alerts()->append(
 					__(
 						$message, array(
@@ -461,7 +502,7 @@
 					),
 					AlertStack::ERROR, $e
 				);
-				
+
 				return false;
 			}
 		}
@@ -543,5 +584,5 @@
 			elseif(isset($_POST['action']['uninstall']) && in_array($extension['status'], array(Extension::ENABLED, Extension::DISABLED))){
 				ExtensionManager::instance()->uninstall($extension_name);
 			}
-		}*/
-	}
+		}*
+	}*/

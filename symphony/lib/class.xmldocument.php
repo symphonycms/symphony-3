@@ -115,7 +115,7 @@
 
 		public function setValue($value) {
 			$this->removeChildNodes();
-			
+
 			//	TODO: Possibly might need to Remove existing Children before adding..
 			if ($value instanceof DOMElement || $value instanceof DOMDocumentFragment) {
 				$this->appendChild($value);

@@ -1,6 +1,54 @@
 <?php
 
-	require_once(LIB . '/class.administrationpage.php');
+	/**
+	* UsersDriver class...
+	*/
+
+	Class UsersDriver {
+
+		public $url;
+		public $view;
+
+		public function __construct() {
+			$this->view = Controller::instance()->View;
+			$this->url = Controller::instance()->url;
+
+			$this->setTitle();
+		}
+
+		public function setTitle() {
+			$this->view->title = __('Users');
+		}
+
+		public function registerActions() {
+
+			$actions = array(
+				array(
+					'name'		=> __('Create New'),
+					'type'		=> 'new',
+					'callback'	=> $url . '/new'
+				),
+				array(
+					'name'		=> __('Filter'),
+					'type'		=> 'tool'
+				)
+			);
+
+			foreach($actions as $action) {
+				$this->view->registerAction($action);
+			}
+		}
+
+		public function registerDrawer() {
+			// Do stuff
+		}
+
+		public function buildDataXML($data) {
+
+		}
+	}
+
+	/*require_once(LIB . '/class.administrationpage.php');
  	//require_once(LIB . '/class.sectionmanager.php');
 
 	Class contentSystemUsers extends AdministrationPage{
@@ -8,92 +56,27 @@
 		private $user;
 
 		public function __viewIndex(){
-			
-			$this->setTitle(__('Symphony') . ' &ndash; ' . __('Users'));
-
-			$this->appendSubheading(__('Users'), Widget::Anchor(
-				__('Add a User'), Administration::instance()->getCurrentPageURL() . '/new/', array(
-					'title' => __('Add a new User'),
-					'class' => 'create button constructive'
-				)
-			));
 
 		    $users = new UserIterator;
 
-			$aTableHead = array(
-				array(__('Name'), 'col'),
-				array(__('Email Address'), 'col'),
-				array(__('Last Seen'), 'col'),
-			);
+			$users_xml = $this->createElement('users');
 
-			$aTableBody = array();
-			$colspan = count($aTableHead);
+			foreach($users as $u){
 
-			if($users->length() == 0){
-				$aTableBody = array(Widget::TableRow(
-					array(
-						Widget::TableData(__('None found.'), array(
-								'class' => 'inactive',
-								'colspan' => $colspan
-							)
-						)
-					), array(
-						'class' => 'odd'
-					)
-				));
-			}
+				$user = $this->createElement('user');
+				$user->setAttribute('id',$u->id);
+				$user->appendChild($this->createElement('username',$u->username));
+				$user->appendChild($this->createElement('full-name', $u->getFullName()));
+				$user->appendChild($this->createElement('email', $u->email));
 
-			else{
-				foreach($users as $u){
-
-					## Setup each cell
-					$td1 = Widget::TableData(
-						Widget::Anchor(
-							$u->getFullName(), Administration::instance()->getCurrentPageURL() . '/edit/' . $u->id . '/', array(
-								'title' => $u->username
-							)
-						)
-					);
-
-					$td2 = Widget::TableData(
-						Widget::Anchor(
-							$u->email, 'mailto:'.$u->email, array(
-								'title' => 'Email this user'
-							)
-						)
-					);
-
-					if($u->last_seen != NULL){
-						$td3 = Widget::TableData(DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($u->last_seen)));
-					}
-					else{
-						$td3 = Widget::TableData('Unknown', array('class' => 'inactive'));
-					}
-
-					$td3->appendChild(Widget::Input('items['.$u->id.']', NULL, 'checkbox'));
-
-					## Add a row to the body array, assigning each cell to the row
-
-					$aTableBody[] = Widget::TableRow(array($td1, $td2, $td3));
+				if($u->last_seen != NULL){
+					$user->setAttribute('last-seen',DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($u->last_seen)));
 				}
+
+				$users_xml->appendChild($user);
 			}
 
-			$table = Widget::Table(Widget::TableHead($aTableHead), NULL, Widget::TableBody($aTableBody));
-
-			$this->Form->appendChild($table);
-
-			$tableActions = $this->createElement('div');
-			$tableActions->setAttribute('class', 'actions');
-
-			$options = array(
-				array(NULL, false, 'With Selected...'),
-				array('delete', false, 'Delete')
-			);
-
-			$tableActions->appendChild(Widget::Select('with-selected', $options));
-			$tableActions->appendChild(Widget::Submit('action[apply]', 'Apply'));
-
-			$this->Form->appendChild($tableActions);
+			return $users_xml;
 
 		}
 
@@ -126,11 +109,11 @@
 		}
 
 		public function __viewEdit(){
-			
+
 			if(!($this->user instanceof User) && !($this->user = User::load((int)$this->_context[1]))){
 				throw new SymphonyErrorPage('The user profile you requested does not exist.', 'User not found');
 			}
-			
+
 			$this->__form();
 		}
 
@@ -145,7 +128,7 @@
 
 			## Handle unknow context
 			if(!in_array($this->_context[0], array('new', 'edit'))) throw new AdministrationPageNotFoundException;
-			
+
 			$callback = Administration::instance()->getPageCallback();
 			if(isset($callback['flag'])){
 				switch($callback['flag']){
@@ -182,7 +165,7 @@
 
 				}
 			}
-			
+
 			$isOwner = false;
 
 			/*if(isset($_POST['fields']))
@@ -197,8 +180,8 @@
 				}
 			}
 
-			else */
-			
+			else *
+
 
 
 			if($this->_context[0] == 'edit' && $this->user->id == Administration::instance()->User->id) $isOwner = true;
@@ -390,8 +373,8 @@
 				}
 				else{
 					$this->alerts()->append(
-						__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', 
-						array(ADMIN_URL . '/system/log/')), 
+						__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.',
+						array(ADMIN_URL . '/system/log/')),
 						AlertStack::ERROR
 					);
 				}
@@ -466,8 +449,8 @@
 
 					else{
 						$this->alerts()->append(
-							__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.', 
-							array(ADMIN_URL . '/system/log/')), 
+							__('Unknown errors occurred while attempting to save. Please check your <a href="%s">activity log</a>.',
+							array(ADMIN_URL . '/system/log/')),
 							AlertStack::ERROR
 						);
 					}
@@ -492,4 +475,4 @@
 			}
 		}
 
-	}
+	}*/
