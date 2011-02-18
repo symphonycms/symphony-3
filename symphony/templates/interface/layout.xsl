@@ -8,10 +8,10 @@
 	encoding="UTF-8"
 	indent="yes" />
 	
-	<xsl:variable name="site-url" select="/root/context/system/site-url" />
-	<xsl:variable name="admin-url" select="/root/context/system/admin-url" />
+	<xsl:variable name="site-url" select="/data/context/system/site-url" />
+	<xsl:variable name="admin-url" select="/data/context/system/admin-url" />
 	
-	<xsl:template match="root">
+	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" href="{$admin-url}/assets/styles/admin.css" media="screen" type="text/css" />
@@ -25,15 +25,15 @@
 					<p id="sitename"><a href="">My Website</a></p>
 					<p id="powered">Symphony 3.0 alpha</p>
 					
-					<xsl:apply-templates select="navigation"/>
+					<xsl:apply-templates select="data/navigation"/>
 				</div>
 				<div id="drawer">
 					<h2>About this Shit</h2>
 					<p>All kinds of awesome stuff will go here</p>
 				</div>
 				<div id="view">
-					<h1><xsl:value-of select="context/view/title"/></h1>
-					<xsl:apply-templates select="actions"/>
+					<h1><xsl:value-of select="data/context/view/title"/></h1>
+					<xsl:apply-templates select="data/actions"/>
 					<xsl:apply-templates select="." mode="view"/>
 				</div>
 			</body>

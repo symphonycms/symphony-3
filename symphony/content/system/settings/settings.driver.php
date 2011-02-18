@@ -11,6 +11,7 @@
 
 		public function __construct() {
 			$this->view = Controller::instance()->View;
+			$this->document = $this->view->document;
 			$this->url = Controller::instance()->url;
 
 			$this->setTitle();
@@ -44,22 +45,31 @@
 		}
 
 		public function buildDataXML($data) {
-
+		
+			// Container element for form fields
+			$fields_xml = $this->document->createElement('fields');
+			
+			$fields = array(
+				'site-name'			=> array(
+					'type'			=> 'input'
+				),
+				'default-language'	=> array(
+					'type'			=> 'select'
+				),
+				'date-format'		=> array(
+					'type'			=> 'select'
+				),
+				'time-format'		=> array(
+					'type'			=> 'select'
+				),
+			);
+			
+			$data->appendChild($fields_xml);
 		}
 	}
 
 	/*require_once LIB . '/class.administrationpage.php';
 	require_once LIB . '/class.duplicator.php';
-
-	class contentSystemSettings extends AdministrationPage {
-		public function __construct(){
-			parent::__construct();
-			$this->setTitle(__('%1$s &ndash; %2$s', array(__('Symphony'), __('Settings'))));
-			/*
-			$element = $this->createElement('p');
-			$element->appendChild(new DOMEntityReference('ndash'));
-			$this->Body->appendChild($element);*
-		}
 
 		public function appendTabs() {
 			$path = ADMIN_URL . '/system/settings/';

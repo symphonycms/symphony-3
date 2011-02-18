@@ -56,8 +56,12 @@
 			// Initialize XML
 			$this->document = new XMLDocument;
 			$this->document->appendChild(
-				$this->document->createElement('root')
+				$this->document->createElement('data')
 			);
+			
+			//Initialize XSLT
+			$this->stylesheet = new XMLDocument;
+			
 			Widget::init($this->document);
 		}
 
@@ -147,7 +151,7 @@
 			// Perform transformation
 			$output = XSLProc::transform(
 				$this->document->saveXML(),
-				$this->stylesheet,
+				$this->stylesheet->saveXML(),
 				XSLProc::XML,
 				array(), array()
 			);

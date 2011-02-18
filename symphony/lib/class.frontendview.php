@@ -50,7 +50,7 @@
 				// TODO Fix this
 				//if(!($this instanceof FrontendView)) throw new Exception('Page not found');
 
-				if(!Controller::instance()->isLoggedIn() && in_array('admin', self::$view->types)){
+				if(!Controller::instance()->isLoggedIn() && in_array('admin', $view->types)){
 
 					$views = $this->findFromType('403');
 					$view = array_shift($views);
@@ -182,7 +182,7 @@
 
 			$template = sprintf('%s/%s/%s.xsl', VIEWS, $view->path, $view->handle);
 			if(file_exists($template) && is_readable($template)){
-				$view->stylesheet = file_get_contents($template);
+				$view->stylesheet->load($template);
 			}
 
 			$view->getViewContext();

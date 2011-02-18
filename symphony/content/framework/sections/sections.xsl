@@ -2,8 +2,6 @@
 <xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-<xsl:import href="layout.xsl"/>
-
 <xsl:template match="root" mode="view">
 	<form action="" method="POST" class="view-content">
 		<table id="sections-list">

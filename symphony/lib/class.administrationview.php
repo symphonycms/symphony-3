@@ -143,12 +143,23 @@
 			// Determine path to the template file
 			$template_file = sprintf('%s/%s/%s.xsl', $this->location, $this->path, $this->handle);
 
-			// Set the view's template if it exists
-			// TODO this probably needs to be rethought
+			// Create <xsl;stylesheet> element
+			$ss = $this->stylesheet->createElement('xsl:stylesheet');
+			$ss->setAttribute('version','1.0');
+			$ss->setAttribute('xmlns:xsl','http://www.w3.org/1999/XSL/Transform');
+			$this->stylesheet->appendChild($ss);
+			
+			// <xsl:include> the view's stylesheet. Use include because it's higher
+			// priority than <xsl:import> and the view's stylesheet should have
+			// top priority
 			if (file_exists($template_file) && is_readable($template_file)) {
-				$this->stylesheet = file_get_contents($template_file);
+				$append_path = preg_replace('#' . DOCROOT . '/#','',$template_file);
+				$this->appendStylesheet($append_path, 'include');
 			}
-
+			
+			// <xsl:import> the main layout stylesheet.
+			$this->appendStylesheet('symphony/templates/interface/layout.xsl');
+			
 			// The Controller is responsible for initilizing the system context info
 			// (website name, user info, etc). Here we have the view register its
 			// own context info (handle, params, path, and so on)
@@ -329,6 +340,26 @@
 			
 			$root->appendChild($navigation);
 		}
+		
+		/**
+		* Append an XSLT stylesheet to be imported or included by the 
+		* view's $stylesheet document
+		*/
+		public function appendStylesheet($path, $mode = 'import') {
+			$element = $this->stylesheet->createElement('xsl:' . $mode);
+			$element->setAttribute('href',$path);
+			
+			$root = $this->stylesheet->documentElement;
+			
+			// Imports always have to come before includes
+			// Might need a better way to handle prioritizing multiple stylesheets
+			if($mode = 'import') {
+				$root->prependChild($element);
+			}
+			else {
+				$root->appendChild($element);
+			}
+		}
 
 		/**
 		* Build the View's output
@@ -363,17 +394,13 @@
 			// Build and append the drawer XML
 			$this->buildDrawerXML($root);
 
-			// Setup Data XML
-			$data = $this->document->createElement('data');
-
-			// Build Data XML
-			$this->driver->buildDataXML($data);
+			// Build view XML
+			$this->driver->buildDataXML($root);
 
 			// TODO: DELEGATE for allowing extensions to append XML?
-			$root->appendChild($data);
 
 			// This is in class.view.php
-			return $this->transform(TEMPLATES . '/interface');
+			return $this->transform(DOCROOT);
 
 		}
 
